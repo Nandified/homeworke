@@ -1,0 +1,82 @@
+{
+  "hero": {
+    "headline": "Your home, professionally managed.",
+    "subheadline": "Homeworke connects homeowners with vetted service providers, guided by dedicated project managers \u2014 while keeping your real estate pro, lender, and insurance agent in the loop. Request an estimate in under two minutes.",
+    "primaryCta": "Get Started",
+    "secondaryCta": "Learn How It Works"
+  },
+  "marketplace": {
+    "label": "What does your home need?",
+    "placeholder": "Describe what is going on \u2014 e.g., \"my water heater is leaking\" or \"I need the kitchen remodeled\"",
+    "helper": "Our AI will match you to the right service category and connect you with up to three vetted providers.",
+    "suggestionChips": [
+      "Plumbing Repair",
+      "Kitchen Remodel",
+      "Roof Inspection",
+      "HVAC Service",
+      "Electrical Work",
+      "Interior Painting",
+      "Water Heater Install",
+      "General Handyman"
+    ],
+    "trustLine": "Every provider is licensed, insured, and background-checked before they are approved to work on your home."
+  },
+  "audienceTiles": [
+    {
+      "audience": "Homeowners",
+      "route": "/homeowners",
+      "icon": "home",
+      "title": "Homeowners",
+      "text": "Book estimates, track projects in real time, and pay only as milestones are completed. Your home profile even includes property valuation and financing tools.",
+      "cta": "Request a Service"
+    },
+    {
+      "audience": "Real Estate Professionals",
+      "route": "/real-estate-pros",
+      "icon": "handshake",
+      "title": "Real Estate Professionals",
+      "text": "Stay top-of-mind with past clients through automatic project notifications. Earn referral income, access Express Estimates for negotiations, and manage your client roster from a single dashboard.",
+      "cta": "Schedule a Demo"
+    },
+    {
+      "audience": "Offices and Brokerages",
+      "route": "/offices",
+      "icon": "layout",
+      "title": "Offices and Brokerages",
+      "text": "View agent production, track attributed revenue, and oversee your team's client engagement \u2014 all from an office-level dashboard with full reporting.",
+      "cta": "Learn More"
+    },
+    {
+      "audience": "Lenders",
+      "route": "/lenders",
+      "icon": "dollar-sign",
+      "title": "Lenders",
+      "text": "Surface refinancing and home-improvement loan opportunities the moment your clients begin a project. Integrated financing widgets keep you in the conversation.",
+      "cta": "Partner With Us"
+    },
+    {
+      "audience": "Home Inspectors",
+      "route": "/inspectors",
+      "icon": "check-circle",
+      "title": "Home Inspectors",
+      "text": "Share inspection reports directly into the Homeworke workflow. Collaborate with agents, attorneys, and transaction coordinators through built-in sharing controls.",
+      "cta": "Get Started"
+    },
+    {
+      "audience": "Insurance Agents",
+      "route": "/insurance",
+      "icon": "shield",
+      "title": "Insurance Agents",
+      "text": "Receive notifications when clients complete improvements so you can update coverage and quotes proactively \u2014 strengthening your relationship without extra effort.",
+      "cta": "Partner With Us"
+    },
+    {
+      "audience": "Service Providers",
+      "route": "/service-providers",
+      "icon": "star",
+      "title": "Service Providers",
+      "text": "Accept jobs on your terms with clear scope, transparent pay, and milestone-based draws. Sign up in minutes, complete verification when you are ready to work.",
+      "cta": "Apply to Join"
+    }
+  ]
+}
