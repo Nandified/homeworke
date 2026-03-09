@@ -51,7 +51,9 @@ function ProviderCard(props: CuratedCard & { compact?: boolean }) {
           </div>
         ) : null}
       </div>
-      <Button variant="ghost">{cta}</Button>
+      <Link href="/providers/alpha">
+        <Button variant="ghost">{cta}</Button>
+      </Link>
     </div>
   );
 }
@@ -212,7 +214,9 @@ export function MarketplacePage() {
                             {r.etaLabel} · {r.priceBand}
                           </div>
                         </div>
-                        <Button variant="ghost">{r.cta}</Button>
+                        <Link href="/providers/alpha">
+                          <Button variant="ghost">{r.cta}</Button>
+                        </Link>
                       </div>
                     ))}
                   </div>

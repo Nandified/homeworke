@@ -1,0 +1,282 @@
+{
+  "routePattern": "/providers/[id]",
+  "pageTitleTemplate": "{specialty} Professional in {city} | Homeworke",
+  "identity": {
+    "gatedLabel": "Verified Pro",
+    "revealRuleText": "Full business name, direct contact details, and company branding are shared only after you request a quote and the provider confirms the match. This protects both parties and ensures serious, high-quality connections.",
+    "verifiedBadges": [
+      {
+        "icon": "shield",
+        "label": "Background Checked"
+      },
+      {
+        "icon": "check-circle",
+        "label": "License Verified"
+      },
+      {
+        "icon": "lock",
+        "label": "Insured and Bonded"
+      },
+      {
+        "icon": "calendar",
+        "label": "On-Time Guarantee"
+      },
+      {
+        "icon": "star",
+        "label": "Top Rated Professional"
+      },
+      {
+        "icon": "handshake",
+        "label": "Satisfaction Pledge"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "title": "Provider Overview",
+      "subtitle": "A snapshot of this professional's qualifications, track record, and service commitment -- without revealing their identity until you are matched.",
+      "bullets": [
+        {
+          "icon": "bar-chart",
+          "text": "Performance metrics including job count, average rating, and repeat-client rate are visible before you commit."
+        },
+        {
+          "icon": "shield",
+          "text": "Every provider on Homeworke passes a multi-step verification process covering licensing, insurance, and background checks."
+        },
+        {
+          "icon": "eye-off",
+          "text": "The provider's full business name and contact information remain hidden until a quote is requested and confirmed."
+        }
+      ]
+    },
+    {
+      "title": "Verification and Trust",
+      "subtitle": "We hold every professional to a rigorous standard so you can hire with confidence.",
+      "bullets": [
+        {
+          "icon": "check-circle",
+          "text": "State and local trade licenses are independently confirmed and kept current in our system."
+        },
+        {
+          "icon": "lock",
+          "text": "Proof of general liability insurance and, where applicable, bonding is required before a profile goes live."
+        },
+        {
+          "icon": "users",
+          "text": "Identity and criminal background screenings are conducted through a nationally accredited third-party service."
+        }
+      ]
+    },
+    {
+      "title": "Recent Work Highlights",
+      "subtitle": "A curated look at this provider's most recent completed projects, summarized to protect client privacy.",
+      "bullets": [
+        {
+          "icon": "home",
+          "text": "Recent projects span residential renovations, routine maintenance, and specialty installations across multiple property types."
+        },
+        {
+          "icon": "camera",
+          "text": "Before-and-after project photos are available in the gallery section once you submit a quote request."
+        },
+        {
+          "icon": "trending-up",
+          "text": "Completion rates and on-schedule delivery percentages are tracked and displayed transparently on every profile."
+        }
+      ]
+    },
+    {
+      "title": "How Pricing Works",
+      "subtitle": "Transparent, competitive pricing tailored to the scope of your project.",
+      "bullets": [
+        {
+          "icon": "dollar-sign",
+          "text": "Providers submit custom quotes based on the details you share -- no generic estimates or hidden fees."
+        },
+        {
+          "icon": "calculator",
+          "text": "You can compare multiple quotes side by side, each broken down by labor, materials, and timeline."
+        },
+        {
+          "icon": "credit-card",
+          "text": "Payments are processed securely through Homeworke, with milestone-based releases available for larger projects."
+        }
+      ]
+    },
+    {
+      "title": "When Identity Is Revealed",
+      "subtitle": "Your privacy and the provider's are both protected until a genuine connection is made.",
+      "bullets": [
+        {
+          "icon": "eye-off",
+          "text": "Before match: you see ratings, review summaries, verification badges, job count, and specialty -- but not the business name or phone number."
+        },
+        {
+          "icon": "message-circle",
+          "text": "After you request a quote and the provider accepts, full identity details including company name, direct phone, and email are unlocked for both parties."
+        },
+        {
+          "icon": "handshake",
+          "text": "This gating model reduces spam outreach, protects providers from unsolicited contact, and ensures you engage only with professionals who are genuinely available."
+        }
+      ]
+    },
+    {
+      "title": "Communication and Scheduling",
+      "subtitle": "Stay connected with your provider through every phase of the project.",
+      "bullets": [
+        {
+          "icon": "mail",
+          "text": "In-app messaging keeps all project conversations organized and documented in one place."
+        },
+        {
+          "icon": "calendar",
+          "text": "Schedule consultations, site visits, and project milestones directly through the Homeworke platform."
+        },
+        {
+          "icon": "clock",
+          "text": "Real-time availability indicators show when the provider can start and their current booking window."
+        }
+      ]
+    },
+    {
+      "title": "Guarantees and Support",
+      "subtitle": "Homeworke stands behind every connection with built-in protections.",
+      "bullets": [
+        {
+          "icon": "refresh",
+          "text": "If a project does not meet the agreed-upon scope, our resolution team steps in to mediate or arrange a replacement provider."
+        },
+        {
+          "icon": "shield",
+          "text": "All work arranged through Homeworke is backed by our platform guarantee covering workmanship for up to twelve months."
+        },
+        {
+          "icon": "milestone",
+          "text": "Dedicated support agents are available seven days a week to assist with disputes, scheduling changes, or urgent issues."
+        }
+      ]
+    }
+  ],
+  "sampleProviders": [
+    {
+      "id": "alpha",
+      "displayName": "Licensed Plumbing Specialist",
+      "identityGated": true,
+      "rating": 4.9,
+      "reviews": 312,
+      "jobs": 587,
+      "city": "Chicago, IL",
+      "specialty": "Plumbing"
+    },
+    {
+      "id": "bravo",
+      "displayName": "Certified Roofing Professional",
+      "identityGated": true,
+      "rating": 4.8,
+      "reviews": 248,
+      "jobs": 431,
+      "city": "Chicago, IL",
+      "specialty": "Roofing"
+    },
+    {
+      "id": "charlie",
+      "displayName": "General Renovation Contractor",
+      "identityGated": true,
+      "rating": 4.7,
+      "reviews": 189,
+      "jobs": 364,
+      "city": "Chicago, IL",
+      "specialty": "Renovation"
+    },
+    {
+      "id": "delta",
+      "displayName": "Licensed Electrician",
+      "identityGated": true,
+      "rating": 4.8,
+      "reviews": 198,
+      "jobs": 402,
+      "city": "Chicago, IL",
+      "specialty": "Electrical"
+    },
+    {
+      "id": "echo",
+      "displayName": "Interior Painting Specialist",
+      "identityGated": true,
+      "rating": 4.7,
+      "reviews": 164,
+      "jobs": 339,
+      "city": "Chicago, IL",
+      "specialty": "Painting"
+    },
+    {
+      "id": "foxtrot",
+      "displayName": "HVAC Service Technician",
+      "identityGated": true,
+      "rating": 4.8,
+      "reviews": 221,
+      "jobs": 468,
+      "city": "Chicago, IL",
+      "specialty": "HVAC"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Average Provider Rating",
+      "value": "4.85 out of 5"
+    },
+    {
+      "label": "Verified Providers on Platform",
+      "value": "12,400+"
+    },
+    {
+      "label": "Appointments Completed This Year",
+      "value": "3.2M"
+    },
+    {
+      "label": "Average Wait Time to First Appointment",
+      "value": "Under 48 hours"
+    }
+  ],
+  "ctas": {
+    "primary": "Find a Provider",
+    "secondary": "Browse Specialties",
+    "note": "All providers are licensed and identity-verified before appearing on the platform."
+  },
+  "reviewModule": {
+    "title": "Recent reviews",
+    "rows": [
+      {
+        "authorInitials": "JR",
+        "rating": 5.0,
+        "summary": "Clear scope, clean work, on time",
+        "text": "Communication was tight, the scope was explained in plain language, and the worksite was left spotless. Finished earlier than expected."
+      },
+      {
+        "authorInitials": "MS",
+        "rating": 4.8,
+        "summary": "Professional and transparent pricing",
+        "text": "Quote matched the final invoice with no surprises. They documented progress and flagged a small change order before proceeding."
+      },
+      {
+        "authorInitials": "AL",
+        "rating": 4.9,
+        "summary": "Handled scheduling without back-and-forth",
+        "text": "They offered multiple time windows and confirmed ahead of arrival. The timeline was accurate and updates were consistent."
+      },
+      {
+        "authorInitials": "CP",
+        "rating": 4.7,
+        "summary": "Great craftsmanship, good follow-up",
+        "text": "Work quality was excellent. A minor touch-up was needed and they returned quickly to finish it without hassle."
+      },
+      {
+        "authorInitials": "NK",
+        "rating": 5.0,
+        "summary": "Respectful crew and strong communication",
+        "text": "Crew was respectful of the home, wore shoe covers, and kept me updated. Would hire again."
+      }
+    ]
+  }
+}
