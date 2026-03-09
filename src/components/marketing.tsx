@@ -28,7 +28,7 @@ type PageContent = {
   route: string;
   hero: Hero;
   sections: Section[];
-  faq: Faq[];
+  faq?: Faq[];
   demoForm?: DemoForm;
 };
 
@@ -171,8 +171,8 @@ export function DemoFormCard(props: { demoForm: DemoForm }) {
   );
 }
 
-export function MarketingPage(props: { content: PageContent }) {
-  const { content } = props;
+export function MarketingPage(props: { content: Record<string, unknown> }) {
+  const content = props.content as unknown as PageContent;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
@@ -207,7 +207,7 @@ export function MarketingPage(props: { content: PageContent }) {
               <DemoFormCard demoForm={content.demoForm} />
             </div>
           ) : null}
-          <MarketingFaq faq={content.faq} />
+          <MarketingFaq faq={content.faq ?? []} />
         </Container>
       </main>
 
