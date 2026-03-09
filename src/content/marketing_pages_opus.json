@@ -160,6 +160,528 @@
       ]
     },
     {
+      "route": "/inspectors",
+      "hero": {
+        "headline": "Your Inspection Report Becomes the Starting Line, Not the Finish",
+        "subheadline": "Homeworke 3.0 transforms your inspection findings into an actionable workflow — connecting your report directly to vetted service providers, negotiation support, and milestone-tracked repairs. Your expertise drives the entire process forward.",
+        "primaryCta": "Start Sharing Reports",
+        "secondaryCta": "See How It Works",
+        "trustBullets": [
+          {
+            "icon": "link",
+            "text": "One-click report integration into the Homeworke workflow"
+          },
+          {
+            "icon": "handshake",
+            "text": "Built-in negotiation support tied to your findings"
+          },
+          {
+            "icon": "shield",
+            "text": "Gated provider identity protects the process until commitment"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "title": "Your Report, Seamlessly in the Workflow",
+          "subtitle": "Stop emailing PDFs into the void. Homeworke 3.0 lets you share inspection findings directly into a structured project workflow where every flagged item becomes a trackable scope of work.",
+          "bullets": [
+            {
+              "icon": "list",
+              "text": "Inspection line items map directly to service categories and provider matching"
+            },
+            {
+              "icon": "link",
+              "text": "Share reports with agents, buyers, and sellers through a single secure link"
+            },
+            {
+              "icon": "milestone",
+              "text": "Each finding becomes a milestone that tracks from estimate through completion"
+            }
+          ]
+        },
+        {
+          "title": "Collaboration That Keeps You in the Loop",
+          "subtitle": "Your inspection report is the foundation of every repair negotiation. Homeworke keeps you connected to the conversation so your expertise stays relevant long after you leave the property.",
+          "bullets": [
+            {
+              "icon": "message-circle",
+              "text": "Threaded collaboration on individual findings with all parties involved"
+            },
+            {
+              "icon": "users",
+              "text": "Agents, buyers, and providers reference your report as the single source of truth"
+            },
+            {
+              "icon": "eye-off",
+              "text": "Provider identities remain gated until the homeowner is ready to engage"
+            }
+          ]
+        },
+        {
+          "title": "Negotiation Support Rooted in Your Findings",
+          "subtitle": "When repair negotiations begin, your report does the heavy lifting. Homeworke 3.0 pairs your findings with curated provider estimates so every party works from real numbers, not guesswork.",
+          "bullets": [
+            {
+              "icon": "handshake",
+              "text": "AI service picker surfaces three curated providers per flagged item"
+            },
+            {
+              "icon": "dollar-sign",
+              "text": "Milestone-based payment draws ensure funds align with verified repair progress"
+            },
+            {
+              "icon": "calculator",
+              "text": "Estimate comparisons give agents and buyers clear leverage in negotiations"
+            }
+          ]
+        },
+        {
+          "title": "A Relationship Engine for Your Referral Network",
+          "subtitle": "Every report you share through Homeworke strengthens your professional network. Agents and offices see the value you bring when your findings drive smooth, well-managed repair workflows.",
+          "bullets": [
+            {
+              "icon": "trending-up",
+              "text": "Your report quality and responsiveness build your reputation within the platform"
+            },
+            {
+              "icon": "refresh",
+              "text": "Repeat collaboration with agents creates a durable referral loop"
+            },
+            {
+              "icon": "star",
+              "text": "Top-performing inspectors surface naturally to active offices and agents"
+            }
+          ]
+        },
+        {
+          "title": "Real-Time Visibility from Report to Resolution",
+          "subtitle": "Once your report enters the Homeworke workflow, you gain visibility into what happens next. Track which items move to repair, which providers are engaged, and when milestones are completed.",
+          "bullets": [
+            {
+              "icon": "clock",
+              "text": "PM on-the-way notifications confirm when providers are heading to the property"
+            },
+            {
+              "icon": "bar-chart",
+              "text": "Dashboard view of report item status across all your active inspections"
+            },
+            {
+              "icon": "check-circle",
+              "text": "Milestone completion updates close the loop on every flagged concern"
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "How do I share my inspection report into Homeworke?",
+          "a": "You can upload or link your report directly through the Homeworke platform. Individual findings are parsed into actionable line items that feed into the project workflow, provider matching, and negotiation tools. No special formatting is required."
+        },
+        {
+          "q": "Will my report be visible to service providers?",
+          "a": "Relevant findings are shared with providers only after the homeowner or agent engages them. Provider identities are gated until commitment, and your full report remains accessible only to the parties you authorize through the sharing workflow."
+        },
+        {
+          "q": "How does Homeworke support repair negotiations using my findings?",
+          "a": "Each flagged item in your report can be matched with up to three curated service providers through the AI service picker. The resulting estimates give agents and buyers concrete numbers to work with during negotiations, grounded in your professional assessment."
+        },
+        {
+          "q": "Do I get updates on what happens after my inspection?",
+          "a": "Yes. You receive milestone-based updates as repair items progress from estimate through completion. PM on-the-way notifications and milestone payment draws give you clear visibility into how your findings are being addressed."
+        },
+        {
+          "q": "How does this help me get more referrals from agents?",
+          "a": "The relationship engine tracks collaboration patterns between inspectors and agents. When your reports consistently drive smooth repair workflows, you build platform reputation that surfaces you to active offices and agents looking for reliable inspection partners."
+        },
+        {
+          "q": "Is there a cost for inspectors to use Homeworke?",
+          "a": "Homeworke is designed to add value to your existing inspection workflow at no additional cost. Your participation strengthens the ecosystem for agents, buyers, and providers, and the platform rewards that contribution through increased visibility and referral opportunities."
+        }
+      ]
+    },
+    {
+      "route": "/insurance",
+      "hero": {
+        "headline": "Your Policyholders Are Improving Their Homes. Your Coverage Should Keep Pace.",
+        "subheadline": "Homeworke 3.0 quietly notifies you when a policyholder completes a verified home improvement, so you can offer updated coverage that reflects their property's true value. No noise. No spam. Just the signal that matters.",
+        "primaryCta": "Request Early Access",
+        "secondaryCta": "See How It Works",
+        "trustBullets": [
+          {
+            "icon": "shield",
+            "text": "Gated provider identity protects every transaction in the workflow"
+          },
+          {
+            "icon": "milestone",
+            "text": "Milestone-based payment draws confirm work is actually completed"
+          },
+          {
+            "icon": "eye-off",
+            "text": "Minimal, tasteful notifications — only when coverage relevance changes"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "title": "Post-Improvement Coverage Signals, Not Guesswork",
+          "subtitle": "When a homeowner completes a milestone-verified project through Homeworke 3.0, you receive a structured coverage update — including project type, verified completion status, and estimated value impact. No cold calls. No stale data.",
+          "bullets": [
+            {
+              "icon": "check-circle",
+              "text": "Receive post-improvement alerts only after milestone-based payment draws confirm project completion"
+            },
+            {
+              "icon": "home",
+              "text": "Understand exactly what changed — roof, HVAC, kitchen, electrical — with structured project metadata"
+            },
+            {
+              "icon": "trending-up",
+              "text": "Identify coverage gaps before they become claims exposure"
+            }
+          ]
+        },
+        {
+          "title": "Tasteful Notifications That Respect Your Workflow",
+          "subtitle": "Homeworke 3.0 was designed with restraint. You will never be buried in alerts. Our notification engine delivers only high-relevance, low-frequency signals tied to verified property changes — the kind your underwriting team actually wants to see.",
+          "bullets": [
+            {
+              "icon": "mail",
+              "text": "Configurable notification cadence — daily digest, weekly summary, or per-event delivery"
+            },
+            {
+              "icon": "calendar",
+              "text": "Timed to post-completion so you engage policyholders at the right moment"
+            },
+            {
+              "icon": "eye-off",
+              "text": "Zero marketing noise — every notification is tied to a real, verified property event"
+            }
+          ]
+        },
+        {
+          "title": "Milestone-Verified Data You Can Underwrite Against",
+          "subtitle": "Every project on Homeworke 3.0 moves through milestone-based payment draws. Work is verified before funds are released. That same verification layer feeds the data you receive — giving you confidence that reported improvements are real and complete.",
+          "bullets": [
+            {
+              "icon": "milestone",
+              "text": "Payment draws are tied to verified project milestones, not invoices alone"
+            },
+            {
+              "icon": "lock",
+              "text": "Gated provider identity ensures every contractor in the workflow is authenticated"
+            },
+            {
+              "icon": "bar-chart",
+              "text": "Structured completion data supports actuarial review and portfolio-level analysis"
+            }
+          ]
+        },
+        {
+          "title": "A Relationship Engine, Not a Lead Funnel",
+          "subtitle": "Homeworke 3.0 uses a relationship engine that connects homeowners with curated professionals. For insurance carriers, this means the policyholders reaching you through our platform already have a verified improvement history — a cleaner, more trustworthy signal for retention and upsell.",
+          "bullets": [
+            {
+              "icon": "handshake",
+              "text": "Relationship engine pairs homeowners with curated, top-three providers per project"
+            },
+            {
+              "icon": "users",
+              "text": "Policyholder engagement is organic — driven by real project needs, not advertising"
+            },
+            {
+              "icon": "star",
+              "text": "Higher-quality touchpoints lead to stronger retention and renewal conversations"
+            }
+          ]
+        },
+        {
+          "title": "Seamless Integration With Your Existing Systems",
+          "subtitle": "Coverage update signals from Homeworke 3.0 are designed to fit into the tools your team already uses. Whether you route data into a policy management platform, a CRM, or a custom underwriting dashboard, our structured output is built for interoperability.",
+          "bullets": [
+            {
+              "icon": "link",
+              "text": "Structured data output ready for API ingestion into your policy management stack"
+            },
+            {
+              "icon": "layout",
+              "text": "Dashboard-friendly formatting for quick review by underwriting or retention teams"
+            },
+            {
+              "icon": "grid",
+              "text": "Batch or real-time delivery options to match your operational cadence"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "route": "/lenders",
+      "hero": {
+        "headline": "Every Home Project Is a Loan Opportunity. Homeworke Finds Them First.",
+        "subheadline": "Homeworke 3.0 connects you to homeowners at the exact moment they commit to a project — before they search for financing elsewhere. Receive project-triggered notifications, integrate your loan calculator directly into the workflow, and surface refinance opportunities that close.",
+        "primaryCta": "Request Lender Access",
+        "secondaryCta": "See How Notifications Work",
+        "trustBullets": [
+          {
+            "icon": "trending-up",
+            "text": "Project-triggered alerts delivered the moment a homeowner commits to a scope of work"
+          },
+          {
+            "icon": "calculator",
+            "text": "Embed your loan calculator directly into the homeowner decision flow"
+          },
+          {
+            "icon": "eye-off",
+            "text": "Your identity stays gated until the homeowner opts in — building trust from the start"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "title": "Project-Triggered Notifications That Actually Convert",
+          "subtitle": "Homeworke monitors real homeowner activity — not intent signals or lead-list guesses. When a homeowner selects a curated provider and confirms a project scope, you receive a notification with the details that matter: project type, estimated cost, and milestone timeline.",
+          "bullets": [
+            {
+              "icon": "milestone",
+              "text": "Notifications fire at project commitment, not at browsing — so every lead has real intent behind it"
+            },
+            {
+              "icon": "dollar-sign",
+              "text": "Estimated project costs are included so you can prepare relevant loan or refi options in advance"
+            },
+            {
+              "icon": "calendar",
+              "text": "Milestone timelines give you visibility into draw schedules and disbursement windows"
+            }
+          ]
+        },
+        {
+          "title": "Loan Calculator Integration, Built Into the Workflow",
+          "subtitle": "Stop waiting for homeowners to visit your website. Homeworke 3.0 lets you embed your loan calculator directly into the project planning experience, so financing options appear right when homeowners are evaluating costs and choosing providers.",
+          "bullets": [
+            {
+              "icon": "calculator",
+              "text": "Your calculator surfaces alongside real project estimates from curated, vetted providers"
+            },
+            {
+              "icon": "link",
+              "text": "Deep integration means homeowners see monthly payment options without leaving the platform"
+            },
+            {
+              "icon": "cursor",
+              "text": "One-click pre-qualification flow reduces friction and increases completed applications"
+            }
+          ]
+        },
+        {
+          "title": "Refinance and HELOC Opportunities, Identified by Real Activity",
+          "subtitle": "A kitchen renovation, a new roof, a full exterior overhaul — each one signals a homeowner investing in their property. Homeworke surfaces these refi and HELOC opportunities based on confirmed project activity, not demographic assumptions.",
+          "bullets": [
+            {
+              "icon": "home",
+              "text": "Project types are mapped to estimated home value impact, helping you prioritize outreach"
+            },
+            {
+              "icon": "trending-up",
+              "text": "Post-improvement equity signals give you a data-backed reason to reach out at the right time"
+            },
+            {
+              "icon": "handshake",
+              "text": "Homeowners who finance through the platform report higher satisfaction and repeat engagement"
+            }
+          ]
+        },
+        {
+          "title": "Milestone-Based Payment Draws Keep You in the Loop",
+          "subtitle": "Homeworke 3.0 uses milestone-based payment draws to manage the flow of funds between homeowners and providers. As a lending partner, you gain visibility into each disbursement event — giving you confidence that project funds are being deployed on schedule.",
+          "bullets": [
+            {
+              "icon": "milestone",
+              "text": "Each payment draw is tied to a verified project milestone, reducing risk of misallocated funds"
+            },
+            {
+              "icon": "bar-chart",
+              "text": "Real-time draw status reporting gives your underwriting team clear project progress data"
+            },
+            {
+              "icon": "shield",
+              "text": "Structured disbursement protects both lender capital and homeowner investment"
+            }
+          ]
+        },
+        {
+          "title": "Gated Identity Protects Your Brand",
+          "subtitle": "Homeworke never exposes your brand or contact information to a homeowner who has not explicitly opted in. Your identity remains gated until the homeowner requests financing options — ensuring every interaction begins with consent and trust.",
+          "bullets": [
+            {
+              "icon": "lock",
+              "text": "Provider and lender identities are revealed only after homeowner opt-in, never before"
+            },
+            {
+              "icon": "eye-off",
+              "text": "No cold outreach, no unsolicited contact — your reputation stays intact"
+            },
+            {
+              "icon": "check-circle",
+              "text": "Consent-first design aligns with compliance best practices and builds long-term borrower trust"
+            }
+          ]
+        },
+        {
+          "title": "A Relationship Engine, Not a Lead List",
+          "subtitle": "Homeworke 3.0 is built around lasting relationships, not one-time transactions. The platform's relationship engine tracks homeowner project history and engagement over time, so you can nurture borrowers across multiple projects and life events.",
+          "bullets": [
+            {
+              "icon": "refresh",
+              "text": "Returning homeowners with new projects are flagged automatically for follow-up opportunities"
+            },
+            {
+              "icon": "users",
+              "text": "Relationship history gives your loan officers context before every conversation"
+            },
+            {
+              "icon": "star",
+              "text": "Long-term engagement data helps you identify your highest-value borrower relationships over time"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "route": "/offices",
+      "hero": {
+        "headline": "Your Office Database, Finally Working for You",
+        "subheadline": "Homeworke 3.0 gives brokerages and team leads a clear view of every homeowner relationship — from project intent to provider selection to closed-loop attribution. Activate your database, track office-wide activity, and see exactly how your referrals convert.",
+        "primaryCta": "Request Office Demo",
+        "secondaryCta": "See How Attribution Works",
+        "trustBullets": [
+          {
+            "icon": "bar-chart",
+            "text": "Real-time office dashboard with per-agent attribution"
+          },
+          {
+            "icon": "grid",
+            "text": "Seamless splits and referral tracking across teams"
+          },
+          {
+            "icon": "bot",
+            "text": "AI service picker routes homeowners to curated providers"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "title": "Office-Wide Dashboards Built for Clarity",
+          "subtitle": "No more guessing which agents are driving referral value. Homeworke 3.0 surfaces every project touchpoint across your office in a single, permission-aware dashboard — so leadership sees the full picture without chasing spreadsheets.",
+          "bullets": [
+            {
+              "icon": "layout",
+              "text": "Unified view of all active homeowner projects by agent, team, or office"
+            },
+            {
+              "icon": "trending-up",
+              "text": "Track referral-to-completion rates with milestone-based progress indicators"
+            },
+            {
+              "icon": "eye-off",
+              "text": "Gated provider identity keeps recommendations unbiased until homeowner commitment"
+            }
+          ]
+        },
+        {
+          "title": "Closed-Loop Attribution You Can Trust",
+          "subtitle": "Every referral, every provider match, every completed milestone — traced back to the originating agent. Homeworke 3.0 replaces anecdotal credit with verifiable, system-recorded attribution that holds up in any commission or split conversation.",
+          "bullets": [
+            {
+              "icon": "check-circle",
+              "text": "Automatic attribution logging from initial AI match through project completion"
+            },
+            {
+              "icon": "milestone",
+              "text": "Milestone-based payment draws create a transparent paper trail for every project"
+            },
+            {
+              "icon": "handshake",
+              "text": "Relationship engine tracks ongoing pro-homeowner engagement tied to your office"
+            }
+          ]
+        },
+        {
+          "title": "Office Splits and Referral Management, Simplified",
+          "subtitle": "Configure split structures at the office, team, or individual level. When a homeowner engages a curated provider through your agent's referral, the system records it — cleanly, consistently, and without manual reconciliation.",
+          "bullets": [
+            {
+              "icon": "dollar-sign",
+              "text": "Flexible split configurations that mirror your existing office agreements"
+            },
+            {
+              "icon": "calculator",
+              "text": "Automated referral value calculations updated at each project milestone"
+            },
+            {
+              "icon": "list",
+              "text": "Exportable reports for accounting, compliance, and quarterly reviews"
+            }
+          ]
+        },
+        {
+          "title": "Database Activation That Respects the Relationship",
+          "subtitle": "Your CRM holds thousands of past clients. Homeworke 3.0 helps you re-engage them at the right moment — when they are planning a renovation, preparing to list, or simply maintaining their home — without intrusive outreach that erodes trust.",
+          "bullets": [
+            {
+              "icon": "refresh",
+              "text": "Intelligent re-engagement signals based on homeowner project intent"
+            },
+            {
+              "icon": "users",
+              "text": "Agent-specific nurture paths that keep the original relationship front and center"
+            },
+            {
+              "icon": "calendar",
+              "text": "Timely, tasteful notifications — never spam, always relevant"
+            }
+          ]
+        },
+        {
+          "title": "Curated Provider Network with Gated Identity",
+          "subtitle": "Homeworke 3.0 presents homeowners with exactly three vetted providers per project — selected by AI, not advertising spend. Provider identities remain gated until the homeowner is ready to engage, ensuring recommendations stay credible and your office reputation stays protected.",
+          "bullets": [
+            {
+              "icon": "shield",
+              "text": "Curated three-provider shortlists eliminate decision fatigue for homeowners"
+            },
+            {
+              "icon": "lock",
+              "text": "Provider identity revealed only after homeowner opts in — no unsolicited contact"
+            },
+            {
+              "icon": "star",
+              "text": "Ongoing relationship engine scores provider quality based on real project outcomes"
+            }
+          ]
+        },
+        {
+          "title": "Project Manager On-the-Way and Milestone Visibility",
+          "subtitle": "Once a homeowner selects a provider, Homeworke 3.0 assigns a dedicated project manager who keeps the work on track. Your office gets passive visibility into progress milestones — so agents can check in at the right moments without micromanaging.",
+          "bullets": [
+            {
+              "icon": "map-pin",
+              "text": "PM on-the-way notifications keep homeowners informed and agents in the loop"
+            },
+            {
+              "icon": "milestone",
+              "text": "Milestone-based payment draws protect homeowners and build provider accountability"
+            },
+            {
+              "icon": "message-circle",
+              "text": "In-platform communication keeps all project context in one auditable thread"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "route": "/real-estate-pros",
       "hero": {
         "headline": "Your Clients Closed. Now Help Them Keep the Home in Shape.",
