@@ -1,0 +1,34 @@
+{
+  "api": {
+    "route": "/api/demo-request",
+    "fields": [
+      "fullName",
+      "workEmail",
+      "companyName",
+      "jobTitle",
+      "message"
+    ],
+    "responseOkMessage": "Your demo request has been received. A member of our team will be in touch within one business day.",
+    "responseErrorMessage": "We were unable to process your request at this time. Please try again or reach out to us directly at support.",
+    "validation": [
+      "fullName: required, string, min 2 characters, max 100 characters",
+      "workEmail: required, must be a valid email format, reject common free-mail domains (gmail, yahoo, hotmail)",
+      "companyName: required, string, min 1 character, max 120 characters",
+      "jobTitle: required, string, min 2 characters, max 100 characters",
+      "message: optional, string, max 500 characters, sanitize HTML entities",
+      "Rate limit: max 3 submissions per IP per 15-minute window",
+      "Honeypot field: hidden 'website' field must be empty or request is silently discarded",
+      "All string inputs trimmed and stripped of leading/trailing whitespace before validation"
+    ],
+    "storageApproach": "Phase 1 (now): Structured JSON logging to stdout via console.log, fully compatible with Vercel serverless log drains. Each accepted submission is logged as a single JSON object with all fields, a generated requestId (UUIDv4), timestamp (ISO 8601), and source IP. Vercel log drains can forward these entries to Datadog, Logflare, or a similar observability platform for searchability. Phase 2 (future): Introduce a lightweight connector module (e.g., Supabase, PlanetScale, or Airtable) behind an adapter interface so the storage backend can be swapped without changing the route handler. The adapter contract: { save(record): Promise<void> }."
+  },
+  "ui": {
+    "submitLabel": "Request a Demo",
+    "submittingLabel": "Submitting your request...",
+    "successTitle": "Thank you for your interest",
+    "successBody": "Your request has been submitted successfully. Our team will review the details and reach out to you within one business day to schedule a time that works best.",
+    "errorTitle": "Something went wrong",
+    "errorBody": "We could not submit your request. Please check your connection and try again. If the issue persists, contact us directly and we will be happy to help.",
+    "privacyNote": "By submitting this form, you agree to our Privacy Policy. We will only use your information to respond to your request and will never share it with third parties."
+  }
+}

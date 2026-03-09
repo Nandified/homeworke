@@ -143,32 +143,11 @@ export function MarketingFaq(props: { faq: Faq[] }) {
   );
 }
 
+import { DemoForm } from "@/components/demo-form";
+
 export function DemoFormCard(props: { demoForm: DemoForm }) {
-  const { demoForm } = props;
-  return (
-    <Card className="mt-10 p-6">
-      <div className="text-xl font-extrabold tracking-tight">Schedule a demo</div>
-      <div className="mt-2 text-sm text-[var(--hw-muted)]">
-        This is a placeholder form. Next we wire it to email/CRM.
-      </div>
-
-      <form className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-        {demoForm.fields.map((f) => (
-          <label key={f} className="text-sm">
-            <div className="mb-1 font-semibold text-[var(--hw-ink)]">{f}</div>
-            <input
-              className="h-11 w-full rounded-2xl border border-[var(--hw-line)] bg-white px-4 text-sm outline-none focus:border-[rgba(229,57,53,.35)]"
-              placeholder={f}
-            />
-          </label>
-        ))}
-
-        <div className="md:col-span-2">
-          <Button type="submit">{demoForm.submitLabel}</Button>
-        </div>
-      </form>
-    </Card>
-  );
+  void props.demoForm;
+  return <DemoForm />;
 }
 
 export function MarketingPage(props: { content: Record<string, unknown> }) {
