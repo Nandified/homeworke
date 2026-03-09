@@ -1,0 +1,211 @@
+{
+  "eventTypes": [
+    {
+      "name": "work_order_created",
+      "description": "Emitted by the Homeworke 3.0 platform when a new work order is created within the home services and partner relationship engine. This event signals that a homeowner or agent has initiated a service request tied to a property transaction or maintenance need, and that the work order has been persisted with a unique identifier. Downstream consumers can use this event to trigger partner notifications, sync CRM records, schedule follow-ups, or update internal dashboards.",
+      "producer": "Homeworke 3.0 - Home Services and Partner Relationship Engine",
+      "consumerExamples": [
+        "Follow Up Boss: Automatically creates or updates a contact activity note with the work order details so agents can track service requests tied to their clients.",
+        "BoldTrail: Syncs the work order into the BoldTrail CRM pipeline, associating it with the relevant property listing and contact record for agent visibility.",
+        "Homeworke Internal Notifications Service: Dispatches real-time in-app and email notifications to assigned service partners and internal operations staff when a new work order is created.",
+        "Partner Dispatch Engine: Routes the work order to the appropriate vetted service partner based on service category, geographic coverage, and current availability."
+      ]
+    },
+    {
+      "name": "work_order_scheduled",
+      "description": "Emitted by the Homeworke 3.0 partner relationship engine when a work order for a home service has been successfully scheduled with a service partner. This event signals that a specific work order has been assigned a confirmed date, time window, and partner, and is ready for downstream processing such as CRM synchronization, internal notifications, and partner communication workflows.",
+      "producer": "Homeworke 3.0 - Partner Relationship Engine",
+      "consumerExamples": [
+        "Follow Up Boss: Automatically creates or updates a contact activity note with the scheduled work order details so agents can track home service progress for their clients.",
+        "BoldTrail: Syncs the scheduled work order into the BoldTrail CRM timeline for the associated contact, enabling agents to view upcoming service appointments within their pipeline.",
+        "Homeworke Internal Notifications Service: Sends an in-app and email notification to the assigned coordinator and homeowner confirming the scheduled service date and time window.",
+        "Partner Dispatch Module: Triggers a confirmation message to the assigned service partner with work order details, address, and scheduled time window for fulfillment."
+      ]
+    },
+    {
+      "name": "work_order_completed",
+      "description": "Emitted by the Homeworke 3.0 platform when a home services work order has been fully completed by an assigned partner. This event signals that all tasks associated with the work order have been fulfilled, inspections or sign-offs are recorded, and the order is ready for follow-up actions such as client notifications, partner payouts, and CRM updates within the partner relationship engine.",
+      "producer": "Homeworke 3.0 - Work Order Management Service",
+      "consumerExamples": [
+        "Follow Up Boss CRM integration: automatically creates a follow-up task for the assigned agent when a work order is completed, ensuring timely client outreach.",
+        "BoldTrail CRM sync: pushes completed work order details into the BoldTrail contact timeline so agents have full visibility into service history for their clients.",
+        "Homeworke Internal Notifications Service: sends in-app and email notifications to the homeowner, assigned agent, and partner confirming work order completion and next steps.",
+        "Homeworke Partner Relationship Engine: updates the partner scorecard and triggers payout eligibility review based on completed work order data."
+      ]
+    },
+    {
+      "name": "review_requested",
+      "description": "Emitted by Homeworke 3.0 when a homeowner or client is prompted to leave a review for a home service partner after a completed job. This event signals that a review solicitation has been initiated within the partner relationship engine, enabling downstream systems to track review funnel metrics, trigger follow-up workflows, and synchronize review status across integrated platforms.",
+      "producer": "Homeworke 3.0 - Partner Relationship Engine",
+      "consumerExamples": [
+        "Follow Up Boss: Creates a note on the contact record indicating a review was requested for the associated home service partner, enabling agents to track client engagement with vendor recommendations.",
+        "BoldTrail: Updates the transaction timeline with the review request event so that the referring agent has visibility into post-close service activity.",
+        "Internal Notifications Service: Sends an in-app notification to the home service partner alerting them that a review request has been dispatched to the client.",
+        "Homeworke Analytics Pipeline: Ingests the event to calculate review request-to-completion conversion rates per partner and service category."
+      ]
+    },
+    {
+      "name": "review_submitted",
+      "description": "Fired when a homeowner or client submits a review for a home service partner (e.g., contractor, inspector, lender) through the Homeworke 3.0 platform. This event captures the review details, the associated service engagement, and the partner relationship context. It is used to trigger downstream workflows such as CRM updates, internal notification routing, and partner reputation scoring.",
+      "producer": "Homeworke 3.0 - Partner Relationship Engine",
+      "consumerExamples": [
+        "Follow Up Boss: Automatically log the review activity on the client contact record and trigger a follow-up task for the assigned agent to acknowledge or act on the feedback.",
+        "BoldTrail: Update the partner profile within the BoldTrail CRM to reflect the new review score and flag partners whose average rating drops below a configurable threshold.",
+        "Internal Notifications Service: Send a real-time notification to the Homeworke operations team via Slack or email when a review is submitted, including sentiment classification and partner details.",
+        "Partner Reputation Scoring Engine: Recalculate the partner trust score based on the newly submitted review, adjusting ranking and visibility within the Homeworke partner directory."
+      ]
+    },
+    {
+      "name": "pm_assigned",
+      "description": "Emitted by the Homeworke 3.0 partner relationship engine when a Property Manager (PM) is assigned to a home services account or project. This event signals that a specific PM has taken ownership of a partner relationship, enabling downstream systems to trigger onboarding workflows, sync contact records, and route notifications. The assignment may originate from manual selection, round-robin distribution, or automated matching rules within the platform.",
+      "producer": "Homeworke 3.0 - Partner Relationship Engine",
+      "consumerExamples": [
+        "Follow Up Boss: Creates or updates a contact record for the assigned PM and links it to the corresponding home services account, ensuring CRM data stays in sync with Homeworke assignments.",
+        "BoldTrail: Triggers an automated drip campaign or task sequence for the newly assigned PM to initiate partner onboarding and engagement workflows.",
+        "Homeworke Internal Notifications Service: Sends an in-app and email notification to the assigned PM and relevant team leads confirming the new assignment and providing a link to the account dashboard.",
+        "Homeworke Analytics Pipeline: Ingests the event to track PM assignment volume, average time-to-assignment, and workload distribution metrics across the home services partner network."
+      ]
+    },
+    {
+      "name": "pm_on_the_way",
+      "description": "Fired when a property manager or service professional has confirmed departure and is actively en route to a scheduled home service appointment. This event signals downstream systems to update appointment status, trigger client-facing notifications, and log the transition in the partner relationship engine. It is scoped to the Homeworke 3.0 platform and carries the minimal context needed for routing, timing, and partner attribution without exposing sensitive personal information.",
+      "producer": "homeworke-dispatch-service",
+      "consumerExamples": [
+        "Follow Up Boss CRM integration: updates the linked contact timeline with an 'en route' activity note and adjusts the appointment status so agents have real-time visibility into service progress.",
+        "BoldTrail workflow automation: triggers a pre-configured drip sequence or task reminder for the assigned agent when the property manager departs, ensuring timely follow-up actions are queued.",
+        "Homeworke internal notification service: sends a push notification and in-app banner to the homeowner confirming that the assigned professional is on the way, including estimated arrival window.",
+        "Partner relationship engine (PRE) ledger: records the departure event against the partner profile for SLA tracking, on-time performance scoring, and historical reporting within Homeworke 3.0 analytics dashboards."
+      ]
+    },
+    {
+      "name": "bid_requested",
+      "description": "Emitted when a homeowner submits a bid request for a home service through the Homeworke 3.0 platform. This event signals that a homeowner has selected one or more service partners and is requesting pricing or availability for a specific job. It carries the essential identifiers for the request, the homeowner, the targeted partner, the service category, and relevant timestamps. Downstream consumers use this event to trigger partner notifications, CRM synchronization, and internal analytics tracking within the partner relationship engine.",
+      "producer": "Homeworke 3.0 - Home Services Partner Relationship Engine",
+      "consumerExamples": [
+        "Follow Up Boss CRM integration: creates or updates a contact record and attaches the bid request as a timeline activity so agents can track homeowner engagement with service partners.",
+        "BoldTrail pipeline sync: maps the bid request to an active transaction and tags the associated partner for co-marketing follow-up workflows.",
+        "Homeworke Internal Notification Service: dispatches real-time in-app and email notifications to the matched service partner alerting them of the new bid request and expected response SLA.",
+        "Homeworke Analytics Pipeline: ingests the event for reporting on bid request volume, partner response rates, and service category demand across markets."
+      ]
+    },
+    {
+      "name": "bid_submitted",
+      "description": "Emitted when a home service partner submits a bid on a service request within the Homeworke 3.0 platform. This event signals that a partner has proposed pricing, scope, and availability for a specific home service job (e.g., plumbing, electrical, landscaping). Downstream consumers can use this event to trigger CRM updates, internal notifications, and partner relationship scoring workflows.",
+      "producer": "Homeworke 3.0 - Partner Bidding Engine",
+      "consumerExamples": [
+        "Follow Up Boss - Creates or updates a contact activity record with bid details so agents can track partner engagement and follow up with the homeowner.",
+        "BoldTrail - Syncs the bid event into the partner relationship timeline, enabling agents to monitor bid status and coordinate next steps within their CRM workflow.",
+        "Homeworke 3.0 Internal Notifications Service - Sends real-time in-app and email notifications to the homeowner and assigned agent informing them that a new bid has been received.",
+        "Homeworke 3.0 Partner Scoring Engine - Ingests bid metadata to update the partner reliability and responsiveness score used in future bid ranking and partner matching."
+      ]
+    },
+    {
+      "name": "draw_released",
+      "description": "Emitted by Homeworke 3.0 when a scheduled draw (commission draw or partner incentive payout) is officially released to a service provider or partner agent. This event signals that funds have been approved and disbursed through the partner relationship engine, enabling downstream systems to update financial records, trigger follow-up workflows, and send notifications to the relevant parties involved in the home services transaction.",
+      "producer": "Homeworke 3.0 - Partner Relationship Engine",
+      "consumerExamples": [
+        "Follow Up Boss: Automatically creates a task or note on the associated contact record indicating that a draw has been released, prompting the assigned agent to follow up with the partner or service provider.",
+        "BoldTrail: Updates the transaction timeline and partner compensation dashboard to reflect the released draw amount and status.",
+        "Internal Notifications Service: Sends an in-app and email notification to the operations team and the receiving partner confirming the draw release details and expected settlement date.",
+        "Homeworke Accounting Ledger: Records the draw release as a finalized line item in the platform ledger for reconciliation and end-of-period reporting."
+      ]
+    },
+    {
+      "name": "partner_connected",
+      "description": "Emitted when a home services partner (e.g., lender, inspector, contractor, title company) is successfully connected to an agent or team within the Homeworke 3.0 partner relationship engine. This event signals that the partner link has been verified and activated, enabling downstream workflows such as referral tracking, co-marketing, and transaction coordination.",
+      "producer": "Homeworke 3.0 Partner Relationship Engine",
+      "consumerExamples": [
+        "Follow Up Boss CRM integration: automatically creates or updates a partner contact record and tags the associated agent for follow-up task generation.",
+        "BoldTrail platform sync: pushes the new partner connection into the agent's BoldTrail account to populate co-branded marketing materials and shared transaction pipelines.",
+        "Internal notifications service: dispatches an in-app and email notification to the agent and their team lead confirming the partner connection and next steps.",
+        "Homeworke 3.0 analytics pipeline: logs the partner_connected event for reporting on partner network growth, connection velocity, and referral conversion metrics."
+      ]
+    },
+    {
+      "name": "partner_sharing_changed",
+      "description": "Emitted by the Homeworke 3.0 Partner Relationship Engine whenever a sharing configuration between partners is created, updated, or revoked. This event captures changes to data-sharing agreements between home service providers and their affiliated partners, including modifications to sharing scope, permission levels, and active status. It enables downstream systems to synchronize partner access controls, trigger compliance workflows, and maintain an accurate audit trail of all sharing relationship changes across the platform.",
+      "producer": "Homeworke 3.0 - Partner Relationship Engine",
+      "consumerExamples": [
+        "Follow Up Boss CRM integration: Syncs updated partner sharing permissions so that agents and service providers see the correct contact and lead visibility based on the latest sharing agreement.",
+        "BoldTrail platform connector: Receives sharing change events to update partner-linked property and referral pipelines, ensuring downstream lead routing reflects current sharing rules.",
+        "Internal Notifications Service: Sends in-app and email alerts to account administrators when a partner sharing configuration is created, modified, or revoked, supporting compliance and operational awareness.",
+        "Homeworke Audit and Compliance Logger: Persists every partner sharing change as an immutable audit record for regulatory reporting and internal governance reviews."
+      ]
+    }
+  ],
+  "webhook": {
+    "ingestRoute": "/api/events/ingest",
+    "authHeader": "X-Homeworke-Secret",
+    "verifyRules": [
+      "Validate the X-Homeworke-Secret header against the HOMEWORKE_WEBHOOK_SECRET environment variable; reject with 401 if missing or mismatched.",
+      "Ensure the request method is POST and the Content-Type is application/json; reject with 405 or 415 respectively.",
+      "Parse the JSON body and confirm required fields (event_type, event_id, timestamp, payload) are present; reject with 400 if any are missing.",
+      "Verify the timestamp is within a 5-minute tolerance window of the server clock to prevent replay attacks; reject with 403 if outside the window.",
+      "Enforce a maximum request body size of 256 KB to stay within Vercel serverless limits; reject with 413 if exceeded.",
+      "Return 200 with a JSON body containing accepted: true and the event_id only after all checks pass."
+    ],
+    "idempotencyRules": [
+      "Each event must include a globally unique event_id (UUIDv4); the server records every processed event_id in the storage layer.",
+      "Before processing, check the storage layer for the incoming event_id; if it already exists, skip processing and return 200 with already_processed: true to ensure safe retries.",
+      "Idempotency records should be retained for at least 72 hours to cover any delayed or retried deliveries from the source system.",
+      "Clients may safely retry the same webhook delivery without side effects as long as the event_id remains unchanged.",
+      "On Vercel serverless, use an external store (e.g., Redis or a database) rather than in-memory state, since function instances are ephemeral and do not share memory."
+    ],
+    "storageNow": "Incoming events are written to a durable queue or database table immediately upon acceptance, ensuring no data loss even if the serverless function cold-starts or times out on subsequent processing steps.",
+    "storageNext": "After initial persistence, a background worker or scheduled function picks up queued events for enrichment, aggregation, and forwarding to downstream services, keeping the ingest endpoint response time minimal and within Vercel execution limits."
+  },
+  "integrations": [
+    {
+      "key": "follow_up_boss",
+      "name": "Follow Up Boss",
+      "audience": "Homeworke CRM users leveraging Follow Up Boss for lead and contact management",
+      "routePrefix": "/integrations/follow-up-boss",
+      "requiredEnv": [
+        "FOLLOW_UP_BOSS_API_KEY",
+        "FOLLOW_UP_BOSS_BASE_URL",
+        "FOLLOW_UP_BOSS_WEBHOOK_SECRET"
+      ],
+      "supportedEvents": [
+        "work_order_created",
+        "work_order_completed",
+        "review_requested",
+        "review_submitted",
+        "pm_assigned",
+        "bid_submitted"
+      ],
+      "notes": [
+        "Follow Up Boss integration serves as a placeholder for syncing Homeworke work orders and reviews with Follow Up Boss contacts and deals.",
+        "Required environment variables must be configured before activating this integration in production.",
+        "Supported events will trigger outbound webhooks or API calls to Follow Up Boss when they occur within Homeworke.",
+        "The routePrefix defines the namespace under which all Follow Up Boss-related API endpoints will be registered.",
+        "This integration is currently a placeholder and does not yet implement live data synchronization."
+      ]
+    },
+    {
+      "key": "boldtrail",
+      "name": "BoldTrail",
+      "audience": "Homeworke CRM users leveraging BoldTrail for real estate transaction and pipeline management",
+      "routePrefix": "/integrations/boldtrail",
+      "requiredEnv": [
+        "BOLDTRAIL_API_KEY",
+        "BOLDTRAIL_CLIENT_SECRET",
+        "BOLDTRAIL_BASE_URL"
+      ],
+      "supportedEvents": [
+        "work_order_created",
+        "work_order_scheduled",
+        "work_order_completed",
+        "pm_assigned",
+        "pm_on_the_way",
+        "draw_released"
+      ],
+      "notes": [
+        "BoldTrail integration serves as a placeholder for syncing Homeworke property management events with BoldTrail transaction pipelines.",
+        "Required environment variables must be set and validated prior to enabling this integration in any environment.",
+        "Supported events define which Homeworke actions will propagate data to BoldTrail upon occurrence.",
+        "The routePrefix establishes the URL namespace for all future BoldTrail-specific endpoints within the Homeworke platform.",
+        "This integration is currently a placeholder and does not yet implement live data synchronization."
+      ]
+    }
+  ]
+}

@@ -7,7 +7,8 @@
     "healthcheck:anthropic": "node scripts/anthropic_healthcheck.mjs",
     "models:anthropic": "node scripts/anthropic_models.mjs",
     "generate:moodboard:opus": "node scripts/generate_moodboard_opus.mjs",
-    "generate:marketing:opus": "node scripts/generate_marketing_pages_opus.mjs"
+    "generate:marketing:opus": "node scripts/generate_marketing_pages_opus.mjs",
+    "generate:events:opus": "node scripts/generate_events_integrations_opus.mjs"
   },
   "dependencies": {
     "dotenv": "^16.4.5"
