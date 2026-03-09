@@ -1,0 +1,221 @@
+{
+  "route": "/marketplace",
+  "pageTitle": "Homeworke Marketplace — Find Trusted Home Service Providers",
+  "search": {
+    "label": "What do you need help with?",
+    "placeholder": "Describe your project — e.g., bathroom remodel, roof repair, kitchen painting...",
+    "helper": "Our matching engine reviews provider history, ratings, and availability to surface the best fits for your project.",
+    "chips": [
+      "Kitchen Remodel",
+      "Roof Repair",
+      "Bathroom Renovation",
+      "Interior Painting",
+      "Plumbing",
+      "Electrical Work",
+      "Landscaping",
+      "HVAC Service"
+    ],
+    "disclaimer": "Suggestions are generated to help you explore categories. Provider selection and final matching are based on verified credentials and project fit."
+  },
+  "curated": {
+    "title": "Recommended for You",
+    "subtitle": "Hand-selected providers based on your project details, each vetted for quality, reliability, and customer satisfaction.",
+    "cards": [
+      {
+        "badge": "Top Rated",
+        "displayName": "Licensed Kitchen Specialist",
+        "identityGated": true,
+        "rating": 4.9,
+        "reviews": 312,
+        "jobs": 587,
+        "highlights": [
+          "Average project completed 3 days ahead of schedule",
+          "98% client satisfaction across all completed jobs",
+          "Fully licensed and insured in your state"
+        ],
+        "cta": "Request Quote"
+      },
+      {
+        "badge": "Highly Reviewed",
+        "displayName": "Certified Roofing Professional",
+        "identityGated": true,
+        "rating": 4.8,
+        "reviews": 248,
+        "jobs": 431,
+        "highlights": [
+          "Specialized in residential roof repair and replacement",
+          "25-year material and labor warranty offered",
+          "Consistent 5-star reviews for communication"
+        ],
+        "cta": "Request Quote"
+      },
+      {
+        "badge": "Fast Responder",
+        "displayName": "General Renovation Contractor",
+        "identityGated": true,
+        "rating": 4.7,
+        "reviews": 189,
+        "jobs": 364,
+        "highlights": [
+          "Responds to new inquiries within 2 hours on average",
+          "Full-service renovation from design through completion",
+          "Background-checked team with verified trade licenses"
+        ],
+        "cta": "Request Quote"
+      }
+    ]
+  },
+  "viewMore": {
+    "buttonLabel": "View All Providers",
+    "listTitle": "More Qualified Providers",
+    "listSubtitle": "Browse additional vetted professionals sorted by relevance to your project. Ratings, completed jobs, and estimated timelines are shown to help you compare with confidence.",
+    "filters": [
+      {
+        "key": "category",
+        "label": "Service Category"
+      },
+      {
+        "key": "rating",
+        "label": "Minimum Rating"
+      },
+      {
+        "key": "availability",
+        "label": "Availability"
+      },
+      {
+        "key": "price_band",
+        "label": "Price Range"
+      },
+      {
+        "key": "distance",
+        "label": "Distance"
+      },
+      {
+        "key": "jobs_completed",
+        "label": "Jobs Completed"
+      }
+    ],
+    "rows": [
+      {
+        "displayName": "Verified Plumbing Expert",
+        "identityGated": true,
+        "rating": 4.9,
+        "reviews": 276,
+        "jobs": 510,
+        "etaLabel": "Available in 2-3 days",
+        "priceBand": "$$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "Licensed Electrician",
+        "identityGated": true,
+        "rating": 4.8,
+        "reviews": 198,
+        "jobs": 402,
+        "etaLabel": "Available this week",
+        "priceBand": "$$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "Interior Painting Specialist",
+        "identityGated": true,
+        "rating": 4.7,
+        "reviews": 164,
+        "jobs": 339,
+        "etaLabel": "Available in 1-2 days",
+        "priceBand": "$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "Landscape Design Professional",
+        "identityGated": true,
+        "rating": 4.6,
+        "reviews": 142,
+        "jobs": 287,
+        "etaLabel": "Available next week",
+        "priceBand": "$$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "HVAC Service Technician",
+        "identityGated": true,
+        "rating": 4.8,
+        "reviews": 221,
+        "jobs": 468,
+        "etaLabel": "Available in 1-2 days",
+        "priceBand": "$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "Bathroom Remodel Contractor",
+        "identityGated": true,
+        "rating": 4.7,
+        "reviews": 183,
+        "jobs": 351,
+        "etaLabel": "Available in 3-5 days",
+        "priceBand": "$$$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "Flooring Installation Pro",
+        "identityGated": true,
+        "rating": 4.6,
+        "reviews": 137,
+        "jobs": 298,
+        "etaLabel": "Available this week",
+        "priceBand": "$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "Window and Door Installer",
+        "identityGated": true,
+        "rating": 4.5,
+        "reviews": 119,
+        "jobs": 245,
+        "etaLabel": "Available in 3-5 days",
+        "priceBand": "$$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "Deck and Patio Builder",
+        "identityGated": true,
+        "rating": 4.7,
+        "reviews": 156,
+        "jobs": 312,
+        "etaLabel": "Available next week",
+        "priceBand": "$$$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "Drywall and Finishing Expert",
+        "identityGated": true,
+        "rating": 4.5,
+        "reviews": 108,
+        "jobs": 224,
+        "etaLabel": "Available in 2-3 days",
+        "priceBand": "$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "Fence Installation Specialist",
+        "identityGated": true,
+        "rating": 4.6,
+        "reviews": 131,
+        "jobs": 267,
+        "etaLabel": "Available this week",
+        "priceBand": "$$$",
+        "cta": "Request Quote"
+      },
+      {
+        "displayName": "Siding and Exterior Contractor",
+        "identityGated": true,
+        "rating": 4.7,
+        "reviews": 147,
+        "jobs": 303,
+        "etaLabel": "Available in 3-5 days",
+        "priceBand": "$$$",
+        "cta": "Request Quote"
+      }
+    ]
+  }
+}

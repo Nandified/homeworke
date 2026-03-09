@@ -89,7 +89,9 @@ export function Homepage() {
                     placeholder={homepage.marketplace.placeholder}
                     aria-label="Marketplace input"
                   />
-                  <Button>Get options</Button>
+                  <Link href="/marketplace">
+                    <Button>Get options</Button>
+                  </Link>
                 </div>
 
                 <div className="mt-3 text-sm text-[var(--hw-muted)]">{homepage.marketplace.helper}</div>
