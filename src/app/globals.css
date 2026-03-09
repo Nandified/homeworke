@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --hw-red: #e53935;
+  --hw-ink: #111827;
+  --hw-muted: #6b7280;
+  --hw-line: #e5e7eb;
+  --hw-soft: #f8fafc;
+
+  --background: #ffffff;
+  --foreground: var(--hw-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto,
+    Helvetica, Arial;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+::selection {
+  background: rgba(229, 57, 53, 0.18);
+}
+
+/* subtle AI breath: gentle shimmer for loading states */
+@keyframes hw-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.hw-shimmer {
+  background: linear-gradient(90deg, rgba(17, 24, 39, 0.06), rgba(229, 57, 53, 0.10), rgba(17, 24, 39, 0.06));
+  background-size: 200% 100%;
+  animation: hw-shimmer 1.4s ease-in-out infinite;
+}

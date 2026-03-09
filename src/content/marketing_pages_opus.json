@@ -1,0 +1,491 @@
+{
+  "pages": [
+    {
+      "route": "/homeowners",
+      "hero": {
+        "headline": "Home services, handled with care.",
+        "subheadline": "Homeworke matches you with vetted providers through a trust-first marketplace — so you spend less time searching and more time living. AI-powered recommendations, gated provider identities, and milestone-based payments keep you in control from first click to final walkthrough.",
+        "primaryCta": "Get matched now",
+        "secondaryCta": "See how it works",
+        "trustBullets": [
+          {
+            "icon": "shield",
+            "text": "Every provider is vetted before you see a name or number"
+          },
+          {
+            "icon": "sparkles",
+            "text": "AI service picker finds the right pro in under 60 seconds"
+          },
+          {
+            "icon": "credit-card",
+            "text": "Pay only when milestones are verified — never upfront in full"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "title": "AI-powered service picker",
+          "subtitle": "Describe what you need in plain language. Our recommendation engine analyzes scope, timing, and budget to surface a curated shortlist — three providers by default, each pre-qualified for your specific job.",
+          "bullets": [
+            {
+              "icon": "bot",
+              "text": "Natural-language intake understands your project without forms or phone trees"
+            },
+            {
+              "icon": "list",
+              "text": "Default shortlist of three providers, ranked by fit and availability"
+            },
+            {
+              "icon": "calculator",
+              "text": "Instant ballpark estimates so you know what to expect before you commit"
+            }
+          ]
+        },
+        {
+          "title": "Gated provider identity",
+          "subtitle": "Provider names, contact details, and reviews stay hidden until a match is confirmed. This eliminates spam, protects your inbox, and ensures every introduction is intentional.",
+          "bullets": [
+            {
+              "icon": "eye-off",
+              "text": "Personal details are revealed only after mutual opt-in"
+            },
+            {
+              "icon": "lock",
+              "text": "No cold calls, no unsolicited messages, no data sharing"
+            },
+            {
+              "icon": "handshake",
+              "text": "Every connection is a genuine, two-sided commitment to the job"
+            }
+          ]
+        },
+        {
+          "title": "Live day-of tracking",
+          "subtitle": "When your service appointment arrives, know exactly where things stand. Real-time status updates show you when your provider is en route, on-site, and wrapping up — no more waiting and wondering.",
+          "bullets": [
+            {
+              "icon": "map-pin",
+              "text": "Live GPS tracking shows your provider's ETA in real time"
+            },
+            {
+              "icon": "message-circle",
+              "text": "In-app messaging keeps communication in one secure thread"
+            },
+            {
+              "icon": "clock",
+              "text": "Automatic notifications at each stage: dispatched, arrived, completed"
+            }
+          ]
+        },
+        {
+          "title": "Milestone-based payment draws",
+          "subtitle": "Your money moves only when work is verified. Each project is broken into clear milestones, and funds are released as each phase is inspected and approved — protecting both you and your provider.",
+          "bullets": [
+            {
+              "icon": "milestone",
+              "text": "Projects are divided into defined phases with clear deliverables"
+            },
+            {
+              "icon": "check-circle",
+              "text": "Each draw requires verification before payment is released"
+            },
+            {
+              "icon": "dollar-sign",
+              "text": "Escrow-style protection keeps funds secure until work is confirmed"
+            }
+          ]
+        },
+        {
+          "title": "Your home, one dashboard",
+          "subtitle": "Track every project, payment, and provider relationship from a single view. Past invoices, upcoming appointments, and maintenance reminders live in one place so nothing falls through the cracks.",
+          "bullets": [
+            {
+              "icon": "layout",
+              "text": "Unified dashboard for active, scheduled, and completed projects"
+            },
+            {
+              "icon": "calendar",
+              "text": "Maintenance reminders and recurring service scheduling built in"
+            },
+            {
+              "icon": "trending-up",
+              "text": "Spending insights help you budget for future home improvements"
+            }
+          ]
+        },
+        {
+          "title": "Built on trust, backed by your network",
+          "subtitle": "Homeworke integrates with the real estate professionals you already know. If your agent or property manager recommends a provider through our platform, that referral is tracked, transparent, and accountable.",
+          "bullets": [
+            {
+              "icon": "users",
+              "text": "Referrals from your real estate pro carry verified accountability"
+            },
+            {
+              "icon": "home",
+              "text": "Property-specific history travels with your home, not just your account"
+            },
+            {
+              "icon": "star",
+              "text": "Review and rate every job to strengthen the network for everyone"
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "How does the AI service picker choose my providers?",
+          "a": "You describe your project in your own words. Our recommendation engine evaluates scope, timing, location, and budget to surface a curated shortlist of three pre-qualified providers ranked by fit. You can adjust preferences or request additional matches at any time."
+        },
+        {
+          "q": "What does gated provider identity mean for me?",
+          "a": "Provider names, phone numbers, and reviews remain hidden until both sides confirm a match. This protects your personal information, eliminates unwanted sales calls, and ensures that every introduction is a serious, mutual commitment."
+        },
+        {
+          "q": "How do milestone-based payments work?",
+          "a": "Your project is divided into clearly defined phases. Funds are held in escrow and released only when each milestone is verified as complete. You approve every draw before money moves, so you never pay for work that has not been finished and inspected."
+        },
+        {
+          "q": "Can I track my provider on the day of service?",
+          "a": "Yes. Once your provider is dispatched, you receive real-time GPS updates showing their ETA and current status. You will also get automatic notifications when they are en route, on-site, and when the job is marked complete."
+        },
+        {
+          "q": "Is Homeworke free for homeowners?",
+          "a": "Creating an account and browsing the marketplace is free. Service fees are transparently built into each project quote so there are no hidden charges. You will always see the full cost before confirming a match."
+        },
+        {
+          "q": "What if my real estate agent recommended Homeworke?",
+          "a": "If you were invited by a real estate professional, their referral is tracked within the platform. This adds an extra layer of accountability — your agent's reputation is tied to the quality of the providers they recommend, and you benefit from that trusted relationship."
+        }
+      ]
+    },
+    {
+      "route": "/real-estate-pros",
+      "hero": {
+        "headline": "Your Clients Closed. Now Help Them Keep the Home in Shape.",
+        "subheadline": "Homeworke 3.0 gives real estate professionals a branded relationship engine — stay connected to past clients, earn on every completed home service job, and never lose a referral to a generic search engine again.",
+        "primaryCta": "Apply to the Partner Program",
+        "secondaryCta": "See How It Works",
+        "trustBullets": [
+          {
+            "icon": "handshake",
+            "text": "Admitted Partner Program with transparent payouts"
+          },
+          {
+            "icon": "bar-chart",
+            "text": "Office-level dashboards for every transaction"
+          },
+          {
+            "icon": "shield",
+            "text": "Gated provider vetting protects your reputation"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "title": "Your Own Branded Landing Page",
+          "subtitle": "A permanent home services hub with your name on it. Share it at closing, embed it in your email signature, or text it months later — clients always land back with you.",
+          "bullets": [
+            {
+              "icon": "layout",
+              "text": "Custom pro page with your branding, headshot, and brokerage details"
+            },
+            {
+              "icon": "link",
+              "text": "One shareable link that routes clients into your curated provider network"
+            },
+            {
+              "icon": "mail",
+              "text": "Automated post-close drip so clients return when the next project hits"
+            }
+          ]
+        },
+        {
+          "title": "Invite Clients, Track Every Job",
+          "subtitle": "Add past and current clients in seconds. From the moment they request a service to the final milestone payment, you see it all without lifting a phone.",
+          "bullets": [
+            {
+              "icon": "user-plus",
+              "text": "One-click client invitations via email, text, or QR code"
+            },
+            {
+              "icon": "milestone",
+              "text": "Milestone-based payment draws visible in your dashboard in real time"
+            },
+            {
+              "icon": "clock",
+              "text": "Live day-of tracking — know when the provider is on the way"
+            }
+          ]
+        },
+        {
+          "title": "Office Dashboards Built for Brokerages",
+          "subtitle": "Roll up activity across your entire office. See which agents drive the most engagement, monitor job completion rates, and forecast partner revenue at a glance.",
+          "bullets": [
+            {
+              "icon": "grid",
+              "text": "Multi-agent views with filtering by date, status, and service category"
+            },
+            {
+              "icon": "trending-up",
+              "text": "Revenue and job-volume trends updated weekly"
+            },
+            {
+              "icon": "users",
+              "text": "Per-agent performance cards for coaching and recognition"
+            }
+          ]
+        },
+        {
+          "title": "Admitted Partner Program Payouts",
+          "subtitle": "Earn a share on every completed, milestone-verified job that flows through your network. Payouts are tied to real outcomes, not clicks or impressions.",
+          "bullets": [
+            {
+              "icon": "dollar-sign",
+              "text": "Transparent per-job payout calculated after final milestone approval"
+            },
+            {
+              "icon": "check-circle",
+              "text": "Only completed, client-approved jobs trigger compensation"
+            },
+            {
+              "icon": "calendar",
+              "text": "Monthly payout cycles with detailed reporting by client and service"
+            }
+          ]
+        },
+        {
+          "title": "CRM Integrations That Fit Your Stack",
+          "subtitle": "Homeworke connects to the tools you already use so client data flows both ways — no double entry, no lost contacts, no extra tabs.",
+          "bullets": [
+            {
+              "icon": "refresh",
+              "text": "Two-way sync with major real estate CRMs including Follow Up Boss and kvCORE"
+            },
+            {
+              "icon": "list",
+              "text": "Auto-tag clients by service history, job status, and lifetime value"
+            },
+            {
+              "icon": "lock",
+              "text": "Enterprise-grade encryption on every data transfer"
+            }
+          ]
+        },
+        {
+          "title": "Vetted Providers Protect Your Name",
+          "subtitle": "Every provider on Homeworke passes gated onboarding before they ever see a job. Your clients get curated matches — three by default — so quality stays high and your referral carries weight.",
+          "bullets": [
+            {
+              "icon": "shield",
+              "text": "Background checks, license verification, and insurance validation at onboarding"
+            },
+            {
+              "icon": "star",
+              "text": "Client reviews tied to verified, completed milestones — not anonymous ratings"
+            },
+            {
+              "icon": "eye-off",
+              "text": "Provider identity stays gated until the client confirms a match"
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "What is the Admitted Partner Program?",
+          "a": "It is a revenue-sharing program for licensed real estate professionals. When a client you invited completes a milestone-verified job through Homeworke, you earn a transparent payout. There are no fees to join — compensation is tied entirely to successful outcomes."
+        },
+        {
+          "q": "How do office dashboards work for brokerages?",
+          "a": "A designated broker or team lead gets a roll-up view of every agent under their office. You can filter by agent, date range, service category, and job status. Revenue forecasts and job-volume trends update weekly so you can track ROI without chasing spreadsheets."
+        },
+        {
+          "q": "Which CRMs does Homeworke integrate with?",
+          "a": "At launch, Homeworke supports two-way sync with Follow Up Boss and kvCORE. Additional integrations are on the roadmap. All data transfers use enterprise-grade encryption, and client records auto-tag by service history and job status."
+        },
+        {
+          "q": "How are providers vetted before they reach my clients?",
+          "a": "Every provider passes a gated onboarding process that includes background checks, license verification, and insurance validation. Clients receive a curated shortlist of three matched providers by default, and provider identity remains hidden until the client confirms a match."
+        },
+        {
+          "q": "Do my clients pay anything extra for using my link?",
+          "a": "No. Clients pay the same milestone-based project price whether they arrive through your branded page or directly. Your payout comes from Homeworke, not from an upcharge on the client side."
+        },
+        {
+          "q": "Can I invite clients I closed years ago?",
+          "a": "Absolutely. You can invite any past client via email, text, or QR code at any time. The automated post-close drip keeps your page top of mind, but a manual invite works just as well for re-engaging older contacts."
+        }
+      ],
+      "demoForm": {
+        "fields": [
+          "Full Name",
+          "Brokerage or Team Name",
+          "Work Email",
+          "Number of Agents in Your Office",
+          "Primary CRM You Use Today"
+        ],
+        "submitLabel": "Request a Partner Demo"
+      }
+    },
+    {
+      "route": "/service-providers",
+      "hero": {
+        "headline": "Your next job is already waiting.",
+        "subheadline": "Homeworke 3.0 delivers qualified, ready-to-book homeowners straight to your calendar. No cold calls, no bidding wars — just a steady feed of vetted projects matched to your trade, your area, and your availability.",
+        "primaryCta": "Apply to Join the Network",
+        "secondaryCta": "See How It Works",
+        "trustBullets": [
+          {
+            "icon": "shield",
+            "text": "Gated onboarding — only verified, licensed providers accepted"
+          },
+          {
+            "icon": "calendar",
+            "text": "Calendar-connected scheduling with zero double-bookings"
+          },
+          {
+            "icon": "dollar-sign",
+            "text": "Milestone-based payment draws — get paid as work progresses"
+          }
+        ]
+      },
+      "sections": [
+        {
+          "title": "A live feed built for how you actually work.",
+          "subtitle": "Think DoorDash, but for home services. Qualified jobs appear in real time based on your trade, service radius, and open calendar slots. Accept with one tap — no proposals, no haggling.",
+          "bullets": [
+            {
+              "icon": "list",
+              "text": "Real-time project feed filtered by trade, location, and availability"
+            },
+            {
+              "icon": "cursor",
+              "text": "One-tap accept — skip the proposal grind entirely"
+            },
+            {
+              "icon": "map-pin",
+              "text": "Geo-matched jobs so you spend less time driving, more time earning"
+            }
+          ]
+        },
+        {
+          "title": "Gated onboarding that protects your reputation.",
+          "subtitle": "Every provider on Homeworke passes a structured vetting process. That barrier to entry means less competition from unqualified operators and more trust from homeowners before you ever pick up the phone.",
+          "bullets": [
+            {
+              "icon": "lock",
+              "text": "License, insurance, and background verification at sign-up"
+            },
+            {
+              "icon": "eye-off",
+              "text": "Your identity stays gated until a homeowner commits to a match"
+            },
+            {
+              "icon": "star",
+              "text": "Verified badge signals quality to every prospective client"
+            }
+          ]
+        },
+        {
+          "title": "Calendar connect keeps your schedule airtight.",
+          "subtitle": "Sync your existing calendar — Google, Outlook, or iCal — and Homeworke will only surface jobs that fit your real availability. When a homeowner books, the appointment lands directly on your schedule.",
+          "bullets": [
+            {
+              "icon": "calendar",
+              "text": "Two-way sync with Google Calendar, Outlook, and iCal"
+            },
+            {
+              "icon": "clock",
+              "text": "Automatic blackout windows for travel time between jobs"
+            },
+            {
+              "icon": "refresh",
+              "text": "Real-time availability updates so you never miss a match"
+            }
+          ]
+        },
+        {
+          "title": "Milestone payments, not 30-day invoices.",
+          "subtitle": "Homeworke structures every project around milestone-based payment draws. Complete a phase, confirm it in the app, and funds move. No chasing checks, no net-60 headaches.",
+          "bullets": [
+            {
+              "icon": "milestone",
+              "text": "Predefined milestones agreed upon before work begins"
+            },
+            {
+              "icon": "credit-card",
+              "text": "Funds released automatically when milestones are confirmed"
+            },
+            {
+              "icon": "check-circle",
+              "text": "Built-in documentation protects you if disputes arise"
+            }
+          ]
+        },
+        {
+          "title": "Live day-of tracking builds homeowner confidence.",
+          "subtitle": "When you are en route, homeowners see real-time status updates — similar to tracking a rideshare. Fewer anxious calls, fewer no-show misunderstandings, and a more professional first impression.",
+          "bullets": [
+            {
+              "icon": "trending-up",
+              "text": "Live ETA and on-the-way notifications sent to the homeowner"
+            },
+            {
+              "icon": "message-circle",
+              "text": "In-app messaging keeps communication in one place"
+            },
+            {
+              "icon": "handshake",
+              "text": "Professional arrival experience that earns repeat business"
+            }
+          ]
+        },
+        {
+          "title": "Grow through the network, not just one job at a time.",
+          "subtitle": "Real estate professionals on Homeworke refer their clients directly to the marketplace. Deliver great work and you become the go-to provider for an entire office — unlocking a repeatable pipeline without a single ad dollar spent.",
+          "bullets": [
+            {
+              "icon": "users",
+              "text": "Visibility to real estate pros who refer homeowners at scale"
+            },
+            {
+              "icon": "bar-chart",
+              "text": "Performance metrics that help top providers surface first"
+            },
+            {
+              "icon": "user-plus",
+              "text": "Repeat-client matching rewards consistency and quality"
+            }
+          ]
+        }
+      ],
+      "faq": [
+        {
+          "q": "What does the gated onboarding process involve?",
+          "a": "You will submit your trade license, proof of insurance, and consent to a background check. Our team reviews each application manually. Most providers receive a decision within 48 hours. The bar is intentional — it keeps the marketplace competitive and trustworthy for everyone."
+        },
+        {
+          "q": "How does the job feed decide which projects I see?",
+          "a": "The feed filters by your registered trade specialties, your service radius, and your real-time calendar availability. You will only see projects you are qualified for and can actually schedule. No noise, no irrelevant leads."
+        },
+        {
+          "q": "When and how do I get paid?",
+          "a": "Payments are structured around milestones defined before the project starts. When you complete a milestone and it is confirmed in the app, funds are released to your connected bank account. There are no platform-imposed net-30 or net-60 delays."
+        },
+        {
+          "q": "Is there a fee to join or a per-lead charge?",
+          "a": "Homeworke does not charge providers a subscription fee or a per-lead fee. The platform operates on a transaction-based model tied to completed milestones. You only pay when you earn."
+        },
+        {
+          "q": "How does calendar sync work with my existing tools?",
+          "a": "Connect your Google Calendar, Outlook, or iCal account during setup. Homeworke reads your existing events to determine open slots and writes new bookings back to your calendar automatically. The sync is two-way and updates in real time."
+        },
+        {
+          "q": "What happens if a homeowner disputes a milestone?",
+          "a": "Every milestone includes built-in documentation — photos, timestamps, and confirmation prompts. If a dispute arises, our resolution team reviews the evidence on file. The structured process protects providers who do the work and document it properly."
+        }
+      ]
+    }
+  ]
+}

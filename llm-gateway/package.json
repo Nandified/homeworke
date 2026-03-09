@@ -1,0 +1,15 @@
+{
+  "name": "llm-gateway",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "healthcheck:anthropic": "node scripts/anthropic_healthcheck.mjs",
+    "models:anthropic": "node scripts/anthropic_models.mjs",
+    "generate:moodboard:opus": "node scripts/generate_moodboard_opus.mjs",
+    "generate:marketing:opus": "node scripts/generate_marketing_pages_opus.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
