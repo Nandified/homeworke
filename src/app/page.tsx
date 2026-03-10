@@ -260,9 +260,9 @@ export default function Page() {
                           pattern="[0-9]{5}"
                           placeholder="60616"
                           aria-label="ZIP code"
-                          className="h-auto w-[84px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-7 text-[var(--hw-ink)] outline-none focus:ring-0 selection:bg-[rgba(229,57,53,.18)]"
+                          className="h-auto w-[96px] border-0 bg-transparent p-0 pl-[18px] text-[16px] font-semibold leading-7 text-[var(--hw-ink)] outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none selection:bg-[rgba(229,57,53,.18)]"
                         />
-                        <div className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                        <div className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
                           <MapPin className="h-3.5 w-3.5 text-[rgba(229,57,53,.85)]" aria-hidden />
                           Zipcode
                         </div>
