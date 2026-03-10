@@ -253,10 +253,6 @@ export default function Page() {
                         <div className="h-[52px] w-px bg-[rgba(107,114,128,.28)]" />
                       </div>
                       <div className="hidden sm:flex flex-col justify-center pr-5">
-                        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                          <span aria-hidden className="inline-block h-3 w-3 rounded bg-[rgba(229,57,53,.10)]" />
-                          Zipcode
-                        </div>
                         <Input
                           value={zip}
                           onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
@@ -264,8 +260,9 @@ export default function Page() {
                           pattern="[0-9]{5}"
                           placeholder="60616"
                           aria-label="ZIP code"
-                          className="mt-1 h-auto w-[84px] border-0 bg-transparent p-0 text-[16px] font-semibold text-[var(--hw-ink)] outline-none focus:ring-0"
+                          className="h-auto w-[84px] border-0 bg-transparent p-0 text-[16px] font-semibold text-[var(--hw-ink)] outline-none focus:ring-0 selection:bg-[rgba(229,57,53,.18)]"
                         />
+                        <div className="mt-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Zipcode</div>
                       </div>
                     </div>
                   </div>

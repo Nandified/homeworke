@@ -60,7 +60,7 @@ export function Input({ className, ...props }: InputProps) {
     <input
       {...props}
       className={cn(
-        "h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm outline-none transition-all duration-150 placeholder:text-[var(--hw-muted)] hover:border-[color-mix(in_srgb,var(--hw-line)_60%,var(--hw-ink))] focus:border-[rgba(229,57,53,.5)] focus:ring-2 focus:ring-[rgba(229,57,53,.12)] focus:shadow-[0_0_0_4px_rgba(229,57,53,.06)]",
+        "h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm outline-none transition-all duration-150 placeholder:text-[var(--hw-muted)] hover:border-[color-mix(in_srgb,var(--hw-line)_60%,var(--hw-ink))] focus:border-[rgba(229,57,53,.5)] focus:ring-2 focus:ring-[rgba(229,57,53,.12)] focus:shadow-[0_0_0_4px_rgba(229,57,53,.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(229,57,53,.12)]",
         className
       )}
     />
