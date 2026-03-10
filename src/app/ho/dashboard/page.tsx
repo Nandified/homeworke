@@ -85,26 +85,26 @@ export default function Page() {
           <StatTile label="Partner" value={session?.partner?.partnerName || "—"} note="Shown only when attached." />
         </div>
 
-        {latest ? (
+        {workOrders && workOrders.length ? (
           <Card className="p-6 md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="text-sm font-semibold">Latest work order</div>
-              <Pill>Status: {latest.status}</Pill>
+              <div className="text-sm font-semibold">Your work orders</div>
+              <Pill>{workOrders.length} total</Pill>
             </div>
-            <div className="mt-3 text-sm leading-7 text-[var(--hw-muted)]">
-              <div>
-                <span className="font-semibold text-[var(--hw-ink)]">Service:</span> {latest.serviceCategory}
-              </div>
-              {latest.propertyAddress ? (
-                <div>
-                  <span className="font-semibold text-[var(--hw-ink)]">Address:</span> {latest.propertyAddress}
-                </div>
-              ) : null}
-              {latest.preferredDate ? (
-                <div>
-                  <span className="font-semibold text-[var(--hw-ink)]">Preferred:</span> {latest.preferredDate} ({latest.preferredWindow || ""})
-                </div>
-              ) : null}
+            <div className="mt-4 grid gap-3">
+              {workOrders.slice(0, 5).map((w) => (
+                <Link key={w.id} href={`/ho/work-orders/${w.id}`} className="no-underline">
+                  <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 hover:bg-[var(--hw-soft)]">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{w.serviceCategory}</div>
+                      <Pill>Status: {w.status}</Pill>
+                    </div>
+                    {w.propertyAddress ? (
+                      <div className="mt-1 text-sm text-[var(--hw-muted)]">{w.propertyAddress}</div>
+                    ) : null}
+                  </div>
+                </Link>
+              ))}
             </div>
             <div className="mt-6 flex flex-wrap gap-2">
               <Link href="/marketplace/intake">
