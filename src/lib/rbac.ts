@@ -26,6 +26,46 @@ export async function requireCmsUser() {
   return user;
 }
 
+export async function requireOfficeMember(input?: { officeSlug?: string; officeId?: string }) {
+  if (!dbEnabled()) redirect("/?admin=db-required");
+  const user = await getCurrentUser();
+  if (!user) redirect("/?admin=forbidden");
+  if (user.role === "ADMIN") return user;
+
+  const office = input?.officeId
+    ? await db().office.findUnique({ where: { id: input.officeId } })
+    : input?.officeSlug
+      ? await db().office.findUnique({ where: { slug: input.officeSlug } })
+      : null;
+
+  if (!office) redirect("/?office=missing");
+
+  const membership = await db().officeMembership.findUnique({ where: { officeId_userId: { officeId: office.id, userId: user.id } } });
+  if (!membership) redirect("/?office=forbidden");
+
+  return user;
+}
+
+export async function requireOfficeAdmin(input?: { officeSlug?: string; officeId?: string }) {
+  if (!dbEnabled()) redirect("/?admin=db-required");
+  const user = await getCurrentUser();
+  if (!user) redirect("/?admin=forbidden");
+  if (user.role === "ADMIN") return user;
+
+  const office = input?.officeId
+    ? await db().office.findUnique({ where: { id: input.officeId } })
+    : input?.officeSlug
+      ? await db().office.findUnique({ where: { slug: input.officeSlug } })
+      : null;
+
+  if (!office) redirect("/?office=missing");
+
+  const membership = await db().officeMembership.findUnique({ where: { officeId_userId: { officeId: office.id, userId: user.id } } });
+  if (!membership || membership.role !== "ADMIN") redirect("/?office=forbidden");
+
+  return user;
+}
+
 export async function requireServiceEditorOrAdmin(serviceId: string) {
   if (!dbEnabled()) redirect("/?admin=db-required");
   const user = await getCurrentUser();

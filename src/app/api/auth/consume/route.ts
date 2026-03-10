@@ -30,7 +30,10 @@ export async function GET(req: Request) {
     await db().magicLinkToken.update({ where: { token }, data: { consumedAt: new Date() } });
   }
 
-  const res = NextResponse.redirect(new URL("/ho/dashboard", req.url));
+  const next = url.searchParams.get("next");
+  const redirectTo = next && next.startsWith("/") ? next : "/ho/dashboard";
+
+  const res = NextResponse.redirect(new URL(redirectTo, req.url));
   res.cookies.set("hw_session", sessionToken, { httpOnly: true, sameSite: "lax", secure: true, path: "/" });
   return res;
 }

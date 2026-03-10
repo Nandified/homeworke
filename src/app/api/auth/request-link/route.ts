@@ -10,8 +10,9 @@ function json(data: unknown, init?: { status?: number }) {
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as { email?: string };
+    const body = (await req.json()) as { email?: string; next?: string };
     const email = body.email?.trim().toLowerCase();
+    const next = body.next;
     if (!email || !email.includes("@")) return json({ ok: false, error: "invalid_email" }, { status: 400 });
 
     const token = crypto.randomBytes(24).toString("hex");
@@ -25,7 +26,9 @@ export async function POST(req: Request) {
 
     // v1: deliver link via logs
     const url = new URL(req.url);
-    const link = `${url.origin}/api/auth/consume?token=${token}`;
+    const qs = new URLSearchParams({ token });
+    if (next && typeof next === "string" && next.startsWith("/")) qs.set("next", next);
+    const link = `${url.origin}/api/auth/consume?${qs.toString()}`;
     console.log(JSON.stringify({ type: "magic_link", email, link, expiresAt: expiresAt.toISOString() }));
 
     return json({ ok: true });

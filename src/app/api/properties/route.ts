@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { dbEnabled } from "@/lib/db";
+import { dbEnabled, db } from "@/lib/db";
+import { getSessionTokenFromCookie, getSessionUserId } from "@/lib/session";
 import { listProperties } from "@/lib/mock-store";
 
 export const runtime = "nodejs";
@@ -15,12 +16,17 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
 
-  if (!token) return json({ ok: false, error: "missing_token" }, { status: 400 });
-
   if (dbEnabled()) {
-    // Properties are not yet modeled in Prisma for Phase 2.
-    return json({ ok: true, properties: [] });
+    const sessionToken = await getSessionTokenFromCookie();
+    if (!sessionToken) return json({ ok: false, error: "unauthorized" }, { status: 401 });
+    const userId = await getSessionUserId(sessionToken);
+    if (!userId) return json({ ok: false, error: "unauthorized" }, { status: 401 });
+
+    const properties = await db().property.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 50 });
+    return json({ ok: true, properties });
   }
+
+  if (!token) return json({ ok: false, error: "missing_token" }, { status: 400 });
 
   const properties = listProperties(token);
   return json({ ok: true, properties });

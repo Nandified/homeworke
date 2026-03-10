@@ -35,9 +35,17 @@ enum PartnerType {
 }
 
 enum UserRole {
-  USER
+  USER // legacy default (Phase 1)
+  HOMEOWNER
   PARTNER
+  OFFICE_MEMBER
+  OFFICE_ADMIN
   EDITOR
+  ADMIN
+}
+
+enum OfficeRole {
+  MEMBER
   ADMIN
 }
 
@@ -54,6 +62,12 @@ model User {
   sessions   Session[]
   workOrders WorkOrder[]
   auditLogs  AuditLog[]  @relation("AuditLogActorUser")
+
+  officeMemberships OfficeMembership[]
+  acceptedOfficeInvites OfficeInvite[] @relation("OfficeInviteAcceptedBy")
+
+  properties Property[]
+  partnerClients PartnerClient[] @relation("PartnerClientHomeowner")
 
   serviceEdits ServiceEditor[]
   pageEdits    PageEditor[]
@@ -112,8 +126,90 @@ model PartnerProfile {
   attributionEvents AttributionEvent[]
   auditLogs         AuditLog[]         @relation("AuditLogActorPartner")
 
+  partnerClients PartnerClient[]
+
   @@index([proCode])
   @@index([partnerType])
+}
+
+model Office {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships OfficeMembership[]
+  invites     OfficeInvite[]
+
+  @@index([slug])
+}
+
+model OfficeMembership {
+  officeId  String
+  userId    String
+  role      OfficeRole @default(MEMBER)
+  createdAt DateTime   @default(now())
+
+  office Office @relation(fields: [officeId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([officeId, userId])
+  @@index([userId])
+  @@index([officeId, role])
+}
+
+model OfficeInvite {
+  id               String     @id @default(cuid())
+  officeId         String
+  email            String
+  role             OfficeRole @default(MEMBER)
+  token            String     @unique
+  createdAt        DateTime   @default(now())
+  expiresAt        DateTime
+  acceptedAt       DateTime?
+  acceptedByUserId String?
+
+  office          Office @relation(fields: [officeId], references: [id], onDelete: Cascade)
+  acceptedByUser User?  @relation("OfficeInviteAcceptedBy", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([officeId])
+  @@index([email])
+  @@index([token])
+}
+
+model Property {
+  id        String   @id @default(cuid())
+  userId    String?
+  nickname  String?
+  address1  String
+  address2  String?
+  city      String?
+  state     String?
+  zip       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  workOrders WorkOrder[]
+
+  @@index([userId])
+}
+
+model PartnerClient {
+  id               String   @id @default(cuid())
+  partnerId         String
+  homeownerUserId   String
+  canViewWorkOrders Boolean @default(true)
+  canViewProperties Boolean @default(false)
+  createdAt         DateTime @default(now())
+
+  partner  PartnerProfile @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  homeowner User         @relation("PartnerClientHomeowner", fields: [homeownerUserId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, homeownerUserId])
+  @@index([homeownerUserId])
+  @@index([partnerId])
 }
 
 model WorkOrder {
@@ -122,12 +218,13 @@ model WorkOrder {
   sessionToken        String?
   originPartnerId     String?
   shareWithPartnerId  String?
+  propertyId          String?
   serviceCategory     String
   serviceSubcategory  String?
   issueDescription    String?
   urgencyLevel        String?
-  propertyAddress     String?
-  propertyType        String?
+  propertyAddress     String? // legacy (Phase 1)
+  propertyType        String? // legacy (Phase 1)
   preferredDate       DateTime?
   preferredWindow     String?
   status              WorkOrderStatus @default(DRAFT)
@@ -137,12 +234,14 @@ model WorkOrder {
   user             User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   originPartner    PartnerProfile?  @relation("WorkOrderOriginPartner", fields: [originPartnerId], references: [id], onDelete: SetNull)
   shareWithPartner PartnerProfile?  @relation("WorkOrderShareWithPartner", fields: [shareWithPartnerId], references: [id], onDelete: SetNull)
+  property         Property?        @relation(fields: [propertyId], references: [id], onDelete: SetNull)
 
   attributionEvents AttributionEvent[]
 
   @@index([userId])
   @@index([originPartnerId])
   @@index([shareWithPartnerId])
+  @@index([propertyId])
   @@index([status])
 }
 
