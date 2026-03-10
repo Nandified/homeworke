@@ -17,7 +17,30 @@ export function generateStaticParams() {
 
 export default async function ServiceDetailPage({ params }: { params: { slug: string } }) {
   const service = await getPublishedServiceBySlug(params.slug);
-  if (!service) return notFound();
+  if (!service) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
+        <SiteHeader />
+        <main>
+          <Container className="py-12">
+            <div className="max-w-2xl">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Service</div>
+              <h1 className="mt-3 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)]">Service not found</h1>
+              <p className="mt-4 text-pretty text-base leading-7 text-[var(--hw-muted)]">
+                We couldn’t find that service. Browse our available services below.
+              </p>
+              <div className="mt-8">
+                <Link href="/services">
+                  <Button>Browse services</Button>
+                </Link>
+              </div>
+            </div>
+          </Container>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
 
   const Icon = iconFor(service.icon);
 
