@@ -8,6 +8,7 @@ import { Play, Phone, Mail, Link as LinkIcon } from "lucide-react";
 
 import { Button, Card, Chip, Container, Pill, StatTile } from "@/components/ui";
 import { PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
+import { resolvePartner, partnerIdFor } from "@/lib/partners";
 import spec from "@/../spec/pro_landing_polish_opus.json";
 
 type ProProfile = {
@@ -32,50 +33,9 @@ type ProProfile = {
   }>;
 };
 
-function resolvePro(code: string): ProProfile | null {
-  const c = code.toLowerCase();
-  if (c === "frj" || c === "frjgroup" || c === "thefrjgroup") {
-    return {
-      pro_code: "frj",
-      display_name: "Fernando Rocha Jr.",
-      headshot_url: null,
-      brokerage_name: "The FRJ Group @ RE/MAX",
-      license_number: "(placeholder)",
-      license_state: "IL",
-      phone: "(placeholder)",
-      email: "Fernando@TheFRJgroup.com",
-      website_url: "https://thefrjgroup.com",
-      bio:
-        "I help clients buy and sell with a focus on clarity, speed, and protecting the transaction. Homeworke is how we extend that value after closing with vetted home services and clear project tracking.",
-      intro_video_url: null,
-      socials: {
-        linkedin_url: "https://www.linkedin.com",
-        instagram_url: "https://www.instagram.com",
-      },
-    };
-  }
-  if (c === "demo") {
-    return {
-      pro_code: "demo",
-      display_name: "Partner Demo",
-      headshot_url: null,
-      brokerage_name: "Demo Office",
-      license_number: "(placeholder)",
-      license_state: "IL",
-      phone: "(placeholder)",
-      email: "demo@example.com",
-      website_url: "https://homeworke.com",
-      bio: "Short bio placeholder. This will be agent-authored and emoji-free.",
-      intro_video_url: null,
-      socials: { linkedin_url: "https://www.linkedin.com" },
-    };
-  }
-  return null;
-}
-
 function toPartnerContext(pro: ProProfile): PartnerContext {
   return {
-    partnerId: `pro_${pro.pro_code}`,
+    partnerId: partnerIdFor(pro.pro_code),
     partnerName: pro.display_name,
     partnerType: "agent",
     officeName: pro.brokerage_name,
@@ -102,7 +62,7 @@ export default function Page() {
   const params = useParams<{ code: string }>();
   const code = params.code;
 
-  const pro = useMemo(() => resolvePro(code), [code]);
+  const pro = useMemo(() => resolvePartner(code) as ProProfile | null, [code]);
   const [partnerSet, setPartnerSet] = useState(false);
 
   useEffect(() => {
@@ -193,8 +153,8 @@ export default function Page() {
                 </div>
               </div>
 
-              {/* Right: contact actions */}
-              <div className="flex flex-shrink-0 gap-2">
+              {/* Right: contact actions + portal link */}
+              <div className="flex flex-shrink-0 flex-wrap gap-2">
                 <a href={`mailto:${pro.email}`}>
                   <Button variant="secondary">
                     <Mail className="h-4 w-4" />
@@ -205,6 +165,9 @@ export default function Page() {
                   <Phone className="h-4 w-4" />
                   Call
                 </Button>
+                <Link href="/pro/dashboard">
+                  <Button variant="secondary">Open Pro Portal</Button>
+                </Link>
               </div>
             </div>
           </Container>

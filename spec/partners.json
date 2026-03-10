@@ -1,0 +1,37 @@
+[
+  {
+    "pro_code": "frj",
+    "display_name": "Fernando Rocha Jr.",
+    "headshot_url": null,
+    "brokerage_name": "The FRJ Group @ RE/MAX Loyalty",
+    "license_number": "(placeholder)",
+    "license_state": "IL",
+    "phone": "(placeholder)",
+    "email": "Fernando@TheFRJgroup.com",
+    "website_url": "https://thefrjgroup.com",
+    "bio": "I help clients buy and sell with a focus on clarity, speed, and protecting the transaction. Homeworke is how we extend that value after closing with vetted home services and clear project tracking.",
+    "intro_video_url": null,
+    "socials": {
+      "instagram_url": "https://www.instagram.com",
+      "facebook_url": "https://www.facebook.com",
+      "linkedin_url": "https://www.linkedin.com"
+    }
+  },
+  {
+    "pro_code": "demo",
+    "display_name": "Partner Demo",
+    "headshot_url": null,
+    "brokerage_name": "Demo Office",
+    "license_number": "(placeholder)",
+    "license_state": "IL",
+    "phone": "(placeholder)",
+    "email": "demo@example.com",
+    "website_url": "https://homeworke.com",
+    "bio": "Demo partner profile for testing and development. Replace with real partner data before launch.",
+    "intro_video_url": null,
+    "socials": {
+      "linkedin_url": "https://www.linkedin.com",
+      "instagram_url": "https://www.instagram.com"
+    }
+  }
+]

@@ -53,3 +53,13 @@ export function listWorkOrders(token: string) {
 export function getWorkOrder(token: string, id: string) {
   return store().workOrders.find((w) => w.token === token && w.id === id) || null;
 }
+
+export function listSharedWorkOrdersForPartner(partnerId: string): WorkOrder[] {
+  return store().workOrders.filter(
+    (w) => w.originPartnerId === partnerId && !!w.shareWithPartner
+  );
+}
+
+export function countSharedWorkOrdersForPartner(partnerId: string): number {
+  return listSharedWorkOrdersForPartner(partnerId).length;
+}
