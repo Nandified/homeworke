@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { createWorkOrder, listWorkOrders, type WorkOrder } from "@/lib/mock-store";
+
+import { dbEnabled, db } from "@/lib/db";
+import { createWorkOrder as createMock, listWorkOrders as listMock, type WorkOrder } from "@/lib/mock-store";
 
 export const runtime = "nodejs";
 
@@ -12,7 +14,22 @@ export async function GET(req: Request) {
   const token = url.searchParams.get("token");
   if (!token) return json({ ok: false, error: "missing_token" }, { status: 400 });
 
-  const workOrders = listWorkOrders(token);
+  if (!dbEnabled()) {
+    const workOrders = listMock(token);
+    return json({ ok: true, workOrders });
+  }
+
+  // DB mode: token is treated as session token for now
+  const session = await db().session.findUnique({ where: { token } });
+  if (!session || session.expiresAt.getTime() < Date.now()) {
+    return json({ ok: true, workOrders: [] });
+  }
+
+  const workOrders = await db().workOrder.findMany({
+    where: { userId: session.userId },
+    orderBy: { createdAt: "desc" },
+  });
+
   return json({ ok: true, workOrders });
 }
 
@@ -37,30 +54,43 @@ export async function POST(req: Request) {
     if (!body.token) return json({ ok: false, error: "missing_token" }, { status: 400 });
     if (!body.intake?.service_category) return json({ ok: false, error: "missing_service" }, { status: 400 });
 
-    const wo: WorkOrder = createWorkOrder({
-      token: body.token,
-      originPartnerId: body.originPartnerId ?? null,
-      shareWithPartner: body.shareWithPartner ?? null,
-      serviceCategory: body.intake.service_category,
-      serviceSubcategory: body.intake.service_subcategory,
-      issueDescription: body.intake.issue_description,
-      urgencyLevel: body.intake.urgency_level,
-      propertyAddress: body.intake.property_address,
-      propertyType: body.intake.property_type,
-      preferredDate: body.intake.preferred_date,
-      preferredWindow: body.intake.preferred_time_window,
-    });
+    if (!dbEnabled()) {
+      const wo: WorkOrder = createMock({
+        token: body.token,
+        originPartnerId: body.originPartnerId ?? null,
+        shareWithPartner: body.shareWithPartner ?? null,
+        serviceCategory: body.intake.service_category,
+        serviceSubcategory: body.intake.service_subcategory,
+        issueDescription: body.intake.issue_description,
+        urgencyLevel: body.intake.urgency_level,
+        propertyAddress: body.intake.property_address,
+        propertyType: body.intake.property_type,
+        preferredDate: body.intake.preferred_date,
+        preferredWindow: body.intake.preferred_time_window,
+      });
+      return json({ ok: true, workOrder: wo });
+    }
 
-    console.log(
-      JSON.stringify({
-        type: "work_order_created",
-        createdAt: wo.createdAt,
-        id: wo.id,
-        token: wo.token,
-        originPartnerId: wo.originPartnerId,
-        shareWithPartner: wo.shareWithPartner,
-      })
-    );
+    const session = await db().session.findUnique({ where: { token: body.token } });
+    if (!session || session.expiresAt.getTime() < Date.now()) {
+      return json({ ok: false, error: "invalid_session" }, { status: 401 });
+    }
+
+    const wo = await db().workOrder.create({
+      data: {
+        userId: session.userId,
+        originPartnerId: body.originPartnerId ?? null,
+        shareWithPartnerId: body.shareWithPartner ? (body.originPartnerId ?? null) : null,
+        serviceCategory: body.intake.service_category,
+        serviceSubcategory: body.intake.service_subcategory ?? null,
+        issueDescription: body.intake.issue_description ?? null,
+        urgencyLevel: body.intake.urgency_level ?? null,
+        propertyAddress: body.intake.property_address ?? null,
+        propertyType: body.intake.property_type ?? null,
+        preferredWindow: body.intake.preferred_time_window ?? null,
+        status: "SUBMITTED",
+      },
+    });
 
     return json({ ok: true, workOrder: wo });
   } catch {
