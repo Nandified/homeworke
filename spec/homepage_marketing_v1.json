@@ -1,10 +1,10 @@
 {
   "hero": {
-    "headline": "Home services in Chicago — without the guesswork.",
-    "subheadline": "Tell us what you need. Get an instant estimate (free), then schedule with a vetted local pro. Transparent scopes, fast communication, and a clean experience from start to finish.",
-    "primaryCta": "Get an Instant Estimate",
+    "headline": "Home projects, handled end-to-end.",
+    "subheadline": "Request an estimate visit and we’ll send a Project Manager to assess the scope on-site. Instant estimates are available for home inspections and appraisal reports — everything else is confirmed in person.",
+    "primaryCta": "Request an estimate visit",
     "secondaryCta": "Browse services",
-    "disclaimer": "Estimates are free. Pricing varies by scope, access, and materials."
+    "disclaimer": "Estimates vary by scope, access, and materials."
   },
   "trust": {
     "title": "Built for trust (not lead spam)",

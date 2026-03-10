@@ -106,13 +106,11 @@ export default function Page() {
           />
 
           <Container className="relative py-12 md:py-16">
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
               <Pill className="bg-white">
                 <span className="hw-breath-dot" aria-hidden />
                 Now Servicing Chicago
               </Pill>
-              <Pill>Free estimates</Pill>
-              <Pill>Vetted local pros</Pill>
             </div>
 
             <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
@@ -128,14 +126,13 @@ export default function Page() {
 
               {/* Chat-style hero search */}
               <div className="lg:col-span-7">
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant estimate</div>
-                <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">What’s going on with your home?</div>
-                <div className="mt-2 text-sm text-[var(--hw-muted)]">
-                  Type naturally — we’ll suggest the right category and route you to the fastest next step.
-                </div>
+                <div className="mt-5 rounded-[var(--hw-radius-lg)] p-5 hw-glass">
+                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Estimate request</div>
+                  <div className="mt-1 text-xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-2xl">
+                    What’s going on with your home?
+                  </div>
 
-                <div className="mt-5 rounded-[var(--hw-radius-lg)] p-4 hw-glass">
-                  <div className="flex items-center gap-3">
+                  <div className="mt-4 flex items-center gap-3">
                     <div className="relative flex-1">
                       <Input
                         value={issue}
@@ -144,14 +141,14 @@ export default function Page() {
                         onBlur={() => setFocused(false)}
                         placeholder=""
                         aria-label="Describe your issue"
-                        className="h-16 w-full rounded-[var(--hw-radius-lg)] px-4 text-base border-0 outline-none hw-glass-field sm:h-14"
+                        className="h-20 w-full rounded-[var(--hw-radius-lg)] px-5 text-[17px] border-0 outline-none hw-glass-field sm:h-16"
                       />
 
                       {/* Typewriter hint + caret (visible even before focus) */}
                       {!issue ? (
                         <div
                           aria-hidden
-                          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[15px] text-[var(--hw-muted)]"
+                          className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[16px] text-[var(--hw-muted)]"
                         >
                           <span className="opacity-70">Try:</span>
                           <span className="font-medium text-[#4b5563]">{demoText}</span>
