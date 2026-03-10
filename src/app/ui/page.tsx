@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 import {
   Button,
@@ -10,7 +13,6 @@ import {
   EmptyState,
   Input,
   Label,
-  Modal,
   Pill,
   RadioCardGroup,
   StatTile,
@@ -20,9 +22,9 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 
-export const dynamic = "force-dynamic";
-
 export default function UiKitPage() {
+  const [mode, setMode] = useState("quick");
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
       <SiteHeader />
@@ -110,8 +112,8 @@ export default function UiKitPage() {
                 <div className="mt-3">
                   <RadioCardGroup
                     name="mode"
-                    value="quick"
-                    onChange={() => {}}
+                    value={mode}
+                    onChange={setMode}
                     options={[
                       { value: "quick", title: "Quick intake", text: "Frictionless, finish later." },
                       { value: "verified", title: "Verified", text: "Collect license + compliance." },
@@ -140,12 +142,7 @@ export default function UiKitPage() {
             </div>
           </section>
 
-          {/* Modal is render-only shell; showing it open in UI kit would block page. */}
-          <div className="hidden">
-            <Modal open title="Modal" onClose={() => {}}>
-              Modal contents
-            </Modal>
-          </div>
+          {/* Modal preview removed for now (keep /ui client-safe). */}
         </Container>
       </main>
       <SiteFooter />
