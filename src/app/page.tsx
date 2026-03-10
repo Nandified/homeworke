@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 import { ArrowRight } from "lucide-react";
 
-import { Button, Card, Chip, Container, Input, Pill } from "@/components/ui";
+import { Button, Card, Container, Input, Pill } from "@/components/ui";
 import { iconFor } from "@/components/icons";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 
@@ -31,6 +31,7 @@ function classifyToServiceSlug(text: string, services: Service[]): string | null
 export default function Page() {
   const services = servicesData.services.slice(0, 6);
   const [issue, setIssue] = useState("");
+  const [focused, setFocused] = useState(false);
 
   const suggestedSlug = useMemo(() => {
     if (!issue.trim()) return null;
@@ -81,78 +82,87 @@ export default function Page() {
 
               {/* Chat-style hero search */}
               <div className="lg:col-span-7">
-                <Card className="p-6 md:p-7">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant estimate</div>
-                      <div className="mt-1 text-lg font-bold text-[var(--hw-ink)]">What’s going on with your home?</div>
-                      <div className="mt-2 text-sm text-[var(--hw-muted)]">Type naturally — we’ll suggest the right category and route you to the fastest next step.</div>
-                    </div>
-                    <Pill className="bg-white">Chat-style</Pill>
-                  </div>
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant estimate</div>
+                <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">What’s going on with your home?</div>
+                <div className="mt-2 text-sm text-[var(--hw-muted)]">
+                  Type naturally — we’ll suggest the right category and route you to the fastest next step.
+                </div>
 
-                  <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.22)] bg-[rgba(17,24,39,.02)] p-4">
-                    <div className="flex items-center gap-3 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 px-4 py-3 backdrop-blur">
-                      <div className="h-2.5 w-2.5 rounded-full bg-[var(--hw-red)]" />
+                <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.55)] bg-white/55 p-4 backdrop-blur">
+                  <div className="flex items-center gap-3">
+                    <div className="h-2.5 w-2.5 rounded-full bg-[var(--hw-red)]" />
+
+                    <div className="relative flex-1">
                       <Input
                         value={issue}
                         onChange={(e) => setIssue(e.target.value)}
-                        placeholder='e.g., "my kitchen faucet is leaking" or "outlet stopped working"'
+                        onFocus={() => setFocused(true)}
+                        onBlur={() => setFocused(false)}
+                        placeholder='e.g., "my kitchen faucet is leaking"'
                         aria-label="Describe your issue"
                         className="border-0 bg-transparent focus:ring-0"
                       />
+
+                      {/* Blink caret hint when empty */}
+                      {focused && !issue ? (
+                        <span
+                          aria-hidden
+                          className="hw-caret pointer-events-none absolute left-[14px] top-1/2 -translate-y-1/2"
+                        />
+                      ) : null}
                     </div>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--hw-muted)]">
-                      <span className="font-semibold">Try:</span>
-                      {["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"].map((t) => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => setIssue(t)}
-                          className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 hover:bg-[var(--hw-soft)]"
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="mt-4 flex flex-wrap items-center gap-2">
-                      <Chip>Suggested: {suggestedService ? suggestedService.name : "—"}</Chip>
-                      <Chip>Estimates are free</Chip>
-                      <Chip>Fast scheduling</Chip>
-                    </div>
-
-                    <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-                      <Link href={suggestedService ? `/estimate?service=${encodeURIComponent(suggestedService.slug)}` : "/estimate"}>
-                        <Button className="w-full sm:w-auto">
-                          {homepage.hero.primaryCta}
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Link href="/services" className="w-full sm:w-auto">
-                        <Button variant="secondary" className="w-full sm:w-auto">Browse services</Button>
-                      </Link>
-                    </div>
-
-                    <div className="mt-5">
-                      <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Or pick a category</div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {services.map((s) => {
-                          const Icon = iconFor(s.icon);
-                          return (
-                            <Link key={s.slug} href={`/estimate?service=${encodeURIComponent(s.slug)}`}>
-                              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                                <Icon className="h-4 w-4 text-[var(--hw-red)]" />
-                                {s.name}
-                              </span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    {suggestedService ? (
+                      <span className="hidden sm:inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[#374151]">
+                        Suggested: {suggestedService.name}
+                      </span>
+                    ) : null}
                   </div>
-                </Card>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--hw-muted)]">
+                    <span className="font-semibold">Try</span>
+                    <span className="opacity-60">·</span>
+                    {["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"].map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setIssue(t)}
+                        className="rounded-full border border-[var(--hw-line)] bg-white/70 px-3 py-1.5 hover:bg-[var(--hw-soft)]"
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <Link href={suggestedService ? `/estimate?service=${encodeURIComponent(suggestedService.slug)}` : "/estimate"}>
+                      <Button className="w-full sm:w-auto">
+                        {homepage.hero.primaryCta}
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href="/services" className="w-full sm:w-auto">
+                      <Button variant="secondary" className="w-full sm:w-auto">Browse services</Button>
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="mt-5">
+                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Or pick a category</div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {services.map((s) => {
+                      const Icon = iconFor(s.icon);
+                      return (
+                        <Link key={s.slug} href={`/estimate?service=${encodeURIComponent(s.slug)}`}>
+                          <span className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                            <Icon className="h-4 w-4 text-[var(--hw-red)]" />
+                            {s.name}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           </Container>
