@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export function Container(props: React.HTMLAttributes<HTMLDivElement>) {
-  return <div {...props} className={cn("mx-auto w-full max-w-6xl px-5", props.className)} />;
+  return <div {...props} className={cn("mx-auto w-full max-w-5xl px-6 sm:px-7", props.className)} />;
 }
 
 export function Card(props: React.HTMLAttributes<HTMLDivElement>) {

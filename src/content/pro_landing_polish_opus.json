@@ -1,0 +1,43 @@
+{
+  "page": {
+    "headline": "Your Trusted Real Estate Professional",
+    "subheadline": "Learn more about your agent and explore how Homeworke can simplify your home journey — from search to close.",
+    "primaryCta": "Get Started with Homeworke",
+    "secondaryCta": "Learn More About the Process",
+    "sections": [
+      "Pro Profile Header — Agent name, brokerage, headshot, license info, and direct contact details (phone, email). No auto-redirect; user initiates all actions.",
+      "Intro Video Placeholder — Supports a short intro video (max 30 seconds). V1 renders a styled placeholder card with a play icon; video playback to be enabled in a future release.",
+      "Social Links Bar — Horizontal row of social profile links (e.g., Instagram, Facebook, LinkedIn, YouTube) pulled from the pro card. Icons only, no labels, open in new tab.",
+      "About the Pro — Free-text bio section written or approved by the agent. Supports line breaks and basic formatting. No emojis permitted in content.",
+      "What is Homeworke — Brief explainer section describing the Homeworke platform: what it does, how it helps buyers and sellers, and why the agent partners with it.",
+      "How It Works — Step-by-step visual breakdown (3-4 steps) of the partner-origin marketplace intake flow. Clarifies that the referring pro is pre-attached as the partner throughout the process.",
+      "Primary CTA Block — Prominent call-to-action driving the visitor into the partner-origin marketplace intake. The originating pro code from /p/[code] is pre-attached so attribution is automatic. No auto-redirect.",
+      "Footer — Minimal footer with Homeworke branding, legal links (Terms, Privacy), and a secondary CTA to learn more or contact support."
+    ]
+  },
+  "proCard": {
+    "fields": [
+      "display_name — Agent's full display name",
+      "headshot_url — URL to agent's professional headshot image",
+      "brokerage_name — Name of the affiliated brokerage",
+      "license_number — State real estate license number",
+      "license_state — State of licensure",
+      "phone — Direct contact phone number",
+      "email — Direct contact email address",
+      "bio — Free-text agent biography (no emojis allowed)",
+      "intro_video_url — Optional URL to a short intro video (max 30 seconds); nullable in v1",
+      "pro_code — Unique agent code used in /p/[code] URL for partner-origin attribution",
+      "cta_label — Optional custom label for the primary CTA button",
+      "website_url — Optional link to the agent's personal or brokerage website"
+    ],
+    "socialFields": [
+      "instagram_url — Link to Instagram profile",
+      "facebook_url — Link to Facebook profile",
+      "linkedin_url — Link to LinkedIn profile",
+      "youtube_url — Link to YouTube channel",
+      "tiktok_url — Link to TikTok profile",
+      "twitter_url — Link to X (Twitter) profile"
+    ],
+    "videoRule": "Max duration 30 seconds. V1 renders a styled placeholder card with a centered play icon and optional thumbnail from intro_video_url. Actual inline playback deferred to v2. File upload and hosting handled outside the landing page spec."
+  }
+}
