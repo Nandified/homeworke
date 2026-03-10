@@ -14,6 +14,8 @@ export async function POST(req: Request) {
       provider?: string;
       date?: string;
       window?: string;
+      partnerId?: string | null;
+      shareWithPartner?: boolean | null;
     };
 
     if (!body.email || !body.email.includes("@")) {
@@ -34,6 +36,8 @@ export async function POST(req: Request) {
         provider: body.provider,
         date: body.date,
         window: body.window,
+        partnerId: body.partnerId || null,
+        shareWithPartner: body.shareWithPartner ?? null,
       })
     );
 

@@ -5,6 +5,7 @@ import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button, Card, Checkbox, Container, Input, Label, Pill } from "@/components/ui";
+import { loadPartner } from "@/lib/partner-context";
 
 function prettyProvider(id?: string) {
   if (!id) return "Selected provider";
@@ -35,6 +36,8 @@ function ScheduleInner() {
     setSubmitting(true);
     setError(null);
     try {
+      const partner = loadPartner();
+
       const res = await fetch("/api/marketplace/confirm", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -44,6 +47,8 @@ function ScheduleInner() {
           provider,
           date,
           window,
+          partnerId: partner?.partnerId || null,
+          shareWithPartner: partner ? true : null,
         }),
       });
       const data = (await res.json()) as { ok: boolean; jobId?: string; token?: string; error?: string };
@@ -51,6 +56,8 @@ function ScheduleInner() {
         setError(data.error || "confirm_failed");
         return;
       }
+
+      const partnerCtx = loadPartner();
 
       const session = {
         token: data.token,
@@ -60,6 +67,8 @@ function ScheduleInner() {
         providerName: prettyProvider(provider),
         date,
         window,
+        partner: partnerCtx ? { partnerId: partnerCtx.partnerId, partnerName: partnerCtx.partnerName } : null,
+        shareWithPartner: partnerCtx ? true : null,
       };
 
       localStorage.setItem("hw_session_v1", JSON.stringify(session));

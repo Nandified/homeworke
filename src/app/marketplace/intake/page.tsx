@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { loadPartner } from "@/lib/partner-context";
+
 import {
   Button,
   Card,
@@ -81,7 +83,17 @@ export default function Page() {
   const steps = spec.steps;
 
   const [step, setStep] = useState<StepKey>("select_service");
-  const [draft, setDraft] = useState<IntakeDraft>(() => loadDraft());
+  const [draft, setDraft] = useState<IntakeDraft>(() => {
+    const d = loadDraft();
+    try {
+      const partner = loadPartner();
+      if (partner) {
+        // Partner-origin funnel defaults sharing ON.
+        d.share_with_partner = true;
+      }
+    } catch {}
+    return d;
+  });
 
   const idx = useMemo(() => steps.findIndex((s) => s.key === step), [steps, step]);
 
@@ -307,6 +319,26 @@ export default function Page() {
 
             <div className="mt-4 text-sm text-[var(--hw-muted)]">{spec.copy.saveNote}</div>
           </Card>
+
+          {(() => {
+            try {
+              const partner = loadPartner();
+              if (!partner) return null;
+              return (
+                <Card className="p-6">
+                  <div className="text-sm font-semibold">Referred by</div>
+                  <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
+                    {partner.partnerName} · {partner.officeName}
+                  </div>
+                  <div className="mt-3 text-sm leading-7 text-[var(--hw-muted)]">
+                    Sharing defaults on. You can turn it off for this request in the final step.
+                  </div>
+                </Card>
+              );
+            } catch {
+              return null;
+            }
+          })()}
 
           <Card className="p-6">
             <div className="text-sm font-semibold">Summary</div>

@@ -1,0 +1,21 @@
+{
+  "partnerLinkRoute": "/p/[code]",
+  "partnerContextStorageKey": "hw3_partner_context_v1",
+  "partnerContextShape": {
+    "partnerId": "Unique identifier for the partner (UUID or slug)",
+    "partnerName": "Display name of the partner (e.g. 'Acme Roofing')",
+    "partnerType": "Category of partner (e.g. 'contractor', 'agent', 'inspector')",
+    "officeName": "Name of the partner office or branch location",
+    "createdAt": "ISO 8601 timestamp of when the partner context was captured in localStorage"
+  },
+  "behaviors": [
+    "When a homeowner navigates to /p/[code], resolve the code to a partner record and persist the full partner context object to localStorage under the key hw3_partner_context_v1. This is the Origin Partner capture step and requires no authentication.",
+    "If a valid partner context already exists in localStorage and the homeowner arrives via a different /p/[code] link, overwrite the stored context with the new partner. The most recent partner link always wins.",
+    "On every service request creation, read the partner context from localStorage. If present, attach the partnerId as the Origin Partner for that request. The homeowner does not need to take any action for this association to occur.",
+    "Sharing with the Origin Partner defaults to ON (recommended) for every new service request. Display a clearly labeled toggle on the request detail or confirmation screen that allows the homeowner to turn sharing OFF on a per-request basis before confirming.",
+    "No authentication is required at any point in the browsing or request-creation flow. Collect the homeowner email address only at the schedule confirmation step. Until that point, the funnel operates entirely against localStorage state.",
+    "The partner context in localStorage has no automatic expiration in v1. It persists until the homeowner clears browser storage or a new /p/[code] link overwrites it.",
+    "If the /p/[code] route is visited with an invalid or unrecognized code, do not write anything to localStorage. Display a neutral fallback experience with no error messaging -- the homeowner simply proceeds without an Origin Partner.",
+    "When the homeowner toggles sharing OFF for a given request, record that preference on the request record server-side at confirmation time. The partner context remains in localStorage and will default to sharing ON again for the next request."
+  ]
+}

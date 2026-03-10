@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button, Card, Chip, Container, Input, Pill, StatTile } from "@/components/ui";
+import { loadPartner } from "@/lib/partner-context";
 import homepage from "@/content/homepage_v1_opus.json";
 
 const aliveHints = [
@@ -64,6 +65,15 @@ export default function Page() {
               <div className="flex flex-wrap gap-2">
                 <Pill>Trust-first marketplace</Pill>
                 <Pill>Relationship engine (permissioned)</Pill>
+                {(() => {
+                  try {
+                    const partner = loadPartner();
+                    if (!partner) return null;
+                    return <Pill>Recommended by {partner.partnerName}</Pill>;
+                  } catch {
+                    return null;
+                  }
+                })()}
               </div>
 
               <h1 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
