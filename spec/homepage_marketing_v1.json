@@ -1,0 +1,34 @@
+{
+  "hero": {
+    "headline": "Home services in Chicago — without the guesswork.",
+    "subheadline": "Tell us what you need. Get an instant estimate (free), then schedule with a vetted local pro. Transparent scopes, fast communication, and a clean experience from start to finish.",
+    "primaryCta": "Get an Instant Estimate",
+    "secondaryCta": "Browse services",
+    "disclaimer": "Estimates are free. Pricing varies by scope, access, and materials."
+  },
+  "trust": {
+    "title": "Built for trust (not lead spam)",
+    "bullets": [
+      { "icon": "shield", "title": "Vetted pros", "text": "We prioritize licensed/insured providers and quality operators." },
+      { "icon": "list", "title": "Clear scope", "text": "You know what’s included before you approve work." },
+      { "icon": "message-circle", "title": "One thread", "text": "Keep communication organized — fewer missed details." }
+    ]
+  },
+  "howItWorks": {
+    "title": "How it works",
+    "steps": [
+      { "icon": "cursor", "title": "Describe the job", "text": "Pick a service and answer a few quick questions — no long forms." },
+      { "icon": "calculator", "title": "See your instant estimate", "text": "Get a fast estimate and next steps. Estimates are always free." },
+      { "icon": "calendar", "title": "Schedule and get it done", "text": "Choose a time that works and we’ll coordinate with a vetted local pro." }
+    ]
+  },
+  "services": { "title": "Popular services", "cta": "See all services" },
+  "faq": {
+    "title": "FAQ",
+    "items": [
+      { "q": "Is the instant estimate really free?", "a": "Yes — the estimate is free. Final pricing depends on the exact scope, access, and materials once confirmed." },
+      { "q": "Do you serve outside Chicago?", "a": "We’re Chicago-first today. If you’re nearby, submit your request and we’ll confirm coverage." },
+      { "q": "How fast can I schedule?", "a": "It depends on the service and urgency. We’ll route you to the right pro and aim for the fastest available slots." }
+    ]
+  }
+}

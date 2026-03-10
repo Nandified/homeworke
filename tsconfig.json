@@ -39,6 +39,12 @@
   "exclude": [
     "archive",
     "archive/**",
+    "clawd-dashboard",
+    "clawd-dashboard/**",
+    "homeworke-web",
+    "homeworke-web/**",
+    "Relays",
+    "Relays/**",
     "node_modules"
   ]
 }

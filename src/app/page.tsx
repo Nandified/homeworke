@@ -1,240 +1,212 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
 
-import { Button, Card, Chip, Container, Input, Pill, StatTile } from "@/components/ui";
-import { loadPartner } from "@/lib/partner-context";
-import homepage from "@/../spec/homepage_v1_opus.json";
+import { ArrowRight } from "lucide-react";
 
-const aliveHints = [
-  "Try: 'water under kitchen sink'",
-  "Try: 'outlet stopped working'",
-  "Try: 'AC not cooling'",
-  "Try: 'need drywall patch and paint'",
-];
+import { Button, Card, Container, Pill } from "@/components/ui";
+import { iconFor } from "@/components/icons";
+import { SiteFooter, SiteHeader } from "@/components/site-shell";
 
-function classifyIssue(text: string) {
-  const t = text.toLowerCase();
-  if (t.includes("leak") || t.includes("pipe") || t.includes("toilet") || t.includes("faucet")) return "Plumbing";
-  if (t.includes("no power") || t.includes("outlet") || t.includes("breaker") || t.includes("electrical")) return "Electrical";
-  if (t.includes("ac") || t.includes("heat") || t.includes("hvac") || t.includes("furnace")) return "HVAC";
-  if (t.includes("roof") || t.includes("shingle")) return "Roofing";
-  if (t.includes("paint") || t.includes("drywall")) return "Drywall/Paint";
-  return "General";
-}
+import homepage from "@/../spec/homepage_marketing_v1.json";
+import servicesData from "@/../spec/services.json";
 
 export default function Page() {
-  const [issue, setIssue] = useState("");
-  const [hintIdx, setHintIdx] = useState(0);
-
-  useEffect(() => {
-    const t = window.setInterval(() => setHintIdx((i) => (i + 1) % aliveHints.length), 3500);
-    return () => window.clearInterval(t);
-  }, []);
-
-  const suggested = useMemo(() => (issue.trim() ? classifyIssue(issue) : null), [issue]);
+  const services = servicesData.services.slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-white to-[#f7f7f8]">
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-20 border-b border-[var(--hw-line)] bg-white/80 backdrop-blur">
-        <Container className="flex h-16 items-center justify-between">
-          <Link href="/" className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">
-            Homeworke
-          </Link>
-          <nav className="hidden items-center gap-2 md:flex">
-            <Link href="/marketplace/intake">
-              <Button variant="ghost">Marketplace</Button>
-            </Link>
-            <Link href="/real-estate-pros" aria-disabled>
-              <Button variant="ghost" disabled>
-                Real Estate Pros
-              </Button>
-            </Link>
-            <Link href="/internal/portal">
-              <Button variant="ghost">Internal</Button>
-            </Link>
-          </nav>
-        </Container>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-white via-white to-[#fafafa]">
+      <SiteHeader />
 
       <main>
-        {/* ══════════════════════════════════════════════
-            HERO — full-width band with generous vertical rhythm
-            ══════════════════════════════════════════════ */}
-        <section className="relative overflow-hidden">
-          {/* subtle decorative gradient orb */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-40 -top-40 h-[480px] w-[480px] rounded-full bg-[var(--hw-red)] opacity-[0.04] blur-[120px]"
-          />
+        {/* Hero */}
+        <Container className="py-12">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
+            <div className="lg:col-span-7">
+              <div className="flex flex-wrap gap-2">
+                <Pill>Chicago-first</Pill>
+                <Pill>Free estimates</Pill>
+                <Pill>Vetted local pros</Pill>
+              </div>
 
-          <Container className="relative py-16 md:py-24 lg:py-28">
-            {/* Pills row */}
-            <div className="flex flex-wrap gap-2">
-              <Pill>Trust-first marketplace</Pill>
-              <Pill>Relationship engine (permissioned)</Pill>
-              {(() => {
-                try {
-                  const partner = loadPartner();
-                  if (!partner) return null;
-                  return <Pill>Recommended by {partner.partnerName}</Pill>;
-                } catch {
-                  return null;
-                }
-              })()}
+              <h1 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-6xl">
+                {homepage.hero.headline}
+              </h1>
+              <p className="mt-4 max-w-2xl text-pretty text-base leading-7 text-[var(--hw-muted)] md:text-lg">
+                {homepage.hero.subheadline}
+              </p>
+
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link href="/estimate">
+                  <Button>
+                    {homepage.hero.primaryCta}
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/services">
+                  <Button variant="secondary">{homepage.hero.secondaryCta}</Button>
+                </Link>
+              </div>
+
+              <div className="mt-4 text-sm text-[var(--hw-muted)]">{homepage.hero.disclaimer}</div>
             </div>
 
-            {/* Headline */}
-            <h1 className="mt-6 max-w-3xl text-balance text-4xl font-extrabold leading-[1.08] tracking-tight text-[var(--hw-ink)] sm:text-5xl md:text-6xl lg:text-7xl">
-              {homepage.hero.headline}
-            </h1>
-
-            {/* Sub-headline */}
-            <p className="mt-5 max-w-2xl text-pretty text-base leading-relaxed text-[var(--hw-muted)] md:text-lg md:leading-8">
-              {homepage.hero.subheadline}
-            </p>
-
-            {/* ── Alive intake card ── */}
-            <Card className="mt-10 max-w-2xl p-5 sm:p-7 md:p-8">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                    {homepage.hero.chatLabel}
-                  </div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">{homepage.hero.chatHelper}</div>
+            <div className="lg:col-span-5">
+              <Card className="p-6">
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant estimate</div>
+                <div className="mt-2 text-xl font-bold text-[var(--hw-ink)]">Tell us what you need</div>
+                <div className="mt-2 text-sm text-[var(--hw-muted)]">
+                  Answer a few quick questions and we’ll generate an instant estimate and next steps.
                 </div>
-                <Pill>Alive</Pill>
-              </div>
 
-              {/* Input row */}
-              <div className="mt-5 flex items-center gap-3 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3 transition-shadow focus-within:shadow-md sm:p-4">
-                <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--hw-red)]" />
-                <Input
-                  value={issue}
-                  onChange={(e) => setIssue(e.target.value)}
-                  placeholder={homepage.hero.chatPlaceholder}
-                  aria-label="Describe your issue"
-                  className="border-0 focus:ring-0"
-                />
-              </div>
-
-              {/* Rotating hint */}
-              <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-[var(--hw-muted)] sm:text-sm">
-                <span className="font-semibold">Hint:</span>
-                <span className="transition-opacity duration-300">{aliveHints[hintIdx]}</span>
-              </div>
-
-              {/* Chips */}
-              <div className="mt-5 flex flex-wrap items-center gap-2">
-                <Chip>Suggested: {suggested || "—"}</Chip>
-                <Chip>Capture at scheduling</Chip>
-              </div>
-
-              {/* ── CTA block — visually separated ── */}
-              <div className="mt-7 flex flex-col gap-3 border-t border-[var(--hw-line)] pt-6 sm:flex-row sm:items-center">
-                <Link
-                  href={{
-                    pathname: "/marketplace/providers",
-                    query: { service: suggested || homepage.quickSelect.options[0], issue: issue.trim() || undefined },
-                  }}
-                >
-                  <Button className="w-full sm:w-auto">{homepage.hero.primaryCta}</Button>
-                </Link>
-                <Link href="/marketplace/intake">
-                  <Button variant="secondary" className="w-full sm:w-auto">{homepage.hero.secondaryCta}</Button>
-                </Link>
-              </div>
-
-              {/* Quick-select */}
-              <div className="mt-8">
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                  {homepage.quickSelect.label}
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {homepage.quickSelect.options.slice(0, 8).map((o) => (
-                    <Link
-                      key={o}
-                      href={{ pathname: "/marketplace/providers", query: { service: o } }}
-                      className="no-underline"
-                    >
-                      <Chip>{o}</Chip>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          </Container>
-        </section>
-
-        {/* ══════════════════════════════════════════════
-            TRUST + HOW IT WORKS — two-column on desktop
-            ══════════════════════════════════════════════ */}
-        <section className="border-t border-[var(--hw-line)] bg-[#fafafa]">
-          <Container className="py-14 md:py-20">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {/* Trust / Selling points */}
-              <Card className="p-5 sm:p-7 md:p-8">
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Trust</div>
-                <div className="mt-2 text-base font-semibold text-[var(--hw-ink)]">What you get</div>
                 <div className="mt-5 grid grid-cols-1 gap-3">
-                  {homepage.sellingPoints.slice(0, 4).map((s) => (
-                    <div
-                      key={s.title}
-                      className="rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white p-4"
-                    >
-                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{s.title}</div>
-                      <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">{s.text}</div>
-                    </div>
-                  ))}
+                  {services.slice(0, 3).map((s) => {
+                    const Icon = iconFor(s.icon);
+                    return (
+                      <Link key={s.slug} href={`/estimate?service=${encodeURIComponent(s.slug)}`} className="group">
+                        <div className="flex items-center gap-3 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 transition hover:bg-[var(--hw-soft)]">
+                          <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
+                            <Icon className="h-5 w-5 text-[var(--hw-red)]" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-semibold text-[var(--hw-ink)]">{s.name}</div>
+                            <div className="mt-0.5 text-sm text-[var(--hw-muted)]">{s.summary}</div>
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-[var(--hw-muted)] transition group-hover:translate-x-0.5" />
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-sm text-[var(--hw-muted)]">
+                  Chicago-first today. If you’re nearby, submit a request and we’ll confirm coverage.
                 </div>
               </Card>
+            </div>
+          </div>
+        </Container>
 
-              {/* How it works */}
-              <Card className="p-5 sm:p-7 md:p-8">
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">How it works</div>
-                <div className="mt-5 grid gap-3">
-                  {homepage.howItWorks.map((s) => (
-                    <div
-                      key={s.step}
-                      className="rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white p-4"
-                    >
-                      <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                        {s.step}
+        {/* Trust */}
+        <Container className="pb-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {homepage.trust.bullets.map((b) => {
+              const Icon = iconFor(b.icon);
+              return (
+                <Card key={b.title} className="p-6">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
+                      <Icon className="h-5 w-5 text-[var(--hw-red)]" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{b.title}</div>
+                      <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{b.text}</div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </Container>
+
+        {/* How it works */}
+        <Container className="py-10">
+          <div className="flex items-end justify-between gap-6">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{homepage.howItWorks.title}</div>
+              <div className="mt-2 text-2xl font-bold text-[var(--hw-ink)]">From request to done — fast.</div>
+            </div>
+            <Link href="/how-it-works" className="hidden md:block">
+              <Button variant="ghost">
+                Learn more
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {homepage.howItWorks.steps.map((s) => {
+              const Icon = iconFor(s.icon);
+              return (
+                <Card key={s.title} className="p-6">
+                  <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2 w-fit">
+                    <Icon className="h-5 w-5 text-[var(--hw-red)]" />
+                  </div>
+                  <div className="mt-4 text-sm font-semibold text-[var(--hw-ink)]">{s.title}</div>
+                  <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{s.text}</div>
+                </Card>
+              );
+            })}
+          </div>
+        </Container>
+
+        {/* Services grid */}
+        <Container className="py-4">
+          <div className="flex items-end justify-between gap-6">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{homepage.services.title}</div>
+              <div className="mt-2 text-2xl font-bold text-[var(--hw-ink)]">Pick a category to get started</div>
+            </div>
+            <Link href="/services" className="hidden md:block">
+              <Button variant="ghost">
+                {homepage.services.cta}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((s) => {
+              const Icon = iconFor(s.icon);
+              return (
+                <Link key={s.slug} href={`/services/${s.slug}`} className="group">
+                  <Card className="h-full p-6 transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(17,24,39,.08)]">
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
+                        <Icon className="h-5 w-5 text-[var(--hw-red)]" />
                       </div>
-                      <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{s.title}</div>
-                      <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">{s.text}</div>
+                      <div>
+                        <div className="text-sm font-semibold text-[var(--hw-ink)]">{s.name}</div>
+                        <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{s.summary}</div>
+                        <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--hw-red)]">
+                          Get an instant estimate
+                          <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </Container>
+
+        {/* FAQ */}
+        <Container className="py-12">
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{homepage.faq.title}</div>
+          <div className="mt-2 text-2xl font-bold text-[var(--hw-ink)]">Quick answers</div>
+          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {homepage.faq.items.map((item) => (
+              <Card key={item.q} className="p-6">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">{item.q}</div>
+                <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{item.a}</div>
               </Card>
-            </div>
-          </Container>
-        </section>
+            ))}
+          </div>
 
-        {/* ══════════════════════════════════════════════
-            STAT TILES + DISCLAIMER
-            ══════════════════════════════════════════════ */}
-        <section>
-          <Container className="py-14 md:py-20">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {(homepage.trust.tiles as any[]).slice(0, 3).map((t: any, idx: number) => (
-                <StatTile
-                  key={idx}
-                  label={t.label || t.title || "Trust"}
-                  value={t.value || ""}
-                  note={t.note || t.text || ""}
-                />
-              ))}
-            </div>
-
-            <p className="mt-8 max-w-3xl text-xs leading-relaxed text-[var(--hw-muted)] sm:text-sm">
-              {homepage.trust.disclaimer}
-            </p>
-          </Container>
-        </section>
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Link href="/estimate">
+              <Button>
+                Get an Instant Estimate
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button variant="secondary">Talk to us</Button>
+            </Link>
+          </div>
+        </Container>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }
