@@ -260,10 +260,10 @@ export default function Page() {
                           pattern="[0-9]{5}"
                           placeholder="60616"
                           aria-label="ZIP code"
-                          className="h-auto w-[84px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-7 text-[var(--hw-ink)] outline-none focus:ring-0 selection:bg-[rgba(229,57,53,.18)]"
+                          className="h-auto w-[84px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-7 text-[var(--hw-ink)] outline-none focus:ring-0 text-right selection:bg-[rgba(229,57,53,.18)]"
                         />
                         <div className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                          <span aria-hidden className="inline-block h-3 w-3 rounded bg-[rgba(229,57,53,.10)]" />
+                          <span aria-hidden className="inline-flex h-3 w-3 items-center justify-center text-[rgba(229,57,53,.85)]">⌖</span>
                           Zipcode
                         </div>
                       </div>
