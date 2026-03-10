@@ -4,10 +4,42 @@ import Image from "next/image";
 import { Button, Card, Container, Pill } from "@/components/ui";
 
 const lanes = [
-  { key: "homeowner", title: "Homeowner Dashboard", note: "Track requests, appointments, estimates, and updates.", href: "/dashboard/homeowner" },
-  { key: "partner", title: "Partner Dashboard", note: "Client status, referral attribution, CRM signals.", href: "/dashboard/partner" },
-  { key: "provider", title: "Service Provider Dashboard", note: "Offers, schedule, job steps, payouts.", href: "/dashboard/provider" },
-  { key: "ops", title: "Ops Dashboard", note: "Home Guide queue, assignments, exceptions.", href: "/dashboard/ops" },
+  {
+    key: "homeowner",
+    title: "Homeowner Dashboard",
+    note: "Request service, track appointments, review estimates, and see updates.",
+    href: "/dashboard/homeowner",
+  },
+  {
+    key: "partner",
+    title: "Partner / Real Estate Pro Dashboard",
+    note: "Client status, sharing preferences, and CRM signals.",
+    href: "/dashboard/partner",
+  },
+  {
+    key: "provider",
+    title: "Service Provider Dashboard",
+    note: "Offers, availability, active jobs, and check-ins.",
+    href: "/dashboard/provider",
+  },
+  {
+    key: "hg",
+    title: "Home Guide (Ops) Dashboard",
+    note: "Intake queue, triage, assignments, and exceptions.",
+    href: "/dashboard/hg",
+  },
+  {
+    key: "pm",
+    title: "Project Manager Dashboard",
+    note: "Today’s visits, on-the-way updates, and verification steps.",
+    href: "/dashboard/pm",
+  },
+  {
+    key: "admin",
+    title: "Admin Dashboard",
+    note: "Company-wide visibility: users, pros, providers, money, ops.",
+    href: "/dashboard/admin",
+  },
 ];
 
 export default function Page() {
