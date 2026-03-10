@@ -239,7 +239,7 @@ export default function Page() {
                         {!issue ? (
                           <div
                             aria-hidden
-                            className="pointer-events-none absolute left-5 top-5 flex items-baseline gap-1 text-[16px] text-[var(--hw-muted)]"
+                            className="pointer-events-none absolute left-5 top-[14px] flex items-baseline gap-1 text-[16px] leading-7 text-[var(--hw-muted)]"
                           >
                             <span className="opacity-70">Try:</span>
                             <span className="font-medium text-[#4b5563]">{demoText}</span>
