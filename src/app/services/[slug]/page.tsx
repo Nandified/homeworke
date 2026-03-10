@@ -9,6 +9,7 @@ import { SiteFooter, SiteHeader } from "@/components/site-shell";
 import { getPublishedServiceBySlug } from "@/lib/cms";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export default async function ServiceDetailPage({ params }: { params: { slug: string } }) {
   const service = await getPublishedServiceBySlug(params.slug);
