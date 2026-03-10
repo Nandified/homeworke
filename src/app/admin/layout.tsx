@@ -17,7 +17,7 @@ export default async function AdminLayout(props: { children: ReactNode }) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">Admin</div>
             <nav className="flex flex-wrap gap-4 text-sm font-semibold">
-              <Link href="/admin" className="text-[var(--hw-ink)] hover:text-[var(--hw-red)]">
+              <Link href="/admin/dashboard" className="text-[var(--hw-ink)] hover:text-[var(--hw-red)]">
                 Dashboard
               </Link>
               <Link href="/admin/services" className="text-[var(--hw-ink)] hover:text-[var(--hw-red)]">

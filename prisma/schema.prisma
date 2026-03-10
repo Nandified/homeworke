@@ -27,8 +27,16 @@ enum AttributionEventType {
   REFERRAL
 }
 
+enum PartnerType {
+  REAL_ESTATE
+  LENDER
+  INSPECTOR
+  INSURANCE
+}
+
 enum UserRole {
   USER
+  PARTNER
   EDITOR
   ADMIN
 }
@@ -80,27 +88,32 @@ model MagicLinkToken {
 }
 
 model PartnerProfile {
-  id             String   @id @default(cuid())
-  proCode        String   @unique
-  displayName    String
-  brokerageName  String
-  licenseState   String
-  licenseNumber  String
-  phone          String
-  email          String
-  websiteUrl     String
-  bio            String
-  introVideoUrl  String
-  socials        Json     @default("{}")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id          String      @id @default(cuid())
+  proCode     String      @unique
+  partnerType PartnerType @default(REAL_ESTATE)
 
-  originWorkOrders    WorkOrder[]        @relation("WorkOrderOriginPartner")
-  sharedWorkOrders    WorkOrder[]        @relation("WorkOrderShareWithPartner")
-  attributionEvents   AttributionEvent[]
-  auditLogs           AuditLog[]         @relation("AuditLogActorPartner")
+  // Progressive onboarding (all optional & deferrable)
+  displayName   String?
+  brokerageName String?
+  officeName    String?
+  licenseState  String?
+  licenseNumber String?
+  phone         String?
+  email         String?
+  websiteUrl    String?
+  bio           String?
+  introVideoUrl String?
+  socials       Json        @default("{}")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  originWorkOrders  WorkOrder[]        @relation("WorkOrderOriginPartner")
+  sharedWorkOrders  WorkOrder[]        @relation("WorkOrderShareWithPartner")
+  attributionEvents AttributionEvent[]
+  auditLogs         AuditLog[]         @relation("AuditLogActorPartner")
 
   @@index([proCode])
+  @@index([partnerType])
 }
 
 model WorkOrder {

@@ -6,15 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Button, Card, EmptyState, Pill, StatTile } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 
-const nav = [
-  { href: "/ho/dashboard", label: "Dashboard" },
-  { href: "/ho/messages", label: "Messages" },
-  { href: "/ho/properties", label: "My Properties" },
-  { href: "/ho/pro-team", label: "Pro Team" },
-  { href: "/ho/support", label: "Support" },
-  { href: "/ho/account", label: "My Account" },
-];
-
 type Session = {
   token: string;
   jobId: string;
@@ -40,6 +31,28 @@ type WorkOrder = {
   status: string;
 };
 
+type Property = {
+  id: string;
+  address: string;
+  nickname?: string;
+};
+
+type Message = {
+  id: string;
+  createdAt: string;
+  body: string;
+  readAt?: string | null;
+};
+
+const nav = [
+  { href: "/ho/dashboard", label: "Dashboard" },
+  { href: "/ho/messages", label: "Messages" },
+  { href: "/ho/properties", label: "My Properties" },
+  { href: "/ho/pro-team", label: "Pro Team" },
+  { href: "/ho/support", label: "Support" },
+  { href: "/ho/account", label: "My Account" },
+];
+
 function loadSession(): Session | null {
   try {
     const raw = localStorage.getItem("hw_session_v1");
@@ -50,45 +63,70 @@ function loadSession(): Session | null {
   }
 }
 
-export default function Page() {
+export default function HomeownerDashboardPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [workOrders, setWorkOrders] = useState<WorkOrder[] | null>(null);
+  const [properties, setProperties] = useState<Property[] | null>(null);
+  const [messages, setMessages] = useState<Message[] | null>(null);
 
   useEffect(() => {
     const s = loadSession();
     setSession(s);
-    if (!s?.token) return;
+    if (!s?.token) {
+      setWorkOrders([]);
+      setProperties([]);
+      setMessages([]);
+      return;
+    }
 
     (async () => {
       try {
-        const res = await fetch(`/api/work-orders?token=${encodeURIComponent(s.token)}`);
-        const data = (await res.json()) as { ok: boolean; workOrders?: WorkOrder[] };
-        if (!res.ok || !data.ok) {
-          setWorkOrders([]);
-          return;
-        }
-        setWorkOrders(data.workOrders || []);
+        const [woRes, propRes, msgRes] = await Promise.all([
+          fetch(`/api/work-orders?token=${encodeURIComponent(s.token)}`),
+          fetch(`/api/properties?token=${encodeURIComponent(s.token)}`),
+          fetch(`/api/messages?token=${encodeURIComponent(s.token)}&limit=20`),
+        ]);
+
+        const woJson = (await woRes.json()) as { ok: boolean; workOrders?: WorkOrder[] };
+        const propJson = (await propRes.json()) as { ok: boolean; properties?: Property[] };
+        const msgJson = (await msgRes.json()) as { ok: boolean; messages?: Message[] };
+
+        if (!woRes.ok || !woJson.ok) throw new Error("failed_work_orders");
+        if (!propRes.ok || !propJson.ok) throw new Error("failed_properties");
+        if (!msgRes.ok || !msgJson.ok) throw new Error("failed_messages");
+
+        setWorkOrders(woJson.workOrders || []);
+        setProperties(propJson.properties || []);
+        setMessages(msgJson.messages || []);
       } catch {
         setWorkOrders([]);
+        setProperties([]);
+        setMessages([]);
       }
     })();
   }, []);
 
   const latest = useMemo(() => (workOrders && workOrders.length ? workOrders[0] : null), [workOrders]);
+  const unreadCount = useMemo(() => (messages || []).filter((m) => !m.readAt).length, [messages]);
 
   return (
     <PortalShell role="HO" title="Homeowner" nav={nav}>
       <div className="grid gap-4">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <StatTile label="Active services" value={String(workOrders?.length ?? 0)} note="Work orders in your dashboard." />
-          <StatTile label="Status" value={latest?.status ? String(latest.status) : "—"} note="Latest request." />
-          <StatTile label="Partner" value={session?.partner?.partnerName || "—"} note="Shown only when attached." />
+          <StatTile label="My properties" value={String(properties?.length ?? 0)} note="Property profiles (Phase 2: minimal)." />
+          <StatTile label="Unread messages" value={String(unreadCount)} note="From your Pro Team." />
         </div>
 
         {workOrders && workOrders.length ? (
           <Card className="p-6 md:p-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="text-sm font-semibold">Your work orders</div>
+              <div>
+                <div className="text-sm font-semibold">Your work orders</div>
+                <div className="mt-1 text-xs text-[var(--hw-muted)]">
+                  Partner: {session?.partner?.partnerName || "—"} • Latest status: {latest?.status || "—"}
+                </div>
+              </div>
               <Pill>{workOrders.length} total</Pill>
             </div>
             <div className="mt-4 grid gap-3">
@@ -99,9 +137,7 @@ export default function Page() {
                       <div className="text-sm font-semibold text-[var(--hw-ink)]">{w.serviceCategory}</div>
                       <Pill>Status: {w.status}</Pill>
                     </div>
-                    {w.propertyAddress ? (
-                      <div className="mt-1 text-sm text-[var(--hw-muted)]">{w.propertyAddress}</div>
-                    ) : null}
+                    {w.propertyAddress ? <div className="mt-1 text-sm text-[var(--hw-muted)]">{w.propertyAddress}</div> : null}
                   </div>
                 </Link>
               ))}
