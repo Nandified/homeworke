@@ -232,14 +232,14 @@ export default function Page() {
                           placeholder=""
                           aria-label="Describe your issue"
                           rows={2}
-                          className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-5 py-3 text-[17px] leading-7 border-0 outline-none sm:py-3"
+                          className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-2.5 text-[17px] leading-7 border-0 outline-none sm:py-2.5"
                           style={{ minHeight: 80 }}
                         />
 
                         {!issue ? (
                           <div
                             aria-hidden
-                            className="pointer-events-none absolute left-5 top-[14px] flex items-baseline gap-1 text-[16px] leading-7 text-[var(--hw-muted)]"
+                            className="pointer-events-none absolute left-4 top-[12px] flex items-baseline gap-1 text-[16px] leading-7 text-[var(--hw-muted)]"
                           >
                             <span className="opacity-70">Try:</span>
                             <span className="font-medium text-[#4b5563]">{demoText}</span>
@@ -249,10 +249,10 @@ export default function Page() {
                       </div>
 
                       {/* ZIP inside the same field */}
-                      <div className="hidden sm:flex items-center px-4">
-                        <div className="h-[52px] w-px bg-[rgba(107,114,128,.28)]" />
+                      <div className="hidden sm:flex items-center px-3">
+                        <div className="h-[52px] w-px bg-[rgba(107,114,128,.22)]" />
                       </div>
-                      <div className="hidden sm:flex flex-col items-start pr-5 pt-3">
+                      <div className="hidden sm:flex flex-col items-start pr-3 pt-2.5 pl-1">
                         <Input
                           value={zip}
                           onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
@@ -262,7 +262,10 @@ export default function Page() {
                           aria-label="ZIP code"
                           className="h-auto w-[84px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-7 text-[var(--hw-ink)] outline-none focus:ring-0 selection:bg-[rgba(229,57,53,.18)]"
                         />
-                        <div className="mt-0.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Zipcode</div>
+                        <div className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                          <span aria-hidden className="inline-block h-3 w-3 rounded bg-[rgba(229,57,53,.10)]" />
+                          Zipcode
+                        </div>
                       </div>
                     </div>
                   </div>
