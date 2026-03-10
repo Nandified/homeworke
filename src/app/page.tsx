@@ -1,16 +1,46 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo, useState } from "react";
 
 import { ArrowRight } from "lucide-react";
 
-import { Button, Card, Container, Pill } from "@/components/ui";
+import { Button, Card, Chip, Container, Input, Pill } from "@/components/ui";
 import { iconFor } from "@/components/icons";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 
 import homepage from "@/../spec/homepage_marketing_v1.json";
 import servicesData from "@/../spec/services.json";
 
+type Service = (typeof servicesData.services)[number];
+
+function classifyToServiceSlug(text: string, services: Service[]): string | null {
+  const t = text.toLowerCase();
+  const hit = (slug: string) => services.some((s) => s.slug === slug) ? slug : null;
+
+  if (/(leak|clog|toilet|faucet|pipe|drain|garbage disposal)/i.test(t)) return hit("plumbing");
+  if (/(outlet|breaker|electrical|wiring|switch|light fixture|ceiling fan)/i.test(t)) return hit("electrical");
+  if (/(ac|a\/c|air conditioner|no heat|no cool|furnace|hvac|thermostat)/i.test(t)) return hit("hvac");
+  if (/(washer|dryer|dishwasher|refrigerator|fridge|oven|range)/i.test(t)) return hit("appliance-repair");
+  if (/(deep clean|cleaning|move out|move-in|turnover)/i.test(t)) return hit("cleaning");
+  if (/(mount|hang|patch|drywall|door|shelf|assembly|handyman)/i.test(t)) return hit("handyman");
+
+  return null;
+}
+
 export default function Page() {
   const services = servicesData.services.slice(0, 6);
+  const [issue, setIssue] = useState("");
+
+  const suggestedSlug = useMemo(() => {
+    if (!issue.trim()) return null;
+    return classifyToServiceSlug(issue, servicesData.services);
+  }, [issue]);
+
+  const suggestedService = useMemo(() => {
+    if (!suggestedSlug) return null;
+    return servicesData.services.find((s) => s.slug === suggestedSlug) ?? null;
+  }, [suggestedSlug]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-white to-[#fafafa]">
@@ -18,72 +48,115 @@ export default function Page() {
 
       <main>
         {/* Hero */}
-        <Container className="py-12">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
-            <div className="lg:col-span-7">
-              <div className="flex flex-wrap gap-2">
-                <Pill>Chicago-first</Pill>
-                <Pill>Free estimates</Pill>
-                <Pill>Vetted local pros</Pill>
-              </div>
+        <section className="relative overflow-hidden">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-[var(--hw-red)] opacity-[0.05] blur-[120px]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -left-48 top-32 h-[560px] w-[560px] rounded-full bg-black opacity-[0.03] blur-[140px]"
+          />
 
-              <h1 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-6xl">
-                {homepage.hero.headline}
-              </h1>
-              <p className="mt-4 max-w-2xl text-pretty text-base leading-7 text-[var(--hw-muted)] md:text-lg">
-                {homepage.hero.subheadline}
-              </p>
-
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link href="/estimate">
-                  <Button>
-                    {homepage.hero.primaryCta}
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/services">
-                  <Button variant="secondary">{homepage.hero.secondaryCta}</Button>
-                </Link>
-              </div>
-
-              <div className="mt-4 text-sm text-[var(--hw-muted)]">{homepage.hero.disclaimer}</div>
+          <Container className="relative py-12 md:py-16">
+            <div className="flex flex-wrap items-center gap-3">
+              <Pill className="bg-white">
+                <span className="hw-breath-dot" aria-hidden />
+                Now Servicing Chicago
+              </Pill>
+              <Pill>Free estimates</Pill>
+              <Pill>Vetted local pros</Pill>
             </div>
 
-            <div className="lg:col-span-5">
-              <Card className="p-6">
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant estimate</div>
-                <div className="mt-2 text-xl font-bold text-[var(--hw-ink)]">Tell us what you need</div>
-                <div className="mt-2 text-sm text-[var(--hw-muted)]">
-                  Answer a few quick questions and we’ll generate an instant estimate and next steps.
-                </div>
+            <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
+              <div className="lg:col-span-5">
+                <h1 className="text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-6xl">
+                  {homepage.hero.headline}
+                </h1>
+                <p className="mt-4 max-w-xl text-pretty text-base leading-7 text-[var(--hw-muted)] md:text-lg">
+                  {homepage.hero.subheadline}
+                </p>
+                <div className="mt-4 text-sm text-[var(--hw-muted)]">{homepage.hero.disclaimer}</div>
+              </div>
 
-                <div className="mt-5 grid grid-cols-1 gap-3">
-                  {services.slice(0, 3).map((s) => {
-                    const Icon = iconFor(s.icon);
-                    return (
-                      <Link key={s.slug} href={`/estimate?service=${encodeURIComponent(s.slug)}`} className="group">
-                        <div className="flex items-center gap-3 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 transition hover:bg-[var(--hw-soft)]">
-                          <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
-                            <Icon className="h-5 w-5 text-[var(--hw-red)]" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm font-semibold text-[var(--hw-ink)]">{s.name}</div>
-                            <div className="mt-0.5 text-sm text-[var(--hw-muted)]">{s.summary}</div>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-[var(--hw-muted)] transition group-hover:translate-x-0.5" />
-                        </div>
+              {/* Chat-style hero search */}
+              <div className="lg:col-span-7">
+                <Card className="p-6 md:p-7">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant estimate</div>
+                      <div className="mt-1 text-lg font-bold text-[var(--hw-ink)]">What’s going on with your home?</div>
+                      <div className="mt-2 text-sm text-[var(--hw-muted)]">Type naturally — we’ll suggest the right category and route you to the fastest next step.</div>
+                    </div>
+                    <Pill className="bg-white">Chat-style</Pill>
+                  </div>
+
+                  <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.22)] bg-[rgba(17,24,39,.02)] p-4">
+                    <div className="flex items-center gap-3 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 px-4 py-3 backdrop-blur">
+                      <div className="h-2.5 w-2.5 rounded-full bg-[var(--hw-red)]" />
+                      <Input
+                        value={issue}
+                        onChange={(e) => setIssue(e.target.value)}
+                        placeholder='e.g., "my kitchen faucet is leaking" or "outlet stopped working"'
+                        aria-label="Describe your issue"
+                        className="border-0 bg-transparent focus:ring-0"
+                      />
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--hw-muted)]">
+                      <span className="font-semibold">Try:</span>
+                      {["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"].map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setIssue(t)}
+                          className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 hover:bg-[var(--hw-soft)]"
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <Chip>Suggested: {suggestedService ? suggestedService.name : "—"}</Chip>
+                      <Chip>Estimates are free</Chip>
+                      <Chip>Fast scheduling</Chip>
+                    </div>
+
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <Link href={suggestedService ? `/estimate?service=${encodeURIComponent(suggestedService.slug)}` : "/estimate"}>
+                        <Button className="w-full sm:w-auto">
+                          {homepage.hero.primaryCta}
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
                       </Link>
-                    );
-                  })}
-                </div>
+                      <Link href="/services" className="w-full sm:w-auto">
+                        <Button variant="secondary" className="w-full sm:w-auto">Browse services</Button>
+                      </Link>
+                    </div>
 
-                <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-sm text-[var(--hw-muted)]">
-                  Chicago-first today. If you’re nearby, submit a request and we’ll confirm coverage.
-                </div>
-              </Card>
+                    <div className="mt-5">
+                      <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Or pick a category</div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {services.map((s) => {
+                          const Icon = iconFor(s.icon);
+                          return (
+                            <Link key={s.slug} href={`/estimate?service=${encodeURIComponent(s.slug)}`}>
+                              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                                <Icon className="h-4 w-4 text-[var(--hw-red)]" />
+                                {s.name}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
             </div>
-          </div>
-        </Container>
+          </Container>
+        </section>
 
         {/* Trust */}
         <Container className="pb-4">
