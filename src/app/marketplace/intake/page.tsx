@@ -124,21 +124,93 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
-      <Container className="py-12 md:py-14">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Work order</div>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">{current.title}</h1>
-            <div className="mt-2 max-w-3xl text-sm leading-7 text-[var(--hw-muted)]">{current.description}</div>
+      <Container className="py-10 md:py-16">
+        {/* ── Header ── */}
+        <div className="mb-2">
+          <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+            Work order
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <Pill>Step {idx + 1} of {steps.length}</Pill>
-            <div className="text-xs text-[var(--hw-muted)]">{draft.service_category}</div>
+          <h1 className="mt-3 text-2xl font-extrabold tracking-tight md:text-3xl lg:text-4xl">
+            {current.title}
+          </h1>
+          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--hw-muted)]">
+            {current.description}
+          </p>
+        </div>
+
+        {/* ── Step indicator ── */}
+        <div className="mt-6 mb-8">
+          <div className="flex items-center gap-1">
+            {steps.map((s, i) => {
+              const isActive = i === idx;
+              const isCompleted = i < idx;
+              return (
+                <div key={s.key} className="flex items-center gap-1">
+                  {i > 0 && (
+                    <div
+                      className={`hidden h-px w-6 sm:block md:w-10 ${
+                        isCompleted ? "bg-[var(--hw-ink)]" : "bg-[var(--hw-line)]"
+                      }`}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isCompleted) setStep(s.key as StepKey);
+                    }}
+                    disabled={!isCompleted && !isActive}
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                      isActive
+                        ? "bg-[var(--hw-ink)] text-white shadow-md ring-4 ring-[var(--hw-ink)]/10"
+                        : isCompleted
+                        ? "bg-[var(--hw-ink)] text-white cursor-pointer hover:ring-2 hover:ring-[var(--hw-ink)]/20"
+                        : "border border-[var(--hw-line)] bg-white text-[var(--hw-muted)]"
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3.5 w-3.5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    ) : (
+                      i + 1
+                    )}
+                  </button>
+                  <span
+                    className={`ml-1.5 hidden text-xs font-medium sm:inline ${
+                      isActive
+                        ? "text-[var(--hw-ink)]"
+                        : isCompleted
+                        ? "text-[var(--hw-ink)]/70"
+                        : "text-[var(--hw-muted)]"
+                    }`}
+                  >
+                    {s.title}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-3 flex items-center gap-2 sm:hidden">
+            <Pill>
+              Step {idx + 1} of {steps.length}
+            </Pill>
+            <span className="text-xs text-[var(--hw-muted)]">{draft.service_category}</span>
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Card className="p-6 md:p-7 lg:col-span-2">
+        {/* ── Main grid ── */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* ── Form card ── */}
+          <Card className="p-6 md:p-8 lg:col-span-2">
             {step === "select_service" ? (
               <div>
                 <div className="text-sm font-semibold">Service</div>
@@ -150,7 +222,7 @@ export default function Page() {
                     options={SERVICE_OPTIONS.map((o) => ({ value: o, title: o }))}
                   />
                 </div>
-                <div className="mt-4">
+                <div className="mt-5">
                   <Label>Optional sub-service</Label>
                   <div className="mt-2">
                     <Input
@@ -164,7 +236,7 @@ export default function Page() {
             ) : null}
 
             {step === "service_details" ? (
-              <div className="grid gap-4">
+              <div className="grid gap-5">
                 <div>
                   <Label>Describe the issue</Label>
                   <div className="mt-2">
@@ -192,7 +264,7 @@ export default function Page() {
                 </div>
                 <Card className="p-4">
                   <div className="text-sm font-semibold">Photos</div>
-                  <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
+                  <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
                     Upload is a Phase 3 deliverable. For now, describe what you see.
                   </div>
                 </Card>
@@ -200,7 +272,7 @@ export default function Page() {
             ) : null}
 
             {step === "property_details" ? (
-              <div className="grid gap-4">
+              <div className="grid gap-5">
                 <div>
                   <Label>Property address</Label>
                   <div className="mt-2">
@@ -235,7 +307,7 @@ export default function Page() {
             ) : null}
 
             {step === "schedule_visit" ? (
-              <div className="grid gap-4">
+              <div className="grid gap-5">
                 <div>
                   <Label>Preferred date</Label>
                   <div className="mt-2">
@@ -288,7 +360,7 @@ export default function Page() {
                 </div>
                 <div className="rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
                   <div className="text-sm font-semibold">Sharing preference</div>
-                  <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
+                  <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
                     If a partner is attached, we keep them in the loop only when you allow it.
                   </div>
                   <div className="mt-3">
@@ -302,7 +374,8 @@ export default function Page() {
               </div>
             ) : null}
 
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-2">
+            {/* ── Navigation ── */}
+            <div className="mt-10 flex items-center justify-between gap-3 border-t border-[var(--hw-line)] pt-6">
               <Button type="button" variant="ghost" onClick={back} disabled={idx === 0}>
                 {spec.copy.backCta}
               </Button>
@@ -318,68 +391,108 @@ export default function Page() {
               )}
             </div>
 
-            <div className="mt-4 text-sm text-[var(--hw-muted)]">{spec.copy.saveNote}</div>
+            <p className="mt-3 text-xs text-[var(--hw-muted)]">{spec.copy.saveNote}</p>
           </Card>
 
-          {(() => {
-            try {
-              const partner = loadPartner();
-              if (!partner) return null;
-              return (
-                <Card className="p-6">
-                  <div className="text-sm font-semibold">Referred by</div>
-                  <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
-                    {partner.partnerName} · {partner.officeName}
-                  </div>
-                  <div className="mt-3 text-sm leading-7 text-[var(--hw-muted)]">
-                    Sharing defaults on. You can turn it off for this request in the final step.
-                  </div>
-                </Card>
-              );
-            } catch {
-              return null;
-            }
-          })()}
+          {/* ── Sidebar ── */}
+          <div className="flex flex-col gap-5">
+            {/* Partner card */}
+            {(() => {
+              try {
+                const partner = loadPartner();
+                if (!partner) return null;
+                return (
+                  <Card className="border-[var(--hw-line)] bg-[var(--hw-soft)] p-5">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--hw-ink)]/10 text-xs font-bold text-[var(--hw-ink)]">
+                        P
+                      </span>
+                      <div className="text-sm font-semibold">Referred by</div>
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+                      {partner.partnerName} · {partner.officeName}
+                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-[var(--hw-muted)]">
+                      Sharing defaults on. You can turn it off for this request in the final step.
+                    </p>
+                  </Card>
+                );
+              } catch {
+                return null;
+              }
+            })()}
 
-          <Card className="p-6 md:p-7">
-            <div className="text-sm font-semibold">Summary</div>
-            <div className="mt-4 grid gap-2 text-sm text-[var(--hw-muted)]">
-              <div>
-                <span className="font-semibold text-[var(--hw-ink)]">Service:</span> {draft.service_category}
-              </div>
-              {draft.service_subcategory ? (
-                <div>
-                  <span className="font-semibold text-[var(--hw-ink)]">Sub-service:</span> {draft.service_subcategory}
-                </div>
-              ) : null}
-              {draft.issue_description ? (
-                <div>
-                  <span className="font-semibold text-[var(--hw-ink)]">Issue:</span> {draft.issue_description}
-                </div>
-              ) : null}
-              {draft.property_address ? (
-                <div>
-                  <span className="font-semibold text-[var(--hw-ink)]">Address:</span> {draft.property_address}
-                </div>
-              ) : null}
-              {draft.preferred_date ? (
-                <div>
-                  <span className="font-semibold text-[var(--hw-ink)]">Preferred:</span> {draft.preferred_date} ({draft.preferred_time_window})
-                </div>
-              ) : null}
-              <div className="pt-2">
+            {/* Summary card */}
+            <Card className="border-[var(--hw-line)] bg-[var(--hw-soft)]/50 p-5 md:p-6">
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-semibold">Summary</div>
                 <Chip>Draft stored locally</Chip>
               </div>
-            </div>
 
-            <div className="mt-6 text-sm text-[var(--hw-muted)]">
-              <Link href="/marketplace/request">Switch to quick request</Link>
-            </div>
-          </Card>
+              <dl className="mt-4 space-y-3 text-sm">
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">
+                    Service
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-[var(--hw-ink)]">
+                    {draft.service_category}
+                    {draft.service_subcategory ? (
+                      <span className="ml-1 font-normal text-[var(--hw-muted)]">
+                        / {draft.service_subcategory}
+                      </span>
+                    ) : null}
+                  </dd>
+                </div>
+
+                {draft.issue_description ? (
+                  <div>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">
+                      Issue
+                    </dt>
+                    <dd className="mt-0.5 leading-relaxed text-[var(--hw-ink)]">
+                      {draft.issue_description}
+                    </dd>
+                  </div>
+                ) : null}
+
+                {draft.property_address ? (
+                  <div>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">
+                      Address
+                    </dt>
+                    <dd className="mt-0.5 text-[var(--hw-ink)]">{draft.property_address}</dd>
+                  </div>
+                ) : null}
+
+                {draft.preferred_date ? (
+                  <div>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">
+                      Preferred
+                    </dt>
+                    <dd className="mt-0.5 text-[var(--hw-ink)]">
+                      {draft.preferred_date}{" "}
+                      <span className="text-[var(--hw-muted)]">
+                        ({draft.preferred_time_window})
+                      </span>
+                    </dd>
+                  </div>
+                ) : null}
+              </dl>
+
+              <div className="mt-5 border-t border-[var(--hw-line)] pt-4">
+                <Link
+                  href="/marketplace/request"
+                  className="text-xs font-medium text-[var(--hw-muted)] underline decoration-[var(--hw-line)] underline-offset-2 transition-colors hover:text-[var(--hw-ink)]"
+                >
+                  Switch to quick request →
+                </Link>
+              </div>
+            </Card>
+          </div>
         </div>
 
-        <div className="mt-6 text-sm text-[var(--hw-muted)]">
-          <Link href="/">Back home</Link>
+        <div className="mt-8 text-sm text-[var(--hw-muted)]">
+          <Link href="/">← Back home</Link>
         </div>
       </Container>
     </div>
