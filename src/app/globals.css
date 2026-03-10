@@ -1,46 +1,14 @@
-@import "tailwindcss";
-
-:root {
-  --hw-red: #e53935;
-  --hw-ink: #111827;
-  --hw-muted: #6b7280;
-  --hw-line: #e5e7eb;
-  --hw-soft: #f8fafc;
-
-  --background: #ffffff;
-  --foreground: var(--hw-ink);
+:root{
+  --hw-red:#E53935;
+  --hw-ink:#111827;
+  --hw-muted:#6B7280;
+  --hw-line:#E5E7EB;
+  --hw-soft:#F8FAFC;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto,
-    Helvetica, Arial;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    monospace;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-}
-
-::selection {
-  background: rgba(229, 57, 53, 0.18);
-}
-
-/* subtle AI breath: gentle shimmer for loading states */
-@keyframes hw-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-.hw-shimmer {
-  background: linear-gradient(90deg, rgba(17, 24, 39, 0.06), rgba(229, 57, 53, 0.10), rgba(17, 24, 39, 0.06));
-  background-size: 200% 100%;
-  animation: hw-shimmer 1.4s ease-in-out infinite;
-}
+html,body{height:100%}
+body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial;color:var(--hw-ink);background:linear-gradient(180deg,#fff 0%,#fff 55%,#FAFAFA 100%)}
+a{color:var(--hw-red);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:960px;margin:0 auto;padding:48px 20px}
+.card{border:1px solid var(--hw-line);border-radius:18px;background:#fff;padding:18px;box-shadow:0 10px 30px rgba(17,24,39,.08)}
+.pill{display:inline-flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--hw-line);border-radius:999px;background:#fff;color:var(--hw-muted);font-size:12px}
