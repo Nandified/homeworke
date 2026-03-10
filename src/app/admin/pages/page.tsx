@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Button, Card, EmptyState } from "@/components/ui";
+import { Button, Card, EmptyState, Pill } from "@/components/ui";
 import { dbEnabled, db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -8,7 +8,45 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPagesPage() {
   if (!dbEnabled()) {
-    return <div className="text-sm text-[var(--hw-muted)]">DATABASE_URL not set.</div>;
+    const demo = [
+      { slug: "home", title: "Homepage" },
+      { slug: "how-it-works", title: "How it works" },
+      { slug: "chicago", title: "Chicago" },
+    ];
+
+    return (
+      <div className="grid gap-4">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">Pages</h1>
+          <Pill>Demo mode</Pill>
+        </div>
+        <Card className="overflow-hidden">
+          <div className="grid grid-cols-[1fr_160px_140px] gap-3 border-b border-[var(--hw-line)] bg-[var(--hw-soft)] px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--hw-muted)]">
+            <div>Title</div>
+            <div>Status</div>
+            <div className="text-right">Actions</div>
+          </div>
+          <div className="divide-y divide-[var(--hw-line)]">
+            {demo.map((p) => (
+              <div key={p.slug} className="grid grid-cols-[1fr_160px_140px] items-center gap-3 px-5 py-4">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{p.title}</div>
+                  <div className="mt-0.5 text-sm text-[var(--hw-muted)]">/{p.slug}</div>
+                </div>
+                <div className="text-sm font-semibold">
+                  <span className="text-[var(--hw-muted)]">Static</span>
+                </div>
+                <div className="text-right">
+                  <Link href={p.slug === "home" ? "/" : `/${p.slug}`} className="text-sm font-semibold text-[var(--hw-red)]">
+                    View
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   const pages = await db().page.findMany({ orderBy: [{ updatedAt: "desc" }] });

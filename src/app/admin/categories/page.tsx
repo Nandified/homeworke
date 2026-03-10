@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Button, Card, EmptyState } from "@/components/ui";
+import { Button, Card, EmptyState, Pill } from "@/components/ui";
 import { dbEnabled, db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -8,7 +8,44 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminCategoriesPage() {
   if (!dbEnabled()) {
-    return <div className="text-sm text-[var(--hw-muted)]">DATABASE_URL not set.</div>;
+    const demo = [
+      { name: "Electrical", slug: "electrical", sortOrder: 1 },
+      { name: "Plumbing", slug: "plumbing", sortOrder: 2 },
+      { name: "HVAC", slug: "hvac", sortOrder: 3 },
+      { name: "Handyman", slug: "handyman", sortOrder: 4 },
+      { name: "Cleaning", slug: "cleaning", sortOrder: 5 },
+    ];
+
+    return (
+      <div className="grid gap-4">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">Categories</h1>
+          <Pill>Demo mode</Pill>
+        </div>
+
+        <Card className="overflow-hidden">
+          <div className="grid grid-cols-[1fr_140px_140px] gap-3 border-b border-[var(--hw-line)] bg-[var(--hw-soft)] px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--hw-muted)]">
+            <div>Name</div>
+            <div>Sort</div>
+            <div className="text-right">Actions</div>
+          </div>
+          <div className="divide-y divide-[var(--hw-line)]">
+            {demo.map((c) => (
+              <div key={c.slug} className="grid grid-cols-[1fr_140px_140px] items-center gap-3 px-5 py-4">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{c.name}</div>
+                  <div className="mt-0.5 text-sm text-[var(--hw-muted)]">/{c.slug}</div>
+                </div>
+                <div className="text-sm font-semibold text-[var(--hw-muted)]">{c.sortOrder}</div>
+                <div className="text-right">
+                  <span className="text-sm font-semibold text-[var(--hw-muted)]">(DB required)</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   const categories = await db().serviceCategory.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });

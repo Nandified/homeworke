@@ -1,21 +1,28 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { Container, Divider } from "@/components/ui";
+import { Container, Divider, Pill } from "@/components/ui";
+import { dbEnabled } from "@/lib/db";
 import { requireCmsUser } from "@/lib/rbac";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout(props: { children: ReactNode }) {
-  await requireCmsUser();
+  // Allow deployed demo browsing when DB isn't configured yet.
+  if (dbEnabled()) {
+    await requireCmsUser();
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
       <header className="border-b border-[var(--hw-line)] bg-white">
         <Container className="py-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">Admin</div>
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">Admin</div>
+              {!dbEnabled() ? <Pill>Demo</Pill> : null}
+            </div>
             <nav className="flex flex-wrap gap-4 text-sm font-semibold">
               <Link href="/admin/dashboard" className="text-[var(--hw-ink)] hover:text-[var(--hw-red)]">
                 Dashboard

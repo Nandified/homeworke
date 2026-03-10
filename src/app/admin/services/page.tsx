@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { Button, Card, EmptyState } from "@/components/ui";
+import servicesSpec from "@/../spec/services.json";
+import { Button, Card, EmptyState, Pill } from "@/components/ui";
 import { dbEnabled, db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -8,7 +9,46 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminServicesPage() {
   if (!dbEnabled()) {
-    return <div className="text-sm text-[var(--hw-muted)]">DATABASE_URL not set.</div>;
+    const services = (servicesSpec.services || []).map((s) => ({
+      id: s.slug,
+      title: s.name,
+      slug: s.slug,
+      published: true,
+    }));
+
+    return (
+      <div className="grid gap-4">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">Services</h1>
+          <Pill>Demo mode</Pill>
+        </div>
+        <Card className="overflow-hidden">
+          <div className="grid grid-cols-[1fr_160px_140px] gap-3 border-b border-[var(--hw-line)] bg-[var(--hw-soft)] px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--hw-muted)]">
+            <div>Title</div>
+            <div>Status</div>
+            <div className="text-right">Actions</div>
+          </div>
+          <div className="divide-y divide-[var(--hw-line)]">
+            {services.map((s) => (
+              <div key={s.id} className="grid grid-cols-[1fr_160px_140px] items-center gap-3 px-5 py-4">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{s.title}</div>
+                  <div className="mt-0.5 text-sm text-[var(--hw-muted)]">/{s.slug}</div>
+                </div>
+                <div className="text-sm font-semibold">
+                  <span className="text-emerald-700">Published</span>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Link href={`/services/${s.slug}`} className="text-sm font-semibold text-[var(--hw-red)]">
+                    View
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   const services = await db().service.findMany({
