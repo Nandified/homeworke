@@ -153,7 +153,7 @@ export default function Page() {
                         placeholder=""
                         aria-label="Describe your issue"
                         rows={2}
-                        className="w-full resize-none rounded-[var(--hw-radius-lg)] px-5 py-4 text-[17px] leading-7 border-0 outline-none hw-glass-field sm:py-3"
+                        className="w-full resize-none rounded-[var(--hw-radius-lg)] px-5 py-3 text-[17px] leading-7 border-0 outline-none hw-glass-field sm:py-3"
                         style={{ minHeight: 80 }}
                       />
 
@@ -161,7 +161,7 @@ export default function Page() {
                       {!issue ? (
                         <div
                           aria-hidden
-                          className="pointer-events-none absolute left-5 top-6 flex items-center gap-1 text-[16px] text-[var(--hw-muted)]"
+                          className="pointer-events-none absolute left-5 top-5 flex items-center gap-1 text-[16px] text-[var(--hw-muted)]"
                         >
                           <span className="opacity-70">Try:</span>
                           <span className="font-medium text-[#4b5563]">{demoText}</span>
