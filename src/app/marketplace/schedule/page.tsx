@@ -37,6 +37,13 @@ function ScheduleInner() {
     setError(null);
     try {
       const partner = loadPartner();
+      let intake: any = null;
+      try {
+        const raw = localStorage.getItem("hw_intake_draft_v1");
+        intake = raw ? JSON.parse(raw) : null;
+      } catch {
+        intake = null;
+      }
 
       const res = await fetch("/api/marketplace/confirm", {
         method: "POST",
@@ -49,10 +56,11 @@ function ScheduleInner() {
           window,
           partnerId: partner?.partnerId || null,
           shareWithPartner: partner ? true : null,
+          intake,
         }),
       });
-      const data = (await res.json()) as { ok: boolean; jobId?: string; token?: string; error?: string };
-      if (!res.ok || !data.ok || !data.jobId || !data.token) {
+      const data = (await res.json()) as { ok: boolean; jobId?: string; token?: string; workOrderId?: string; error?: string };
+      if (!res.ok || !data.ok || !data.jobId || !data.token || !data.workOrderId) {
         setError(data.error || "confirm_failed");
         return;
       }
@@ -62,6 +70,7 @@ function ScheduleInner() {
       const session = {
         token: data.token,
         jobId: data.jobId,
+        workOrderId: data.workOrderId,
         email,
         service,
         providerName: prettyProvider(provider),

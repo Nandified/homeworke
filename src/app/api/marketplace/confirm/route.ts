@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createWorkOrder } from "@/lib/mock-store";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,7 @@ export async function POST(req: Request) {
       window?: string;
       partnerId?: string | null;
       shareWithPartner?: boolean | null;
+      intake?: unknown;
     };
 
     if (!body.email || !body.email.includes("@")) {
@@ -24,6 +26,22 @@ export async function POST(req: Request) {
 
     const jobId = `job_${Math.random().toString(36).slice(2, 10)}`;
     const token = `mock_${Math.random().toString(36).slice(2, 18)}`;
+
+
+    const intake = (body.intake || {}) as any;
+    const workOrder = createWorkOrder({
+      token,
+      originPartnerId: body.partnerId || null,
+      shareWithPartner: body.shareWithPartner ?? null,
+      serviceCategory: intake.service_category || body.service || "General",
+      serviceSubcategory: intake.service_subcategory,
+      issueDescription: intake.issue_description || undefined,
+      urgencyLevel: intake.urgency_level || undefined,
+      propertyAddress: intake.property_address || undefined,
+      propertyType: intake.property_type || undefined,
+      preferredDate: intake.preferred_date || body.date || undefined,
+      preferredWindow: intake.preferred_time_window || body.window || undefined,
+    });
 
     // Phase 2: log only (later: DB)
     console.log(
@@ -41,7 +59,7 @@ export async function POST(req: Request) {
       })
     );
 
-    return json({ ok: true, jobId, token });
+    return json({ ok: true, jobId, token, workOrderId: workOrder.id });
   } catch {
     return json({ ok: false, error: "bad_json" }, { status: 400 });
   }

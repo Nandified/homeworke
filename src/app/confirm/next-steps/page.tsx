@@ -8,6 +8,7 @@ import { Button, Card, Container, Pill } from "@/components/ui";
 type Session = {
   token: string;
   jobId: string;
+  workOrderId?: string;
   email: string;
   service: string;
   providerName: string;
@@ -84,6 +85,12 @@ export default function Page() {
                 <div>
                   <span className="font-semibold text-[var(--hw-ink)]">Provider:</span> {session.providerName}
                 </div>
+                {session.workOrderId ? (
+                  <div>
+                    <span className="font-semibold text-[var(--hw-ink)]">Work order:</span> {session.workOrderId}
+                  </div>
+                ) : null}
+
                 <div>
                   <span className="font-semibold text-[var(--hw-ink)]">Requested:</span> {session.date} ({session.window})
                 </div>
