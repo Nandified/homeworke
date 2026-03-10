@@ -8,7 +8,7 @@ import { Play, Phone, Mail, Link as LinkIcon } from "lucide-react";
 
 import { Button, Card, Chip, Container, Pill, StatTile } from "@/components/ui";
 import { PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
-import spec from "@/content/pro_landing_polish_opus.json";
+import spec from "@/../spec/pro_landing_polish_opus.json";
 
 type ProProfile = {
   pro_code: string;

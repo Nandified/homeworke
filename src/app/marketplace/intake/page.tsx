@@ -19,7 +19,7 @@ import {
   Textarea,
 } from "@/components/ui";
 
-import spec from "@/content/intake_stepper_opus.json";
+import spec from "@/../spec/intake_stepper_opus.json";
 
 type StepKey = (typeof spec.steps)[number]["key"];
 

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Button, Card, Chip, Container, Input, Pill, StatTile } from "@/components/ui";
 import { loadPartner } from "@/lib/partner-context";
-import homepage from "@/content/homepage_v1_opus.json";
+import homepage from "@/../spec/homepage_v1_opus.json";
 
 const aliveHints = [
   "Try: 'water under kitchen sink'",
