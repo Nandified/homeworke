@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Card, EmptyState, Pill, StatTile } from "@/components/ui";
+import { EmptyState, StatTile } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
+import { DashboardSection } from "@/components/dashboard/DashboardSection";
+import { KpiGrid } from "@/components/dashboard/KpiGrid";
+import { ListRow, StatusChip } from "@/components/dashboard/ListRow";
 
 type WorkOrder = {
   id: string;
@@ -53,37 +56,32 @@ export default function ProjectManagerDashboardPage() {
   );
 
   return (
-    <PortalShell role="PM" title="Project Manager" nav={nav}>
-      <div className="grid gap-4">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <PortalShell role="PM" title="Project Manager" nav={nav} description="Triage your assigned jobs and keep communication moving." >
+      <div className="grid gap-6">
+        <KpiGrid>
           <StatTile label="Scheduled" value={String(scheduledCount)} note="Upcoming appointments (Phase 2: derived from status)." />
           <StatTile label="In progress" value={String(inProgressCount)} note="Live jobs." />
           <StatTile label="SLA alerts" value="—" note="Coming soon" />
-        </div>
+        </KpiGrid>
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold">My projects</div>
-            <Pill>{workOrders?.length ?? "—"}</Pill>
-          </div>
-          <div className="mt-4 grid gap-2">
+        <DashboardSection title="My projects" count={workOrders?.length ?? "—"}>
+          <div className="grid gap-2">
             {workOrders === null ? (
               <div className="text-sm text-[var(--hw-muted)]">Loading…</div>
             ) : workOrders.length === 0 ? (
               <EmptyState title="No projects" text="Once work orders are assigned, they'll show here." />
             ) : (
               workOrders.slice(0, 8).map((w) => (
-                <div key={w.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{w.serviceCategory || "Work order"}</div>
-                    <Pill>{w.status || "—"}</Pill>
-                  </div>
-                  <div className="mt-1 text-xs text-[var(--hw-muted)]">{w.propertyAddress || w.id}</div>
-                </div>
+                <ListRow
+                  key={w.id}
+                  title={w.serviceCategory || "Work order"}
+                  subtitle={w.propertyAddress || w.id}
+                  badge={w.status ? <StatusChip>{w.status}</StatusChip> : null}
+                />
               ))
             )}
           </div>
-        </Card>
+        </DashboardSection>
       </div>
     </PortalShell>
   );

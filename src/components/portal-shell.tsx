@@ -8,6 +8,12 @@ export function PortalShell(props: {
   role: string;
   title: string;
   nav: PortalNavItem[];
+  /** Optional eyebrow label (defaults to "Portal") */
+  eyebrow?: string;
+  /** Optional description under the page title */
+  description?: string;
+  /** Optional single primary action for the page */
+  primaryAction?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -43,17 +49,19 @@ export function PortalShell(props: {
       <main>
         <Container className="py-8 md:py-12">
           {/* ── Page heading ── */}
-          <div className="max-w-2xl">
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-              Portal
-            </span>
-            <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">
-              {props.title}
-            </h1>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-              v1 build: navigation and information architecture first. Data
-              wiring next.
-            </p>
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                {props.eyebrow || "Portal"}
+              </span>
+              <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">
+                {props.title}
+              </h1>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+                {props.description || "v1 build: navigation and information architecture first. Data wiring next."}
+              </p>
+            </div>
+            {props.primaryAction ? <div className="shrink-0">{props.primaryAction}</div> : null}
           </div>
 
           {/* ── Layout: sidebar + content ── */}

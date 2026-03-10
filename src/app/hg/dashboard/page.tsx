@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Card, EmptyState, Pill, StatTile } from "@/components/ui";
+import { EmptyState, StatTile } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
+import { DashboardSection } from "@/components/dashboard/DashboardSection";
+import { KpiGrid } from "@/components/dashboard/KpiGrid";
+import { ListRow, StatusChip } from "@/components/dashboard/ListRow";
 
 type WorkOrder = {
   id: string;
@@ -86,38 +89,32 @@ export default function HomeGuideDashboardPage() {
   const unreadCount = useMemo(() => (messages || []).filter((m) => !m.readAt).length, [messages]);
 
   return (
-    <PortalShell role="HG" title="Home Guide" nav={nav}>
-      <div className="grid gap-4">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <PortalShell role="HG" title="Home Guide" nav={nav} description="Monitor the triage queue, keep threads moving, and route work to the right team." >
+      <div className="grid gap-6">
+        <KpiGrid>
           <StatTile label="Work orders pending" value={String(pendingCount)} note="Triage queue (Phase 2: simplified)." />
           <StatTile label="Unread messages" value={String(unreadCount)} note="Across threads." />
           <StatTile label="Active projects" value={String(activeCount)} note="Non-completed work orders." />
-        </div>
+        </KpiGrid>
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold">Triage queue</div>
-            <Pill>{workOrders?.length ?? "—"}</Pill>
-          </div>
-
-          <div className="mt-4 grid gap-2">
+        <DashboardSection title="Triage queue" count={workOrders?.length ?? "—"}>
+          <div className="grid gap-2">
             {workOrders === null ? (
               <div className="text-sm text-[var(--hw-muted)]">Loading…</div>
             ) : workOrders.length === 0 ? (
               <EmptyState title="No work orders" text="Create a work order from the marketplace to populate this queue." />
             ) : (
               workOrders.slice(0, 8).map((w) => (
-                <div key={w.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{w.serviceCategory || "Work order"}</div>
-                    <Pill>{w.status || "—"}</Pill>
-                  </div>
-                  <div className="mt-1 text-xs text-[var(--hw-muted)]">{w.propertyAddress || w.id}</div>
-                </div>
+                <ListRow
+                  key={w.id}
+                  title={w.serviceCategory || "Work order"}
+                  subtitle={w.propertyAddress || w.id}
+                  badge={w.status ? <StatusChip>{w.status}</StatusChip> : null}
+                />
               ))
             )}
           </div>
-        </Card>
+        </DashboardSection>
       </div>
     </PortalShell>
   );

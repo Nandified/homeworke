@@ -2,8 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Button, Card, Chip, EmptyState, Pill, StatTile } from "@/components/ui";
+import Link from "next/link";
+
+import { Button, Card, EmptyState, StatTile } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
+import { DashboardSection } from "@/components/dashboard/DashboardSection";
+import { KpiGrid } from "@/components/dashboard/KpiGrid";
+import { ListRow } from "@/components/dashboard/ListRow";
+import { Chip } from "@/components/ui";
 import { loadPartner, PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
 
 export type PartnerDashboardProps = {
@@ -178,13 +184,27 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
   const totalCount = workOrders.length;
 
   return (
-    <PortalShell role="PARTNER" title={props.title || "Partner"} nav={nav}>
+    <PortalShell
+      role="PARTNER"
+      title={props.title || "Partner"}
+      nav={nav}
+      description="See shared client projects and keep tabs on active threads."
+      primaryAction={
+        <Link href={`${basePath}/messages`}>
+          <Button>Open messages</Button>
+        </Link>
+      }
+    >
       <div className="grid gap-6">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <KpiGrid>
           <StatTile label="Shared projects" value={String(totalCount)} note="Work orders shared with you." />
           <StatTile label="Unread messages" value={String(unreadCount)} note="From homeowner + ops." />
-          <StatTile label="Partner type" value={String(partner.partnerType || "REAL_ESTATE")} note={partner.officeName ? `Office: ${partner.officeName}` : ""} />
-        </div>
+          <StatTile
+            label="Partner type"
+            value={String(partner.partnerType || "REAL_ESTATE")}
+            note={partner.officeName ? `Office: ${partner.officeName}` : ""}
+          />
+        </KpiGrid>
 
         {/* Loading / error */}
         {loading && (
@@ -213,42 +233,35 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               if (items.length === 0) return null;
 
               return (
-                <section key={status}>
-                  <div className="mb-3 flex items-center gap-2">
-                    <h2 className="text-sm font-semibold">{status}</h2>
-                    <Pill>{items.length}</Pill>
-                  </div>
-                  <div className="grid gap-3">
+                <DashboardSection
+                  key={status}
+                  title={status}
+                  count={items.length}
+                  description="Shared work orders grouped by current status."
+                >
+                  <div className="grid gap-2">
                     {items.slice(0, 6).map((wo) => (
-                      <Card
+                      <ListRow
                         key={wo.id}
-                        className="flex flex-col gap-2 p-4 transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
-                      >
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">{wo.title || wo.address || `Work Order #${wo.id}`}</span>
-                            <Chip className={STATUS_CLASS[status]}>{status}</Chip>
-                          </div>
-                          {wo.clientName && <span className="text-xs text-[var(--hw-muted)]">Client: {wo.clientName}</span>}
-                          {wo.address && wo.title && <span className="text-xs text-[var(--hw-muted)]">{wo.address}</span>}
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-[var(--hw-muted)]">
-                          {wo.updatedAt ? (
+                        title={wo.title || wo.address || `Work Order #${wo.id}`}
+                        subtitle={wo.address && wo.title ? wo.address : undefined}
+                        footnote={wo.clientName ? `Client: ${wo.clientName}` : undefined}
+                        badge={<Chip className={STATUS_CLASS[status]}>{status}</Chip>}
+                        meta={
+                          wo.updatedAt ? (
                             <span>
-                              Updated{" "}
-                              {new Date(wo.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                              Updated {new Date(wo.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                             </span>
                           ) : wo.createdAt ? (
                             <span>
-                              Created{" "}
-                              {new Date(wo.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                              Created {new Date(wo.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                             </span>
-                          ) : null}
-                        </div>
-                      </Card>
+                          ) : null
+                        }
+                      />
                     ))}
                   </div>
-                </section>
+                </DashboardSection>
               );
             })}
           </div>
@@ -256,32 +269,31 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
         {/* Messages preview */}
         {!loading && !error && (
-          <Card className="p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-semibold">Recent messages</div>
-                <div className="mt-1 text-xs text-[var(--hw-muted)]">Phase 2: minimal thread preview</div>
-              </div>
-              <Pill>{messages.length}</Pill>
-            </div>
-            <div className="mt-4 grid gap-2">
+          <DashboardSection
+            title="Recent messages"
+            description="Phase 2: minimal thread preview"
+            count={messages.length}
+            action={
+              <Link href={`${basePath}/messages`}>
+                <Button variant="secondary">View all</Button>
+              </Link>
+            }
+          >
+            <div className="grid gap-2">
               {messages.length === 0 ? (
                 <EmptyState title="No messages" text="Messages will appear here once a homeowner starts a thread." />
               ) : (
                 messages.slice(0, 5).map((m) => (
-                  <div key={m.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="text-xs font-semibold text-[var(--hw-ink)]">{m.fromRole}</div>
-                      <div className="text-[11px] text-[var(--hw-muted)]">
-                        {new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                      </div>
-                    </div>
-                    <div className="mt-1 text-sm text-[var(--hw-ink)] line-clamp-2">{m.body}</div>
-                  </div>
+                  <ListRow
+                    key={m.id}
+                    title={m.fromRole}
+                    subtitle={m.body}
+                    meta={new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                  />
                 ))
               )}
             </div>
-          </Card>
+          </DashboardSection>
         )}
       </div>
     </PortalShell>

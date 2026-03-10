@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { Button, Card, EmptyState, Pill, StatTile } from "@/components/ui";
+import { Button, EmptyState, StatTile } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
+import { DashboardSection } from "@/components/dashboard/DashboardSection";
+import { KpiGrid } from "@/components/dashboard/KpiGrid";
+import { ListRow, StatusChip } from "@/components/dashboard/ListRow";
 
 type Session = {
   token: string;
@@ -110,46 +113,46 @@ export default function HomeownerDashboardPage() {
   const unreadCount = useMemo(() => (messages || []).filter((m) => !m.readAt).length, [messages]);
 
   return (
-    <PortalShell role="HO" title="Homeowner" nav={nav}>
-      <div className="grid gap-4">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <PortalShell
+      role="HO"
+      title="Homeowner"
+      nav={nav}
+      description="Track your active services, properties, and messages with your Pro Team."
+      primaryAction={
+        <Link href="/marketplace/intake">
+          <Button>Request service</Button>
+        </Link>
+      }
+    >
+      <div className="grid gap-6">
+        <KpiGrid>
           <StatTile label="Active services" value={String(workOrders?.length ?? 0)} note="Work orders in your dashboard." />
           <StatTile label="My properties" value={String(properties?.length ?? 0)} note="Property profiles (Phase 2: minimal)." />
           <StatTile label="Unread messages" value={String(unreadCount)} note="From your Pro Team." />
-        </div>
+        </KpiGrid>
 
         {workOrders && workOrders.length ? (
-          <Card className="p-6 md:p-7">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-semibold">Your work orders</div>
-                <div className="mt-1 text-xs text-[var(--hw-muted)]">
-                  Partner: {session?.partner?.partnerName || "—"} • Latest status: {latest?.status || "—"}
-                </div>
-              </div>
-              <Pill>{workOrders.length} total</Pill>
-            </div>
-            <div className="mt-4 grid gap-3">
+          <DashboardSection
+            title="Your work orders"
+            description={`Partner: ${session?.partner?.partnerName || "—"} • Latest status: ${latest?.status || "—"}`}
+            count={`${workOrders.length} total`}
+            action={<Button variant="secondary">Chat with Pro Team</Button>}
+          >
+            <div className="grid gap-2">
               {workOrders.slice(0, 5).map((w) => (
-                <Link key={w.id} href={`/ho/work-orders/${w.id}`} className="no-underline">
-                  <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 hover:bg-[var(--hw-soft)]">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{w.serviceCategory}</div>
-                      <Pill>Status: {w.status}</Pill>
-                    </div>
-                    {w.propertyAddress ? <div className="mt-1 text-sm text-[var(--hw-muted)]">{w.propertyAddress}</div> : null}
-                  </div>
-                </Link>
+                <ListRow
+                  key={w.id}
+                  href={`/ho/work-orders/${w.id}`}
+                  title={w.serviceCategory}
+                  subtitle={w.propertyAddress}
+                  badge={<StatusChip>Status: {w.status}</StatusChip>}
+                />
               ))}
             </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Link href="/marketplace/intake">
-                <Button>Submit Work Order</Button>
-              </Link>
-              <Button variant="secondary">Request Express Estimate</Button>
-              <Button variant="ghost">Chat with Pro Team</Button>
+            <div className="mt-5">
+              <Button variant="ghost">Request Express Estimate</Button>
             </div>
-          </Card>
+          </DashboardSection>
         ) : (
           <EmptyState
             title="No active services"

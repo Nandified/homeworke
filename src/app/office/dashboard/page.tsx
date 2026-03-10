@@ -2,8 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Card, EmptyState, Pill, StatTile } from "@/components/ui";
+import Link from "next/link";
+
+import { Button, EmptyState, StatTile } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
+import { DashboardSection } from "@/components/dashboard/DashboardSection";
+import { KpiGrid } from "@/components/dashboard/KpiGrid";
+import { ListRow, StatusChip } from "@/components/dashboard/ListRow";
 
 type WorkOrder = {
   id: string;
@@ -49,34 +54,42 @@ export default function OfficeDashboardPage() {
   );
 
   return (
-    <PortalShell role="OFFICE" title="Office" nav={nav}>
-      <div className="grid gap-4">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <PortalShell
+      role="OFFICE"
+      title="Office"
+      nav={nav}
+      description="Oversee partner activity and the office-level pipeline."
+      primaryAction={
+        <Link href="/office/work-orders">
+          <Button>View work orders</Button>
+        </Link>
+      }
+    >
+      <div className="grid gap-6">
+        <KpiGrid>
           <StatTile label="Active projects" value={String(activeCount)} note="Across all partners (Phase 2: mock)." />
           <StatTile label="Partner seats" value="—" note="Coming soon" />
           <StatTile label="Unread threads" value="—" note="Coming soon" />
-        </div>
+        </KpiGrid>
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold">Recent work orders</div>
-            <Pill>{workOrders?.length ?? "—"}</Pill>
-          </div>
-          <div className="mt-4 grid gap-2">
+        <DashboardSection title="Recent work orders" count={workOrders?.length ?? "—"}>
+          <div className="grid gap-2">
             {workOrders === null ? (
               <div className="text-sm text-[var(--hw-muted)]">Loading…</div>
             ) : workOrders.length === 0 ? (
               <EmptyState title="No work orders yet" text="Once office members originate projects, they'll show up here." />
             ) : (
               workOrders.slice(0, 6).map((w) => (
-                <div key={w.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{w.serviceCategory || "Work order"}</div>
-                  <div className="mt-1 text-xs text-[var(--hw-muted)]">{w.propertyAddress || w.id}</div>
-                </div>
+                <ListRow
+                  key={w.id}
+                  title={w.serviceCategory || "Work order"}
+                  subtitle={w.propertyAddress || w.id}
+                  badge={w.status ? <StatusChip>{w.status}</StatusChip> : null}
+                />
               ))
             )}
           </div>
-        </Card>
+        </DashboardSection>
       </div>
     </PortalShell>
   );
