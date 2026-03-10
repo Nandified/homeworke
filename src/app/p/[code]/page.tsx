@@ -89,7 +89,7 @@ function SocialIconLink(props: { href: string; label: string }) {
       href={props.href}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex items-center justify-center rounded-full border border-[var(--hw-line)] bg-white p-2 text-[var(--hw-muted)] hover:bg-[var(--hw-soft)]"
+      className="inline-flex items-center justify-center rounded-full border border-[var(--hw-line)] bg-white p-2.5 text-[var(--hw-muted)] transition-colors hover:border-[var(--hw-ink)]/20 hover:bg-[var(--hw-soft)] hover:text-[var(--hw-ink)]"
       aria-label={props.label}
       title={props.label}
     >
@@ -114,14 +114,14 @@ export default function Page() {
   if (!pro) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
-        <Container className="py-12">
+        <Container className="flex min-h-screen flex-col items-center justify-center py-16">
           <Pill>Partner</Pill>
-          <Card className="mt-6 p-7">
-            <div className="text-sm font-semibold">This link is not available.</div>
-            <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
+          <Card className="mt-8 max-w-md p-10 text-center">
+            <div className="text-base font-semibold tracking-tight">This link is not available.</div>
+            <div className="mt-3 text-sm leading-7 text-[var(--hw-muted)]">
               You can still use Homeworke through the public marketplace.
             </div>
-            <div className="mt-5">
+            <div className="mt-8">
               <Link href="/">
                 <Button>Go to Homeworke</Button>
               </Link>
@@ -136,103 +136,151 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
+      {/* ── Sticky header ── */}
       <header className="sticky top-0 z-20 border-b border-[var(--hw-line)] bg-white/80 backdrop-blur">
-        <Container className="flex h-16 items-center justify-between">
+        <Container className="flex h-14 items-center justify-between md:h-16">
           <Link href="/" className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">
             Homeworke
           </Link>
-          <nav className="hidden items-center gap-2 md:flex">
-            <Link href="/marketplace/intake">
+          <nav className="flex items-center gap-3">
+            <Pill>Partner link</Pill>
+            <Link href="/marketplace/intake" className="hidden md:block">
               <Button variant="ghost">Request service</Button>
             </Link>
-            <Pill>Partner link</Pill>
           </nav>
         </Container>
       </header>
 
       <main>
-        <Container className="py-12">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">{spec.page.headline}</div>
-                            <div className="flex items-start gap-4">
-                <div className="relative h-16 w-16 overflow-hidden rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[var(--hw-soft)]">
+        {/* ── Hero section ── */}
+        <section className="border-b border-[var(--hw-line)] bg-white">
+          <Container className="py-10 md:py-16">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+              {spec.page.headline}
+            </div>
+
+            <div className="mt-6 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+              {/* Left: identity */}
+              <div className="flex items-start gap-5">
+                {/* Avatar */}
+                <div className="relative h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-2xl border border-[rgba(229,57,53,.14)] bg-[var(--hw-soft)] shadow-sm md:h-20 md:w-20">
                   {pro.headshot_url ? (
                     <Image src={pro.headshot_url} alt={pro.display_name} fill className="object-cover" />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-sm font-extrabold text-[var(--hw-muted)]">
-                      {pro.display_name.split(" ").map((p) => p[0]).slice(0,2).join("")}
+                    <div className="flex h-full w-full items-center justify-center text-base font-extrabold text-[var(--hw-muted)] md:text-lg">
+                      {pro.display_name
+                        .split(" ")
+                        .map((p) => p[0])
+                        .slice(0, 2)
+                        .join("")}
                     </div>
                   )}
                 </div>
-                <div>
-                  <h1 className="text-balance text-4xl font-extrabold tracking-tight md:text-5xl">{pro.display_name}</h1>
-                  <div className="mt-3 max-w-3xl text-base leading-8 text-[var(--hw-muted)]">{pro.brokerage_name}</div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Chip>License: {pro.license_state} {pro.license_number}</Chip>
+
+                <div className="min-w-0">
+                  <h1 className="text-balance text-3xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-4xl lg:text-5xl">
+                    {pro.display_name}
+                  </h1>
+                  <p className="mt-1.5 text-sm leading-relaxed text-[var(--hw-muted)] md:text-base">
+                    {pro.brokerage_name}
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Chip>
+                      License: {pro.license_state} {pro.license_number}
+                    </Chip>
                     {partnerSet ? <Chip>Partner attached</Chip> : <Chip>Partner pending</Chip>}
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <a href={`mailto:${pro.email}`}>
-                <Button variant="secondary">
-                  <Mail className="h-4 w-4" />
-                  Email
+
+              {/* Right: contact actions */}
+              <div className="flex flex-shrink-0 gap-2">
+                <a href={`mailto:${pro.email}`}>
+                  <Button variant="secondary">
+                    <Mail className="h-4 w-4" />
+                    Email
+                  </Button>
+                </a>
+                <Button variant="secondary" disabled>
+                  <Phone className="h-4 w-4" />
+                  Call
                 </Button>
-              </a>
-              <Button variant="secondary" disabled>
-                <Phone className="h-4 w-4" />
-                Call
-              </Button>
+              </div>
             </div>
-          </div>
+          </Container>
+        </section>
 
-          <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-12">
-            <Card className="p-7 lg:col-span-7">
-              <div className="text-sm font-semibold">About</div>
-              <div className="mt-3 text-base leading-8 text-[var(--hw-muted)]">{pro.bio}</div>
+        {/* ── Content grid ── */}
+        <Container className="py-10 md:py-14">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            {/* About card */}
+            <Card className="p-8 lg:col-span-7 lg:p-9">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">About</h2>
+              <p className="mt-4 text-[15px] leading-[1.8] text-[var(--hw-muted)]">{pro.bio}</p>
 
-              {socials.length ? (
-                <div className="mt-6">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Social</div>
-                  <div className="mt-3 flex flex-wrap gap-2">
+              {socials.length > 0 && (
+                <div className="mt-8 border-t border-[var(--hw-line)] pt-6">
+                  <h3 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Social</h3>
+                  <div className="mt-4 flex flex-wrap gap-2.5">
                     {socials.map(([k, href]) => (
-                      <SocialIconLink key={k} href={href} label={k.replace(/_/g, " ").replace(/url/g, "").trim()} />
+                      <SocialIconLink
+                        key={k}
+                        href={href}
+                        label={k
+                          .replace(/_/g, " ")
+                          .replace(/url/g, "")
+                          .trim()}
+                      />
                     ))}
                     {pro.website_url ? <SocialIconLink href={pro.website_url} label="Website" /> : null}
                   </div>
                 </div>
-              ) : null}
+              )}
             </Card>
 
-            <Card className="p-7 lg:col-span-5">
-              <div className="text-sm font-semibold">Intro video</div>
-              <div className="mt-3 text-base leading-8 text-[var(--hw-muted)]">{spec.proCard.videoRule}</div>
-              <div className="mt-5 rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-8 text-center">
-                <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(229,57,53,.18)] bg-white">
-                  <Play className="h-6 w-6 text-[var(--hw-red)]" />
+            {/* Video card */}
+            <Card className="p-8 lg:col-span-5 lg:p-9">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Intro video</h2>
+              <p className="mt-4 text-[15px] leading-[1.8] text-[var(--hw-muted)]">{spec.proCard.videoRule}</p>
+              <div className="mt-6 flex flex-col items-center rounded-xl border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)]/60 px-6 py-10">
+                <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(229,57,53,.14)] bg-white shadow-sm">
+                  <Play className="h-5 w-5 text-[var(--hw-red)]" />
                 </div>
-                <div className="mt-4 text-sm font-semibold">Video placeholder</div>
-                <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
+                <div className="mt-5 text-sm font-semibold text-[var(--hw-ink)]">Video placeholder</div>
+                <div className="mt-1.5 text-center text-sm leading-relaxed text-[var(--hw-muted)]">
                   Upload and playback will be enabled in a future release.
                 </div>
               </div>
             </Card>
           </div>
 
-          <div className="mt-10">
-            <Card className="p-8">
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Homeworke</div>
-              <h2 className="mt-2 text-2xl font-extrabold tracking-tight">{spec.page.subheadline}</h2>
-              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <StatTile label="Funnel" value="No friction" note="Browse and start a request without creating an account first." />
-                <StatTile label="Trust" value="Vetted pros" note="Curated matching and clear next steps." />
-                <StatTile label="Partner" value="Permissioned" note="Your agent stays in the loop only when you allow it." />
+          {/* ── CTA section ── */}
+          <Card className="mt-10 overflow-hidden p-0">
+            <div className="px-8 pb-10 pt-9 md:px-10 md:pb-12 md:pt-11">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Homeworke</div>
+              <h2 className="mt-2 max-w-xl text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">
+                {spec.page.subheadline}
+              </h2>
+
+              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <StatTile
+                  label="Funnel"
+                  value="No friction"
+                  note="Browse and start a request without creating an account first."
+                />
+                <StatTile
+                  label="Trust"
+                  value="Vetted pros"
+                  note="Curated matching and clear next steps."
+                />
+                <StatTile
+                  label="Partner"
+                  value="Permissioned"
+                  note="Your agent stays in the loop only when you allow it."
+                />
               </div>
 
-              <div className="mt-7 flex flex-wrap gap-3">
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link href="/marketplace/intake">
                   <Button>{spec.page.primaryCta}</Button>
                 </Link>
@@ -241,11 +289,11 @@ export default function Page() {
                 </Link>
               </div>
 
-              <div className="mt-6 text-sm leading-7 text-[var(--hw-muted)]">
+              <p className="mt-6 max-w-lg text-[13px] leading-relaxed text-[var(--hw-muted)]">
                 Your request will start with this partner pre-attached for attribution. You control sharing on a per-request basis.
-              </div>
-            </Card>
-          </div>
+              </p>
+            </div>
+          </Card>
         </Container>
       </main>
     </div>

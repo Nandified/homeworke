@@ -91,32 +91,53 @@ function ScheduleInner() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
-      <Container className="py-12 md:py-14">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Scheduling</div>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">Confirm Your Service Request</h1>
-            <div className="mt-2 max-w-3xl text-sm leading-7 text-[var(--hw-muted)]">
-              We capture email at confirmation to send updates and match you with a provider. Account creation happens in
-              the background.
-            </div>
+      <Container className="py-16 md:py-20">
+        {/* ── Header ── */}
+        <div className="mb-10 md:mb-14">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+              Scheduling
+            </span>
+            <Pill>Capture moment</Pill>
           </div>
-          <Pill>Capture moment</Pill>
+
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl md:text-[2.75rem] md:leading-[1.15]">
+            Confirm Your Service Request
+          </h1>
+
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--hw-muted)]">
+            We capture email at confirmation to send updates and match you with a provider. Account creation happens in
+            the background.
+          </p>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Card className="p-6 md:p-7 lg:col-span-2">
-            <div className="text-sm font-semibold">Appointment details</div>
-            <div className="mt-2 text-sm text-[var(--hw-muted)]">Provider: {prettyProvider(provider)}</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">Service: {service}</div>
+        {/* ── Main grid ── */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+          {/* Left column – Appointment details */}
+          <Card className="space-y-6 p-7 md:p-8 lg:col-span-2">
+            <div>
+              <h2 className="text-base font-semibold tracking-tight">Appointment details</h2>
+              <div className="mt-3 flex flex-col gap-1 text-sm text-[var(--hw-muted)]">
+                <span>
+                  <span className="font-medium text-[var(--hw-fg)]">Provider:</span>{" "}
+                  {prettyProvider(provider)}
+                </span>
+                <span>
+                  <span className="font-medium text-[var(--hw-fg)]">Service:</span> {service}
+                </span>
+              </div>
+            </div>
 
-            <div className="mt-5 grid gap-3">
+            <hr className="border-[var(--hw-border)]" />
+
+            <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <Label>Date</Label>
                 <div className="mt-2">
                   <Input value={date} onChange={(e) => setDate(e.target.value)} placeholder="YYYY-MM-DD" />
                 </div>
               </div>
+
               <div>
                 <Label>Time window</Label>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -135,45 +156,48 @@ function ScheduleInner() {
             </div>
           </Card>
 
-          <Card className="p-6 md:p-7">
-            <div className="text-sm font-semibold">Confirm</div>
-            <div className="mt-3">
+          {/* Right column – Confirm */}
+          <Card className="flex flex-col gap-5 p-7 md:p-8">
+            <h2 className="text-base font-semibold tracking-tight">Confirm</h2>
+
+            <div className="space-y-2">
               <Label>Your email</Label>
-              <div className="mt-2">
-                <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
-              </div>
-              <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
+              <p className="text-xs leading-5 text-[var(--hw-muted)]">
                 Your email — so we can send you updates and match you with a provider.
-              </div>
-            </div>
-            <div className="mt-4">
-              <Checkbox
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                label="I agree to receive confirmation and updates (placeholder terms/privacy)."
-              />
+              </p>
             </div>
 
-            {error ? (
-              <div className="mt-4 rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.20)] bg-[var(--hw-red-soft)] p-3 text-sm text-[var(--hw-muted)]">
+            <Checkbox
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              label="I agree to receive confirmation and updates (placeholder terms/privacy)."
+            />
+
+            {error && (
+              <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.20)] bg-[var(--hw-red-soft)] px-4 py-3 text-sm leading-relaxed text-[var(--hw-muted)]">
                 Could not confirm ({error}). Try again.
               </div>
-            ) : null}
+            )}
 
-            <div className="mt-5">
-              <Button disabled={!ready} onClick={onConfirm}>
-                {submitting ? "Confirming…" : "Confirm and Continue"}
-              </Button>
-            </div>
+            <Button disabled={!ready} onClick={onConfirm} className="mt-auto w-full">
+              {submitting ? "Confirming…" : "Confirm and Continue"}
+            </Button>
 
-            <div className="mt-3 text-sm leading-7 text-[var(--hw-muted)]">
-              Next: a quick “what happens next” screen, then your Homeowner dashboard.
-            </div>
+            <p className="text-center text-xs leading-5 text-[var(--hw-muted)]">
+              Next: a quick "what happens next" screen, then your Homeowner dashboard.
+            </p>
           </Card>
         </div>
 
-        <div className="mt-6 text-sm text-[var(--hw-muted)]">
-          <Link href={{ pathname: "/marketplace/providers", query: { service } }}>Back</Link>
+        {/* ── Back link ── */}
+        <div className="mt-10">
+          <Link
+            href={{ pathname: "/marketplace/providers", query: { service } }}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--hw-muted)] transition-colors hover:text-[var(--hw-fg)]"
+          >
+            <span aria-hidden="true">←</span> Back to providers
+          </Link>
         </div>
       </Container>
     </div>

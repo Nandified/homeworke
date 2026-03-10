@@ -35,71 +35,165 @@ export default function Page() {
 
   const lines = useMemo(
     () => [
-      "We match your request with qualified, vetted providers in your area.",
-      "You will receive updates by email as the request moves forward.",
-      "Review, approve, and schedule from your dashboard.",
+      {
+        label: "Matching",
+        text: "We match your request with qualified, vetted providers in your area.",
+      },
+      {
+        label: "Updates",
+        text: "You will receive updates by email as the request moves forward.",
+      },
+      {
+        label: "Control",
+        text: "Review, approve, and schedule from your dashboard.",
+      },
     ],
     []
   );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
-      <Container className="py-12 md:py-14">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Confirmed</div>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">You are all set. Here is what happens next.</h1>
-            <div className="mt-2 max-w-3xl text-sm leading-7 text-[var(--hw-muted)]">
-              Trust-first, no friction. You stay in control.
+      <Container className="py-16 md:py-20 lg:py-24">
+        {/* ── Header ── */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-emerald-600">
+                Confirmed
+              </span>
             </div>
+
+            <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl md:text-4xl md:leading-[1.15]">
+              You&rsquo;re all set.
+              <br className="hidden sm:block" />{" "}
+              Here&rsquo;s what happens next.
+            </h1>
+
+            <p className="mt-3 text-base leading-relaxed text-[var(--hw-muted)] md:text-lg">
+              Trust-first, no friction. You stay in control.
+            </p>
           </div>
+
           <Pill>Next steps</Pill>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Card className="p-6 md:p-7 lg:col-span-2">
-            <div className="text-sm font-semibold">What happens next</div>
-            <div className="mt-4 grid gap-3">
-              {lines.map((t, i) => (
-                <div key={t} className="rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white p-4">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Step {i + 1}</div>
-                  <div className="mt-1 text-sm leading-7 text-[var(--hw-muted)]">{t}</div>
-                </div>
-              ))}
-            </div>
+        {/* ── Body grid ── */}
+        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+          {/* Steps card */}
+          <Card className="space-y-6 p-6 sm:p-8 lg:col-span-2">
+            <h2 className="text-base font-bold tracking-tight text-[var(--hw-ink)]">
+              What happens next
+            </h2>
 
-            <div className="mt-6">
+            <ol className="grid gap-4">
+              {lines.map((step, i) => (
+                <li
+                  key={step.label}
+                  className="flex gap-4 rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white p-5 transition-shadow hover:shadow-sm"
+                >
+                  {/* Step number */}
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--hw-ink)] text-xs font-bold text-white">
+                    {i + 1}
+                  </span>
+
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                      {step.label}
+                    </div>
+                    <p className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">
+                      {step.text}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            {/* Single primary action */}
+            <div className="pt-2">
               <Link href="/ho/dashboard">
-                <Button>Go to Your Dashboard</Button>
+                <Button className="w-full sm:w-auto">
+                  Go to Your Dashboard
+                </Button>
               </Link>
             </div>
           </Card>
 
-          <Card className="p-6 md:p-7">
-            <div className="text-sm font-semibold">Request summary</div>
+          {/* Summary card */}
+          <Card className="self-start p-6 sm:p-8">
+            <h2 className="text-base font-bold tracking-tight text-[var(--hw-ink)]">
+              Request summary
+            </h2>
+
             {session ? (
-              <div className="mt-3 text-sm leading-7 text-[var(--hw-muted)]">
+              <dl className="mt-5 space-y-4 text-sm">
                 <div>
-                  <span className="font-semibold text-[var(--hw-ink)]">Service:</span> {session.service}
+                  <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                    Service
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-[var(--hw-ink)]">
+                    {session.service}
+                  </dd>
                 </div>
+
                 <div>
-                  <span className="font-semibold text-[var(--hw-ink)]">Provider:</span> {session.providerName}
+                  <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                    Provider
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-[var(--hw-ink)]">
+                    {session.providerName}
+                  </dd>
                 </div>
+
                 {session.workOrderId ? (
                   <div>
-                    <span className="font-semibold text-[var(--hw-ink)]">Work order:</span> {session.workOrderId}
+                    <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                      Work order
+                    </dt>
+                    <dd className="mt-0.5 font-medium text-[var(--hw-ink)]">
+                      {session.workOrderId}
+                    </dd>
                   </div>
                 ) : null}
 
                 <div>
-                  <span className="font-semibold text-[var(--hw-ink)]">Requested:</span> {session.date} ({session.window})
+                  <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                    Requested
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-[var(--hw-ink)]">
+                    {session.date}{" "}
+                    <span className="font-normal text-[var(--hw-muted)]">
+                      ({session.window})
+                    </span>
+                  </dd>
                 </div>
+
                 <div>
-                  <span className="font-semibold text-[var(--hw-ink)]">Email:</span> {session.email}
+                  <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                    Email
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-[var(--hw-ink)]">
+                    {session.email}
+                  </dd>
                 </div>
-              </div>
+              </dl>
             ) : (
-              <div className="mt-3 text-sm leading-7 text-[var(--hw-muted)]">No session found. Continue to dashboard.</div>
+              <p className="mt-5 text-sm leading-relaxed text-[var(--hw-muted)]">
+                No session found. Continue to dashboard.
+              </p>
             )}
           </Card>
         </div>
