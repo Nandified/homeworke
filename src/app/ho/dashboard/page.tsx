@@ -63,7 +63,7 @@ export default function Page() {
               </div>
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
-              <Button>Submit Work Order</Button>
+              <Link href="/marketplace/intake"><Button>Submit Work Order</Button></Link>
               <Button variant="secondary">Request Express Estimate</Button>
               <Button variant="ghost">Chat with Pro Team</Button>
             </div>

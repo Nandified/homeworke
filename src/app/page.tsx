@@ -42,7 +42,7 @@ export default function Page() {
             Homeworke
           </Link>
           <nav className="hidden items-center gap-2 md:flex">
-            <Link href="/marketplace/request">
+            <Link href="/marketplace/intake">
               <Button variant="ghost">Marketplace</Button>
             </Link>
             <Link href="/real-estate-pros" aria-disabled>
@@ -111,7 +111,7 @@ export default function Page() {
                   >
                     <Button>{homepage.hero.primaryCta}</Button>
                   </Link>
-                  <Link href="/marketplace/request">
+                  <Link href="/marketplace/intake">
                     <Button variant="secondary">{homepage.hero.secondaryCta}</Button>
                   </Link>
                 </div>
