@@ -256,7 +256,7 @@ export default function Page() {
                             ZIPCODE:
                           </div>
 
-                          <div className="flex items-baseline gap-3">
+                          <div className="flex items-baseline gap-2">
                             <Input
                               value={zip}
                               onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
@@ -264,7 +264,8 @@ export default function Page() {
                               pattern="[0-9]{5}"
                               placeholder="60616"
                               aria-label="ZIP code"
-                              className="h-auto w-[92px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-6 text-[var(--hw-ink)] underline decoration-[rgba(229,57,53,.35)] underline-offset-4 outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none selection:bg-[rgba(229,57,53,.18)]"
+                              className="h-auto w-[72px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-6 text-[var(--hw-ink)] underline decoration-[rgba(229,57,53,.45)] underline-offset-4 outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none selection:bg-[rgba(229,57,53,.18)]"
+                              style={{ textDecorationSkipInk: "none" }}
                             />
                             {city && state ? (
                               <div className="text-xs font-medium text-[var(--hw-muted)]">{city}, {state}</div>
