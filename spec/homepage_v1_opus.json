@@ -1,0 +1,118 @@
+{
+  "hero": {
+    "headline": "Home repairs, done right. Every time.",
+    "subheadline": "Tell us what is going on with your home. Our matching engine connects you with vetted, top-rated professionals in your area — fast.",
+    "chatLabel": "Describe your issue",
+    "chatPlaceholder": "e.g. My kitchen faucet is leaking under the sink...",
+    "chatHelper": "Type naturally. Homeworke reads your issue and recommends the right service and provider — no browsing, no guesswork.",
+    "primaryCta": "Find My Pro",
+    "secondaryCta": "Or choose a service below"
+  },
+  "quickSelect": {
+    "label": "Know what you need? Pick a service.",
+    "options": [
+      "Plumbing",
+      "Electrical",
+      "HVAC",
+      "Roofing",
+      "Painting",
+      "Handyman",
+      "Appliance Repair",
+      "Flooring",
+      "Landscaping",
+      "Pest Control",
+      "Cleaning",
+      "General Contracting"
+    ]
+  },
+  "sellingPoints": [
+    {
+      "title": "Vetted Professionals Only",
+      "text": "Every provider on Homeworke is licensed, insured, and background-checked. We verify credentials so you never have to."
+    },
+    {
+      "title": "Matched, Not Listed",
+      "text": "Unlike directories that hand you a list, our engine reads your issue and matches you to the right professional based on skill, availability, and proximity."
+    },
+    {
+      "title": "Transparent Pricing",
+      "text": "See estimated cost ranges before you commit. No hidden fees, no surprise invoices. You approve the scope and price upfront."
+    },
+    {
+      "title": "Schedule on Your Terms",
+      "text": "Book same-day or plan ahead. Pick the window that works for your life, confirm in two taps, and get a real-time ETA on service day."
+    },
+    {
+      "title": "The Relationship Engine",
+      "text": "Homeworke remembers your home, your preferences, and your trusted pros. Over time, your network gets smarter — and your experience gets faster."
+    },
+    {
+      "title": "Built for Providers, Too",
+      "text": "We invest in the people who do the work. Our partner-friendly platform gives professionals better leads, fair pay, and tools to grow — which means better service for you."
+    },
+    {
+      "title": "Your Home Profile",
+      "text": "Create a living record of your property — past jobs, upcoming maintenance, preferred providers. One place to manage everything about your home."
+    },
+    {
+      "title": "Guaranteed Satisfaction",
+      "text": "If the work does not meet the agreed scope, we step in. Our resolution team mediates and, when warranted, covers the cost to make it right."
+    }
+  ],
+  "trust": {
+    "tiles": [
+      {
+        "metric": "12,000+",
+        "label": "Vetted Professionals"
+      },
+      {
+        "metric": "4.8 / 5",
+        "label": "Average Provider Rating"
+      },
+      {
+        "metric": "98%",
+        "label": "Jobs Completed On Time"
+      },
+      {
+        "metric": "150+",
+        "label": "Service Categories"
+      },
+      {
+        "metric": "1M+",
+        "label": "Homeowners Served"
+      },
+      {
+        "metric": "100%",
+        "label": "Satisfaction-Backed"
+      }
+    ],
+    "disclaimer": "Metrics reflect platform-wide data across all active Homeworke markets as of the most recent reporting period. Individual results may vary by region and provider availability."
+  },
+  "howItWorks": [
+    {
+      "step": "1",
+      "title": "Describe or Select",
+      "text": "Type a description of your issue into the assistant, or pick a service from the quick-select grid. Either way, you are moving toward the right pro in seconds."
+    },
+    {
+      "step": "2",
+      "title": "Review Your Matches",
+      "text": "Homeworke surfaces top-rated, available professionals matched to your specific need, location, and schedule. Compare profiles, ratings, and estimated pricing side by side."
+    },
+    {
+      "step": "3",
+      "title": "Schedule and Confirm",
+      "text": "Choose your provider, pick a time window, and confirm the booking. You will receive a summary with scope, pricing, and your provider's credentials."
+    },
+    {
+      "step": "4",
+      "title": "Get the Work Done",
+      "text": "Your professional arrives on time, completes the job to the agreed scope, and logs the work in your home profile for future reference."
+    },
+    {
+      "step": "5",
+      "title": "Rate, Save, Repeat",
+      "text": "Leave a review, save your provider to your trusted network, and let Homeworke handle the rest — from follow-ups to future maintenance reminders."
+    }
+  ]
+}

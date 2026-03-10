@@ -1,5 +1,15 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Spec Artifacts
+
+Every shipped feature includes an Opus 4.6-generated artifact under `/spec`. These files are treated as canonical specs and, where appropriate, are imported at runtime.
+
+Current artifacts:
+- `spec/homepage_v1_opus.json`
+- `spec/intake_stepper_opus.json`
+- `spec/batch1_partner_funnel_opus.json`
+- `spec/pro_landing_polish_opus.json`
+
 ## Getting Started
 
 First, run the development server:

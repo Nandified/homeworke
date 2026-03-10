@@ -1,0 +1,50 @@
+{
+  "route": "/marketplace/intake",
+  "steps": [
+    {
+      "key": "select_service",
+      "title": "What do you need help with?",
+      "description": "Select the service category that best describes your project. We will match you with vetted, qualified professionals in your area.",
+      "fields": [
+        "service_category",
+        "service_subcategory"
+      ]
+    },
+    {
+      "key": "service_details",
+      "title": "Tell us a bit more",
+      "description": "A few details go a long way. The more context you provide, the more accurate your match and estimate will be.",
+      "fields": [
+        "issue_description",
+        "urgency_level",
+        "photos_upload"
+      ]
+    },
+    {
+      "key": "property_details",
+      "title": "Where is the work needed?",
+      "description": "Confirm the property details so we can connect you with professionals who service your area and property type.",
+      "fields": [
+        "property_address",
+        "property_type",
+        "access_instructions"
+      ]
+    },
+    {
+      "key": "schedule_visit",
+      "title": "When works best for you?",
+      "description": "Choose a preferred date and time window. Your matched professional will confirm availability and reach out to finalize the visit.",
+      "fields": [
+        "preferred_date",
+        "preferred_time_window",
+        "alternate_date",
+        "contact_method"
+      ]
+    }
+  ],
+  "copy": {
+    "primaryCta": "Submit Work Order",
+    "backCta": "Go Back",
+    "saveNote": "Your progress is saved automatically. You can return at any time to complete your submission."
+  }
+}
