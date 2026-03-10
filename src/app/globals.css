@@ -41,10 +41,11 @@ a:hover{text-decoration:underline}
 
 .hw-caret {
   width: 1.5px;
-  height: 1.15em;
+  height: 1em;
   background: rgba(17,24,39,.75);
   border-radius: 2px;
   animation: hw-caret 1.05s step-end infinite;
+  transform: translateY(1px);
 }
 
 .hw-glass {
