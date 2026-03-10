@@ -248,19 +248,23 @@ export default function Page() {
                         ) : null}
                       </div>
 
-                      {/* Thumbtack-style ZIP inside the same field with dashed divider */}
+                      {/* ZIP inside the same field */}
                       <div className="hidden sm:flex items-center px-4">
-                        <div className="h-[52px] w-px border-l border-dashed border-[rgba(107,114,128,.45)]" />
+                        <div className="h-[52px] w-px bg-[rgba(107,114,128,.28)]" />
                       </div>
-                      <div className="hidden sm:flex items-center pr-5">
+                      <div className="hidden sm:flex flex-col justify-center pr-5">
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                          <span aria-hidden className="inline-block h-3 w-3 rounded bg-[rgba(229,57,53,.10)]" />
+                          Zipcode
+                        </div>
                         <Input
                           value={zip}
                           onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
                           inputMode="numeric"
                           pattern="[0-9]{5}"
-                          placeholder="ZIP"
+                          placeholder="60616"
                           aria-label="ZIP code"
-                          className="h-auto w-[84px] border-0 bg-transparent p-0 text-[16px] font-semibold text-[var(--hw-ink)] outline-none focus:ring-0"
+                          className="mt-1 h-auto w-[84px] border-0 bg-transparent p-0 text-[16px] font-semibold text-[var(--hw-ink)] outline-none focus:ring-0"
                         />
                       </div>
                     </div>
