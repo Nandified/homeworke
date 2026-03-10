@@ -6,10 +6,14 @@ import { Button, Card, Container, Pill } from "@/components/ui";
 import { iconFor } from "@/components/icons";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 
+import servicesData from "@/../spec/services.json";
 import { getPublishedServiceBySlug } from "@/lib/cms";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+
+export function generateStaticParams() {
+  return (servicesData.services || []).map((s) => ({ slug: s.slug }));
+}
 
 export default async function ServiceDetailPage({ params }: { params: { slug: string } }) {
   const service = await getPublishedServiceBySlug(params.slug);
