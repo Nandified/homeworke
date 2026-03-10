@@ -33,6 +33,11 @@ export default function Page() {
   const [issue, setIssue] = useState("");
   const [focused, setFocused] = useState(false);
 
+  const [zip, setZip] = useState<string>("");
+  const [city, setCity] = useState<string>("");
+  const [state, setState] = useState<string>("");
+  const [locLoading, setLocLoading] = useState(false);
+
   // Typewriter-style rotating hint
   const hints = useMemo(
     () => ["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"],
@@ -89,6 +94,70 @@ export default function Page() {
     el.style.height = `${el.scrollHeight}px`;
   }, [issue]);
 
+  // Load stored location; if missing, request browser location once.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("hw_location_v1");
+      if (saved) {
+        const j = JSON.parse(saved);
+        if (j?.zip) setZip(j.zip);
+        if (j?.city) setCity(j.city);
+        if (j?.state) setState(j.state);
+        return;
+      }
+    } catch {}
+
+    if (!navigator.geolocation) return;
+
+    setLocLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch(`/api/geo/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+          const j = await res.json();
+          if (j?.ok) {
+            if (j.zip) setZip(String(j.zip).slice(0, 5));
+            if (j.city) setCity(j.city);
+            if (j.state) setState(j.state);
+            window.localStorage.setItem(
+              "hw_location_v1",
+              JSON.stringify({ zip: j.zip ? String(j.zip).slice(0, 5) : "", city: j.city || "", state: j.state || "" })
+            );
+          }
+        } catch {
+          // ignore
+        } finally {
+          setLocLoading(false);
+        }
+      },
+      () => setLocLoading(false),
+      { enableHighAccuracy: false, maximumAge: 1000 * 60 * 60, timeout: 8000 }
+    );
+  }, []);
+
+  // When ZIP changes (user edits), resolve city/state.
+  useEffect(() => {
+    const z = (zip || "").trim();
+    if (!/^\d{5}$/.test(z)) return;
+
+    const run = async () => {
+      try {
+        const res = await fetch(`/api/geo/zip?zip=${encodeURIComponent(z)}`);
+        const j = await res.json();
+        if (j?.ok) {
+          if (j.city) setCity(j.city);
+          if (j.state) setState(j.state);
+          window.localStorage.setItem(
+            "hw_location_v1",
+            JSON.stringify({ zip: z, city: j.city || "", state: j.state || "" })
+          );
+        }
+      } catch {}
+    };
+
+    run();
+  }, [zip]);
+
   const suggestedSlug = useMemo(() => {
     if (!issue.trim()) return null;
     return classifyToServiceSlug(issue, servicesData.services);
@@ -119,7 +188,7 @@ export default function Page() {
             <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
               <Pill className="bg-white">
                 <span className="hw-breath-dot" aria-hidden />
-                Now Servicing Chicago
+                {city ? `Now Servicing ${city}` : locLoading ? "Finding your location…" : "Set your location"}
               </Pill>
             </div>
 
@@ -132,6 +201,15 @@ export default function Page() {
                   {homepage.hero.subheadline}
                 </p>
                 <div className="mt-4 text-sm text-[var(--hw-muted)]">{homepage.hero.disclaimer}</div>
+                <div className="mt-6 text-base font-semibold text-[var(--hw-ink)]">
+                  {city && state ? (
+                    <span>
+                      Pros for every project in <span className="text-[var(--hw-red)]">{city}, {state}</span>.
+                    </span>
+                  ) : (
+                    <span>Pros for every project in your area.</span>
+                  )}
+                </div>
               </div>
 
               {/* Chat-style hero search */}
@@ -142,8 +220,8 @@ export default function Page() {
                     What’s going on with your home?
                   </div>
 
-                  <div className="mt-4 flex items-center gap-3">
-                    <div className="relative flex-1">
+                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_130px] sm:items-start">
+                    <div className="relative">
                       <textarea
                         ref={issueRef}
                         value={issue}
@@ -177,6 +255,20 @@ export default function Page() {
                     ) : null}
                   </div>
 
+                  <div className="sm:pt-0">
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">ZIP</div>
+                    <Input
+                      value={zip}
+                      onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
+                      inputMode="numeric"
+                      pattern="[0-9]{5}"
+                      placeholder="60616"
+                      aria-label="ZIP code"
+                      className="mt-2 h-12 rounded-[var(--hw-radius-lg)] border-0 px-4 text-[16px] outline-none hw-glass-field"
+                    />
+                    <div className="mt-2 text-xs text-[var(--hw-muted)]">{city && state ? `${city}, ${state}` : locLoading ? "Locating…" : ""}</div>
+                  </div>
+
                   <div className="mt-4">
                     <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">OR PICK A CATEGORY</div>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -201,14 +293,14 @@ export default function Page() {
                   </div>
 
                   <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <Link href={suggestedService ? `/estimate?service=${encodeURIComponent(suggestedService.slug)}` : "/estimate"}>
+                    <Link href={{ pathname: "/marketplace/intake", query: { issue: issue.trim() || undefined, zip: zip || undefined, service: suggestedService?.slug || undefined } }}>
                       <Button className="w-full sm:w-auto">
                         {homepage.hero.primaryCta}
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Link href="/services" className="w-full sm:w-auto">
-                      <Button variant="secondary" className="w-full sm:w-auto">Browse services</Button>
+                    <Link href="/marketplace/intake" className="w-full sm:w-auto">
+                      <Button variant="secondary" className="w-full sm:w-auto">Browse marketplace</Button>
                     </Link>
                   </div>
                 </div>
