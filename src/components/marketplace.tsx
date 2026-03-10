@@ -51,9 +51,14 @@ function ProviderCard(props: CuratedCard & { compact?: boolean }) {
           </div>
         ) : null}
       </div>
-      <Link href="/providers/alpha">
-        <Button variant="ghost">{cta}</Button>
-      </Link>
+      <div className="flex flex-col gap-2">
+        <Link href="/providers/alpha">
+          <Button variant="ghost">{cta}</Button>
+        </Link>
+        <Link href="/appointments/demo">
+          <Button variant="ghost">Track appointment</Button>
+        </Link>
+      </div>
     </div>
   );
 }

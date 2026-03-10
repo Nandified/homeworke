@@ -1,0 +1,109 @@
+{
+  "route": "/appointments/[id]",
+  "pageTitle": "Appointment Timeline",
+  "header": {
+    "title": "Your Appointment",
+    "subtitle": "We'll keep you updated every step of the way.",
+    "statusPill": "In Progress"
+  },
+  "timelineStates": [
+    {
+      "key": "requested",
+      "label": "Request Received",
+      "icon": "check-circle",
+      "description": "Your appointment request has been confirmed and is being processed."
+    },
+    {
+      "key": "pm_assigned",
+      "label": "PM Assigned",
+      "icon": "user-plus",
+      "description": "A dedicated property manager has been assigned to your appointment. You'll see their details below."
+    },
+    {
+      "key": "pm_en_route",
+      "label": "PM On the Way",
+      "icon": "map-pin",
+      "description": "Your property manager is en route to the location. Live updates will appear here."
+    },
+    {
+      "key": "pm_arrived",
+      "label": "PM Arrived",
+      "icon": "home",
+      "description": "Your property manager has arrived and the appointment is underway."
+    },
+    {
+      "key": "in_progress",
+      "label": "In Progress",
+      "icon": "clock",
+      "description": "The walkthrough or inspection is actively in progress."
+    },
+    {
+      "key": "wrap_up",
+      "label": "Wrapping Up",
+      "icon": "list",
+      "description": "Final notes and observations are being documented."
+    },
+    {
+      "key": "completed",
+      "label": "Completed",
+      "icon": "star",
+      "description": "The appointment is complete. A summary report will be available shortly."
+    }
+  ],
+  "pmCard": {
+    "title": "Your Property Manager",
+    "identityNote": "Identity verified via background check and platform credentials.",
+    "fields": [
+      {
+        "label": "Name",
+        "valueExample": "Jordan Castillo"
+      },
+      {
+        "label": "Role",
+        "valueExample": "Senior Property Manager"
+      },
+      {
+        "label": "Rating",
+        "valueExample": "4.9 / 5.0"
+      },
+      {
+        "label": "Phone",
+        "valueExample": "+1 (555) 012-3456"
+      },
+      {
+        "label": "ETA",
+        "valueExample": "12 min away"
+      },
+      {
+        "label": "Appointments Completed",
+        "valueExample": "340"
+      }
+    ]
+  },
+  "realtime": {
+    "principle": "Optimistic UI with server reconciliation. The client reflects expected state transitions immediately on local events, then reconciles when the authoritative server event arrives. Stale states older than 30 seconds trigger a silent re-fetch.",
+    "transport": "WebSocket (Socket.IO) with automatic fallback to SSE for restricted networks. V1 implementation uses a mock event emitter on a 4-second interval to simulate real-time progression for demo and development purposes.",
+    "eventTypes": [
+      "appointment.state_changed",
+      "pm.assigned",
+      "pm.location_updated",
+      "pm.arrived",
+      "appointment.in_progress",
+      "appointment.note_added",
+      "appointment.completed",
+      "pm.eta_updated",
+      "appointment.cancelled",
+      "connection.heartbeat"
+    ],
+    "clientBehavior": [
+      "On 'pm.location_updated': interpolate map marker position smoothly over 1s ease-out curve.",
+      "On 'appointment.state_changed': advance timeline stepper with a subtle slide-down animation and pulse the new active node.",
+      "On 'pm.assigned': reveal the PM card with a fade-in (300ms) and populate fields progressively.",
+      "On 'pm.eta_updated': update the ETA field in the PM card with a soft number-flip transition.",
+      "On disconnect: show a minimal 'Reconnecting...' banner after 3s, auto-retry with exponential backoff (1s, 2s, 4s, max 30s).",
+      "On 'appointment.completed': transition the status pill to 'Completed', lock the timeline, and surface a 'View Report' action.",
+      "On 'appointment.cancelled': grey out the timeline, show a calm inline notice with reason if provided.",
+      "On reconnect: silently fetch full current state and reconcile timeline position without jarring resets."
+    ]
+  }
+}
