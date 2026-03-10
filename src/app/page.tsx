@@ -253,20 +253,23 @@ export default function Page() {
                         <div className="flex items-center justify-between gap-3">
                           <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
                             <MapPin className="h-3.5 w-3.5 text-[rgba(229,57,53,.85)]" aria-hidden />
-                            Zipcode
+                            ZIPCODE:
+                          </div>
+
+                          <div className="flex items-baseline gap-3">
+                            <Input
+                              value={zip}
+                              onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
+                              inputMode="numeric"
+                              pattern="[0-9]{5}"
+                              placeholder="60616"
+                              aria-label="ZIP code"
+                              className="h-auto w-[92px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-6 text-[var(--hw-ink)] underline decoration-[rgba(229,57,53,.35)] underline-offset-4 outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none selection:bg-[rgba(229,57,53,.18)]"
+                            />
                             {city && state ? (
-                              <span className="normal-case font-medium tracking-normal text-[var(--hw-muted)]">· {city}, {state}</span>
+                              <div className="text-xs font-medium text-[var(--hw-muted)]">{city}, {state}</div>
                             ) : null}
                           </div>
-                          <Input
-                            value={zip}
-                            onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
-                            inputMode="numeric"
-                            pattern="[0-9]{5}"
-                            placeholder="60616"
-                            aria-label="ZIP code"
-                            className="h-auto w-[92px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-6 text-[var(--hw-ink)] text-right outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none selection:bg-[rgba(229,57,53,.18)]"
-                          />
                         </div>
                       </div>
 
