@@ -1,0 +1,52 @@
+{
+  "services": [
+    {
+      "slug": "handyman",
+      "name": "Handyman",
+      "icon": "wrench",
+      "summary": "Small fixes, installs, and punch lists — done right.",
+      "examples": ["TV mounting", "Drywall patch", "Door hardware", "Shelving & assembly"],
+      "notes": "Great for multi-item lists. Free estimate — pricing varies by scope."
+    },
+    {
+      "slug": "plumbing",
+      "name": "Plumbing",
+      "icon": "droplet",
+      "summary": "Leaks, clogs, fixtures, and installs.",
+      "examples": ["Faucet replacement", "Toilet repair", "Clog removal", "Garbage disposal"],
+      "notes": "Free estimate. If it’s urgent, we’ll prioritize same/next-day scheduling when available."
+    },
+    {
+      "slug": "electrical",
+      "name": "Electrical",
+      "icon": "zap",
+      "summary": "Safe, code-aware electrical work from vetted pros.",
+      "examples": ["Outlet/switch install", "Lighting", "Ceiling fans", "Panel diagnostics"],
+      "notes": "Free estimate. Final pricing depends on access, materials, and complexity."
+    },
+    {
+      "slug": "hvac",
+      "name": "HVAC",
+      "icon": "fan",
+      "summary": "Comfort issues, maintenance, repairs, and installs.",
+      "examples": ["No heat/no cool", "Seasonal tune-up", "Thermostat install", "Airflow issues"],
+      "notes": "Free estimate. We’ll ask a few quick questions to route you to the right technician."
+    },
+    {
+      "slug": "appliance-repair",
+      "name": "Appliance Repair",
+      "icon": "refrigerator",
+      "summary": "Get major appliances back online fast.",
+      "examples": ["Washer/dryer", "Dishwasher", "Refrigerator", "Oven/range"],
+      "notes": "Free estimate. Some jobs may require a diagnostic visit depending on symptoms."
+    },
+    {
+      "slug": "cleaning",
+      "name": "Cleaning",
+      "icon": "sparkles",
+      "summary": "Move-in/out, deep cleans, and recurring maintenance.",
+      "examples": ["Deep clean", "Turnover", "Post-repair clean", "Recurring"],
+      "notes": "Free estimate. We’ll tailor it to bedrooms/baths and level of detail."
+    }
+  ]
+}
