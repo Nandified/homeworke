@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ArrowRight } from "lucide-react";
 
@@ -32,18 +32,52 @@ export default function Page() {
   const services = servicesData.services.slice(0, 6);
   const [issue, setIssue] = useState("");
   const [focused, setFocused] = useState(false);
-  const [hintIdx, setHintIdx] = useState(0);
 
+  // Typewriter-style rotating hint
   const hints = useMemo(
     () => ["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"],
     []
   );
+  const [demoIdx, setDemoIdx] = useState(0);
+  const [demoText, setDemoText] = useState("");
+  const demoPhase = useRef<"typing" | "pause" | "deleting">("typing");
+  const pauseUntil = useRef<number>(0);
 
   useEffect(() => {
-    if (!focused || issue.trim()) return;
-    const t = window.setInterval(() => setHintIdx((i) => (i + 1) % hints.length), 2200);
+    if (issue.trim()) return; // user typed something
+
+    const tick = () => {
+      const now = Date.now();
+      const full = hints[demoIdx] ?? "";
+
+      if (demoPhase.current === "pause") {
+        if (now >= pauseUntil.current) demoPhase.current = "deleting";
+        return;
+      }
+
+      if (demoPhase.current === "typing") {
+        const next = full.slice(0, demoText.length + 1);
+        setDemoText(next);
+        if (next.length >= full.length) {
+          demoPhase.current = "pause";
+          pauseUntil.current = now + 1100;
+        }
+        return;
+      }
+
+      // deleting
+      const next = full.slice(0, Math.max(0, demoText.length - 1));
+      setDemoText(next);
+      if (next.length === 0) {
+        demoPhase.current = "typing";
+        setDemoIdx((i) => (i + 1) % hints.length);
+      }
+    };
+
+    const speed = demoPhase.current === "deleting" ? 26 : 34;
+    const t = window.setInterval(tick, speed);
     return () => window.clearInterval(t);
-  }, [focused, issue, hints.length]);
+  }, [issue, demoIdx, demoText.length, hints]);
 
   const suggestedSlug = useMemo(() => {
     if (!issue.trim()) return null;
@@ -100,10 +134,8 @@ export default function Page() {
                   Type naturally — we’ll suggest the right category and route you to the fastest next step.
                 </div>
 
-                <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.6)] bg-white/60 p-4 backdrop-blur">
+                <div className="mt-5 rounded-[var(--hw-radius-lg)] p-4 hw-glass">
                   <div className="flex items-center gap-3">
-                    <div className="h-2.5 w-2.5 rounded-full bg-[var(--hw-red)]" />
-
                     <div className="relative flex-1">
                       <Input
                         value={issue}
@@ -112,28 +144,24 @@ export default function Page() {
                         onBlur={() => setFocused(false)}
                         placeholder=""
                         aria-label="Describe your issue"
-                        className="h-14 border border-[var(--hw-line)] bg-white text-base shadow-[0_10px_30px_rgba(17,24,39,.08)] focus:border-[rgba(229,57,53,.55)] sm:h-12"
+                        className="h-16 w-full rounded-[var(--hw-radius-lg)] px-4 text-base border-0 outline-none hw-glass-field sm:h-14"
                       />
 
-                      {/* Rotating hint inside field when empty */}
+                      {/* Typewriter hint + caret (visible even before focus) */}
                       {!issue ? (
                         <div
                           aria-hidden
-                          className="pointer-events-none absolute left-[14px] top-1/2 -translate-y-1/2 text-sm text-[var(--hw-muted)]"
+                          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[15px] text-[var(--hw-muted)]"
                         >
-                          <span className="opacity-70">Try: </span>
-                          <span className="font-medium text-[#4b5563]">{hints[hintIdx]}</span>
+                          <span className="opacity-70">Try:</span>
+                          <span className="font-medium text-[#4b5563]">{demoText}</span>
+                          <span className="hw-caret" />
                         </div>
-                      ) : null}
-
-                      {/* Blink caret hint when empty + focused */}
-                      {focused && !issue ? (
-                        <span aria-hidden className="hw-caret pointer-events-none absolute left-[54px] top-1/2 -translate-y-1/2" />
                       ) : null}
                     </div>
 
                     {suggestedService ? (
-                      <span className="hidden sm:inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[#374151]">
+                      <span className="hidden sm:inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white/70 px-3 py-1.5 text-xs font-semibold text-[#374151]">
                         {suggestedService.name}
                       </span>
                     ) : null}
