@@ -194,9 +194,15 @@ export function MarketingPage(props: { content: Record<string, unknown> }) {
         <Container className="flex flex-col gap-3 py-10 md:flex-row md:items-center md:justify-between">
           <div className="text-sm text-[var(--hw-muted)]">Homeworke 3.0 · Making Homeownership Easy</div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="ghost">Privacy</Button>
-            <Button variant="ghost">Terms</Button>
-            <Button variant="ghost">Contact</Button>
+            <Link href="/privacy">
+              <Button variant="ghost">Privacy</Button>
+            </Link>
+            <Link href="/terms">
+              <Button variant="ghost">Terms</Button>
+            </Link>
+            <Link href="/contact">
+              <Button variant="ghost">Contact</Button>
+            </Link>
           </div>
         </Container>
       </footer>

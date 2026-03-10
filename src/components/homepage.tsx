@@ -24,6 +24,12 @@ export function Homepage() {
           </Link>
 
           <nav className="hidden items-center gap-2 md:flex">
+            <Link href="/marketplace">
+              <Button variant="ghost">Marketplace</Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button variant="ghost">Dashboard</Button>
+            </Link>
             <Link href="/homeowners">
               <Button variant="ghost">Homeowners</Button>
             </Link>
@@ -168,9 +174,15 @@ export function Homepage() {
         <Container className="flex flex-col gap-3 py-10 md:flex-row md:items-center md:justify-between">
           <div className="text-sm text-[var(--hw-muted)]">Homeworke · Making Homeownership Easy</div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="ghost">Privacy</Button>
-            <Button variant="ghost">Terms</Button>
-            <Button variant="ghost">Contact</Button>
+            <Link href="/privacy">
+              <Button variant="ghost">Privacy</Button>
+            </Link>
+            <Link href="/terms">
+              <Button variant="ghost">Terms</Button>
+            </Link>
+            <Link href="/contact">
+              <Button variant="ghost">Contact</Button>
+            </Link>
           </div>
         </Container>
       </footer>
