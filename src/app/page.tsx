@@ -164,25 +164,28 @@ export default function Page() {
                     ) : null}
                   </div>
 
-                  {/* Popover suggestions while focused */}
-                  {focused ? (
-                    <div className="mt-4">
-                      <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Suggested categories</div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {services.map((s) => {
-                          const Icon = iconFor(s.icon);
-                          return (
-                            <Link key={s.slug} href={`/estimate?service=${encodeURIComponent(s.slug)}`}>
-                              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                                <Icon className="h-4 w-4 text-[var(--hw-red)]" />
-                                {s.name}
-                              </span>
-                            </Link>
-                          );
-                        })}
-                      </div>
+                  <div className="mt-4">
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">OR PICK A CATEGORY</div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {services.map((s) => {
+                        const Icon = iconFor(s.icon);
+                        return (
+                          <Link key={s.slug} href={`/estimate?service=${encodeURIComponent(s.slug)}`}>
+                            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                              <Icon className="h-4 w-4 text-[var(--hw-red)]" />
+                              {s.name}
+                            </span>
+                          </Link>
+                        );
+                      })}
+                      <Link href="/services">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                          More
+                          <ArrowRight className="h-4 w-4 text-[var(--hw-muted)]" />
+                        </span>
+                      </Link>
                     </div>
-                  ) : null}
+                  </div>
 
                   <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
                     <Link href={suggestedService ? `/estimate?service=${encodeURIComponent(suggestedService.slug)}` : "/estimate"}>
@@ -194,23 +197,6 @@ export default function Page() {
                     <Link href="/services" className="w-full sm:w-auto">
                       <Button variant="secondary" className="w-full sm:w-auto">Browse services</Button>
                     </Link>
-                  </div>
-                </div>
-
-                <div className="mt-5">
-                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Or pick a category</div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {services.map((s) => {
-                      const Icon = iconFor(s.icon);
-                      return (
-                        <Link key={s.slug} href={`/estimate?service=${encodeURIComponent(s.slug)}`}>
-                          <span className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                            <Icon className="h-4 w-4 text-[var(--hw-red)]" />
-                            {s.name}
-                          </span>
-                        </Link>
-                      );
-                    })}
                   </div>
                 </div>
               </div>
