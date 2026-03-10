@@ -43,6 +43,8 @@ export default function Page() {
   const demoPhase = useRef<"typing" | "pause" | "deleting">("typing");
   const pauseUntil = useRef<number>(0);
 
+  const issueRef = useRef<HTMLTextAreaElement | null>(null);
+
   useEffect(() => {
     if (issue.trim()) return; // user typed something
 
@@ -78,6 +80,14 @@ export default function Page() {
     const t = window.setInterval(tick, speed);
     return () => window.clearInterval(t);
   }, [issue, demoIdx, demoText.length, hints]);
+
+  useEffect(() => {
+    const el = issueRef.current;
+    if (!el) return;
+    // auto-grow
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [issue]);
 
   const suggestedSlug = useMemo(() => {
     if (!issue.trim()) return null;
@@ -134,21 +144,24 @@ export default function Page() {
 
                   <div className="mt-4 flex items-center gap-3">
                     <div className="relative flex-1">
-                      <Input
+                      <textarea
+                        ref={issueRef}
                         value={issue}
                         onChange={(e) => setIssue(e.target.value)}
                         onFocus={() => setFocused(true)}
                         onBlur={() => setFocused(false)}
                         placeholder=""
                         aria-label="Describe your issue"
-                        className="h-20 w-full rounded-[var(--hw-radius-lg)] px-5 text-[17px] border-0 outline-none hw-glass-field sm:h-16"
+                        rows={2}
+                        className="w-full resize-none rounded-[var(--hw-radius-lg)] px-5 py-4 text-[17px] leading-7 border-0 outline-none hw-glass-field sm:py-3"
+                        style={{ minHeight: 80 }}
                       />
 
                       {/* Typewriter hint + caret (visible even before focus) */}
                       {!issue ? (
                         <div
                           aria-hidden
-                          className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[16px] text-[var(--hw-muted)]"
+                          className="pointer-events-none absolute left-5 top-6 flex items-center gap-1 text-[16px] text-[var(--hw-muted)]"
                         >
                           <span className="opacity-70">Try:</span>
                           <span className="font-medium text-[#4b5563]">{demoText}</span>
