@@ -221,7 +221,7 @@ export default function Page() {
                   </div>
 
                   <div className="mt-4">
-                    <div className="relative flex items-stretch rounded-[var(--hw-radius-lg)] hw-glass-field">
+                    <div className="relative flex flex-col sm:flex-row sm:items-stretch rounded-[var(--hw-radius-lg)] hw-glass-field">
                       <div className="flex-1">
                         <textarea
                           ref={issueRef}
@@ -248,7 +248,29 @@ export default function Page() {
                         ) : null}
                       </div>
 
-                      {/* ZIP inside the same field */}
+                      {/* Mobile ZIP row (inside the same field) */}
+                      <div className="sm:hidden border-t border-[rgba(107,114,128,.18)] px-4 py-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                            <MapPin className="h-3.5 w-3.5 text-[rgba(229,57,53,.85)]" aria-hidden />
+                            Zipcode
+                            {city && state ? (
+                              <span className="normal-case font-medium tracking-normal text-[var(--hw-muted)]">· {city}, {state}</span>
+                            ) : null}
+                          </div>
+                          <Input
+                            value={zip}
+                            onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
+                            inputMode="numeric"
+                            pattern="[0-9]{5}"
+                            placeholder="60616"
+                            aria-label="ZIP code"
+                            className="h-auto w-[92px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-6 text-[var(--hw-ink)] text-right outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none selection:bg-[rgba(229,57,53,.18)]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Desktop ZIP column (inside the same field with divider) */}
                       <div className="hidden sm:flex items-center px-3">
                         <div className="h-[52px] w-px bg-[rgba(107,114,128,.22)]" />
                       </div>
