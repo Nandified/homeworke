@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum WorkOrderStatus {
+  DRAFT
+  SUBMITTED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum AttributionEventType {
+  CLICK
+  FORM_START
+  FORM_COMPLETE
+  REFERRAL
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  sessions   Session[]
+  workOrders WorkOrder[]
+  auditLogs  AuditLog[]  @relation("AuditLogActorUser")
+
+  @@index([email])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model MagicLinkToken {
+  id         String    @id @default(cuid())
+  email      String
+  token      String    @unique
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  consumedAt DateTime?
+
+  @@index([email])
+  @@index([token])
+}
+
+model PartnerProfile {
+  id             String   @id @default(cuid())
+  proCode        String   @unique
+  displayName    String
+  brokerageName  String
+  licenseState   String
+  licenseNumber  String
+  phone          String
+  email          String
+  websiteUrl     String
+  bio            String
+  introVideoUrl  String
+  socials        Json     @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  originWorkOrders    WorkOrder[]        @relation("WorkOrderOriginPartner")
+  sharedWorkOrders    WorkOrder[]        @relation("WorkOrderShareWithPartner")
+  attributionEvents   AttributionEvent[]
+  auditLogs           AuditLog[]         @relation("AuditLogActorPartner")
+
+  @@index([proCode])
+}
+
+model WorkOrder {
+  id                  String    @id @default(cuid())
+  userId              String?
+  sessionToken        String?
+  originPartnerId     String?
+  shareWithPartnerId  String?
+  serviceCategory     String
+  serviceSubcategory  String?
+  issueDescription    String?
+  urgencyLevel        String?
+  propertyAddress     String?
+  propertyType        String?
+  preferredDate       DateTime?
+  preferredWindow     String?
+  status              WorkOrderStatus @default(DRAFT)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  user             User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  originPartner    PartnerProfile?  @relation("WorkOrderOriginPartner", fields: [originPartnerId], references: [id], onDelete: SetNull)
+  shareWithPartner PartnerProfile?  @relation("WorkOrderShareWithPartner", fields: [shareWithPartnerId], references: [id], onDelete: SetNull)
+
+  attributionEvents AttributionEvent[]
+
+  @@index([userId])
+  @@index([originPartnerId])
+  @@index([shareWithPartnerId])
+  @@index([status])
+}
+
+model AttributionEvent {
+  id          String               @id @default(cuid())
+  workOrderId String
+  partnerId   String
+  type        AttributionEventType
+  createdAt   DateTime             @default(now())
+
+  workOrder WorkOrder      @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  partner   PartnerProfile @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([workOrderId])
+  @@index([partnerId])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  actorUserId    String?
+  actorPartnerId String?
+  entityType     String
+  entityId       String
+  action         String
+  data           Json     @default("{}")
+  createdAt      DateTime @default(now())
+
+  actorUser    User?           @relation("AuditLogActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorPartner PartnerProfile? @relation("AuditLogActorPartner", fields: [actorPartnerId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([actorPartnerId])
+  @@index([entityType, entityId])
+}
