@@ -59,7 +59,7 @@ export default function Page() {
       </header>
 
       <main>
-        <Container className="py-12">
+        <Container className="py-14 md:py-16">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div>
               <div className="flex flex-wrap gap-2">
@@ -76,14 +76,14 @@ export default function Page() {
                 })()}
               </div>
 
-              <h1 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
+              <h1 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-6xl">
                 {homepage.hero.headline}
               </h1>
               <p className="mt-4 max-w-xl text-pretty text-base leading-7 text-[var(--hw-muted)]">
                 {homepage.hero.subheadline}
               </p>
 
-              <Card className="mt-8 p-5">
+              <Card className="mt-9 p-6 md:p-7">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">{homepage.hero.chatLabel}</div>
@@ -92,7 +92,7 @@ export default function Page() {
                   <Pill>Alive</Pill>
                 </div>
 
-                <div className="mt-4 flex items-center gap-3 rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white p-3">
+                <div className="mt-4 flex items-center gap-3 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 md:p-4">
                   <div className="h-2.5 w-2.5 rounded-full bg-[var(--hw-red)]" />
                   <Input
                     value={issue}
@@ -103,11 +103,11 @@ export default function Page() {
                   />
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-[var(--hw-muted)]">
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs md:text-sm text-[var(--hw-muted)]">
                   <span className="font-semibold">Hint:</span> <span>{aliveHints[hintIdx]}</span>
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-2">
+                <div className="mt-5 flex flex-wrap items-center gap-2">
                   <Chip>Suggested: {suggested || "—"}</Chip>
                   <Chip>Capture at scheduling</Chip>
                 </div>
@@ -126,7 +126,7 @@ export default function Page() {
                   </Link>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-7">
                   <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">{homepage.quickSelect.label}</div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {homepage.quickSelect.options.slice(0, 8).map((o) => (
@@ -144,7 +144,7 @@ export default function Page() {
             </div>
 
             <div className="grid grid-cols-1 gap-3">
-              <Card className="p-5">
+              <Card className="p-6 md:p-7">
                 <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Trust</div>
                 <div className="mt-2 text-sm font-semibold">What you get</div>
                 <div className="mt-4 grid grid-cols-1 gap-3">
@@ -157,7 +157,7 @@ export default function Page() {
                 </div>
               </Card>
 
-              <Card className="p-5">
+              <Card className="p-6 md:p-7">
                 <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">How it works</div>
                 <div className="mt-4 grid gap-3">
                   {homepage.howItWorks.map((s) => (

@@ -9,7 +9,9 @@
   --hw-soft:#F8FAFC;
   --hw-shadow: 0 10px 30px rgba(17,24,39,.08);
   --hw-radius: 18px;
+  --hw-radius-lg: 24px;
   --hw-radius-sm: 12px;
+  --hw-max: 64rem;
 }
 
 html,body{height:100%}
@@ -18,6 +20,9 @@ body{
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial;
   color:var(--hw-ink);
   background:linear-gradient(180deg,#fff 0%,#fff 55%,#FAFAFA 100%);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a{color:var(--hw-red);text-decoration:none}

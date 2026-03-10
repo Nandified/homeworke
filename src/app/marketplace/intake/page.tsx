@@ -124,20 +124,21 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
-      <Container className="py-10">
+      <Container className="py-12 md:py-14">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Work order intake</div>
-            <h1 className="mt-1 text-3xl font-extrabold tracking-tight">{current.title}</h1>
+            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Work order</div>
+            <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">{current.title}</h1>
             <div className="mt-2 max-w-3xl text-sm leading-7 text-[var(--hw-muted)]">{current.description}</div>
           </div>
-          <Pill>
-            Step {idx + 1} of {steps.length}
-          </Pill>
+          <div className="flex flex-col items-end gap-1">
+            <Pill>Step {idx + 1} of {steps.length}</Pill>
+            <div className="text-xs text-[var(--hw-muted)]">{draft.service_category}</div>
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Card className="p-6 lg:col-span-2">
+          <Card className="p-6 md:p-7 lg:col-span-2">
             {step === "select_service" ? (
               <div>
                 <div className="text-sm font-semibold">Service</div>
@@ -301,7 +302,7 @@ export default function Page() {
               </div>
             ) : null}
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-2">
               <Button type="button" variant="ghost" onClick={back} disabled={idx === 0}>
                 {spec.copy.backCta}
               </Button>
@@ -340,7 +341,7 @@ export default function Page() {
             }
           })()}
 
-          <Card className="p-6">
+          <Card className="p-6 md:p-7">
             <div className="text-sm font-semibold">Summary</div>
             <div className="mt-4 grid gap-2 text-sm text-[var(--hw-muted)]">
               <div>

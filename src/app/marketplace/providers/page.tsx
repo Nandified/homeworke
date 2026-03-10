@@ -20,11 +20,11 @@ export default async function Page(props: { searchParams: Promise<{ service?: st
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
-      <Container className="py-10">
+      <Container className="py-12 md:py-14">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Matches</div>
-            <h1 className="mt-1 text-3xl font-extrabold tracking-tight">Providers for {service}</h1>
+            <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">Providers for {service}</h1>
             <div className="mt-2 max-w-3xl text-sm leading-7 text-[var(--hw-muted)]">
               Curated list first. You decide who to book. Identity gating and deeper profiles come next.
             </div>
@@ -41,7 +41,7 @@ export default async function Page(props: { searchParams: Promise<{ service?: st
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
           {providers.map((p) => (
-            <Card key={p.id} className="p-6">
+            <Card key={p.id} className="p-6 md:p-7">
               <div className="text-sm font-semibold">{p.name}</div>
               <div className="mt-2 text-sm text-[var(--hw-muted)]">{p.note}</div>
               <div className="mt-4 text-sm text-[var(--hw-muted)]">

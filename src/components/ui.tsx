@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export function Container(props: React.HTMLAttributes<HTMLDivElement>) {
-  return <div {...props} className={cn("mx-auto w-full max-w-5xl px-6 sm:px-7", props.className)} />;
+  return <div {...props} className={cn("mx-auto w-full max-w-[var(--hw-max)] px-6 sm:px-7", props.className)} />;
 }
 
 export function Card(props: React.HTMLAttributes<HTMLDivElement>) {
@@ -10,7 +10,7 @@ export function Card(props: React.HTMLAttributes<HTMLDivElement>) {
     <div
       {...props}
       className={cn(
-        "rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white shadow-[var(--hw-shadow)]",
+        "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[var(--hw-shadow)]",
         props.className
       )}
     />
@@ -118,7 +118,7 @@ export function Chip(props: React.HTMLAttributes<HTMLSpanElement>) {
 
 export function EmptyState(props: { title: string; text: string; action?: React.ReactNode }) {
   return (
-    <div className="rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-6">
+    <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-6">
       <div className="text-sm font-semibold text-[var(--hw-ink)]">{props.title}</div>
       <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">{props.text}</div>
       {props.action ? <div className="mt-4">{props.action}</div> : null}
@@ -128,7 +128,7 @@ export function EmptyState(props: { title: string; text: string; action?: React.
 
 export function StatTile(props: { label: string; value: string; note?: string }) {
   return (
-    <div className="rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white p-5">
+    <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
       <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">{props.label}</div>
       <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{props.value}</div>
       {props.note ? <div className="mt-2 text-sm text-[var(--hw-muted)]">{props.note}</div> : null}
@@ -146,7 +146,7 @@ export function Modal(props: {
   if (!props.open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-5">
-      <div className="w-full max-w-xl rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white shadow-[var(--hw-shadow)]">
+      <div className="w-full max-w-xl rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[var(--hw-shadow)]">
         <div className="flex items-center justify-between border-b border-[var(--hw-line)] p-5">
           <div className="text-sm font-semibold">{props.title}</div>
           <Button variant="ghost" onClick={props.onClose} aria-label="Close modal">
@@ -162,7 +162,7 @@ export function Modal(props: {
 // Toast shell (Phase 1): render-only.
 export function Toast(props: { title: string; text?: string }) {
   return (
-    <div className="rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white p-4 shadow-[var(--hw-shadow)]">
+    <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 shadow-[var(--hw-shadow)]">
       <div className="text-sm font-semibold">{props.title}</div>
       {props.text ? <div className="mt-1 text-sm text-[var(--hw-muted)]">{props.text}</div> : null}
     </div>
@@ -187,7 +187,7 @@ export function RadioCardGroup(props: {
             type="button"
             onClick={() => props.onChange(o.value)}
             className={cn(
-              "rounded-[var(--hw-radius)] border bg-white p-4 text-left transition",
+              "rounded-[var(--hw-radius-lg)] border bg-white p-4 text-left transition",
               checked
                 ? "border-[rgba(229,57,53,.35)] shadow-[0_10px_20px_rgba(229,57,53,.10)]"
                 : "border-[var(--hw-line)] hover:bg-[var(--hw-soft)]"

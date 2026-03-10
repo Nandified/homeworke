@@ -43,11 +43,11 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
-      <Container className="py-10">
+      <Container className="py-12 md:py-14">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Confirmed</div>
-            <h1 className="mt-1 text-3xl font-extrabold tracking-tight">You are all set. Here is what happens next.</h1>
+            <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">You are all set. Here is what happens next.</h1>
             <div className="mt-2 max-w-3xl text-sm leading-7 text-[var(--hw-muted)]">
               Trust-first, no friction. You stay in control.
             </div>
@@ -56,7 +56,7 @@ export default function Page() {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <Card className="p-6 lg:col-span-2">
+          <Card className="p-6 md:p-7 lg:col-span-2">
             <div className="text-sm font-semibold">What happens next</div>
             <div className="mt-4 grid gap-3">
               {lines.map((t, i) => (
@@ -74,7 +74,7 @@ export default function Page() {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 md:p-7">
             <div className="text-sm font-semibold">Request summary</div>
             {session ? (
               <div className="mt-3 text-sm leading-7 text-[var(--hw-muted)]">
