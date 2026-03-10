@@ -8,40 +8,31 @@ export default function Page() {
       <Container className="py-10">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Rebuild</div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Homeworke</div>
             <h1 className="mt-1 text-3xl font-extrabold tracking-tight">Homeworke 3.0</h1>
             <div className="mt-2 max-w-3xl text-sm leading-7 text-[var(--hw-muted)]">
-              Spec locked. Phase shipping only. Nothing is final until implemented against the approved Source of Truth.
+              App rebuild from the approved Source of Truth. Start by selecting a portal (2.0 parity).
             </div>
           </div>
-          <Pill>Phase 1 in progress</Pill>
+          <Pill>Rebuild</Pill>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card className="p-6">
-            <div className="text-sm font-semibold">Source of Truth</div>
+            <div className="text-sm font-semibold">Portals</div>
             <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
-              See <code>HOMEWORKE_3.0_SOURCE_OF_TRUTH.md</code> in the repo root.
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="text-sm font-semibold">UI Kit</div>
-            <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
-              Phase 1 deliverable: tokens + reusable components.
+              Homeowner, Real Estate Pro, Service Provider, Home Guide.
             </div>
             <div className="mt-4">
-              <Link href="/ui">
-                <Button variant="secondary">Open styleguide</Button>
+              <Link href="/portal">
+                <Button>Open portal selector</Button>
               </Link>
             </div>
           </Card>
-        </div>
-
-        <div className="mt-4">
           <Card className="p-6">
-            <div className="text-sm font-semibold">Archive</div>
+            <div className="text-sm font-semibold">Spec</div>
             <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
-              Previous work preserved under <code>archive/v0/</code>.
+              Canonical: <code>HOMEWORKE_3.0_SOURCE_OF_TRUTH.md</code>
             </div>
           </Card>
         </div>
