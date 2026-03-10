@@ -263,7 +263,7 @@ export default function Page() {
                               pattern="[0-9]{5}"
                               placeholder="60616"
                               aria-label="ZIP code"
-                              className="h-auto w-[78px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-6 text-[var(--hw-ink)] underline decoration-[rgba(229,57,53,.45)] underline-offset-4 outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none selection:bg-[rgba(229,57,53,.18)]"
+                              className="h-auto w-[78px] border-0 bg-transparent p-0 text-[16px] font-semibold leading-6 text-[var(--hw-ink)] underline decoration-[rgba(229,57,53,.45)] underline-offset-4 outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none selection:bg-[rgba(229,57,53,.18)] pl-[1px]"
                               style={{ textDecorationSkipInk: "none" }}
                             />
                           </div>
