@@ -185,7 +185,7 @@ export default function Page() {
           />
 
           <Container className="relative py-12 md:py-16">
-            <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <Pill className="bg-white">
                 <span className="hw-breath-dot" aria-hidden />
                 {city ? `Now Servicing ${city}` : locLoading ? "Finding your location…" : "Set your location"}
@@ -248,6 +248,22 @@ export default function Page() {
                       ) : null}
                     </div>
 
+                    <div className="shrink-0">
+                      <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">ZIP</div>
+                      <div className="mt-2 inline-flex items-center gap-2 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white/70 px-3 py-2">
+                        <Input
+                          value={zip}
+                          onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
+                          inputMode="numeric"
+                          pattern="[0-9]{5}"
+                          placeholder="ZIP"
+                          aria-label="ZIP code"
+                          className="h-auto w-[92px] border-0 bg-transparent p-0 text-[15px] font-semibold text-[var(--hw-ink)] outline-none focus:ring-0"
+                        />
+                        <span className="text-xs text-[var(--hw-muted)]">{city && state ? `${city}, ${state}` : locLoading ? "Locating…" : ""}</span>
+                      </div>
+                    </div>
+
                     {suggestedService ? (
                       <span className="hidden sm:inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white/70 px-3 py-1.5 text-xs font-semibold text-[#374151]">
                         {suggestedService.name}
@@ -255,19 +271,7 @@ export default function Page() {
                     ) : null}
                   </div>
 
-                  <div className="sm:pt-0">
-                    <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">ZIP</div>
-                    <Input
-                      value={zip}
-                      onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
-                      inputMode="numeric"
-                      pattern="[0-9]{5}"
-                      placeholder="60616"
-                      aria-label="ZIP code"
-                      className="mt-2 h-12 rounded-[var(--hw-radius-lg)] border-0 px-4 text-[16px] outline-none hw-glass-field"
-                    />
-                    <div className="mt-2 text-xs text-[var(--hw-muted)]">{city && state ? `${city}, ${state}` : locLoading ? "Locating…" : ""}</div>
-                  </div>
+
 
                   <div className="mt-4">
                     <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">OR PICK A CATEGORY</div>
