@@ -8,6 +8,10 @@ import { SiteFooter, SiteHeader } from "@/components/site-shell";
 
 import servicesData from "@/content/services.json";
 
+export function generateStaticParams() {
+  return servicesData.services.map((s) => ({ slug: s.slug }));
+}
+
 export default function ServiceDetailPage({ params }: { params: { slug: string } }) {
   const service = servicesData.services.find((s) => s.slug === params.slug);
   if (!service) return notFound();
