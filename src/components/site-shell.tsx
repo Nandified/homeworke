@@ -38,19 +38,29 @@ export function SiteHeader({ ctaHref = "/estimate" }: { ctaHref?: string }) {
 export function SiteFooter() {
   return (
     <footer className="border-t border-[var(--hw-line)] bg-white">
-      <Container className="flex flex-col gap-3 py-10 md:flex-row md:items-center md:justify-between">
-        <div className="text-sm text-[var(--hw-muted)]">Homeworke · Chicago-first home services</div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/privacy">
-            <Button variant="ghost">Privacy</Button>
-          </Link>
-          <Link href="/terms">
-            <Button variant="ghost">Terms</Button>
-          </Link>
-          <Link href="/contact">
-            <Button variant="ghost">Contact</Button>
-          </Link>
+      <Container className="py-10">
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Homeworke</div>
+            <div className="mt-2 text-sm text-[var(--hw-muted)]">Chicago-first home services</div>
+            <div className="mt-4">
+              <Link href="/estimate">
+                <Button>Get an Instant Estimate</Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-1 md:gap-1">
+            <Link href="/services" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Services</Link>
+            <Link href="/how-it-works" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">How it works</Link>
+            <Link href="/chicago" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Chicago</Link>
+            <Link href="/contact" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Contact</Link>
+            <Link href="/privacy" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Privacy</Link>
+            <Link href="/terms" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Terms</Link>
+          </div>
         </div>
+
+        <div className="mt-8 text-xs text-[var(--hw-muted)]">© {new Date().getFullYear()} Homeworke. All rights reserved.</div>
       </Container>
     </footer>
   );
