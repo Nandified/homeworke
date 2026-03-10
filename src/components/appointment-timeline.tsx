@@ -36,36 +36,27 @@ export function AppointmentTimelinePage(props: { id: string }) {
     pmName: "Jordan Rivera",
   }));
 
-  // v1: simulated real-time updates
+  // v1: real-time-ready updates via SSE (simulated server events for now)
   useEffect(() => {
-    const order = steps.map((s) => s.key);
-    let idx = Math.max(0, order.indexOf(live.stepKey));
+    const url = `/api/realtime/appointments/${props.id}?mode=fast`;
+    const es = new EventSource(url);
 
-    const timers: number[] = [];
-
-    function advance(afterMs: number, nextKey: string, eta?: number) {
-      const t = window.setTimeout(() => {
+    es.addEventListener("timeline", (evt) => {
+      try {
+        const data = JSON.parse((evt as MessageEvent).data) as { type: string; etaMinutes?: number };
         setLive((prev) => ({
           ...prev,
-          stepKey: nextKey,
+          stepKey: data.type,
+          etaMinutes: data.etaMinutes ?? prev.etaMinutes,
           updatedAt: new Date().toISOString(),
-          etaMinutes: eta,
         }));
-      }, afterMs);
-      timers.push(t);
-    }
+      } catch {
+        // ignore
+      }
+    });
 
-    // only simulate if we are at the start
-    if (idx <= 0 && order.length >= 4) {
-      // pm_assigned → pm_on_the_way → arrived → completed
-      advance(2800, order[1], 18);
-      advance(6000, order[2], 7);
-      advance(9800, order[3], 0);
-    }
-
-    return () => timers.forEach((t) => window.clearTimeout(t));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => es.close();
+  }, [props.id]);
 
   const activeIndex = useMemo(() => steps.findIndex((s) => s.key === live.stepKey), [steps, live.stepKey]);
 
