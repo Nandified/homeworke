@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Play, Phone, Mail, Link as LinkIcon } from "lucide-react";
@@ -12,6 +13,7 @@ import spec from "@/content/pro_landing_polish_opus.json";
 type ProProfile = {
   pro_code: string;
   display_name: string;
+  headshot_url?: string | null;
   brokerage_name: string;
   license_number: string;
   license_state: string;
@@ -36,6 +38,7 @@ function resolvePro(code: string): ProProfile | null {
     return {
       pro_code: "frj",
       display_name: "Fernando Rocha Jr.",
+      headshot_url: null,
       brokerage_name: "The FRJ Group @ RE/MAX",
       license_number: "(placeholder)",
       license_state: "IL",
@@ -55,6 +58,7 @@ function resolvePro(code: string): ProProfile | null {
     return {
       pro_code: "demo",
       display_name: "Partner Demo",
+      headshot_url: null,
       brokerage_name: "Demo Office",
       license_number: "(placeholder)",
       license_state: "IL",
@@ -151,13 +155,24 @@ export default function Page() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">{spec.page.headline}</div>
-              <h1 className="mt-2 text-balance text-4xl font-extrabold tracking-tight md:text-5xl">{pro.display_name}</h1>
-              <div className="mt-3 max-w-3xl text-base leading-8 text-[var(--hw-muted)]">{pro.brokerage_name}</div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Chip>
-                  License: {pro.license_state} {pro.license_number}
-                </Chip>
-                {partnerSet ? <Chip>Partner attached</Chip> : <Chip>Partner pending</Chip>}
+                            <div className="flex items-start gap-4">
+                <div className="relative h-16 w-16 overflow-hidden rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[var(--hw-soft)]">
+                  {pro.headshot_url ? (
+                    <Image src={pro.headshot_url} alt={pro.display_name} fill className="object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-sm font-extrabold text-[var(--hw-muted)]">
+                      {pro.display_name.split(" ").map((p) => p[0]).slice(0,2).join("")}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-balance text-4xl font-extrabold tracking-tight md:text-5xl">{pro.display_name}</h1>
+                  <div className="mt-3 max-w-3xl text-base leading-8 text-[var(--hw-muted)]">{pro.brokerage_name}</div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Chip>License: {pro.license_state} {pro.license_number}</Chip>
+                    {partnerSet ? <Chip>Partner attached</Chip> : <Chip>Partner pending</Chip>}
+                  </div>
+                </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -184,7 +199,7 @@ export default function Page() {
                   <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Social</div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {socials.map(([k, href]) => (
-                      <SocialIconLink key={k} href={href} label={k.replace(/_/g, " ")} />
+                      <SocialIconLink key={k} href={href} label={k.replace(/_/g, " ").replace(/url/g, "").trim()} />
                     ))}
                     {pro.website_url ? <SocialIconLink href={pro.website_url} label="Website" /> : null}
                   </div>
