@@ -2,7 +2,12 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { Button, Card, Container, Pill } from "@/components/ui";
+import { CmsBody } from "@/components/cms-body";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
+import { getPublishedPageBySlug } from "@/lib/cms";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const neighborhoods = [
   "West Loop",
@@ -15,7 +20,38 @@ const neighborhoods = [
   "Hyde Park",
 ];
 
-export default function ChicagoPage() {
+export default async function ChicagoPage() {
+  const cms = await getPublishedPageBySlug("chicago");
+  if (cms?.body) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
+        <SiteHeader />
+        <main>
+          <Container className="py-12">
+            <div className="max-w-3xl">
+              <h1 className="text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)]">{cms.title}</h1>
+              <div className="mt-6">
+                <CmsBody body={cms.body} />
+              </div>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/estimate">
+                  <Button>
+                    Get an Instant Estimate
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/services">
+                  <Button variant="secondary">Browse services</Button>
+                </Link>
+              </div>
+            </div>
+          </Container>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
       <SiteHeader />

@@ -5,9 +5,12 @@ import { Card, Container, Button } from "@/components/ui";
 import { iconFor } from "@/components/icons";
 import { SiteHeader, SiteFooter } from "@/components/site-shell";
 
-import servicesData from "@/../spec/services.json";
+import { listPublishedServices } from "@/lib/cms";
 
-export default function ServicesPage() {
+export const runtime = "nodejs";
+
+export default async function ServicesPage() {
+  const services = await listPublishedServices();
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
       <SiteHeader />
@@ -23,7 +26,7 @@ export default function ServicesPage() {
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {servicesData.services.map((s) => {
+            {services.map((s) => {
               const Icon = iconFor(s.icon);
               return (
                 <Link key={s.slug} href={`/services/${s.slug}`} className="group">

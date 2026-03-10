@@ -27,6 +27,12 @@ enum AttributionEventType {
   REFERRAL
 }
 
+enum UserRole {
+  USER
+  EDITOR
+  ADMIN
+}
+
 // ---------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------
@@ -34,13 +40,18 @@ enum AttributionEventType {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  role      UserRole @default(USER)
   createdAt DateTime @default(now())
 
   sessions   Session[]
   workOrders WorkOrder[]
   auditLogs  AuditLog[]  @relation("AuditLogActorUser")
 
+  serviceEdits ServiceEditor[]
+  pageEdits    PageEditor[]
+
   @@index([email])
+  @@index([role])
 }
 
 model Session {
@@ -152,4 +163,86 @@ model AuditLog {
   @@index([actorUserId])
   @@index([actorPartnerId])
   @@index([entityType, entityId])
+}
+
+// ---------------------------------------------------------------------------
+// CMS (MVP)
+// ---------------------------------------------------------------------------
+
+model ServiceCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  services Service[]
+
+  @@index([slug])
+  @@index([sortOrder])
+}
+
+model Service {
+  id          String           @id @default(cuid())
+  categoryId  String?
+  title       String
+  slug        String           @unique
+  icon        String?
+  summary     String?
+  examples    Json             @default("[]")
+  notes       String?
+  body        String?
+  published   Boolean          @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  category ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  editors  ServiceEditor[]
+
+  @@index([categoryId])
+  @@index([published])
+  @@index([slug, published])
+}
+
+model ServiceEditor {
+  serviceId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([serviceId, userId])
+  @@index([userId])
+}
+
+model Page {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  body        String?
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  editors PageEditor[]
+
+  @@index([slug])
+  @@index([published])
+}
+
+model PageEditor {
+  pageId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([pageId, userId])
+  @@index([userId])
 }

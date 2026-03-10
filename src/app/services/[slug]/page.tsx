@@ -6,10 +6,12 @@ import { Button, Card, Container, Pill } from "@/components/ui";
 import { iconFor } from "@/components/icons";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 
-import servicesData from "@/../spec/services.json";
+import { getPublishedServiceBySlug } from "@/lib/cms";
 
-export default function ServiceDetailPage({ params }: { params: { slug: string } }) {
-  const service = servicesData.services.find((s) => s.slug === params.slug);
+export const runtime = "nodejs";
+
+export default async function ServiceDetailPage({ params }: { params: { slug: string } }) {
+  const service = await getPublishedServiceBySlug(params.slug);
   if (!service) return notFound();
 
   const Icon = iconFor(service.icon);

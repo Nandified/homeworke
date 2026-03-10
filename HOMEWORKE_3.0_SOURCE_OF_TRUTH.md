@@ -232,6 +232,31 @@ Core rules:
 - Ops/PM notifications (assignments, schedule changes, SLA breach, draw events)
 
 
+4.10 Content Management System (CMS) for services + marketing pages
+Goal:
+- Admin-controlled editing of service pages, city pages, FAQs, and guides without touching code.
+- Role-based permissions (Admin vs Home Guide/Editor) + audit trail.
+- Support "draft → review → publish".
+
+Minimum viable CMS scope:
+- Service Categories (hierarchy)
+- Services (leaf nodes)
+- Marketing Pages (homepage sections, how-it-works, service landing pages)
+- City/Neighborhood pages (SEO)
+- Global components (FAQ blocks, testimonials, CTAs)
+
+Permissions:
+- Admin: create categories/services/pages, assign editors, publish.
+- Editor/Home Guide: edit assigned pages/services, submit for review.
+
+Implementation guidance:
+- Store content in Postgres (Prisma models) as structured JSON blocks + optional markdown fields.
+- Render in Next.js using a stable block renderer; keep UI components versioned.
+- Keep a clear separation between "content" (DB) and "templates" (code).
+
+AI assist (optional):
+- Use Anthropic Opus (via server-side API) to generate drafts (headlines, FAQs, page copy) with human review required before publish.
+
 ## SECTION 5 — IA (Dashboards) that must exist (no randomness)
 These dashboards are required and should match 2.0 reality while improving UI:
 - Homeowner dashboard

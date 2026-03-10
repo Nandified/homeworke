@@ -10,6 +10,13 @@ Current artifacts:
 - `spec/batch1_partner_funnel_opus.json`
 - `spec/pro_landing_polish_opus.json`
 
+## Environment Variables
+
+- `DATABASE_URL` (required for DB-backed features like auth + CMS admin)
+  - Postgres connection string (Prisma)
+- `ANTHROPIC_API_KEY` (optional)
+  - Only needed for features that call Anthropic; safe to omit for the CMS MVP.
+
 ## Getting Started
 
 First, run the development server:
