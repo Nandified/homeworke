@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Button, Card, Container, Pill } from "@/components/ui";
+import { isDemoMode, withDemo } from "@/lib/demo";
 
 export type PortalNavItem = { href: string; label: string };
 
@@ -30,7 +31,8 @@ export function PortalShell(props: {
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-3 md:flex">
-            <Link href="/portal">
+            {isDemoMode() ? <Pill className="bg-white">Demo</Pill> : null}
+            <Link href={withDemo("/portal")}>
               <Button variant="ghost">Portals</Button>
             </Link>
             <Pill>{props.role}</Pill>
@@ -38,8 +40,9 @@ export function PortalShell(props: {
 
           {/* Mobile nav — compact row */}
           <div className="flex items-center gap-2 md:hidden">
+            {isDemoMode() ? <Pill>Demo</Pill> : null}
             <Pill>{props.role}</Pill>
-            <Link href="/portal">
+            <Link href={withDemo("/portal")}>
               <Button variant="ghost">Portals</Button>
             </Link>
           </div>
@@ -65,6 +68,12 @@ export function PortalShell(props: {
           </div>
 
           {/* ── Layout: sidebar + content ── */}
+          {isDemoMode() ? (
+            <div className="mb-6 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4 text-sm text-[var(--hw-ink)]">
+              <span className="font-semibold">Demo mode:</span> sample data is enabled for all portals.
+            </div>
+          ) : null}
+
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
             {/* Sidebar — horizontal scroll on mobile, vertical on desktop */}
             <aside className="lg:col-span-3">
@@ -78,7 +87,7 @@ export function PortalShell(props: {
                   {props.nav.map((n) => (
                     <Link
                       key={n.href}
-                      href={n.href}
+                      href={withDemo(n.href)}
                       className="shrink-0 rounded-full border border-[var(--hw-line)] px-4 py-2 text-sm font-semibold text-[var(--hw-ink)] transition-colors hover:bg-[var(--hw-soft)]"
                     >
                       {n.label}
@@ -91,7 +100,7 @@ export function PortalShell(props: {
                   {props.nav.map((n) => (
                     <Link
                       key={n.href}
-                      href={n.href}
+                      href={withDemo(n.href)}
                       className="rounded-[var(--hw-radius-sm)] px-3 py-2.5 text-sm font-semibold text-[var(--hw-ink)] transition-colors hover:bg-[var(--hw-soft)]"
                     >
                       {n.label}

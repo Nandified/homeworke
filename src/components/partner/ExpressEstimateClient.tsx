@@ -22,6 +22,9 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [file, setFile] = useState<File | null>(null);
   const [parseStarted, setParseStarted] = useState(false);
 
+  // Demo mode: prefill so people can instantly see the builder.
+  const builderReady = (typeof window !== "undefined" && window.location.search.includes("demo=1")) || (Boolean(file) && parseStarted);
+
   const nav = useMemo(
     () => [
       { href: `${props.basePath}/dashboard`, label: "Dashboard" },
@@ -75,7 +78,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
   const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
 
-  const builderReady = Boolean(file) && parseStarted;
+  // builderReady declared above
 
   return (
     <PortalShell

@@ -10,6 +10,7 @@ import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { KpiGrid } from "@/components/dashboard/KpiGrid";
 import { ListRow } from "@/components/dashboard/ListRow";
 import { loadPartner, PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
+import { ensureDemoPartnerContext, isDemoMode } from "@/lib/demo";
 
 export type PartnerDashboardProps = {
   basePath: "/partner" | "/pro";
@@ -106,6 +107,8 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
   // Read partner context from localStorage (robust for older key formats)
   useEffect(() => {
+    ensureDemoPartnerContext();
+
     const fromHelper = loadPartner();
     if (fromHelper?.partnerId) {
       setPartner(fromHelper);

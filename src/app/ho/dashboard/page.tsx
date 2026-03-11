@@ -8,6 +8,7 @@ import { PortalShell } from "@/components/portal-shell";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { KpiGrid } from "@/components/dashboard/KpiGrid";
 import { ListRow, StatusChip } from "@/components/dashboard/ListRow";
+import { ensureDemoHomeownerSession } from "@/lib/demo";
 
 type Session = {
   token: string;
@@ -73,6 +74,7 @@ export default function HomeownerDashboardPage() {
   const [messages, setMessages] = useState<Message[] | null>(null);
 
   useEffect(() => {
+    ensureDemoHomeownerSession();
     const s = loadSession();
     setSession(s);
     if (!s?.token) {
