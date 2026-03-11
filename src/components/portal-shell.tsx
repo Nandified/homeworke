@@ -1,3 +1,6 @@
+"use client";
+
+import * as React from "react";
 import Link from "next/link";
 
 import { Button, Card, Container, Pill } from "@/components/ui";
@@ -17,24 +20,34 @@ export function PortalShell(props: {
   primaryAction?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
       {/* ── Header ── */}
       <header className="sticky top-0 z-20 border-b border-[var(--hw-line)] bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <Container className="flex h-14 items-center justify-between md:h-16">
-          <Link
-            href="/"
-            className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]"
-          >
-            Homeworke
-          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(true)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] shadow-sm md:hidden"
+              aria-label="Open navigation"
+            >
+              ☰
+            </button>
+
+            <Link
+              href="/"
+              className="text-base font-extrabold tracking-tight text-[var(--hw-red)] md:text-lg"
+            >
+              Homeworke
+            </Link>
+          </div>
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-3 md:flex">
             {isDemoMode() ? <Pill className="bg-white">Demo</Pill> : null}
-            <Link href={withDemo("/portal")}>
-              <Button variant="ghost">Portals</Button>
-            </Link>
             <Pill>{props.role}</Pill>
           </nav>
 
@@ -42,12 +55,47 @@ export function PortalShell(props: {
           <div className="flex items-center gap-2 md:hidden">
             {isDemoMode() ? <Pill>Demo</Pill> : null}
             <Pill>{props.role}</Pill>
-            <Link href={withDemo("/portal")}>
-              <Button variant="ghost">Portals</Button>
-            </Link>
           </div>
         </Container>
       </header>
+
+      {/* Mobile nav drawer */}
+      {mobileNavOpen ? (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/40"
+            aria-label="Close navigation"
+            onClick={() => setMobileNavOpen(false)}
+          />
+          <div className="absolute left-0 top-0 h-full w-[86%] max-w-sm bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
+            <div className="flex items-center justify-between border-b border-[var(--hw-line)] px-5 py-4">
+              <div className="text-sm font-extrabold tracking-tight text-[var(--hw-red)]">Homeworke</div>
+              <Button size="sm" variant="secondary" onClick={() => setMobileNavOpen(false)}>
+                Close
+              </Button>
+            </div>
+
+            <div className="p-5">
+              {props.primaryAction ? <div className="mb-4">{props.primaryAction}</div> : null}
+
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Navigation</div>
+              <nav className="mt-3 grid gap-1">
+                {props.nav.map((n) => (
+                  <Link
+                    key={n.href}
+                    href={withDemo(n.href)}
+                    onClick={() => setMobileNavOpen(false)}
+                    className="rounded-[var(--hw-radius-sm)] px-3 py-3 text-sm font-semibold text-[var(--hw-ink)] transition-colors hover:bg-[var(--hw-soft)]"
+                  >
+                    {n.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <main>
         <Container className="py-8 md:py-12">
@@ -64,7 +112,7 @@ export function PortalShell(props: {
                 {props.description || "v1 build: navigation and information architecture first. Data wiring next."}
               </p>
             </div>
-            {props.primaryAction ? <div className="shrink-0">{props.primaryAction}</div> : null}
+            {props.primaryAction ? <div className="shrink-0 hidden md:block">{props.primaryAction}</div> : null}
           </div>
 
           {/* ── Layout: sidebar + content ── */}
@@ -75,28 +123,11 @@ export function PortalShell(props: {
           ) : null}
 
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-            {/* Sidebar — horizontal scroll on mobile, vertical on desktop */}
-            <aside className="lg:col-span-3">
+            {/* Sidebar (desktop only) */}
+            <aside className="hidden lg:block lg:col-span-3">
               <Card className="p-5">
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                  Navigation
-                </span>
-
-                {/* Mobile: horizontal pill-style row */}
-                <div className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-                  {props.nav.map((n) => (
-                    <Link
-                      key={n.href}
-                      href={withDemo(n.href)}
-                      className="shrink-0 rounded-full border border-[var(--hw-line)] px-4 py-2 text-sm font-semibold text-[var(--hw-ink)] transition-colors hover:bg-[var(--hw-soft)]"
-                    >
-                      {n.label}
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Desktop: vertical stack */}
-                <nav className="mt-3 hidden flex-col gap-0.5 lg:flex">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Navigation</span>
+                <nav className="mt-3 flex flex-col gap-0.5">
                   {props.nav.map((n) => (
                     <Link
                       key={n.href}
@@ -111,9 +142,7 @@ export function PortalShell(props: {
             </aside>
 
             {/* Main content area */}
-            <section className="min-w-0 lg:col-span-9">
-              {props.children}
-            </section>
+            <section className="min-w-0 lg:col-span-9">{props.children}</section>
           </div>
         </Container>
       </main>
