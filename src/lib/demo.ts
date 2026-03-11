@@ -47,13 +47,21 @@ export function ensureDemoPartnerContext() {
   if (typeof window === "undefined") return;
   if (!isDemoMode()) return;
 
-  const key = "hw_partner_context_v1";
+  // Must match `loadPartner()` storage key.
+  const key = "hw3_partner_context_v1";
   try {
     const existing = window.localStorage.getItem(key);
     if (existing) return;
   } catch {}
 
-  const demo = { partnerId: "frj", partnerName: "FRJ Demo Partner" };
+  const demo = {
+    partnerId: "frj",
+    partnerName: "FRJ Demo Partner",
+    partnerType: "Real Estate Pro",
+    officeName: "FRJ Group",
+    createdAt: new Date().toISOString(),
+  };
+
   try {
     window.localStorage.setItem(key, JSON.stringify(demo));
   } catch {}
