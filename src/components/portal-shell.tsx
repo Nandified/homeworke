@@ -34,7 +34,9 @@ export function PortalShell(props: {
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] shadow-sm md:hidden"
               aria-label="Open navigation"
             >
-              ☰
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
             </button>
 
             <Link
@@ -81,16 +83,24 @@ export function PortalShell(props: {
 
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Navigation</div>
               <nav className="mt-3 grid gap-1">
-                {props.nav.map((n) => (
-                  <Link
-                    key={n.href}
-                    href={withDemo(n.href)}
-                    onClick={() => setMobileNavOpen(false)}
-                    className="rounded-[var(--hw-radius-sm)] px-3 py-3 text-sm font-semibold text-[var(--hw-ink)] transition-colors hover:bg-[var(--hw-soft)]"
-                  >
-                    {n.label}
-                  </Link>
-                ))}
+                {props.nav.map((n) => {
+                  const active = typeof window !== "undefined" && window.location.pathname === n.href;
+                  return (
+                    <Link
+                      key={n.href}
+                      href={withDemo(n.href)}
+                      onClick={() => setMobileNavOpen(false)}
+                      className={
+                        "rounded-[var(--hw-radius-sm)] px-3 py-3 text-sm font-semibold transition-colors " +
+                        (active
+                          ? "bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]"
+                          : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                      }
+                    >
+                      {n.label}
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
           </div>
@@ -128,15 +138,23 @@ export function PortalShell(props: {
               <Card className="p-5">
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Navigation</span>
                 <nav className="mt-3 flex flex-col gap-0.5">
-                  {props.nav.map((n) => (
-                    <Link
-                      key={n.href}
-                      href={withDemo(n.href)}
-                      className="rounded-[var(--hw-radius-sm)] px-3 py-2.5 text-sm font-semibold text-[var(--hw-ink)] transition-colors hover:bg-[var(--hw-soft)]"
-                    >
-                      {n.label}
-                    </Link>
-                  ))}
+                  {props.nav.map((n) => {
+                    const active = typeof window !== "undefined" && window.location.pathname === n.href;
+                    return (
+                      <Link
+                        key={n.href}
+                        href={withDemo(n.href)}
+                        className={
+                          "rounded-[var(--hw-radius-sm)] px-3 py-2.5 text-sm font-semibold transition-colors " +
+                          (active
+                            ? "bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]"
+                            : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                        }
+                      >
+                        {n.label}
+                      </Link>
+                    );
+                  })}
                 </nav>
               </Card>
             </aside>
