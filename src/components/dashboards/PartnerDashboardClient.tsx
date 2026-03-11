@@ -255,12 +255,12 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             />
           </div>
           <div className="lg:col-span-4">
-            <KpiGrid className="lg:grid-cols-2">
-              <StatTile label="Active" value={String(activeCount)} note="Scheduled + in progress" />
-              <StatTile label="Pending" value={String(pendingCount)} note="Awaiting kickoff" />
-              <StatTile label="Completed" value={String(completedCount)} note="Closed" />
-              <StatTile label="Unread" value={String(unreadCount)} note="Messages" />
-            </KpiGrid>
+            <div className="grid grid-cols-2 gap-4 auto-rows-fr">
+              <StatTile label="Active" value={String(activeCount)} note="Scheduled + in progress" className="h-full" />
+              <StatTile label="Pending" value={String(pendingCount)} note="Awaiting kickoff" className="h-full" />
+              <StatTile label="Completed" value={String(completedCount)} note="Closed" className="h-full" />
+              <StatTile label="Unread" value={String(unreadCount)} note="Messages" className="h-full" />
+            </div>
           </div>
         </div>
 
@@ -399,13 +399,9 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
           {/* Right column */}
           <div className="grid gap-6 lg:col-span-4">
-            <DashboardSection
-              title="Invite"
-              description="Your partner link + a couple quick, high-touch ways to start the relationship."
-              card={false}
-            >
+            <DashboardSection title="Invite" card={false}>
               <Card className="p-5">
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">Your partner link</div>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>
                 <div className="mt-1 text-sm text-[var(--hw-muted)]">Share this with clients to connect projects to your dashboard.</div>
 
                 <div className="mt-3 grid gap-2">
@@ -438,42 +434,43 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                     </Link>
                   </div>
 
-                  <div className="text-xs text-[var(--hw-muted)]">{partner.partnerName} • {partner.partnerType}</div>
                 </div>
               </Card>
             </DashboardSection>
 
-            <DashboardSection
-              title="Messages"
-              description="Quick preview of the latest threads."
-              count={messages.length}
-              action={
-                <Link href={`${basePath}/messages`}>
-                  <Button size="sm" variant="secondary">View all</Button>
-                </Link>
-              }
-              card={false}
-            >
+            <DashboardSection title="Messages" card={false}>
               <Card className="p-5">
-                {messages.length === 0 ? (
-                  <div className="rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-5 text-center">
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">No messages</div>
-                    <div className="mx-auto mt-2 max-w-md text-sm leading-7 text-[var(--hw-muted)]">
-                      Messages will appear once a homeowner starts a thread.
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Messages</div>
+                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Quick preview of the latest threads.</div>
+                  </div>
+                  <Link href={`${basePath}/messages`}>
+                    <Button size="sm" variant="secondary">View all</Button>
+                  </Link>
+                </div>
+
+                <div className="mt-4">
+                  {messages.length === 0 ? (
+                    <div className="rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-center">
+                      <div className="text-sm font-semibold text-[var(--hw-ink)]">No messages</div>
+                      <div className="mx-auto mt-2 max-w-md text-sm leading-7 text-[var(--hw-muted)]">
+                        Messages will appear once a homeowner starts a thread.
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="grid gap-2">
-                    {messages.slice(0, 3).map((m) => (
-                      <ListRow
-                        key={m.id}
-                        title={m.fromRole}
-                        subtitle={m.body}
-                        meta={new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                      />
-                    ))}
-                  </div>
-                )}
+                  ) : (
+                    <div className="grid gap-2">
+                      {messages.slice(0, 3).map((m) => (
+                        <ListRow
+                          key={m.id}
+                          title={m.fromRole}
+                          subtitle={m.body}
+                          meta={new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </Card>
             </DashboardSection>
           </div>

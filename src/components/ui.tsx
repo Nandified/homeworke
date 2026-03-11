@@ -135,12 +135,19 @@ export function EmptyState(props: { title: string; text: string; action?: React.
   );
 }
 
-export function StatTile(props: { label: string; value: string; note?: string }) {
+export function StatTile(props: { label: string; value: string; note?: string; className?: string }) {
   return (
-    <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,.06)]">
+    <div
+      className={cn(
+        "flex min-h-[96px] flex-col justify-between rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-left transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,.06)]",
+        props.className
+      )}
+    >
       <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--hw-muted)]">{props.label}</div>
-      <div className="mt-2.5 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{props.value}</div>
-      {props.note ? <div className="mt-2 text-sm text-[var(--hw-muted)]">{props.note}</div> : null}
+      <div>
+        <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{props.value}</div>
+        {props.note ? <div className="mt-1 text-sm text-[var(--hw-muted)]">{props.note}</div> : null}
+      </div>
     </div>
   );
 }
