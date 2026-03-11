@@ -1,23 +1,37 @@
-import { Card } from "@/components/ui";
+import { Card, EmptyState, Pill } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
-
-const nav = [
-  { href: "/pro/dashboard", label: "Dashboard" },
-  { href: "/pro/express-estimate", label: "Express Estimate" },
-  { href: "/pro/estimates", label: "Estimates" },
-  { href: "/pro/clients", label: "My Clients" },
-  { href: "/pro/properties", label: "Properties" },
-  { href: "/pro/messages", label: "Messages" },
-  { href: "/pro/support", label: "Support" },
-  { href: "/pro/account", label: "My Account" }
-];
+import { PRO_NAV } from "@/components/pro/nav";
+import { ProMessagesClient } from "@/components/pro/ProMessagesClient";
 
 export default function Page() {
   return (
-    <PortalShell role="PRO" title="Real Estate Pro" nav={nav}>
+    <PortalShell
+      role="PRO"
+      title="Real Estate Pro"
+      nav={PRO_NAV as unknown as { href: string; label: string }[]}
+      description="Quickly scan recent threads, nudge homeowners, and keep deals moving."
+    >
       <Card className="p-6">
-        <div className="text-sm font-semibold">Messages</div>
-        <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">Placeholder page for 2.0 parity. Wiring next.</div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Messages</div>
+            <div className="mt-1 text-sm text-[var(--hw-muted)]">Latest threads shared with your office.</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Pill>Inbox</Pill>
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <ProMessagesClient
+            empty={
+              <EmptyState
+                title="No messages yet"
+                text="Messages will appear once a homeowner starts a thread from a shared project."
+              />
+            }
+          />
+        </div>
       </Card>
     </PortalShell>
   );
