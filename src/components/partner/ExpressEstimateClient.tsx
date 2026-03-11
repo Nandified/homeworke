@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import Link from "next/link";
 
-import { Button, Card, Chip, EmptyState } from "@/components/ui";
+import { Button, Card, Chip, EmptyState, Textarea } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 
@@ -22,6 +22,7 @@ type ExtractedLane = {
 export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [file, setFile] = useState<File | null>(null);
   const [parseStarted, setParseStarted] = useState(false);
+  const [notes, setNotes] = useState("");
 
   // Demo mode: prefill so people can instantly see the builder.
   const builderReady = (typeof window !== "undefined" && window.location.search.includes("demo=1")) || (Boolean(file) && parseStarted);
@@ -88,7 +89,6 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload a PDF</div>
               <div className="mt-1 text-sm text-[var(--hw-muted)]">Inspection report or appraisal repair request.</div>
             </div>
-            <Chip className="border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] text-[var(--hw-red)]">MVP</Chip>
           </div>
 
           <div className="mt-4 grid gap-3">
@@ -115,17 +115,31 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               />
             </label>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Button
-                onClick={() => {
-                  if (!file) return;
-                  setParseStarted(true);
-                }}
-                disabled={!file}
-              >
-                {parseStarted ? "Extracted" : "Extract line items"}
-              </Button>
-              <div className="text-xs text-[var(--hw-muted)]">Tip: you can also pull the PDF from a message thread (next).</div>
+            <div className="grid gap-3">
+              <div>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Anything we should pay attention to?</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">Optional notes (e.g., “focus on roof + electrical” or “seller credits request”).</div>
+                <div className="mt-2">
+                  <Textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add a note…"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Button
+                  onClick={() => {
+                    if (!file) return;
+                    setParseStarted(true);
+                  }}
+                  disabled={!file}
+                >
+                  {parseStarted ? "Submitted" : "Submit"}
+                </Button>
+                <div className="text-xs text-[var(--hw-muted)]">We’ll generate suggested line items you can review and edit.</div>
+              </div>
             </div>
           </div>
         </Card>
