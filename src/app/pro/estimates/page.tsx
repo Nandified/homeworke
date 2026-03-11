@@ -3,6 +3,7 @@ import { PortalShell } from "@/components/portal-shell";
 
 const nav = [
   { href: "/pro/dashboard", label: "Dashboard" },
+  { href: "/pro/express-estimate", label: "Express Estimate" },
   { href: "/pro/estimates", label: "Estimates" },
   { href: "/pro/clients", label: "My Clients" },
   { href: "/pro/properties", label: "Properties" },
