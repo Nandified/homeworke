@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { dbEnabled, db } from "@/lib/db";
-import { listSharedWorkOrdersForPartner } from "@/lib/mock-store";
+import { listSharedWorkOrdersForPartner, seedDemoStoreIfEmpty } from "@/lib/mock-store";
 
 export const runtime = "nodejs";
 
@@ -15,8 +15,19 @@ export async function GET(req: Request) {
 
   if (!partnerId) return json({ ok: false, error: "missing_partnerId" }, { status: 400 });
 
-  if (!dbEnabled()) {
-    const workOrders = listSharedWorkOrdersForPartner(partnerId);
+  const demo = url.searchParams.get("demo") === "1";
+  if (demo) seedDemoStoreIfEmpty();
+
+  if (!dbEnabled() || demo) {
+    const workOrders = listSharedWorkOrdersForPartner(partnerId).map((w) => ({
+      id: w.id,
+      title: w.serviceSubcategory || w.serviceCategory,
+      address: w.propertyAddress,
+      status: w.status,
+      clientName: w.token === "demo" ? "Fernando Rocha Jr" : undefined,
+      createdAt: w.createdAt,
+      updatedAt: w.createdAt,
+    }));
     return json({ ok: true, workOrders });
   }
 

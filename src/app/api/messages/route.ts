@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { dbEnabled } from "@/lib/db";
-import { listMessages } from "@/lib/mock-store";
+import { listMessages, seedDemoStoreIfEmpty } from "@/lib/mock-store";
 
 export const runtime = "nodejs";
 
@@ -17,7 +17,10 @@ export async function GET(req: Request) {
   const partnerId = url.searchParams.get("partnerId") || undefined;
   const limit = Number(url.searchParams.get("limit") || "20");
 
-  if (dbEnabled()) {
+  const demo = url.searchParams.get("demo") === "1";
+  if (demo) seedDemoStoreIfEmpty();
+
+  if (dbEnabled() && !demo) {
     // Messages are not yet modeled in Prisma for Phase 2.
     return json({ ok: true, messages: [] });
   }
