@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { Button, Card, Chip, EmptyState } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
+import { buildProNav } from "@/components/partner/portal-nav";
 
 export type ExpressEstimateClientProps = {
   basePath: "/partner" | "/pro";
@@ -25,19 +26,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   // Demo mode: prefill so people can instantly see the builder.
   const builderReady = (typeof window !== "undefined" && window.location.search.includes("demo=1")) || (Boolean(file) && parseStarted);
 
-  const nav = useMemo(
-    () => [
-      { href: `${props.basePath}/dashboard`, label: "Dashboard" },
-      { href: `${props.basePath}/express-estimate`, label: "Express Estimate" },
-      { href: `${props.basePath}/estimates`, label: "Estimates" },
-      { href: `${props.basePath}/clients`, label: "My Clients" },
-      { href: `${props.basePath}/properties`, label: "Properties" },
-      { href: `${props.basePath}/messages`, label: "Messages" },
-      { href: `${props.basePath}/support`, label: "Support" },
-      { href: `${props.basePath}/account`, label: "My Account" },
-    ],
-    [props.basePath]
-  );
+  const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
 
   const extracted = useMemo((): ExtractedLane[] => {
     // Stubbed demo parse output — this will be wired to PDF ingestion.
@@ -85,7 +74,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       role={props.role}
       title={props.title || "Express Estimate"}
       nav={nav}
-      description="Upload an inspection/appraisal PDF and quickly draft an estimate. (Stubbed UI — wiring next.)"
+      description="Upload an inspection/appraisal PDF and generate a polished repair estimate in minutes."
       primaryAction={
         <Link href={`${props.basePath}/dashboard`}>
           <Button variant="secondary">Back to dashboard</Button>
@@ -94,63 +83,65 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     >
       <div className="grid gap-6">
         <Card className="p-6">
-          <div className="flex flex-col gap-1">
-            <div className="text-sm font-semibold">1) Upload inspection / appraisal PDF</div>
-            <div className="text-sm text-[var(--hw-muted)]">
-              We’ll extract probable repair line-items and put anything ambiguous into a “Need more info” lane.
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload a PDF</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">Inspection report or appraisal repair request.</div>
             </div>
+            <Chip className="border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] text-[var(--hw-red)]">MVP</Chip>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-            <input
-              className="w-full rounded-[var(--radius)] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm text-[var(--hw-ink)] shadow-sm outline-none focus:border-[var(--hw-ink)]"
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => {
-                const next = e.target.files?.[0] ?? null;
-                setFile(next);
-                setParseStarted(false);
-                setSelectedIds(new Set());
-              }}
-            />
-            <Button
-              onClick={() => {
-                if (!file) return;
-                setParseStarted(true);
-              }}
-              disabled={!file}
-            >
-              {parseStarted ? "Parsed (stub)" : "Extract line items"}
-            </Button>
-          </div>
+          <div className="mt-4 grid gap-3">
+            <label className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 hover:bg-white">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{file ? file.name : "Choose a PDF to upload"}</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">{file ? "Ready to extract line items." : "Drag & drop or click to browse."}</div>
+                </div>
+                <div className="shrink-0">
+                  <Button size="sm" variant="secondary" type="button">Browse</Button>
+                </div>
+              </div>
+              <input
+                className="hidden"
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => {
+                  const next = e.target.files?.[0] ?? null;
+                  setFile(next);
+                  setParseStarted(false);
+                  setSelectedIds(new Set());
+                }}
+              />
+            </label>
 
-          {file ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--hw-muted)]">
-              <Chip className="border-[var(--hw-line)] bg-white">{file.name}</Chip>
-              <span>•</span>
-              <span>{Math.max(1, Math.round(file.size / 1024))} KB</span>
-              <span>•</span>
-              <span>PDF</span>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Button
+                onClick={() => {
+                  if (!file) return;
+                  setParseStarted(true);
+                }}
+                disabled={!file}
+              >
+                {parseStarted ? "Extracted" : "Extract line items"}
+              </Button>
+              <div className="text-xs text-[var(--hw-muted)]">Tip: you can also pull the PDF from a message thread (next).</div>
             </div>
-          ) : (
-            <div className="mt-3 text-xs text-[var(--hw-muted)]">Tip: Upload the PDF your homeowner shared in the thread.</div>
-          )}
+          </div>
         </Card>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <Card className="p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-sm font-semibold">2) Build the estimate (stub)</div>
-                <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                  Select the line-items you want to include. Move unclear items to “Need more info.”
-                </div>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Build your estimate</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">Select items to include. Move unclear items into “Need more info.”</div>
               </div>
               <div className="hidden sm:flex gap-2">
-                <Button variant="secondary" disabled={!builderReady}>
-                  Download selected PDF
+                <Button size="sm" variant="secondary" disabled={!builderReady}>
+                  Download selected
                 </Button>
-                <Button disabled={!builderReady}>Download full PDF</Button>
+                <Button size="sm" disabled={!builderReady}>Download full</Button>
               </div>
             </div>
 
