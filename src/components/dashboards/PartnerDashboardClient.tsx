@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { Button, Card, Chip, EmptyState, StatTile } from "@/components/ui";
+import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 import { PortalShell } from "@/components/portal-shell";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { KpiGrid } from "@/components/dashboard/KpiGrid";
@@ -87,7 +88,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     () => [
       { href: `${basePath}/dashboard`, label: "Dashboard" },
       { href: `${basePath}/express-estimate`, label: "Express Estimate" },
-      { href: `${basePath}/estimates`, label: "Estimates" },
+      { href: `${basePath}/jobs`, label: "Jobs" },
       { href: `${basePath}/clients`, label: "My Clients" },
       { href: `${basePath}/properties`, label: "Properties" },
       { href: `${basePath}/messages`, label: "Messages" },
@@ -242,11 +243,11 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
       }
     >
       <div className="grid gap-6">
-        <KpiGrid>
-          <StatTile label="Active projects" value={String(activeCount)} note="Scheduled + in progress" />
-          <StatTile label="Pending" value={String(pendingCount)} note="Awaiting scheduling / kickoff" />
-          <StatTile label="Completed" value={String(completedCount)} note="Closed work orders" />
-          <StatTile label="Unread messages" value={String(unreadCount)} note="From homeowner + ops" />
+        <KpiGrid className="lg:grid-cols-4">
+          <StatTile label="Active" value={String(activeCount)} note="Scheduled + in progress" />
+          <StatTile label="Pending" value={String(pendingCount)} note="Awaiting kickoff" />
+          <StatTile label="Completed" value={String(completedCount)} note="Closed" />
+          <StatTile label="Unread" value={String(unreadCount)} note="Messages" />
         </KpiGrid>
 
         {loading && (
@@ -261,9 +262,9 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           </Card>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="grid gap-6 lg:grid-cols-12">
           {/* Left column */}
-          <div className="grid gap-6">
+          <div className="grid gap-6 lg:col-span-8">
             <DashboardSection
               title="Active projects shared with you"
               count={totalCount}
@@ -312,28 +313,38 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             </DashboardSection>
 
             <DashboardSection
+              title="AI work order intake"
+              description="A fast, conversational way to submit a job (same flow as the homepage)."
+            >
+              <AIWorkOrderIntakeCard
+                eyebrow="AI work order"
+                title="What’s going on with your client’s property?"
+                primaryCta="Start a job request"
+                secondaryCta="Browse marketplace"
+              />
+            </DashboardSection>
+
+            <DashboardSection
               title="Express Estimate"
-              description="Drop an inspection PDF → pick line-items → export a fast estimate."
+              description="AI-generated quick estimate for inspection items, seller credits, and repair requests."
               action={
                 <Link href={`${basePath}/express-estimate`}>
-                  <Button>Open</Button>
+                  <Button size="sm">Open</Button>
                 </Link>
               }
             >
               <Card className="border-[var(--hw-line)] bg-[var(--hw-soft)] p-5">
                 <div className="grid gap-1">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">New: PDF-to-estimate flow (stub)</div>
-                  <div className="text-sm text-[var(--hw-muted)]">
-                    Best for pre-list inspections, appraisal repair requests, and quick negotiation packets.
-                  </div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">New: PDF-to-estimate (MVP)</div>
+                  <div className="text-sm text-[var(--hw-muted)]">Drop an inspection PDF → pick line-items → export a clean estimate.</div>
                 </div>
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                   <Link href={`${basePath}/express-estimate`} className="w-full sm:w-auto">
-                    <Button className="w-full sm:w-auto">Start an Express Estimate</Button>
+                    <Button className="w-full sm:w-auto">Start Express Estimate</Button>
                   </Link>
                   <Link href={`${basePath}/messages`} className="w-full sm:w-auto">
-                    <Button variant="secondary" className="w-full sm:w-auto">
-                      Pull PDF from a thread
+                    <Button size="sm" variant="secondary" className="w-full sm:w-auto">
+                      Pull from messages
                     </Button>
                   </Link>
                 </div>
@@ -341,43 +352,43 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             </DashboardSection>
 
             <DashboardSection
-              title="Touchpoints"
-              description="Suggested next actions to keep deals moving."
+              title="Elevated Client Care"
+              description="White-glove follow-ups that make your clients feel looked after — and keep you top of mind."
             >
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Card className="p-4">
-                  <div className="text-sm font-semibold">Send a 48-hour check‑in</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Nudge homeowners with active scopes to confirm schedule + access.</div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Anticipate before they ask</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Set timely, personal outreach that keeps you one step ahead of your client’s needs.</div>
                   <div className="mt-3">
                     <Link href={`${basePath}/messages`}>
-                      <Button variant="secondary">Draft message</Button>
+                      <Button size="sm" variant="secondary">Schedule outreach</Button>
                     </Link>
                   </div>
                 </Card>
                 <Card className="p-4">
-                  <div className="text-sm font-semibold">Request missing photos</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Fastest way to price “Need more info” items accurately.</div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Manage repairs with ease</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Coordinate inspections, bids, and scheduling so your client gets a hands‑free repair experience.</div>
+                  <div className="mt-3">
+                    <Link href={`${basePath}/jobs`}>
+                      <Button size="sm" variant="secondary">Coordinate now</Button>
+                    </Link>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Ensure a flawless closing</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Surface and resolve open items early so nothing stands between your client and the keys.</div>
+                  <div className="mt-3">
+                    <Link href={`${basePath}/jobs`}>
+                      <Button size="sm" variant="secondary">Resolve items</Button>
+                    </Link>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Nurture beyond the transaction</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Send seasonal home‑care reminders that keep your name at the top of every referral list.</div>
                   <div className="mt-3">
                     <Link href={`${basePath}/messages`}>
-                      <Button variant="secondary">Request info</Button>
-                    </Link>
-                  </div>
-                </Card>
-                <Card className="p-4">
-                  <div className="text-sm font-semibold">Create a scope summary</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Turn line-items into a clean, shareable PDF for negotiations.</div>
-                  <div className="mt-3">
-                    <Link href={`${basePath}/express-estimate`}>
-                      <Button variant="secondary">Start summary</Button>
-                    </Link>
-                  </div>
-                </Card>
-                <Card className="p-4">
-                  <div className="text-sm font-semibold">Introduce BOSSCAT concierge</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Set expectations + explain how we coordinate vendors and scheduling.</div>
-                  <div className="mt-3">
-                    <Link href={`${basePath}/support`}>
-                      <Button variant="secondary">View script</Button>
+                      <Button size="sm" variant="secondary">Send reminder</Button>
                     </Link>
                   </div>
                 </Card>
@@ -386,45 +397,43 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           </div>
 
           {/* Right column */}
-          <div className="grid gap-6">
-            <DashboardSection title="Invite clients" description="Share your invite link to attribute referrals and unlock shared projects.">
+          <div className="grid gap-6 lg:col-span-4">
+            <DashboardSection title="Invite" description="Your partner link + a couple quick, high-touch ways to start the relationship.">
               <Card className="p-5">
-                <div className="text-sm font-semibold">Your partner link</div>
-                <div className="mt-1 text-sm text-[var(--hw-muted)]">Send this to homeowners to attach your office.</div>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Your partner link</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">Share this with clients to connect projects to your dashboard.</div>
+
                 <div className="mt-3 grid gap-2">
-                  <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
-                    <input
-                      className="w-full rounded-[var(--radius)] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm text-[var(--hw-ink)] shadow-sm outline-none"
-                      value={partnerInviteLink}
-                      readOnly
-                    />
+                  <div className="flex items-center gap-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2">
+                    <div className="min-w-0 flex-1 truncate text-xs font-semibold text-[var(--hw-ink)]">{partnerInviteLink}</div>
                     <Button
+                      size="sm"
                       variant="secondary"
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(partnerInviteLink);
                           setCopied(true);
                           window.setTimeout(() => setCopied(false), 1300);
-                        } catch {
-                          // ignore
-                        }
+                        } catch {}
                       }}
                       disabled={!partnerInviteLink}
                     >
-                      {copied ? "Copied" : "Copy link"}
+                      {copied ? "Copied" : "Copy"}
                     </Button>
                   </div>
+
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Link href={`${basePath}/clients`} className="w-full sm:w-auto">
-                      <Button className="w-full sm:w-auto">Invite a client</Button>
+                      <Button className="w-full sm:w-auto">Invite client</Button>
                     </Link>
                     <Link href={`${basePath}/messages`} className="w-full sm:w-auto">
-                      <Button variant="secondary" className="w-full sm:w-auto">
-                        Send intro message
+                      <Button size="sm" variant="secondary" className="w-full sm:w-auto">
+                        Send intro
                       </Button>
                     </Link>
                   </div>
-                  <div className="text-xs text-[var(--hw-muted)]">Partner: {partner.partnerName} • {partner.partnerType}</div>
+
+                  <div className="text-xs text-[var(--hw-muted)]">{partner.partnerName} • {partner.partnerType}</div>
                 </div>
               </Card>
             </DashboardSection>
@@ -435,7 +444,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               count={messages.length}
               action={
                 <Link href={`${basePath}/messages`}>
-                  <Button variant="secondary">View all</Button>
+                  <Button size="sm" variant="secondary">View all</Button>
                 </Link>
               }
             >
@@ -443,7 +452,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                 {messages.length === 0 ? (
                   <EmptyState title="No messages" text="Messages will appear once a homeowner starts a thread." />
                 ) : (
-                  messages.slice(0, 6).map((m) => (
+                  messages.slice(0, 3).map((m) => (
                     <ListRow
                       key={m.id}
                       title={m.fromRole}
