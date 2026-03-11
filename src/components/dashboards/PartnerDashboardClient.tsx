@@ -141,9 +141,10 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
     (async () => {
       try {
+        const demoQ = isDemoMode() ? "&demo=1" : "";
         const [woRes, msgRes] = await Promise.all([
-          fetch(`/api/pro/work-orders?partnerId=${encodeURIComponent(partner.partnerId)}`),
-          fetch(`/api/messages?partnerId=${encodeURIComponent(partner.partnerId)}&limit=20`),
+          fetch(`/api/pro/work-orders?partnerId=${encodeURIComponent(partner.partnerId)}${demoQ}`),
+          fetch(`/api/messages?partnerId=${encodeURIComponent(partner.partnerId)}&limit=20${demoQ}`),
         ]);
 
         if (!woRes.ok) throw new Error(`Failed to load work orders (${woRes.status})`);
