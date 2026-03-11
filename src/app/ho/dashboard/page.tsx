@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button, EmptyState, StatTile } from "@/components/ui";
+import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 import { PortalShell } from "@/components/portal-shell";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { KpiGrid } from "@/components/dashboard/KpiGrid";
@@ -127,6 +128,8 @@ export default function HomeownerDashboardPage() {
       }
     >
       <div className="grid gap-6">
+        <AIWorkOrderIntakeCard />
+
         <KpiGrid>
           <StatTile label="Active services" value={String(workOrders?.length ?? 0)} note="Work orders in your dashboard." />
           <StatTile label="My properties" value={String(properties?.length ?? 0)} note="Property profiles (Phase 2: minimal)." />

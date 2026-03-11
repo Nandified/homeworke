@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { Button, EmptyState, StatTile } from "@/components/ui";
+import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 import { PortalShell } from "@/components/portal-shell";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { KpiGrid } from "@/components/dashboard/KpiGrid";
@@ -66,6 +67,8 @@ export default function OfficeDashboardPage() {
       }
     >
       <div className="grid gap-6">
+        <AIWorkOrderIntakeCard eyebrow="AI work order" title="What’s going on with the property?" primaryCta="Start a job request" />
+
         <KpiGrid>
           <StatTile label="Active projects" value={String(activeCount)} note="Across all partners (Phase 2: mock)." />
           <StatTile label="Partner seats" value="—" note="Coming soon" />

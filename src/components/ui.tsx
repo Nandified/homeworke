@@ -31,11 +31,17 @@ export function Pill(props: React.HTMLAttributes<HTMLSpanElement>) {
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "ghost" | "destructive";
+  size?: "sm" | "md";
 };
 
-export function Button({ className, variant = "primary", ...props }: ButtonProps) {
+export function Button({ className, variant = "primary", size = "md", ...props }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(229,57,53,.4)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[.97]";
+    "inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(229,57,53,.4)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[.97]";
+
+  const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {
+    sm: "px-4 py-2 text-xs",
+    md: "px-5 py-2.5 text-sm",
+  };
 
   const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
     primary:
@@ -47,7 +53,7 @@ export function Button({ className, variant = "primary", ...props }: ButtonProps
       "bg-[#dc2626] text-white shadow-[0_4px_14px_rgba(220,38,38,.25)] hover:shadow-[0_6px_20px_rgba(220,38,38,.3)] hover:brightness-[1.05]",
   };
 
-  return <button className={cn(base, variants[variant], className)} {...props} />;
+  return <button className={cn(base, sizes[size], variants[variant], className)} {...props} />;
 }
 
 export function Label(props: React.LabelHTMLAttributes<HTMLLabelElement>) {
