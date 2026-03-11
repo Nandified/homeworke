@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { dbEnabled, db } from "@/lib/db";
 import { getSessionTokenFromCookie, getSessionUserId } from "@/lib/session";
-import { listProperties } from "@/lib/mock-store";
+import { listProperties, seedDemoStoreIfEmpty } from "@/lib/mock-store";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,10 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
 
-  if (dbEnabled()) {
+  const demo = url.searchParams.get("demo") === "1";
+  if (demo) seedDemoStoreIfEmpty();
+
+  if (dbEnabled() && !demo) {
     const sessionToken = await getSessionTokenFromCookie();
     if (!sessionToken) return json({ ok: false, error: "unauthorized" }, { status: 401 });
     const userId = await getSessionUserId(sessionToken);
@@ -26,8 +29,10 @@ export async function GET(req: Request) {
     return json({ ok: true, properties });
   }
 
-  if (!token) return json({ ok: false, error: "missing_token" }, { status: 400 });
+  // Mock store mode
+  const resolvedToken = token || (demo ? "demo" : null);
+  if (!resolvedToken) return json({ ok: false, error: "missing_token" }, { status: 400 });
 
-  const properties = listProperties(token);
+  const properties = listProperties(resolvedToken);
   return json({ ok: true, properties });
 }
