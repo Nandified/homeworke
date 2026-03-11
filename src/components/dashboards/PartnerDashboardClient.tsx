@@ -232,8 +232,8 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
   return (
     <PortalShell
-      role="PARTNER"
-      title={props.title || "Partner"}
+      role="PRO"
+      title={props.title || "Real Estate Pro"}
       nav={nav}
       description="Shared projects, quick invites, and the next touchpoint—without hunting through threads."
       primaryAction={
