@@ -35,6 +35,8 @@ export function AIWorkOrderIntakeCard(props: {
   title?: string;
   primaryCta?: string;
   secondaryCta?: string;
+  /** Show the “Now servicing …” pill in the header (defaults true). */
+  showServicingPill?: boolean;
 }) {
   const services = servicesData.services.slice(0, 6);
 
@@ -177,10 +179,12 @@ export function AIWorkOrderIntakeCard(props: {
             {props.title || "What’s going on with your home?"}
           </div>
         </div>
-        <Pill className="bg-white">
-          <span className="hw-breath-dot" aria-hidden />
-          {city ? `Now Servicing ${city}` : locLoading ? "Finding your location…" : "Set your location"}
-        </Pill>
+        {props.showServicingPill === false ? null : (
+          <Pill className="bg-white">
+            <span className="hw-breath-dot" aria-hidden />
+            {city ? `Now Servicing ${city}` : locLoading ? "Finding your location…" : "Set your location"}
+          </Pill>
+        )}
       </div>
 
       <div className="mt-4">

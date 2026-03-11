@@ -243,12 +243,26 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
       }
     >
       <div className="grid gap-6">
-        <KpiGrid className="lg:grid-cols-4">
-          <StatTile label="Active" value={String(activeCount)} note="Scheduled + in progress" />
-          <StatTile label="Pending" value={String(pendingCount)} note="Awaiting kickoff" />
-          <StatTile label="Completed" value={String(completedCount)} note="Closed" />
-          <StatTile label="Unread" value={String(unreadCount)} note="Messages" />
-        </KpiGrid>
+        {/* Top row: AI intake (left) + KPIs (right, 2x2) */}
+        <div className="grid items-start gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-8">
+            <AIWorkOrderIntakeCard
+              eyebrow="AI work order"
+              title="What’s going on with your client’s property?"
+              primaryCta="Start a job request"
+              secondaryCta="Browse marketplace"
+              showServicingPill={false}
+            />
+          </div>
+          <div className="lg:col-span-4">
+            <KpiGrid className="lg:grid-cols-2">
+              <StatTile label="Active" value={String(activeCount)} note="Scheduled + in progress" />
+              <StatTile label="Pending" value={String(pendingCount)} note="Awaiting kickoff" />
+              <StatTile label="Completed" value={String(completedCount)} note="Closed" />
+              <StatTile label="Unread" value={String(unreadCount)} note="Messages" />
+            </KpiGrid>
+          </div>
+        </div>
 
         {loading && (
           <Card className="p-6">
@@ -311,19 +325,6 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                 </div>
               )}
             </DashboardSection>
-
-            <DashboardSection
-              title="AI work order intake"
-              description="A fast, conversational way to submit a job (same flow as the homepage)."
-            >
-              <AIWorkOrderIntakeCard
-                eyebrow="AI work order"
-                title="What’s going on with your client’s property?"
-                primaryCta="Start a job request"
-                secondaryCta="Browse marketplace"
-              />
-            </DashboardSection>
-
             <DashboardSection
               title="Express Estimate"
               description="AI-generated quick estimate for inspection items, seller credits, and repair requests."
