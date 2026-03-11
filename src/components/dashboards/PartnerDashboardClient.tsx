@@ -262,7 +262,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           </Card>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-12">
+        <div className="grid items-start gap-6 lg:grid-cols-12">
           {/* Left column */}
           <div className="grid gap-6 lg:col-span-8">
             <DashboardSection
@@ -398,7 +398,11 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
           {/* Right column */}
           <div className="grid gap-6 lg:col-span-4">
-            <DashboardSection title="Invite" description="Your partner link + a couple quick, high-touch ways to start the relationship.">
+            <DashboardSection
+              title="Invite"
+              description="Your partner link + a couple quick, high-touch ways to start the relationship."
+              card={false}
+            >
               <Card className="p-5">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Your partner link</div>
                 <div className="mt-1 text-sm text-[var(--hw-muted)]">Share this with clients to connect projects to your dashboard.</div>
@@ -424,7 +428,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Link href={`${basePath}/clients`} className="w-full sm:w-auto">
-                      <Button className="w-full sm:w-auto">Invite client</Button>
+                      <Button size="sm" className="w-full sm:w-auto">Invite client</Button>
                     </Link>
                     <Link href={`${basePath}/messages`} className="w-full sm:w-auto">
                       <Button size="sm" variant="secondary" className="w-full sm:w-auto">
@@ -447,21 +451,29 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                   <Button size="sm" variant="secondary">View all</Button>
                 </Link>
               }
+              card={false}
             >
-              <div className="grid gap-2">
+              <Card className="p-5">
                 {messages.length === 0 ? (
-                  <EmptyState title="No messages" text="Messages will appear once a homeowner starts a thread." />
+                  <div className="rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-5 text-center">
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">No messages</div>
+                    <div className="mx-auto mt-2 max-w-md text-sm leading-7 text-[var(--hw-muted)]">
+                      Messages will appear once a homeowner starts a thread.
+                    </div>
+                  </div>
                 ) : (
-                  messages.slice(0, 3).map((m) => (
-                    <ListRow
-                      key={m.id}
-                      title={m.fromRole}
-                      subtitle={m.body}
-                      meta={new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                    />
-                  ))
+                  <div className="grid gap-2">
+                    {messages.slice(0, 3).map((m) => (
+                      <ListRow
+                        key={m.id}
+                        title={m.fromRole}
+                        subtitle={m.body}
+                        meta={new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      />
+                    ))}
+                  </div>
                 )}
-              </div>
+              </Card>
             </DashboardSection>
           </div>
         </div>
