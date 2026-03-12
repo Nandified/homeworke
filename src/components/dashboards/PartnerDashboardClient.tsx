@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -86,6 +86,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
 
 export function PartnerDashboardClient(props: PartnerDashboardProps) {
   const router = useRouter();
+  const pdfInputRef = useRef<HTMLInputElement | null>(null);
   const basePath = props.basePath;
 
   const nav = useMemo(
@@ -556,10 +557,21 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                       <div className="mt-1 text-sm text-[var(--hw-muted)]">Drag & drop or click to browse.</div>
                     </div>
                     <div className="shrink-0">
-                      <Button size="sm" variant="secondary" type="button">Browse</Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          pdfInputRef.current?.click();
+                        }}
+                      >
+                        Browse
+                      </Button>
                     </div>
                   </div>
                   <input
+                    ref={pdfInputRef}
                     className="hidden"
                     type="file"
                     accept="application/pdf"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 
@@ -29,6 +29,7 @@ type Report = {
 };
 
 export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [notes, setNotes] = useState("");
@@ -153,12 +154,21 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                   <div className="mt-1 text-sm text-[var(--hw-muted)]">{file ? "Ready to submit." : "Drag & drop or click to browse."}</div>
                 </div>
                 <div className="shrink-0">
-                  <Button size="sm" variant="secondary" type="button">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }}
+                  >
                     Browse
                   </Button>
                 </div>
               </div>
               <input
+                ref={fileInputRef}
                 className="hidden"
                 type="file"
                 accept="application/pdf"
