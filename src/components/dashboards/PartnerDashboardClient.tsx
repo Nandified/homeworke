@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
-import { Share2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Share2, UserPlus } from "lucide-react";
 
 import { Button, Card, Chip, EmptyState, Input, Label, StatTile } from "@/components/ui";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
@@ -107,6 +107,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
   const [copied, setCopied] = useState(false);
 
+  const [inviteExpanded, setInviteExpanded] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteFirst, setInviteFirst] = useState("");
   const [inviteLast, setInviteLast] = useState("");
@@ -327,84 +328,128 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                   <Share2 className="h-4 w-4" />
                   Share
                 </Button>
-              </div>
 
-              <div className="grid gap-3">
-                <div>
-                  <Label htmlFor="invite-email">Client email</Label>
-                  <Input
-                    id="invite-email"
-                    placeholder="email@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    inputMode="email"
-                    autoComplete="email"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="invite-first">First name</Label>
-                    <Input id="invite-first" placeholder="First name" value={inviteFirst} onChange={(e) => setInviteFirst(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label htmlFor="invite-last">Last name</Label>
-                    <Input id="invite-last" placeholder="Last name" value={inviteLast} onChange={(e) => setInviteLast(e.target.value)} />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="invite-address">Property Address</Label>
-                  <Input
-                    id="invite-address"
-                    placeholder="123 Main St, Chicago, IL"
-                    value={inviteAddress}
-                    onChange={(e) => setInviteAddress(e.target.value)}
-                    autoComplete="street-address"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-center sm:justify-end">
                 <Button
                   size="sm"
-                  className="w-auto px-8"
-                disabled={inviteSending || !inviteEmail.trim().includes("@") || !partner?.partnerId}
-                onClick={async () => {
-                  setInviteResult(null);
-                  setInviteSending(true);
-                  try {
-                    const res = await fetch("/api/partner/invites/request", {
-                      method: "POST",
-                      headers: { "content-type": "application/json" },
-                      body: JSON.stringify({
-                        partnerCode: partner?.partnerId,
-                        email: inviteEmail,
-                        firstName: inviteFirst,
-                        lastName: inviteLast,
-                        address: inviteAddress,
-                      }),
-                    });
-                    const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
-                    if (!res.ok || !data?.ok) {
-                      setInviteResult({ ok: false, message: data?.error || `Invite failed (${res.status})` });
-                      return;
-                    }
-                    setInviteResult({ ok: true, message: `Invite sent to ${inviteEmail.trim().toLowerCase()}` });
-                    setInviteEmail("");
-                    setInviteFirst("");
-                    setInviteLast("");
-                    setInviteAddress("");
-                  } catch {
-                    setInviteResult({ ok: false, message: "Invite failed (network error)" });
-                  } finally {
-                    setInviteSending(false);
-                  }
-                }}
-              >
-                {inviteSending ? "Sending…" : "Invite client"}
-              </Button>
+                  onClick={() => {
+                    setInviteResult(null);
+                    setInviteExpanded((v) => !v);
+                  }}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Invite
+                  {inviteExpanded ? (
+                    <ChevronUp className="h-4 w-4 opacity-70" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 opacity-70" />
+                  )}
+                </Button>
               </div>
+
+              {inviteExpanded ? (
+                <div className="grid gap-3 animate-[fadeScaleIn_150ms_ease-out]">
+                  <div>
+                    <Label htmlFor="invite-email">Client email</Label>
+                    <Input
+                      id="invite-email"
+                      placeholder="email@example.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      inputMode="email"
+                      autoComplete="email"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="invite-first">First name</Label>
+                      <Input id="invite-first" placeholder="First name" value={inviteFirst} onChange={(e) => setInviteFirst(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label htmlFor="invite-last">Last name</Label>
+                      <Input id="invite-last" placeholder="Last name" value={inviteLast} onChange={(e) => setInviteLast(e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="invite-address">Property Address</Label>
+                    <Input
+                      id="invite-address"
+                      placeholder="123 Main St, Chicago, IL"
+                      value={inviteAddress}
+                      onChange={(e) => setInviteAddress(e.target.value)}
+                      autoComplete="street-address"
+                    />
+                  </div>
+
+                  <div className="flex justify-center sm:justify-end">
+                    <Button
+                      size="sm"
+                      className="w-auto px-8"
+                      disabled={inviteSending || !inviteEmail.trim().includes("@") || !partner?.partnerId}
+                      onClick={async () => {
+                        setInviteResult(null);
+                        setInviteSending(true);
+                        try {
+                          const res = await fetch("/api/partner/invites/request", {
+                            method: "POST",
+                            headers: { "content-type": "application/json" },
+                            body: JSON.stringify({
+                              partnerCode: partner?.partnerId,
+                              email: inviteEmail,
+                              firstName: inviteFirst,
+                              lastName: inviteLast,
+                              address: inviteAddress,
+                            }),
+                          });
+                          const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+                          if (!res.ok || !data?.ok) {
+                            setInviteResult({ ok: false, message: data?.error || `Invite failed (${res.status})` });
+                            return;
+                          }
+                          setInviteResult({ ok: true, message: `Invite sent to ${inviteEmail.trim().toLowerCase()}` });
+                          setInviteEmail("");
+                          setInviteFirst("");
+                          setInviteLast("");
+                          setInviteAddress("");
+                          // Auto-collapse after success.
+                          window.setTimeout(() => setInviteExpanded(false), 600);
+                        } catch {
+                          setInviteResult({ ok: false, message: "Invite failed (network error)" });
+                        } finally {
+                          setInviteSending(false);
+                        }
+                      }}
+                    >
+                      {inviteSending ? "Sending…" : "Send invite"}
+                    </Button>
+                  </div>
+
+                  {inviteResult ? (
+                    <div
+                      className={`rounded-[var(--hw-radius-lg)] border px-4 py-3 text-sm ${
+                        inviteResult.ok
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                          : "border-red-200 bg-red-50 text-red-700"
+                      }`}
+                    >
+                      {inviteResult.message}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {!inviteExpanded && inviteResult ? (
+                <div
+                  className={`rounded-[var(--hw-radius-lg)] border px-4 py-3 text-sm ${
+                    inviteResult.ok
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                      : "border-red-200 bg-red-50 text-red-700"
+                  }`}
+                >
+                  {inviteResult.message}
+                </div>
+              ) : null}
 
               {inviteResult ? (
                 <div
