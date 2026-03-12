@@ -288,62 +288,66 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             </div>
 
             <div className="mt-4 grid gap-4">
-              <div className="flex items-center gap-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2">
-                <div className="min-w-0 flex-1 truncate text-xs font-semibold text-[var(--hw-ink)]">{partnerInviteLink}</div>
+              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2 overflow-hidden">
+                <div className="flex items-center gap-2">
+                  <div className="min-w-0 flex-1 truncate text-xs font-semibold text-[var(--hw-ink)]">{partnerInviteLink}</div>
+                </div>
 
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(partnerInviteLink);
-                      setCopied(true);
-                      window.setTimeout(() => setCopied(false), 1300);
-                    } catch {}
-                  }}
-                  disabled={!partnerInviteLink}
-                >
-                  {copied ? "Copied" : "Copy"}
-                </Button>
-
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={async () => {
-                    try {
-                      const text = `Here’s my Homeworke invite link: ${partnerInviteLink}`;
-                      if (navigator.share) {
-                        await navigator.share({ text, url: partnerInviteLink });
-                      } else {
-                        // Fallback: open SMS composer (best-effort) and also copy.
+                <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={async () => {
+                      try {
                         await navigator.clipboard.writeText(partnerInviteLink);
-                        window.location.href = `sms:&body=${encodeURIComponent(text)}`;
-                      }
-                    } catch {
-                      // ignore
-                    }
-                  }}
-                  disabled={!partnerInviteLink}
-                >
-                  <Share2 className="h-4 w-4" />
-                  Share
-                </Button>
+                        setCopied(true);
+                        window.setTimeout(() => setCopied(false), 1300);
+                      } catch {}
+                    }}
+                    disabled={!partnerInviteLink}
+                  >
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
 
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setInviteResult(null);
-                    setInviteExpanded((v) => !v);
-                  }}
-                >
-                  <UserPlus className="h-4 w-4" />
-                  Invite
-                  {inviteExpanded ? (
-                    <ChevronUp className="h-4 w-4 opacity-70" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 opacity-70" />
-                  )}
-                </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={async () => {
+                      try {
+                        const text = `Here’s my Homeworke invite link: ${partnerInviteLink}`;
+                        if (navigator.share) {
+                          await navigator.share({ text, url: partnerInviteLink });
+                        } else {
+                          // Fallback: open SMS composer (best-effort) and also copy.
+                          await navigator.clipboard.writeText(partnerInviteLink);
+                          window.location.href = `sms:&body=${encodeURIComponent(text)}`;
+                        }
+                      } catch {
+                        // ignore
+                      }
+                    }}
+                    disabled={!partnerInviteLink}
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setInviteResult(null);
+                      setInviteExpanded((v) => !v);
+                    }}
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    Invite
+                    {inviteExpanded ? (
+                      <ChevronUp className="h-4 w-4 opacity-70" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 opacity-70" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               {inviteExpanded ? (
