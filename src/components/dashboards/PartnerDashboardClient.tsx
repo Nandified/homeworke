@@ -241,13 +241,14 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           <Button>Start Express Estimate</Button>
         </Link>
       }
+      hideHeading
     >
       <div className="grid gap-6">
         {/* Top row: AI intake (left) + KPIs (right, 2x2) */}
         <div className="grid items-start gap-6 lg:grid-cols-12">
           <div className="lg:col-span-7">
             <AIWorkOrderIntakeCard
-              eyebrow="AI work order"
+              eyebrow="Job Work Order"
               title="What’s going on with your client’s property?"
               primaryCta="Start a job request"
               secondaryCta="Browse marketplace"
