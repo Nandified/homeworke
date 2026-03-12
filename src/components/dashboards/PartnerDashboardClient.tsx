@@ -541,60 +541,39 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             </DashboardSection>
             <DashboardSection
               title="Express Estimate"
-              description="AI-generated quick estimate for inspection items, seller credits, and repair requests."
+              description="Upload an inspection PDF → pick line items → export a clean estimate."
               action={
                 <Link href={`${basePath}/express-estimate`}>
                   <Button size="sm" variant="secondary">Open</Button>
                 </Link>
               }
             >
-              <Card className="border-[var(--hw-line)] bg-white p-5">
-                <div className="grid gap-1">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Start from a PDF</div>
-                  <div className="text-sm text-[var(--hw-muted)]">Upload now, then finish line-items + export on the Express Estimate page.</div>
-                </div>
-
-                <div className="mt-4 grid gap-3">
-                  <label className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 hover:bg-white">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload a PDF</div>
-                        <div className="mt-1 text-sm text-[var(--hw-muted)]">Inspection report or appraisal repair request.</div>
-                      </div>
-                      <div className="shrink-0">
-                        <Button size="sm" type="button">Choose file</Button>
-                      </div>
+              <div className="mt-1">
+                <label className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 hover:bg-white">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload PDF</div>
+                      <div className="mt-1 text-sm text-[var(--hw-muted)]">Start here, finish in Express Estimate.</div>
                     </div>
-                    <input
-                      className="hidden"
-                      type="file"
-                      accept="application/pdf"
-                      onChange={async (e) => {
-                        const f = e.target.files?.[0] ?? null;
-                        if (!f) return;
-                        try {
-                          const id = await stageFile(f);
-                          router.push(`${basePath}/express-estimate?staged=${encodeURIComponent(id)}`);
-                        } catch {
-                          // fallback: just open the page
-                          router.push(`${basePath}/express-estimate`);
-                        }
-                      }}
-                    />
-                  </label>
-
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <Link href={`${basePath}/express-estimate`} className="w-full sm:w-auto">
-                      <Button variant="secondary" size="sm" className="w-full sm:w-auto">Open Express Estimate</Button>
-                    </Link>
-                    <Link href={`${basePath}/messages`} className="w-full sm:w-auto">
-                      <Button size="sm" variant="secondary" className="w-full sm:w-auto">
-                        Pull from messages
-                      </Button>
-                    </Link>
+                    <Button size="sm" type="button">Choose file</Button>
                   </div>
-                </div>
-              </Card>
+                  <input
+                    className="hidden"
+                    type="file"
+                    accept="application/pdf"
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0] ?? null;
+                      if (!f) return;
+                      try {
+                        const id = await stageFile(f);
+                        router.push(`${basePath}/express-estimate?staged=${encodeURIComponent(id)}`);
+                      } catch {
+                        router.push(`${basePath}/express-estimate`);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
             </DashboardSection>
 
             <DashboardSection
