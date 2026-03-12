@@ -25,6 +25,12 @@ export function PortalShell(props: {
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    if (!rolePopoverOpen) return;
+    const t = window.setTimeout(() => setRolePopoverOpen(false), 2000);
+    return () => window.clearTimeout(t);
+  }, [rolePopoverOpen]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
       {/* ── Header ── */}
@@ -95,7 +101,11 @@ export function PortalShell(props: {
           />
           <div className="absolute left-0 top-0 h-full w-[86%] max-w-sm bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
             <div className="flex items-center justify-between border-b border-[var(--hw-line)] px-5 py-4">
-              <div className="text-sm font-extrabold tracking-tight text-[var(--hw-red)]">Homeworke</div>
+              <div>
+                <div className="text-base font-extrabold tracking-tight text-[var(--hw-red)]">Homeworke</div>
+                <div className="mt-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
+                <div className="mt-0.5 text-sm font-semibold text-[var(--hw-ink)]">{props.title}</div>
+              </div>
               <Button size="sm" variant="secondary" onClick={() => setMobileNavOpen(false)}>
                 Close
               </Button>
