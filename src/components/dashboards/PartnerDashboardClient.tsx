@@ -365,10 +365,10 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+              <div className="flex justify-center sm:justify-end">
                 <Button
                   size="sm"
-                  className="w-full sm:w-auto max-w-[340px] mx-auto sm:mx-0"
+                  className="w-auto px-8"
                 disabled={inviteSending || !inviteEmail.trim().includes("@") || !partner?.partnerId}
                 onClick={async () => {
                   setInviteResult(null);
