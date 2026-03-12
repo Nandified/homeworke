@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import { Button, Card, Container, Pill } from "@/components/ui";
 import { isDemoMode, withDemo } from "@/lib/demo";
@@ -22,8 +24,50 @@ export function PortalShell(props: {
   hideHeading?: boolean;
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
+
+  const fullPath = React.useMemo(() => {
+    const qs = searchParams?.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }, [pathname, searchParams]);
+
+  const returnTo = searchParams?.get("returnTo") || "";
+
+  const stackKey = "hw_portal_nav_stack_v1";
+
+  const [backTarget, setBackTarget] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // 1) Prefer explicit returnTo
+    if (returnTo && returnTo.startsWith("/")) {
+      setBackTarget(returnTo);
+      return;
+    }
+
+    // 2) Maintain an in-session stack so every portal page can go back.
+    try {
+      const raw = window.sessionStorage.getItem(stackKey);
+      const stack = (raw ? (JSON.parse(raw) as string[]) : []).filter((p) => typeof p === "string" && p.startsWith("/"));
+      const top = stack[stack.length - 1];
+      if (top !== fullPath) stack.push(fullPath);
+
+      // Cap to avoid unbounded growth.
+      const capped = stack.slice(-25);
+      window.sessionStorage.setItem(stackKey, JSON.stringify(capped));
+
+      const prev = capped.length >= 2 ? capped[capped.length - 2] : null;
+      setBackTarget(prev);
+    } catch {
+      setBackTarget(null);
+    }
+  }, [fullPath, returnTo]);
 
   React.useEffect(() => {
     if (!rolePopoverOpen) return;
@@ -37,7 +81,38 @@ export function PortalShell(props: {
       <header className="sticky top-0 z-20 border-b border-[var(--hw-line)] bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <Container className="relative flex h-14 items-center md:h-16">
           {/* Left */}
-          <div className="flex flex-1 items-center">
+          <div className="flex flex-1 items-center gap-2">
+            {backTarget ? (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  // If explicit returnTo exists, follow it. Otherwise pop stack.
+                  if (returnTo && returnTo.startsWith("/")) {
+                    router.push(withDemo(returnTo));
+                    return;
+                  }
+
+                  try {
+                    const raw = window.sessionStorage.getItem(stackKey);
+                    const stack = (raw ? (JSON.parse(raw) as string[]) : []).filter((p) => typeof p === "string" && p.startsWith("/"));
+                    // Remove current page (top)
+                    if (stack[stack.length - 1] === fullPath) stack.pop();
+                    const prev = stack.pop();
+                    window.sessionStorage.setItem(stackKey, JSON.stringify(stack));
+                    if (prev) router.push(withDemo(prev));
+                    else router.push(withDemo(props.nav?.[0]?.href || "/"));
+                  } catch {
+                    router.back();
+                  }
+                }}
+                className="hidden md:inline-flex"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+            ) : null}
+
             <button
               type="button"
               onClick={() => setMobileNavOpen(true)}
@@ -49,6 +124,35 @@ export function PortalShell(props: {
               </svg>
               <span>Menu</span>
             </button>
+
+            {/* Mobile back button (only when available) */}
+            {backTarget ? (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  if (returnTo && returnTo.startsWith("/")) {
+                    router.push(withDemo(returnTo));
+                    return;
+                  }
+                  try {
+                    const raw = window.sessionStorage.getItem(stackKey);
+                    const stack = (raw ? (JSON.parse(raw) as string[]) : []).filter((p) => typeof p === "string" && p.startsWith("/"));
+                    if (stack[stack.length - 1] === fullPath) stack.pop();
+                    const prev = stack.pop();
+                    window.sessionStorage.setItem(stackKey, JSON.stringify(stack));
+                    if (prev) router.push(withDemo(prev));
+                    else router.back();
+                  } catch {
+                    router.back();
+                  }
+                }}
+                className="md:hidden"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+            ) : null}
 
             {/* Desktop logo (left-aligned) */}
             <Link href="/" className="hidden md:block text-lg font-extrabold tracking-tight text-[var(--hw-red)] md:text-xl">
