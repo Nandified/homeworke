@@ -9,7 +9,7 @@ export default function Page() {
   return (
     <PortalShell
       role="PRO"
-      title="Real Estate Pro"
+      title="Jobs"
       nav={PRO_NAV as unknown as { href: string; label: string }[]}
       description="Track every active and closed job across client-shared projects and your own properties."
       primaryAction={

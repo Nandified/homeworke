@@ -198,10 +198,7 @@ export function PortalShell(props: {
           {props.hideHeading ? null : (
             <div className="grid grid-cols-[1fr_auto] items-start gap-4">
               <div className="max-w-2xl">
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                  {props.eyebrow || "Portal"}
-                </span>
-                <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">
+                 <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">
                   {props.title}
                 </h1>
                 <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">

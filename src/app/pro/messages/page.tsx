@@ -7,7 +7,7 @@ export default function Page() {
   return (
     <PortalShell
       role="PRO"
-      title="Real Estate Pro"
+      title="Messages"
       nav={PRO_NAV as unknown as { href: string; label: string }[]}
       description="Quickly scan recent threads, nudge homeowners, and keep deals moving."
     >
