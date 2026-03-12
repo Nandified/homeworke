@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
+import { Share2 } from "lucide-react";
 
 import { Button, Card, Chip, EmptyState, Input, Label, StatTile } from "@/components/ui";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
@@ -323,7 +324,8 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                   }}
                   disabled={!partnerInviteLink}
                 >
-                  Text
+                  <Share2 className="h-4 w-4" />
+                  Share
                 </Button>
               </div>
 
@@ -339,14 +341,18 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                     autoComplete="email"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="invite-first">First name</Label>
-                  <Input id="invite-first" placeholder="First name" value={inviteFirst} onChange={(e) => setInviteFirst(e.target.value)} />
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <Label htmlFor="invite-first">First name</Label>
+                    <Input id="invite-first" placeholder="First name" value={inviteFirst} onChange={(e) => setInviteFirst(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label htmlFor="invite-last">Last name</Label>
+                    <Input id="invite-last" placeholder="Last name" value={inviteLast} onChange={(e) => setInviteLast(e.target.value)} />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="invite-last">Last name</Label>
-                  <Input id="invite-last" placeholder="Last name" value={inviteLast} onChange={(e) => setInviteLast(e.target.value)} />
-                </div>
+
                 <div>
                   <Label htmlFor="invite-address">Property Address</Label>
                   <Input
@@ -359,9 +365,10 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                 </div>
               </div>
 
-              <Button
-                size="sm"
-                className="w-full"
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                <Button
+                  size="sm"
+                  className="w-full sm:w-auto"
                 disabled={inviteSending || !inviteEmail.trim().includes("@") || !partner?.partnerId}
                 onClick={async () => {
                   setInviteResult(null);
@@ -397,6 +404,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               >
                 {inviteSending ? "Sending…" : "Invite client"}
               </Button>
+              </div>
 
               {inviteResult ? (
                 <div
