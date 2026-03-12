@@ -257,7 +257,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           <div className="lg:col-span-7">
             <AIWorkOrderIntakeCard
               eyebrow="Job Work Order"
-              title="What’s going on with your client’s property?"
+              title={partner?.partnerName ? `Hey ${partner.partnerName.split(" ")[0]}, what do you need help with?` : "What do you need help with?"}
               primaryCta="Start a job request"
               secondaryCta="Browse marketplace"
               showServicingPill={false}
