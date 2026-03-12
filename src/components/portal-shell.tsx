@@ -18,16 +18,20 @@ export function PortalShell(props: {
   description?: string;
   /** Optional single primary action for the page */
   primaryAction?: React.ReactNode;
+  /** Hide the page heading block (Portal/Title/Description). Useful for dashboard-first mobile. */
+  hideHeading?: boolean;
   children: React.ReactNode;
 }) {
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+  const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
       {/* ── Header ── */}
       <header className="sticky top-0 z-20 border-b border-[var(--hw-line)] bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <Container className="flex h-14 items-center justify-between md:h-16">
-          <div className="flex items-center gap-3">
+        <Container className="relative flex h-14 items-center md:h-16">
+          {/* Left */}
+          <div className="flex flex-1 items-center">
             <button
               type="button"
               onClick={() => setMobileNavOpen(true)}
@@ -40,24 +44,42 @@ export function PortalShell(props: {
               <span>Menu</span>
             </button>
 
-            <Link
-              href="/"
-              className="text-lg font-extrabold tracking-tight text-[var(--hw-red)] md:text-xl"
-            >
+            {/* Desktop logo (left-aligned) */}
+            <Link href="/" className="hidden md:block text-lg font-extrabold tracking-tight text-[var(--hw-red)] md:text-xl">
               Homeworke
             </Link>
           </div>
 
-          {/* Desktop nav */}
-          <nav className="hidden items-center gap-3 md:flex">
-            {isDemoMode() ? <Pill className="bg-white">Demo</Pill> : null}
-            <Pill>{props.role}</Pill>
-          </nav>
+          {/* Center (mobile): centered logo */}
+          <Link
+            href="/"
+            className="absolute left-1/2 -translate-x-1/2 md:hidden text-xl font-extrabold tracking-tight text-[var(--hw-red)]"
+          >
+            Homeworke
+          </Link>
 
-          {/* Mobile nav — compact row */}
-          <div className="flex items-center gap-2 md:hidden">
-            {isDemoMode() ? <Pill>Demo</Pill> : null}
-            <Pill>{props.role}</Pill>
+          {/* Right */}
+          <div className="flex flex-1 items-center justify-end gap-2">
+            {isDemoMode() ? <Pill className="bg-white">Demo</Pill> : null}
+
+            <div className="relative">
+              <button type="button" onClick={() => setRolePopoverOpen((v) => !v)} aria-label="Portal info">
+                <Pill
+                  className={
+                    "border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)]"
+                  }
+                >
+                  {props.role}
+                </Pill>
+              </button>
+
+              {rolePopoverOpen ? (
+                <div className="absolute right-0 top-[46px] z-30 w-56 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3 shadow-[0_20px_60px_rgba(0,0,0,.18)]">
+                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
+                  <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{props.title}</div>
+                </div>
+              ) : null}
+            </div>
           </div>
         </Container>
       </header>
@@ -111,20 +133,22 @@ export function PortalShell(props: {
       <main>
         <Container className="py-8 md:py-12">
           {/* ── Page heading ── */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-2xl">
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                {props.eyebrow || "Portal"}
-              </span>
-              <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">
-                {props.title}
-              </h1>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-                {props.description || "v1 build: navigation and information architecture first. Data wiring next."}
-              </p>
+          {props.hideHeading ? null : (
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-2xl">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                  {props.eyebrow || "Portal"}
+                </span>
+                <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">
+                  {props.title}
+                </h1>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+                  {props.description || "v1 build: navigation and information architecture first. Data wiring next."}
+                </p>
+              </div>
+              {props.primaryAction ? <div className="shrink-0 hidden md:block">{props.primaryAction}</div> : null}
             </div>
-            {props.primaryAction ? <div className="shrink-0 hidden md:block">{props.primaryAction}</div> : null}
-          </div>
+          )}
 
           {/* ── Layout: sidebar + content ── */}
           {isDemoMode() ? (
