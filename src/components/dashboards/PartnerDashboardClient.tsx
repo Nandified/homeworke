@@ -541,7 +541,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             </DashboardSection>
             <DashboardSection
               title="Express Estimate"
-              description="Upload an inspection PDF → pick line items → export a clean estimate."
+              description="Upload an inspection/appraisal PDF and generate a polished repair estimate in minutes."
               action={
                 <Link href={`${basePath}/express-estimate`}>
                   <Button size="sm" variant="secondary">Open</Button>
@@ -550,12 +550,14 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             >
               <div className="mt-1">
                 <label className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 hover:bg-white">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload PDF</div>
-                      <div className="mt-1 text-sm text-[var(--hw-muted)]">Start here, finish in Express Estimate.</div>
+                      <div className="text-sm font-semibold text-[var(--hw-ink)]">Choose a PDF to upload</div>
+                      <div className="mt-1 text-sm text-[var(--hw-muted)]">Drag & drop or click to browse.</div>
                     </div>
-                    <Button size="sm" type="button">Choose file</Button>
+                    <div className="shrink-0">
+                      <Button size="sm" variant="secondary" type="button">Browse</Button>
+                    </div>
                   </div>
                   <input
                     className="hidden"
