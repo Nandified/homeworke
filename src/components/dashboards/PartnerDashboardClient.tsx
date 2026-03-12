@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
 
-import { Button, Card, Chip, EmptyState, StatTile } from "@/components/ui";
+import { Button, Card, Chip, EmptyState, Input, Label, StatTile } from "@/components/ui";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 import { PortalShell } from "@/components/portal-shell";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
@@ -105,6 +105,13 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [copied, setCopied] = useState(false);
+
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteFirst, setInviteFirst] = useState("");
+  const [inviteLast, setInviteLast] = useState("");
+  const [inviteAddress, setInviteAddress] = useState("");
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteResult, setInviteResult] = useState<null | { ok: boolean; message: string }>(null);
 
   // Read partner context from localStorage (robust for older key formats)
   useEffect(() => {
@@ -265,6 +272,128 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           </div>
         </div>
 
+        {/* Invite (moved up under KPI tiles) */}
+        <DashboardSection title="Invite" card={false}>
+          <Card className="p-5">
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Invite a client</div>
+            <div className="mt-1 text-sm text-[var(--hw-muted)]">
+              Pre-create a client record and send a fixed intro email with a secure sign-in link.
+            </div>
+
+            <div className="mt-4 grid gap-4">
+              <div>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">Share this with clients to connect projects to your dashboard.</div>
+                <div className="mt-3 flex items-center gap-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2">
+                  <div className="min-w-0 flex-1 truncate text-xs font-semibold text-[var(--hw-ink)]">{partnerInviteLink}</div>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(partnerInviteLink);
+                        setCopied(true);
+                        window.setTimeout(() => setCopied(false), 1300);
+                      } catch {}
+                    }}
+                    disabled={!partnerInviteLink}
+                  >
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="sm:col-span-3">
+                  <Label htmlFor="invite-email">Client email</Label>
+                  <Input
+                    id="invite-email"
+                    placeholder="email@example.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    inputMode="email"
+                    autoComplete="email"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="invite-first">First name</Label>
+                  <Input id="invite-first" placeholder="First name" value={inviteFirst} onChange={(e) => setInviteFirst(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="invite-last">Last name</Label>
+                  <Input id="invite-last" placeholder="Last name" value={inviteLast} onChange={(e) => setInviteLast(e.target.value)} />
+                </div>
+                <div className="sm:col-span-3">
+                  <Label htmlFor="invite-address">Property / address (optional)</Label>
+                  <Input
+                    id="invite-address"
+                    placeholder="123 Main St, Chicago, IL"
+                    value={inviteAddress}
+                    onChange={(e) => setInviteAddress(e.target.value)}
+                    autoComplete="street-address"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-xs text-[var(--hw-muted)]">
+                  The email sends immediately. If the client already exists, we’ll re-invite + connect them.
+                </div>
+                <Button
+                  size="sm"
+                  className="w-full sm:w-auto"
+                  disabled={inviteSending || !inviteEmail.trim().includes("@") || !partner?.partnerId}
+                  onClick={async () => {
+                    setInviteResult(null);
+                    setInviteSending(true);
+                    try {
+                      const res = await fetch("/api/partner/invites/request", {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({
+                          partnerCode: partner?.partnerId,
+                          email: inviteEmail,
+                          firstName: inviteFirst,
+                          lastName: inviteLast,
+                          address: inviteAddress,
+                        }),
+                      });
+                      const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+                      if (!res.ok || !data?.ok) {
+                        setInviteResult({ ok: false, message: data?.error || `Invite failed (${res.status})` });
+                        return;
+                      }
+                      setInviteResult({ ok: true, message: `Invite sent to ${inviteEmail.trim().toLowerCase()}` });
+                      setInviteEmail("");
+                      setInviteFirst("");
+                      setInviteLast("");
+                      setInviteAddress("");
+                    } catch {
+                      setInviteResult({ ok: false, message: "Invite failed (network error)" });
+                    } finally {
+                      setInviteSending(false);
+                    }
+                  }}
+                >
+                  {inviteSending ? "Sending…" : "Invite client"}
+                </Button>
+              </div>
+
+              {inviteResult ? (
+                <div
+                  className={`rounded-[var(--hw-radius-lg)] border px-4 py-3 text-sm ${
+                    inviteResult.ok
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                      : "border-red-200 bg-red-50 text-red-700"
+                  }`}
+                >
+                  {inviteResult.message}
+                </div>
+              ) : null}
+            </div>
+          </Card>
+        </DashboardSection>
+
         {loading && (
           <Card className="p-6">
             <div className="text-sm text-[var(--hw-muted)]">Loading dashboard…</div>
@@ -400,45 +529,6 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
           {/* Right column */}
           <div className="grid gap-6 lg:col-span-4">
-            <DashboardSection title="Invite" card={false}>
-              <Card className="p-5">
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>
-                <div className="mt-1 text-sm text-[var(--hw-muted)]">Share this with clients to connect projects to your dashboard.</div>
-
-                <div className="mt-3 grid gap-2">
-                  <div className="flex items-center gap-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2">
-                    <div className="min-w-0 flex-1 truncate text-xs font-semibold text-[var(--hw-ink)]">{partnerInviteLink}</div>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(partnerInviteLink);
-                          setCopied(true);
-                          window.setTimeout(() => setCopied(false), 1300);
-                        } catch {}
-                      }}
-                      disabled={!partnerInviteLink}
-                    >
-                      {copied ? "Copied" : "Copy"}
-                    </Button>
-                  </div>
-
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <Link href={`${basePath}/clients`} className="w-full sm:w-auto">
-                      <Button size="sm" className="w-full sm:w-auto">Invite client</Button>
-                    </Link>
-                    <Link href={`${basePath}/messages`} className="w-full sm:w-auto">
-                      <Button size="sm" variant="secondary" className="w-full sm:w-auto">
-                        Send intro
-                      </Button>
-                    </Link>
-                  </div>
-
-                </div>
-              </Card>
-            </DashboardSection>
-
             <DashboardSection title="Messages" card={false}>
               <Card className="p-5">
                 <div className="flex items-start justify-between gap-3">
