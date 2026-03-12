@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { Button, Card, Container, Pill } from "@/components/ui";
@@ -25,25 +25,33 @@ export function PortalShell(props: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
 
-  const fullPath = React.useMemo(() => {
-    const qs = searchParams?.toString();
-    return qs ? `${pathname}?${qs}` : pathname;
-  }, [pathname, searchParams]);
-
-  const returnTo = searchParams?.get("returnTo") || "";
-
   const stackKey = "hw_portal_nav_stack_v1";
 
+  const [fullPath, setFullPath] = React.useState<string>("");
+  const [returnTo, setReturnTo] = React.useState<string>("");
   const [backTarget, setBackTarget] = React.useState<string | null>(null);
+
+  // Avoid next/navigation's useSearchParams to keep static prerender happy.
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const path = `${window.location.pathname}${window.location.search || ""}`;
+    setFullPath(path);
+
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      setReturnTo(sp.get("returnTo") || "");
+    } catch {
+      setReturnTo("");
+    }
+  }, []);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!fullPath) return;
 
     // 1) Prefer explicit returnTo
     if (returnTo && returnTo.startsWith("/")) {
