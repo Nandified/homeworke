@@ -342,7 +342,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                   />
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="invite-first">First name</Label>
                     <Input id="invite-first" placeholder="First name" value={inviteFirst} onChange={(e) => setInviteFirst(e.target.value)} />
