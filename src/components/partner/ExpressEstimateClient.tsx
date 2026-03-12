@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
 
 import { Button, Card, Chip, EmptyState, Textarea } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
+import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
 
 export type ExpressEstimateClientProps = {
   basePath: "/partner" | "/pro";
@@ -31,6 +32,30 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [file, setFile] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [notes, setNotes] = useState("");
+
+  // If a file was staged from the dashboard, load it once on mount.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const staged = sp.get("staged");
+    if (!staged) return;
+
+    (async () => {
+      try {
+        const f = await getStagedFile(staged);
+        if (f) {
+          setFile(f);
+          setSubmitted(false);
+          setSelectedIds(new Set());
+        }
+      } finally {
+        // Always cleanup.
+        try {
+          await deleteStagedFile(staged);
+        } catch {}
+      }
+    })();
+  }, []);
 
   const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
 

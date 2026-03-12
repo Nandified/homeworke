@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, Share2, UserPlus } from "lucide-react";
 
 import { Button, Card, Chip, EmptyState, Input, Label, StatTile } from "@/components/ui";
@@ -13,6 +14,7 @@ import { KpiGrid } from "@/components/dashboard/KpiGrid";
 import { ListRow } from "@/components/dashboard/ListRow";
 import { loadPartner, PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
 import { ensureDemoPartnerContext, isDemoMode } from "@/lib/demo";
+import { stageFile } from "@/lib/staged-files";
 
 export type PartnerDashboardProps = {
   basePath: "/partner" | "/pro";
@@ -83,6 +85,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
 }
 
 export function PartnerDashboardClient(props: PartnerDashboardProps) {
+  const router = useRouter();
   const basePath = props.basePath;
 
   const nav = useMemo(
@@ -541,24 +544,55 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               description="AI-generated quick estimate for inspection items, seller credits, and repair requests."
               action={
                 <Link href={`${basePath}/express-estimate`}>
-                  <Button size="sm">Open</Button>
+                  <Button size="sm" variant="secondary">Open</Button>
                 </Link>
               }
             >
-              <Card className="border-[var(--hw-line)] bg-[var(--hw-soft)] p-5">
+              <Card className="border-[var(--hw-line)] bg-white p-5">
                 <div className="grid gap-1">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">New: PDF-to-estimate (MVP)</div>
-                  <div className="text-sm text-[var(--hw-muted)]">Drop an inspection PDF → pick line-items → export a clean estimate.</div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Start from a PDF</div>
+                  <div className="text-sm text-[var(--hw-muted)]">Upload now, then finish line-items + export on the Express Estimate page.</div>
                 </div>
-                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                  <Link href={`${basePath}/express-estimate`} className="w-full sm:w-auto">
-                    <Button className="w-full sm:w-auto">Start Express Estimate</Button>
-                  </Link>
-                  <Link href={`${basePath}/messages`} className="w-full sm:w-auto">
-                    <Button size="sm" variant="secondary" className="w-full sm:w-auto">
-                      Pull from messages
-                    </Button>
-                  </Link>
+
+                <div className="mt-4 grid gap-3">
+                  <label className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 hover:bg-white">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload a PDF</div>
+                        <div className="mt-1 text-sm text-[var(--hw-muted)]">Inspection report or appraisal repair request.</div>
+                      </div>
+                      <div className="shrink-0">
+                        <Button size="sm" type="button">Choose file</Button>
+                      </div>
+                    </div>
+                    <input
+                      className="hidden"
+                      type="file"
+                      accept="application/pdf"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0] ?? null;
+                        if (!f) return;
+                        try {
+                          const id = await stageFile(f);
+                          router.push(`${basePath}/express-estimate?staged=${encodeURIComponent(id)}`);
+                        } catch {
+                          // fallback: just open the page
+                          router.push(`${basePath}/express-estimate`);
+                        }
+                      }}
+                    />
+                  </label>
+
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <Link href={`${basePath}/express-estimate`} className="w-full sm:w-auto">
+                      <Button variant="secondary" size="sm" className="w-full sm:w-auto">Open Express Estimate</Button>
+                    </Link>
+                    <Link href={`${basePath}/messages`} className="w-full sm:w-auto">
+                      <Button size="sm" variant="secondary" className="w-full sm:w-auto">
+                        Pull from messages
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </Card>
             </DashboardSection>
