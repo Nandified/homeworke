@@ -292,12 +292,16 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             </div>
 
             <div className="mt-4 grid gap-4">
-              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2 overflow-hidden">
-                <div className="flex items-center gap-2">
-                  <div className="min-w-0 flex-1 truncate text-xs font-semibold text-[var(--hw-ink)]">{partnerInviteLink}</div>
+              <div className="relative rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2 overflow-hidden">
+                {/* Scrollable link text */}
+                <div className="pr-[152px]">
+                  <div className="text-xs font-semibold text-[var(--hw-ink)] whitespace-nowrap overflow-x-auto">
+                    {partnerInviteLink}
+                  </div>
                 </div>
 
-                <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+                {/* Overlay actions (same row) */}
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
                   <Button
                     size="sm"
                     variant="secondary"
@@ -335,8 +339,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                     <Share2 className="h-4 w-4" />
                     Share
                   </Button>
-
-                 </div>
+                </div>
               </div>
 
               <div className="flex flex-col items-center gap-2">
