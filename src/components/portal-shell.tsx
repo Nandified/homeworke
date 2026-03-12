@@ -196,39 +196,8 @@ export function PortalShell(props: {
         <Container className="py-8 md:py-12">
           {/* ── Page heading ── */}
           {props.hideHeading ? null : (
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="grid grid-cols-[1fr_auto] items-start gap-4">
               <div className="max-w-2xl">
-                {backTarget ? (
-                  <div className="mb-3">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        // Prefer explicit returnTo, otherwise pop the in-session stack.
-                        if (returnTo && returnTo.startsWith("/")) {
-                          router.push(withDemo(returnTo));
-                          return;
-                        }
-
-                        try {
-                          const raw = window.sessionStorage.getItem(stackKey);
-                          const stack = (raw ? (JSON.parse(raw) as string[]) : []).filter((p) => typeof p === "string" && p.startsWith("/"));
-                          if (stack[stack.length - 1] === fullPath) stack.pop();
-                          const prev = stack.pop();
-                          window.sessionStorage.setItem(stackKey, JSON.stringify(stack));
-                          if (prev) router.push(withDemo(prev));
-                          else router.push(withDemo(props.nav?.[0]?.href || "/"));
-                        } catch {
-                          router.back();
-                        }
-                      }}
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Back
-                    </Button>
-                  </div>
-                ) : null}
-
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
                   {props.eyebrow || "Portal"}
                 </span>
@@ -239,7 +208,7 @@ export function PortalShell(props: {
                   {props.description || "v1 build: navigation and information architecture first. Data wiring next."}
                 </p>
               </div>
-              {props.primaryAction ? <div className="shrink-0 hidden md:block">{props.primaryAction}</div> : null}
+              {props.primaryAction ? <div className="shrink-0">{props.primaryAction}</div> : null}
             </div>
           )}
 
