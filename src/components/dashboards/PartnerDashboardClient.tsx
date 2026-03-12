@@ -332,22 +332,27 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                     Share
                   </Button>
 
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setInviteResult(null);
-                      setInviteExpanded((v) => !v);
-                    }}
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    Invite
-                    {inviteExpanded ? (
-                      <ChevronUp className="h-4 w-4 opacity-70" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 opacity-70" />
-                    )}
-                  </Button>
-                </div>
+                 </div>
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <div className="text-xs font-medium text-[var(--hw-muted)]">Or invite via email here</div>
+                <Button
+                  size="sm"
+                  className="w-auto px-6"
+                  onClick={() => {
+                    setInviteResult(null);
+                    setInviteExpanded((v) => !v);
+                  }}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Invite via email
+                  {inviteExpanded ? (
+                    <ChevronUp className="h-4 w-4 opacity-70" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 opacity-70" />
+                  )}
+                </Button>
               </div>
 
               {inviteExpanded ? (
