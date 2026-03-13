@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
-import { Button, Card, EmptyState, Pill } from "@/components/ui";
+import { Button, Card, EmptyState } from "@/components/ui";
 import { ProJobsClient } from "@/components/pro/ProJobsClient";
 
 export default function Page() {
@@ -23,10 +23,6 @@ export default function Page() {
           <div>
             <div className="text-sm font-semibold text-[var(--hw-ink)]">Jobs</div>
             <div className="mt-1 text-sm text-[var(--hw-muted)]">Separated views so you can switch between client-shared work and your own properties.</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Pill>Client jobs</Pill>
-            <Pill>My properties</Pill>
           </div>
         </div>
 

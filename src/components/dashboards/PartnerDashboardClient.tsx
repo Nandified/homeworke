@@ -14,6 +14,7 @@ import { KpiGrid } from "@/components/dashboard/KpiGrid";
 import { ListRow } from "@/components/dashboard/ListRow";
 import { loadPartner, PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
 import { ensureDemoPartnerContext, isDemoMode } from "@/lib/demo";
+import { PRO_DEMO_WORK_ORDERS } from "@/lib/demo-data";
 import { stageFile } from "@/lib/staged-files";
 
 export type PartnerDashboardProps = {
@@ -243,35 +244,8 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     })
     .slice(0, 8);
 
-  const demoWorkOrders: WorkOrder[] = [
-    {
-      id: "wo-demo-1001",
-      title: "Kitchen sink leak + drywall patch",
-      address: "123 Main St, Chicago, IL",
-      status: "In progress",
-      clientName: "Ava Martinez",
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: "wo-demo-1002",
-      title: "Electrical: outlets + GFCI check",
-      address: "98 W Hubbard St, Chicago, IL",
-      status: "Pending",
-      clientName: "Noah Johnson",
-      updatedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-    },
-    {
-      id: "wo-demo-1003",
-      title: "HVAC tune-up + filter replacement",
-      address: "410 N Dearborn St, Chicago, IL",
-      status: "Scheduled",
-      clientName: "Sophia Lee",
-      updatedAt: new Date(Date.now() - 6 * 86400000).toISOString(),
-    },
-  ];
-
-  const visibleWorkOrders = totalCount === 0 ? demoWorkOrders : recentWorkOrders;
-  const visibleTotalCount = totalCount === 0 ? demoWorkOrders.length : totalCount;
+  const visibleWorkOrders = totalCount === 0 ? PRO_DEMO_WORK_ORDERS : recentWorkOrders;
+  const visibleTotalCount = totalCount === 0 ? PRO_DEMO_WORK_ORDERS.length : totalCount;
 
   const demoPreviewMessages: Array<{ id: string; from: string; address: string; body: string; createdAt: string }> = [
     {

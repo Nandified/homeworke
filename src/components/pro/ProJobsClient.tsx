@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { Card, Divider } from "@/components/ui";
 import { isDemoMode } from "@/lib/demo";
+import { PRO_DEMO_WORK_ORDERS } from "@/lib/demo-data";
 
 import { StatusBadge } from "./StatusBadge";
 import { usePartnerContext } from "./usePartnerContext";
@@ -39,6 +40,8 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
   const { partnerId } = usePartnerContext();
   const [tab, setTab] = React.useState<"client" | "mine">("client");
   const [items, setItems] = React.useState<ApiWorkOrder[] | null>(null);
+
+  const visibleItems = (items && items.length > 0) ? items : PRO_DEMO_WORK_ORDERS;
 
   React.useEffect(() => {
     if (!partnerId) return;
@@ -76,11 +79,9 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
           <>{props.emptyMyJobs}</>
         ) : items === null ? (
           <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-sm text-[var(--hw-muted)]">Loading jobs…</div>
-        ) : items.length === 0 ? (
-          <>{props.emptyClientJobs}</>
         ) : (
           <div className="grid gap-3">
-            {items.map((w) => (
+            {visibleItems.map((w) => (
               <Card key={w.id} className="p-5">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
