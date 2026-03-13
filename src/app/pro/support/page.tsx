@@ -14,7 +14,7 @@ const nav = [
 
 export default function Page() {
   return (
-    <PortalShell role="PRO" title="Support" nav={nav}>
+    <PortalShell role="PRO" title="Support" portalTitle="Real Estate Pro" nav={nav}>
       <Card className="p-6">
         <div className="text-sm font-semibold">Support</div>
         <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">Placeholder page for 2.0 parity. Wiring next.</div>

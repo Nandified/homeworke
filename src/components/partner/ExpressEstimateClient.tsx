@@ -130,6 +130,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     <PortalShell
       role={props.role}
       title={props.title || "Express Estimate"}
+      portalTitle={props.role === "PRO" ? "Real Estate Pro" : undefined}
       nav={nav}
       description="Upload an inspection/appraisal PDF and generate a polished repair estimate in minutes."
       primaryAction={

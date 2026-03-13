@@ -8,6 +8,7 @@ export default function Page() {
     <PortalShell
       role="PRO"
       title="Properties"
+      portalTitle="Real Estate Pro"
       nav={PRO_NAV as unknown as { href: string; label: string }[]}
       description="Properties connected to your active clients and shared projects."
       primaryAction={<Button variant="secondary">Add property (stub)</Button>}

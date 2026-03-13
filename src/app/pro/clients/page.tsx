@@ -16,6 +16,7 @@ export default function Page() {
     <PortalShell
       role="PRO"
       title="My Clients"
+      portalTitle="Real Estate Pro"
       nav={PRO_NAV as unknown as { href: string; label: string }[]}
       description="Invite clients, track shared projects, and keep everyone in the loop."
       primaryAction={

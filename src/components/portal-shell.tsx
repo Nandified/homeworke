@@ -11,7 +11,10 @@ export type PortalNavItem = { href: string; label: string };
 
 export function PortalShell(props: {
   role: string;
+  /** Page title (shown as H1 unless hideHeading). */
   title: string;
+  /** Optional portal title (shown in role popover + mobile drawer header). Defaults to `title`. */
+  portalTitle?: string;
   nav: PortalNavItem[];
   /** Optional eyebrow label (defaults to "Portal") */
   eyebrow?: string;
@@ -24,6 +27,8 @@ export function PortalShell(props: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
+
+  const portalTitle = props.portalTitle ?? props.title;
 
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
@@ -184,7 +189,7 @@ export function PortalShell(props: {
               {rolePopoverOpen ? (
                 <div className="absolute right-0 top-[46px] z-30 w-56 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3 shadow-[0_20px_60px_rgba(0,0,0,.18)]">
                   <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
-                  <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{props.title}</div>
+                  <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{portalTitle}</div>
                 </div>
               ) : null}
             </div>
@@ -206,7 +211,7 @@ export function PortalShell(props: {
               <div>
                 <div className="text-base font-extrabold tracking-tight text-[var(--hw-red)]">Homeworke</div>
                 <div className="mt-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
-                <div className="mt-0.5 text-sm font-semibold text-[var(--hw-ink)]">{props.title}</div>
+                <div className="mt-0.5 text-sm font-semibold text-[var(--hw-ink)]">{portalTitle}</div>
               </div>
               <Button size="sm" variant="secondary" onClick={() => setMobileNavOpen(false)}>
                 Close
