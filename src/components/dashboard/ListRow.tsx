@@ -43,7 +43,7 @@ export function ListRow({ title, subtitle, meta, badge, footnote, href, classNam
   if (!href) return content;
 
   return (
-    <Link href={href} className="no-underline">
+    <Link href={href} className="no-underline hover:no-underline focus:no-underline visited:no-underline">
       {content}
     </Link>
   );
