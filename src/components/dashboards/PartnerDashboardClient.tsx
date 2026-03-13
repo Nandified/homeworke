@@ -243,6 +243,36 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     })
     .slice(0, 8);
 
+  const demoWorkOrders: WorkOrder[] = [
+    {
+      id: "wo-demo-1001",
+      title: "Kitchen sink leak + drywall patch",
+      address: "123 Main St, Chicago, IL",
+      status: "In progress",
+      clientName: "Ava Martinez",
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: "wo-demo-1002",
+      title: "Electrical: outlets + GFCI check",
+      address: "98 W Hubbard St, Chicago, IL",
+      status: "Pending",
+      clientName: "Noah Johnson",
+      updatedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+    },
+    {
+      id: "wo-demo-1003",
+      title: "HVAC tune-up + filter replacement",
+      address: "410 N Dearborn St, Chicago, IL",
+      status: "Scheduled",
+      clientName: "Sophia Lee",
+      updatedAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+    },
+  ];
+
+  const visibleWorkOrders = totalCount === 0 ? demoWorkOrders : recentWorkOrders;
+  const visibleTotalCount = totalCount === 0 ? demoWorkOrders.length : totalCount;
+
   const demoPreviewMessages: Array<{ id: string; from: string; address: string; body: string; createdAt: string }> = [
     {
       id: "demo-1",
@@ -570,49 +600,41 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           <div className="grid gap-6 lg:col-span-12">
             <DashboardSection
               title="Active projects shared with you"
-              count={totalCount}
-              description="Lightweight status rail + last updated to scan fast."
+              count={visibleTotalCount}
               action={
-                <Link href={`${basePath}/clients`}>
-                  <Button variant="secondary">View clients</Button>
+                <Link href={`${basePath}/jobs`}>
+                  <Button variant="secondary">View jobs</Button>
                 </Link>
               }
             >
-              {(!loading && !error && totalCount === 0) ? (
-                <EmptyState
-                  title="No shared projects yet"
-                  text="When clients share work orders with you, they’ll appear here."
-                />
-              ) : (
-                <div className="grid gap-2">
-                  {recentWorkOrders.map((wo) => {
-                    const status = normalizeStatus(wo.status);
-                    return (
-                      <ListRow
-                        key={wo.id}
-                        title={wo.title || wo.address || `Work Order #${wo.id}`}
-                        subtitle={wo.address && wo.title ? wo.address : undefined}
-                        footnote={wo.clientName ? `Client: ${wo.clientName}` : undefined}
-                        badge={<Chip className={STATUS_CLASS[status]}>{status}</Chip>}
-                        meta={
-                          <div className="flex flex-col items-end gap-2">
-                            <ProgressRail status={status} />
-                            {wo.updatedAt ? (
-                              <span className="text-xs text-[var(--hw-muted)]">
-                                Updated {new Date(wo.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                              </span>
-                            ) : wo.createdAt ? (
-                              <span className="text-xs text-[var(--hw-muted)]">
-                                Created {new Date(wo.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                              </span>
-                            ) : null}
-                          </div>
-                        }
-                      />
-                    );
-                  })}
-                </div>
-              )}
+              <div className="grid gap-2">
+                {visibleWorkOrders.map((wo) => {
+                  const status = normalizeStatus(wo.status);
+                  return (
+                    <ListRow
+                      key={wo.id}
+                      title={wo.title || wo.address || `Work Order #${wo.id}`}
+                      subtitle={wo.address && wo.title ? wo.address : undefined}
+                      footnote={wo.clientName ? `Client: ${wo.clientName}` : undefined}
+                      badge={<Chip className={STATUS_CLASS[status]}>{status}</Chip>}
+                      meta={
+                        <div className="flex flex-col items-end gap-2">
+                          <ProgressRail status={status} />
+                          {wo.updatedAt ? (
+                            <span className="text-xs text-[var(--hw-muted)]">
+                              Updated {new Date(wo.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                            </span>
+                          ) : wo.createdAt ? (
+                            <span className="text-xs text-[var(--hw-muted)]">
+                              Created {new Date(wo.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                            </span>
+                          ) : null}
+                        </div>
+                      }
+                    />
+                  );
+                })}
+              </div>
             </DashboardSection>
             <DashboardSection
               title="Express Estimate"
