@@ -261,7 +261,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
   ];
 
   const previewRows = messages.length
-    ? messages.slice(0, 2).map((m) => ({
+    ? messages.slice(0, 1).map((m) => ({
         id: m.id,
         from: m.fromRole,
         address: recentWorkOrders?.[0]?.address || "",
@@ -269,10 +269,10 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
         createdAt: m.createdAt,
         unread: !m.readAt,
       }))
-    : demoPreviewMessages.map((m) => ({ ...m, unread: true }));
+    : demoPreviewMessages.slice(0, 1).map((m) => ({ ...m, unread: true }));
 
   const MessagesCard = (
-    <Card className="p-4">
+    <Card className="max-w-full overflow-hidden p-3">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           {/* No external section title; keep it inside the card only */}
@@ -284,32 +284,24 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               </span>
             ) : null}
           </div>
-          <div className="mt-0.5 text-xs text-[var(--hw-muted)]">Latest activity (compact preview).</div>
         </div>
         <Link href={`${basePath}/messages`} className="shrink-0">
           <Button size="sm" className="px-3">View</Button>
         </Link>
       </div>
 
-      <div className="mt-3 grid gap-2">
+      <div className="mt-2 grid gap-2">
         {previewRows.map((m) => (
           <div
             key={m.id}
-            className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2"
+            className="max-w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2"
           >
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex min-w-0 items-start gap-2">
+              {m.unread ? <span className="mt-[3px] h-2 w-2 shrink-0 rounded-full bg-[rgb(229,57,53)]" /> : null}
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  {m.unread ? <span className="mt-[2px] h-2 w-2 shrink-0 rounded-full bg-[rgb(229,57,53)]" /> : null}
-                  <div className="text-xs font-semibold text-[var(--hw-ink)] truncate">{m.from}</div>
-                </div>
-                {m.address ? (
-                  <div className="mt-0.5 text-[11px] text-[var(--hw-muted)] truncate">{m.address}</div>
-                ) : null}
+                <div className="text-xs font-semibold text-[var(--hw-ink)] truncate">{m.from}</div>
+                {m.address ? <div className="mt-0.5 text-[11px] text-[var(--hw-muted)] truncate">{m.address}</div> : null}
                 <div className="mt-1 text-xs text-[var(--hw-ink)] truncate">{m.body}</div>
-              </div>
-              <div className="shrink-0 text-[11px] text-[var(--hw-muted)]">
-                {new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
               </div>
             </div>
           </div>
@@ -360,8 +352,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
         </div>
 
         {/* Invite (moved up under KPI tiles) */}
-        <DashboardSection title="Invite" card={false}>
-          <Card className="p-5">
+        <Card className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>
@@ -560,8 +551,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                 </div>
               ) : null}
             </div>
-          </Card>
-        </DashboardSection>
+        </Card>
 
         {loading && (
           <Card className="p-6">
