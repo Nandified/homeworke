@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
 import { Button, Card, Container, Pill } from "@/components/ui";
 import { isDemoMode, withDemo } from "@/lib/demo";
@@ -30,6 +29,7 @@ export function PortalShell(props: {
   const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
 
   const stackKey = "hw_portal_nav_stack_v1";
+  const scrollKeyPrefix = "hw_portal_scroll_v1:";
 
   const [fullPath, setFullPath] = React.useState<string>("");
   const [returnTo, setReturnTo] = React.useState<string>("");
@@ -76,6 +76,56 @@ export function PortalShell(props: {
       setBackTarget(null);
     }
   }, [fullPath, returnTo]);
+
+  // Scroll restoration (per-page, per-tab)
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!fullPath) return;
+
+    const key = `${scrollKeyPrefix}${fullPath}`;
+    let restored = false;
+
+    const restore = () => {
+      if (restored) return;
+      restored = true;
+      try {
+        const raw = window.sessionStorage.getItem(key);
+        const y = raw ? Number(raw) : 0;
+        if (!Number.isFinite(y) || y <= 0) return;
+        // wait a beat so layout is painted
+        window.requestAnimationFrame(() => {
+          window.scrollTo({ top: y, left: 0, behavior: "instant" as ScrollBehavior });
+        });
+      } catch {
+        // ignore
+      }
+    };
+
+    // Restore after mount
+    const t = window.setTimeout(restore, 0);
+
+    // Persist on scroll (throttled)
+    let lastWrite = 0;
+    const onScroll = () => {
+      const now = Date.now();
+      if (now - lastWrite < 120) return;
+      lastWrite = now;
+      try {
+        window.sessionStorage.setItem(key, String(window.scrollY || 0));
+      } catch {}
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Persist on unmount as well
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("scroll", onScroll);
+      try {
+        window.sessionStorage.setItem(key, String(window.scrollY || 0));
+      } catch {}
+    };
+  }, [fullPath]);
 
   React.useEffect(() => {
     if (!rolePopoverOpen) return;
