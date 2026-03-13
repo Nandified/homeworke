@@ -243,67 +243,77 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     })
     .slice(0, 8);
 
-  const demoPreviewMessages: Array<{ id: string; from: string; body: string; createdAt: string }> = [
+  const demoPreviewMessages: Array<{ id: string; from: string; address: string; body: string; createdAt: string }> = [
     {
       id: "demo-1",
       from: "Homeowner",
-      body: "Hi Fernando — can we get a quote for the repairs before Friday?",
+      address: "123 Main St, Chicago, IL",
+      body: "Can we get a quote for the repairs before Friday?",
       createdAt: new Date().toISOString(),
     },
     {
       id: "demo-2",
       from: "Homeworke Team",
-      body: "We’ve scheduled the inspection window for tomorrow 10–12. Works for you?",
+      address: "98 W Hubbard St, Chicago, IL",
+      body: "Inspection window set for tomorrow 10–12. Does that work?",
       createdAt: new Date(Date.now() - 86400000).toISOString(),
-    },
-    {
-      id: "demo-3",
-      from: "Contractor",
-      body: "Bid received. Reviewing materials + labor breakdown now.",
-      createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
     },
   ];
 
+  const previewRows = messages.length
+    ? messages.slice(0, 2).map((m) => ({
+        id: m.id,
+        from: m.fromRole,
+        address: recentWorkOrders?.[0]?.address || "",
+        body: m.body,
+        createdAt: m.createdAt,
+        unread: !m.readAt,
+      }))
+    : demoPreviewMessages.map((m) => ({ ...m, unread: true }));
+
   const MessagesCard = (
-    <Card className="p-5">
-      <div className="flex items-start justify-between gap-3">
+    <Card className="p-4">
+      <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           {/* No external section title; keep it inside the card only */}
-          <div className="text-sm font-semibold text-[var(--hw-ink)]">Messages</div>
-          <div className="mt-1 text-sm text-[var(--hw-muted)]">Preview messages to see the latest threads at a glance.</div>
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Messages</div>
+            {unreadCount > 0 ? (
+              <span className="inline-flex items-center rounded-full bg-[rgba(229,57,53,.10)] px-2 py-0.5 text-[11px] font-semibold text-[rgb(229,57,53)]">
+                {unreadCount} unread
+              </span>
+            ) : null}
+          </div>
+          <div className="mt-0.5 text-xs text-[var(--hw-muted)]">Latest activity (compact preview).</div>
         </div>
         <Link href={`${basePath}/messages`} className="shrink-0">
-          <Button size="sm" className="px-4">View all</Button>
+          <Button size="sm" className="px-3">View</Button>
         </Link>
       </div>
 
-      <div className="mt-4">
-        {messages.length === 0 ? (
-          <div className="grid gap-2">
-            {demoPreviewMessages.map((m) => (
-              <ListRow
-                key={m.id}
-                title={m.from}
-                subtitle={m.body}
-                meta={new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-              />
-            ))}
-            <div className="rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-3 text-xs text-[var(--hw-muted)]">
-              Demo preview — real messages will appear once a homeowner starts a thread.
+      <div className="mt-3 grid gap-2">
+        {previewRows.map((m) => (
+          <div
+            key={m.id}
+            className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  {m.unread ? <span className="mt-[2px] h-2 w-2 shrink-0 rounded-full bg-[rgb(229,57,53)]" /> : null}
+                  <div className="text-xs font-semibold text-[var(--hw-ink)] truncate">{m.from}</div>
+                </div>
+                {m.address ? (
+                  <div className="mt-0.5 text-[11px] text-[var(--hw-muted)] truncate">{m.address}</div>
+                ) : null}
+                <div className="mt-1 text-xs text-[var(--hw-ink)] truncate">{m.body}</div>
+              </div>
+              <div className="shrink-0 text-[11px] text-[var(--hw-muted)]">
+                {new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="grid gap-2">
-            {messages.slice(0, 3).map((m) => (
-              <ListRow
-                key={m.id}
-                title={m.fromRole}
-                subtitle={m.body}
-                meta={new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-              />
-            ))}
-          </div>
-        )}
+        ))}
       </div>
     </Card>
   );
