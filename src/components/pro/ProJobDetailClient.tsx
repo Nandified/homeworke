@@ -92,12 +92,22 @@ export function ProJobDetailClient(props: { id: string }) {
       try {
         const url = new URL("/api/pro/work-orders", window.location.origin);
         url.searchParams.set("partnerId", partnerId);
+        // If the user entered demo flows elsewhere, keep it consistent here too.
+        if (isDemoMode()) url.searchParams.set("demo", "1");
+
         const res = await fetch(url);
         const json = (await res.json().catch(() => null)) as { workOrders?: ApiWorkOrder[] } | null;
         const found = json?.workOrders?.find((w) => w.id === props.id) || null;
-        if (!cancelled) setItem(found);
+
+        // If API doesn't have it (common for our shared demo rows), fall back to demo set.
+        const fallback = PRO_DEMO_WORK_ORDERS.find((w) => w.id === props.id) || null;
+
+        if (!cancelled) setItem(found || (fallback as unknown as ApiWorkOrder) || null);
       } catch {
-        if (!cancelled) setItem(null);
+        if (!cancelled) {
+          const fallback = PRO_DEMO_WORK_ORDERS.find((w) => w.id === props.id) || null;
+          setItem((fallback as unknown as ApiWorkOrder) || null);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
