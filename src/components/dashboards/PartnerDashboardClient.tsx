@@ -243,6 +243,71 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     })
     .slice(0, 8);
 
+  const demoPreviewMessages: Array<{ id: string; from: string; body: string; createdAt: string }> = [
+    {
+      id: "demo-1",
+      from: "Homeowner",
+      body: "Hi Fernando — can we get a quote for the repairs before Friday?",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "demo-2",
+      from: "Homeworke Team",
+      body: "We’ve scheduled the inspection window for tomorrow 10–12. Works for you?",
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+    },
+    {
+      id: "demo-3",
+      from: "Contractor",
+      body: "Bid received. Reviewing materials + labor breakdown now.",
+      createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    },
+  ];
+
+  const MessagesCard = (
+    <Card className="p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          {/* No external section title; keep it inside the card only */}
+          <div className="text-sm font-semibold text-[var(--hw-ink)]">Messages</div>
+          <div className="mt-1 text-sm text-[var(--hw-muted)]">Preview messages to see the latest threads at a glance.</div>
+        </div>
+        <Link href={`${basePath}/messages`} className="shrink-0">
+          <Button size="sm" className="px-4">View all</Button>
+        </Link>
+      </div>
+
+      <div className="mt-4">
+        {messages.length === 0 ? (
+          <div className="grid gap-2">
+            {demoPreviewMessages.map((m) => (
+              <ListRow
+                key={m.id}
+                title={m.from}
+                subtitle={m.body}
+                meta={new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+              />
+            ))}
+            <div className="rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-3 text-xs text-[var(--hw-muted)]">
+              Demo preview — real messages will appear once a homeowner starts a thread.
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-2">
+            {messages.slice(0, 3).map((m) => (
+              <ListRow
+                key={m.id}
+                title={m.fromRole}
+                subtitle={m.body}
+                meta={new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+
   return (
     <PortalShell
       role="PRO"
@@ -257,7 +322,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
       hideHeading
     >
       <div className="grid gap-6">
-        {/* Top row: AI intake (left) + KPIs (right, 2x2) */}
+        {/* Top row: AI intake (left) + KPIs (right, 2x2) + Messages (under tiles) */}
         <div className="grid items-start gap-6 lg:grid-cols-12">
           <div className="lg:col-span-7">
             <AIWorkOrderIntakeCard
@@ -275,7 +340,13 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               <StatTile label="Completed" value={String(completedCount)} note="Closed" className="h-full" />
               <StatTile label="Unread" value={String(unreadCount)} note="New messages" className="h-full" />
             </div>
+
+            {/* Desktop: place Messages card in the right column under the KPI tiles (red square) */}
+            <div className="mt-6 hidden lg:block">{MessagesCard}</div>
           </div>
+
+          {/* Mobile: keep Messages card below the KPI tiles */}
+          <div className="lg:hidden">{MessagesCard}</div>
         </div>
 
         {/* Invite (moved up under KPI tiles) */}
@@ -495,8 +566,8 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
         )}
 
         <div className="grid items-start gap-6 lg:grid-cols-12">
-          {/* Left column */}
-          <div className="grid gap-6 lg:col-span-8">
+          {/* Main column */}
+          <div className="grid gap-6 lg:col-span-12">
             <DashboardSection
               title="Active projects shared with you"
               count={totalCount}
@@ -635,45 +706,6 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                   </div>
                 </Card>
               </div>
-            </DashboardSection>
-          </div>
-
-          {/* Right column */}
-          <div className="grid gap-6 lg:col-span-4">
-            <DashboardSection title="Messages" card={false}>
-              <Card className="p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Messages</div>
-                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Quick preview of the latest threads.</div>
-                  </div>
-                  <Link href={`${basePath}/messages`}>
-                    <Button size="sm" variant="secondary">View all</Button>
-                  </Link>
-                </div>
-
-                <div className="mt-4">
-                  {messages.length === 0 ? (
-                    <div className="rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-center">
-                      <div className="text-sm font-semibold text-[var(--hw-ink)]">No messages</div>
-                      <div className="mx-auto mt-2 max-w-md text-sm leading-7 text-[var(--hw-muted)]">
-                        Messages will appear once a homeowner starts a thread.
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid gap-2">
-                      {messages.slice(0, 3).map((m) => (
-                        <ListRow
-                          key={m.id}
-                          title={m.fromRole}
-                          subtitle={m.body}
-                          meta={new Date(m.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </Card>
             </DashboardSection>
           </div>
         </div>
