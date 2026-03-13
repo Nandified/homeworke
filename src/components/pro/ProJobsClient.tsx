@@ -4,7 +4,7 @@ import * as React from "react";
 
 import { ListRow } from "@/components/dashboard/ListRow";
 import { Card, Chip } from "@/components/ui";
-import { isDemoMode } from "@/lib/demo";
+import { isDemoMode, withDemo } from "@/lib/demo";
 import { PRO_DEMO_WORK_ORDERS } from "@/lib/demo-data";
 
 import { usePartnerContext } from "./usePartnerContext";
@@ -144,6 +144,7 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
               return (
                 <ListRow
                   key={w.id}
+                  href={withDemo(`/pro/jobs/${w.id}`)}
                   title={w.title || w.address || `Work Order #${w.id}`}
                   subtitle={w.address && w.title ? w.address : undefined}
                   footnote={w.clientName ? `Client: ${w.clientName}` : undefined}
