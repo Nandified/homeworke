@@ -363,8 +363,10 @@ Watch the short intro video.
           </div>
 
           {/* ── Express Estimate (expandable) ── */}
-          <Card className="mt-10 p-8 md:p-10">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <Card className="mt-10 p-8 md:p-10" style={{ borderColor: "rgba(229,57,53,.35)", boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}>
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant estimate</div>
+
+            <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="text-lg font-extrabold tracking-tight text-[var(--hw-ink)] md:text-xl">Are you currently buying or selling a Home?</div>
                 <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
@@ -373,7 +375,7 @@ Watch the short intro video.
               </div>
               <div className="shrink-0">
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   size="sm"
                   className="w-full sm:w-auto justify-between"
                   onClick={() => setExpressExpanded((v) => !v)}
