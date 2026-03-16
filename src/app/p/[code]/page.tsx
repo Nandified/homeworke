@@ -555,45 +555,45 @@ Watch the short intro video.
                 Your request will start with this partner pre-attached for attribution. You control sharing on a per-request basis.
               </p>
 
-              {/* Share CTA (simple ask, one native share button) */}
-              <div className="mt-12">
-                <div className="max-w-2xl text-base font-semibold text-[var(--hw-ink)]">
-                  Know someone who could benefit from my services?
-                </div>
-                <div className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--hw-muted)]">
-                  If you know anyone who could use help with a home repair or maintenance, feel free to share this page.
-                </div>
-
-                <div className="mt-5">
-                  <Button
-                    onClick={async () => {
-                      const title = `${pro.display_name} — Real Estate Pro`;
-                      const text = `Here’s ${pro.display_name}’s Homeworke page.`;
-
-                      // Prefer native share when available.
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      const nav: any = navigator;
-                      if (nav?.share && shareUrl) {
-                        await nav.share({ title, text, url: shareUrl });
-                        return;
-                      }
-
-                      // Fallback: copy link
-                      if (shareUrl && navigator.clipboard?.writeText) {
-                        await navigator.clipboard.writeText(shareUrl);
-                        alert("Link copied.");
-                      }
-                    }}
-                    disabled={!shareUrl}
-                  >
-                    Share this page
-                  </Button>
-                </div>
-
-                <div className="mt-3 text-xs text-[var(--hw-muted)]">Tip: sharing keeps your referral attached automatically.</div>
-              </div>
             </div>
           </Card>
+
+          {/* Share CTA (outside the Homeworke card) */}
+          <div className="mx-auto mt-10 max-w-2xl pb-12 text-center">
+            <div className="text-base font-semibold text-[var(--hw-ink)]">Know someone who could benefit from my services?</div>
+            <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+              If you know anyone who could use help with a home repair or maintenance, feel free to share this page.
+            </div>
+
+            <div className="mt-5 flex justify-center">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={async () => {
+                  const title = `${pro.display_name} — Real Estate Pro`;
+                  const text = `Here’s ${pro.display_name}’s Homeworke page.`;
+
+                  // Prefer native share when available.
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const nav: any = navigator;
+                  if (nav?.share && shareUrl) {
+                    await nav.share({ title, text, url: shareUrl });
+                    return;
+                  }
+
+                  if (shareUrl && navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(shareUrl);
+                    alert("Link copied.");
+                  }
+                }}
+                disabled={!shareUrl}
+              >
+                Share
+              </Button>
+            </div>
+
+            <div className="mt-3 text-xs text-[var(--hw-muted)]">Tip: sharing keeps your referral attached automatically.</div>
+          </div>
         </Container>
       </main>
     </div>
