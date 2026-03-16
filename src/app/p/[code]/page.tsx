@@ -45,6 +45,9 @@ type ProProfile = {
     youtube_url: string;
     tiktok_url: string;
     twitter_url: string;
+    google_business_url: string;
+    zillow_url: string;
+    realtor_url: string;
   }>;
 };
 
@@ -142,6 +145,9 @@ export default function Page() {
             <Pill>Partner link</Pill>
             <Link href="/marketplace/intake" className="hidden md:block">
               <Button variant="ghost">Request service</Button>
+            </Link>
+            <Link href={`/p/${code}/express-estimate`} className="hidden md:block">
+              <Button variant="ghost">Upload report</Button>
             </Link>
           </nav>
         </Container>
@@ -277,6 +283,9 @@ export default function Page() {
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <Link href="/marketplace/intake">
                   <Button>{spec.page.primaryCta}</Button>
+                </Link>
+                <Link href={`/p/${code}/express-estimate`}>
+                  <Button variant="secondary">Upload report (Express Estimate)</Button>
                 </Link>
                 <Link href="/estimate">
                   <Button variant="secondary">Get an Instant Estimate</Button>

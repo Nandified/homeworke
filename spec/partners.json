@@ -14,7 +14,12 @@
     "socials": {
       "instagram_url": "https://www.instagram.com",
       "facebook_url": "https://www.facebook.com",
-      "linkedin_url": "https://www.linkedin.com"
+      "linkedin_url": "https://www.linkedin.com",
+      "tiktok_url": "https://www.tiktok.com",
+      "youtube_url": "https://www.youtube.com",
+      "google_business_url": "https://www.google.com/search?q=the+frj+group",
+      "zillow_url": "https://www.zillow.com",
+      "realtor_url": "https://www.realtor.com"
     }
   },
   {
