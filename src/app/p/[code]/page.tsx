@@ -179,19 +179,14 @@ export default function Page() {
         >
           <div className="grid gap-4">
             <div className="text-sm text-[var(--hw-muted)]">
-              {pro.intro_video_url ? "Watch the short intro video." : "Intro video preview (will play here once uploaded)."}
+Watch the short intro video.
             </div>
 
             {pro.intro_video_url ? (
               <video className="w-full rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)]" controls playsInline>
                 <source src={pro.intro_video_url} />
               </video>
-            ) : (
-              <div className="rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-6 text-center">
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">Video coming soon</div>
-                <div className="mt-1 text-sm text-[var(--hw-muted)]">Once the pro uploads a video, this modal will play it.</div>
-              </div>
-            )}
+            ) : null}
 
             {pro.intro_video_url ? (
               <a
@@ -232,17 +227,19 @@ export default function Page() {
                     )}
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setVideoOpen(true);
-                    }}
-                    className="absolute z-10 -bottom-3 -right-3 inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] p-3 shadow-[0_12px_28px_rgba(0,0,0,.22)] ring-2 ring-white transition hover:brightness-[1.03]"
-                    aria-label={pro.intro_video_url ? "Play intro video" : "Intro video preview"}
-                    title={pro.intro_video_url ? "Play intro video" : "Intro video preview"}
-                  >
-                    <Play className="h-4 w-4 text-white" />
-                  </button>
+                  {pro.intro_video_url ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVideoOpen(true);
+                      }}
+                      className="absolute z-10 -bottom-3 -right-3 inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] p-3 shadow-[0_12px_28px_rgba(0,0,0,.22)] ring-2 ring-white transition hover:brightness-[1.03]"
+                      aria-label="Play intro video"
+                      title="Play intro video"
+                    >
+                      <Play className="h-4 w-4 text-white" />
+                    </button>
+                  ) : null}
                 </div>
 
                 <div className="min-w-0">
@@ -458,7 +455,10 @@ export default function Page() {
                 <Button
                   onClick={() => {
                     const el = document.getElementById("estimate-request");
-                    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    if (!el) return;
+                    const headerOffset = 96; // account for sticky header + a little breathing room
+                    const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+                    window.scrollTo({ top, behavior: "smooth" });
                   }}
                 >
                   Book a repair
