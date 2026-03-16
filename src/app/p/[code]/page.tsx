@@ -4,7 +4,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { Play, Phone, Mail, Link as LinkIcon } from "lucide-react";
+import {
+  Play,
+  Phone,
+  Mail,
+  Link as LinkIcon,
+  Globe,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Twitter,
+  Music2,
+  MapPin,
+  Home,
+  Building2,
+} from "lucide-react";
 
 import { Button, Card, Chip, Container, Pill, StatTile } from "@/components/ui";
 import { PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
@@ -43,7 +58,22 @@ function toPartnerContext(pro: ProProfile): PartnerContext {
   };
 }
 
-function SocialIconLink(props: { href: string; label: string }) {
+function SocialIconLink(props: { href: string; label: string; kind?: string }) {
+  const Icon = (() => {
+    const k = (props.kind || props.label).toLowerCase();
+    if (k.includes("instagram")) return Instagram;
+    if (k.includes("facebook")) return Facebook;
+    if (k.includes("linkedin")) return Linkedin;
+    if (k.includes("youtube")) return Youtube;
+    if (k.includes("tiktok")) return Music2; // lucide doesn't ship an official TikTok icon
+    if (k.includes("twitter") || k === "x") return Twitter;
+    if (k.includes("google") || k.includes("gmb") || k.includes("business profile")) return MapPin;
+    if (k.includes("zillow")) return Home;
+    if (k.includes("realtor")) return Building2;
+    if (k.includes("website") || k.includes("web")) return Globe;
+    return LinkIcon;
+  })();
+
   return (
     <a
       href={props.href}
@@ -53,7 +83,7 @@ function SocialIconLink(props: { href: string; label: string }) {
       aria-label={props.label}
       title={props.label}
     >
-      <LinkIcon className="h-4 w-4" />
+      <Icon className="h-4 w-4" />
     </a>
   );
 }
@@ -93,6 +123,12 @@ export default function Page() {
   }
 
   const socials = Object.entries(pro.socials).filter(([, v]) => Boolean(v)) as Array<[string, string]>;
+
+  const socialLabelFor = (key: string) =>
+    key
+      .replace(/_url$/i, "")
+      .replace(/_/g, " ")
+      .trim();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
@@ -161,10 +197,12 @@ export default function Page() {
                     Email
                   </Button>
                 </a>
-                <Button variant="secondary" disabled>
-                  <Phone className="h-4 w-4" />
-                  Call
-                </Button>
+                <a href={`tel:${pro.phone}`}>
+                  <Button variant="secondary">
+                    <Phone className="h-4 w-4" />
+                    Call
+                  </Button>
+                </a>
                 <Link href="/pro/dashboard">
                   <Button variant="secondary">Open Pro Portal</Button>
                 </Link>
@@ -176,33 +214,8 @@ export default function Page() {
         {/* ── Content grid ── */}
         <Container className="py-10 md:py-14">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            {/* About card */}
+            {/* Intro video (first) */}
             <Card className="p-8 lg:col-span-7 lg:p-9">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">About</h2>
-              <p className="mt-4 text-[15px] leading-[1.8] text-[var(--hw-muted)]">{pro.bio}</p>
-
-              {socials.length > 0 && (
-                <div className="mt-8 border-t border-[var(--hw-line)] pt-6">
-                  <h3 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Social</h3>
-                  <div className="mt-4 flex flex-wrap gap-2.5">
-                    {socials.map(([k, href]) => (
-                      <SocialIconLink
-                        key={k}
-                        href={href}
-                        label={k
-                          .replace(/_/g, " ")
-                          .replace(/url/g, "")
-                          .trim()}
-                      />
-                    ))}
-                    {pro.website_url ? <SocialIconLink href={pro.website_url} label="Website" /> : null}
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            {/* Video card */}
-            <Card className="p-8 lg:col-span-5 lg:p-9">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Intro video</h2>
               <p className="mt-4 text-[15px] leading-[1.8] text-[var(--hw-muted)]">{spec.proCard.videoRule}</p>
               <div className="mt-6 flex flex-col items-center rounded-xl border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)]/60 px-6 py-10">
@@ -214,6 +227,24 @@ export default function Page() {
                   Upload and playback will be enabled in a future release.
                 </div>
               </div>
+            </Card>
+
+            {/* About (second) */}
+            <Card className="p-8 lg:col-span-5 lg:p-9">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">About</h2>
+              <p className="mt-4 text-[15px] leading-[1.8] text-[var(--hw-muted)]">{pro.bio}</p>
+
+              {(socials.length > 0 || pro.website_url) && (
+                <div className="mt-8 border-t border-[var(--hw-line)] pt-6">
+                  <h3 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Social</h3>
+                  <div className="mt-4 flex flex-wrap gap-2.5">
+                    {socials.map(([k, href]) => (
+                      <SocialIconLink key={k} href={href} kind={k} label={socialLabelFor(k)} />
+                    ))}
+                    {pro.website_url ? <SocialIconLink href={pro.website_url} kind="website" label="Website" /> : null}
+                  </div>
+                </div>
+              )}
             </Card>
           </div>
 
@@ -243,12 +274,15 @@ export default function Page() {
                 />
               </div>
 
-              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <Link href="/marketplace/intake">
                   <Button>{spec.page.primaryCta}</Button>
                 </Link>
+                <Link href="/estimate">
+                  <Button variant="secondary">Get an Instant Estimate</Button>
+                </Link>
                 <Link href="/">
-                  <Button variant="secondary">{spec.page.secondaryCta}</Button>
+                  <Button variant="ghost">{spec.page.secondaryCta}</Button>
                 </Link>
               </div>
 
