@@ -19,9 +19,14 @@ import {
   MapPin,
   Home,
   Building2,
+  ShieldCheck,
+  ListChecks,
+  MessagesSquare,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
-import { Button, Card, Chip, Container, Pill, StatTile, Input, Textarea, Modal } from "@/components/ui";
+import { Button, Card, Chip, Container, Pill, Input, Textarea, Modal } from "@/components/ui";
 import { PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
 import { resolvePartner, partnerIdFor } from "@/lib/partners";
 import spec from "@/../spec/pro_landing_polish_opus.json";
@@ -104,6 +109,8 @@ export default function Page() {
   const [noteBody, setNoteBody] = useState("");
   const [noteStatus, setNoteStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
+  const [expressExpanded, setExpressExpanded] = useState(false);
+
   useEffect(() => {
     if (!pro) return;
     localStorage.setItem(PARTNER_STORAGE_KEY, JSON.stringify(toPartnerContext(pro)));
@@ -144,7 +151,7 @@ export default function Page() {
       {/* ── Sticky header ── */}
       <header className="sticky top-0 z-20 border-b border-[var(--hw-line)] bg-white/80 backdrop-blur">
         <Container className="flex h-14 items-center justify-between md:h-16">
-          <Link href="/" className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">
+          <Link href="/" className="text-lg font-extrabold tracking-tight text-[var(--hw-ink)] md:text-xl">
             Homeworke
           </Link>
           <nav className="flex items-center gap-3">
@@ -275,28 +282,43 @@ export default function Page() {
             </Card>
           </div>
 
-          {/* ── Express Estimate (inline card, like dashboard) ── */}
+          {/* ── Express Estimate (expandable) ── */}
           <Card className="mt-10 overflow-hidden p-0">
             <div className="px-8 pb-8 pt-9 md:px-10 md:pb-10 md:pt-11">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Express Estimate</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                    Upload an inspection/appraisal PDF and generate a polished repair estimate.
+              <button
+                type="button"
+                onClick={() => setExpressExpanded((v) => !v)}
+                className="w-full rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-left transition hover:bg-[var(--hw-soft)]"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">
+                      Are you currently buying or selling?
+                    </div>
+                    <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">
+                      Submit your <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span> or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get an Express Estimate of repair costs.
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    <Button variant="secondary" size="sm">
+                      {expressExpanded ? "Close" : "Get Express Estimate"}
+                      {expressExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </Button>
                   </div>
                 </div>
-                {/* Next step: upload a report */}
-              </div>
+              </button>
 
-              <div className="mt-6 rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">Choose a PDF to upload</div>
-                <div className="mt-1 text-sm text-[var(--hw-muted)]">We’ll email you when it’s ready.</div>
-                <div className="mt-4">
-                  <Link href={`/p/${code}/express-estimate`}>
-                    <Button variant="secondary">Upload report</Button>
-                  </Link>
+              {expressExpanded ? (
+                <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload your report</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">We’ll email you when it’s ready.</div>
+                  <div className="mt-4">
+                    <Link href={`/p/${code}/express-estimate`}>
+                      <Button>Upload report</Button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           </Card>
 
@@ -311,22 +333,42 @@ export default function Page() {
                 Homeworke brings together homeowners, vetted service providers, and real estate pros so your next step is always clear.
               </p>
 
-              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <StatTile
-                  label="All-in-one"
-                  value="Request → schedule → track"
-                  note="Everything stays organized in one simple flow."
-                />
-                <StatTile
-                  label="Trust"
-                  value="Vetted providers"
-                  note="Clear expectations, clean scopes, and next steps."
-                />
-                <StatTile
-                  label="Partner"
-                  value="You control sharing"
-                  note="Your pro can stay in the loop only when you want."
-                />
+              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)]">
+                      <ShieldCheck className="h-4 w-4 text-[var(--hw-red)]" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-[var(--hw-ink)]">Vetted pros</div>
+                      <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">We prioritize licensed/insured providers and quality operators.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)]">
+                      <ListChecks className="h-4 w-4 text-[var(--hw-red)]" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-[var(--hw-ink)]">Clear scope</div>
+                      <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">Know what’s included before you approve work.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)]">
+                      <MessagesSquare className="h-4 w-4 text-[var(--hw-red)]" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-[var(--hw-ink)]">One thread</div>
+                      <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">Keep communication organized — fewer missed details.</div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
