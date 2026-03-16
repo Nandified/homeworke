@@ -458,22 +458,19 @@ Watch the short intro video.
               </div>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <Button
-                  onClick={() => {
+                <a
+                  href="#estimate-request"
+                  onClick={(e) => {
+                    e.preventDefault();
                     const el = document.getElementById("estimate-request");
                     if (!el) return;
-                    const rect = el.getBoundingClientRect();
-                    const elTop = rect.top + window.scrollY;
-                    const elHeight = rect.height;
-                    const viewport = window.innerHeight;
 
-                    // Center the card in the viewport (with a small top bias so the title isn't flush).
-                    const top = Math.max(0, elTop - (viewport - elHeight) / 2 - 16);
-                    window.scrollTo({ top, behavior: "smooth" });
+                    // Most reliable cross-browser centering.
+                    el.scrollIntoView({ behavior: "smooth", block: "center" });
                   }}
                 >
-                  Book a repair
-                </Button>
+                  <Button>Book a repair</Button>
+                </a>
                 <Link href="/">
                   <Button variant="ghost">Learn more</Button>
                 </Link>
