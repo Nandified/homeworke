@@ -205,18 +205,20 @@ export default function Page() {
               {/* Left: identity */}
               <div className="flex items-start gap-5">
                 {/* Avatar */}
-                <div className="relative h-[112px] w-[90px] flex-shrink-0 overflow-hidden rounded-2xl border border-[rgba(229,57,53,.14)] bg-[var(--hw-soft)] shadow-sm md:h-[128px] md:w-[104px]">
-                  {pro.headshot_url ? (
-                    <Image src={pro.headshot_url} alt={pro.display_name} fill className="object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-base font-extrabold text-[var(--hw-muted)] md:text-lg">
-                      {pro.display_name
-                        .split(" ")
-                        .map((p) => p[0])
-                        .slice(0, 2)
-                        .join("")}
-                    </div>
-                  )}
+                <div className="relative h-[112px] w-[90px] flex-shrink-0 overflow-visible md:h-[128px] md:w-[104px]">
+                  <div className="relative h-full w-full overflow-hidden rounded-2xl border border-[rgba(229,57,53,.14)] bg-[var(--hw-soft)] shadow-sm">
+                    {pro.headshot_url ? (
+                      <Image src={pro.headshot_url} alt={pro.display_name} fill className="object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-base font-extrabold text-[var(--hw-muted)] md:text-lg">
+                        {pro.display_name
+                          .split(" ")
+                          .map((p) => p[0])
+                          .slice(0, 2)
+                          .join("")}
+                      </div>
+                    )}
+                  </div>
 
                   <button
                     type="button"
@@ -226,8 +228,8 @@ export default function Page() {
                     }}
                     disabled={!pro.intro_video_url}
                     className={
-                      "absolute -bottom-3 -right-3 inline-flex items-center justify-center rounded-full border border-[rgba(0,0,0,.08)] bg-[var(--hw-red)] p-2.5 shadow-[0_10px_25px_rgba(0,0,0,.18)] transition hover:brightness-[1.03] " +
-                      (!pro.intro_video_url ? "opacity-50 cursor-not-allowed" : "")
+                      "absolute z-10 -bottom-3 -right-3 inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] p-3 shadow-[0_12px_28px_rgba(0,0,0,.22)] ring-2 ring-white transition hover:brightness-[1.03] " +
+                      (!pro.intro_video_url ? "opacity-60 cursor-not-allowed" : "")
                     }
                     aria-label={pro.intro_video_url ? "Play intro video" : "Intro video coming soon"}
                     title={pro.intro_video_url ? "Play intro video" : "Intro video coming soon"}
@@ -302,100 +304,95 @@ export default function Page() {
             </Card>
 
             {/* Estimate Request (homepage style) */}
-            <Card className="p-8 lg:col-span-7 lg:p-9">
-              <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass">
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Estimate request</div>
-                <div className="mt-1 text-xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-2xl">
-                  What’s going on with your home?
-                </div>
+            <Card className="p-8 lg:col-span-7 lg:p-9 hw-glass">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Estimate request</div>
+              <div className="mt-1 text-xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-2xl">
+                What’s going on with your home?
+              </div>
 
-                <div className="mt-4">
-                  <div className="rounded-[var(--hw-radius-lg)] hw-glass-field">
-                    <Textarea
-                      value={issue}
-                      onChange={(e) => setIssue(e.target.value)}
-                      placeholder="Try: need drywall patch, outlet stopped working, water under sink…"
-                      className="min-h-[110px] border-0 bg-transparent"
-                    />
-                  </div>
+              <div className="mt-4">
+                <div className="rounded-[var(--hw-radius-lg)] hw-glass-field">
+                  <Textarea
+                    value={issue}
+                    onChange={(e) => setIssue(e.target.value)}
+                    placeholder="Try: need drywall patch, outlet stopped working, water under sink…"
+                    className="min-h-[110px] border-0 bg-transparent"
+                  />
                 </div>
+              </div>
 
-                <div className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Or pick a category</div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {[
-                    "Handyman",
-                    "Plumbing",
-                    "Electrical",
-                    "HVAC",
-                    "Appliance Repair",
-                    "Cleaning",
-                  ].map((label) => (
-                    <button
-                      key={label}
-                      type="button"
-                      onClick={() => setIssue((prev) => (prev ? prev : label))}
-                      className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-sm font-semibold text-[var(--hw-ink)] shadow-sm hover:bg-[var(--hw-soft)]"
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+              <div className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Or pick a category</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[
+                  "Handyman",
+                  "Plumbing",
+                  "Electrical",
+                  "HVAC",
+                  "Appliance Repair",
+                  "Cleaning",
+                ].map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setIssue((prev) => (prev ? prev : label))}
+                    className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-sm font-semibold text-[var(--hw-ink)] shadow-sm hover:bg-[var(--hw-soft)]"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
 
-                <div className="mt-6 grid gap-3">
-                  <Link href="/marketplace/intake">
-                    <Button className="w-full">Request an estimate visit</Button>
-                  </Link>
-                  <Link href="/marketplace/request">
-                    <Button variant="secondary" className="w-full">Browse marketplace</Button>
-                  </Link>
-                </div>
+              <div className="mt-6 grid gap-3">
+                <Link href="/marketplace/intake">
+                  <Button className="w-full">Request an estimate visit</Button>
+                </Link>
+                <Link href="/marketplace/request">
+                  <Button variant="secondary" className="w-full">Browse marketplace</Button>
+                </Link>
               </div>
             </Card>
           </div>
 
           {/* ── Express Estimate (expandable) ── */}
-          <Card className="mt-10 overflow-hidden p-0">
-            <div className="px-8 pb-8 pt-9 md:px-10 md:pb-10 md:pt-11">
-              <button
-                type="button"
-                onClick={() => setExpressExpanded((v) => !v)}
-                className="w-full rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-left transition hover:bg-[var(--hw-soft)]"
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Are you currently buying or selling?</div>
-                    <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">
-                      Submit your <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span> or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get an Express Estimate of repair costs.
-                    </div>
-                  </div>
-                  <div className="shrink-0 sm:pt-0">
-                    <Button variant="secondary" size="sm" className="w-full sm:w-auto justify-between">
-                      {expressExpanded ? "Close" : "Get Express Estimate"}
-                      {expressExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    </Button>
-                  </div>
+          <Card className="mt-10 p-8 md:p-10">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Are you currently buying or selling?</div>
+                <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">
+                  Submit your <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span> or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get an Express Estimate of repair costs.
                 </div>
-              </button>
+              </div>
+              <div className="shrink-0">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full sm:w-auto justify-between"
+                  onClick={() => setExpressExpanded((v) => !v)}
+                >
+                  {expressExpanded ? "Close" : "Get Express Estimate"}
+                  {expressExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
 
+            <div
+              className={
+                "overflow-hidden transition-all duration-300 ease-out " +
+                (expressExpanded ? "mt-6 max-h-[260px] opacity-100" : "mt-0 max-h-0 opacity-0")
+              }
+            >
               <div
                 className={
-                  "overflow-hidden transition-all duration-300 ease-out " +
-                  (expressExpanded ? "mt-5 max-h-[260px] opacity-100" : "mt-0 max-h-0 opacity-0")
+                  "rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 transition-transform duration-300 ease-out " +
+                  (expressExpanded ? "translate-y-0" : "-translate-y-2")
                 }
               >
-                <div
-                  className={
-                    "rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 transition-transform duration-300 ease-out " +
-                    (expressExpanded ? "translate-y-0" : "-translate-y-2")
-                  }
-                >
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload your report</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">We’ll email you when it’s ready.</div>
-                  <div className="mt-4">
-                    <Link href={`/p/${code}/express-estimate`}>
-                      <Button>Upload report</Button>
-                    </Link>
-                  </div>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload your report</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">We’ll email you when it’s ready.</div>
+                <div className="mt-4">
+                  <Link href={`/p/${code}/express-estimate`}>
+                    <Button>Upload report</Button>
+                  </Link>
                 </div>
               </div>
             </div>
