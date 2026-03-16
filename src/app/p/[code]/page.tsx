@@ -114,6 +114,11 @@ export default function Page() {
   const [videoOpen, setVideoOpen] = useState(false);
   const [issue, setIssue] = useState("");
 
+  const shareUrl = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    return window.location.href;
+  }, []);
+
   useEffect(() => {
     if (!pro) return;
     localStorage.setItem(PARTNER_STORAGE_KEY, JSON.stringify(toPartnerContext(pro)));
@@ -159,12 +164,6 @@ export default function Page() {
           </Link>
           <nav className="flex items-center gap-3">
             <Pill>Real Estate Pro</Pill>
-            <Link href="/marketplace/intake" className="hidden md:block">
-              <Button variant="ghost">Request service</Button>
-            </Link>
-            <Link href={`/p/${code}/express-estimate`} className="hidden md:block">
-              <Button variant="ghost">Upload report</Button>
-            </Link>
           </nav>
         </Container>
       </header>
@@ -555,6 +554,85 @@ Watch the short intro video.
               <p className="mt-6 max-w-2xl text-[13px] leading-relaxed text-[var(--hw-muted)]">
                 Your request will start with this partner pre-attached for attribution. You control sharing on a per-request basis.
               </p>
+
+              {/* Share CTA */}
+              <div className="mt-8 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-6">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">
+                  Know someone who could benefit from my services?
+                </div>
+                <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+                  If you know anyone who could use help with a home repair or maintenance, feel free to share this page.
+                </div>
+
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                  <Button
+                    onClick={async () => {
+                      const title = `${pro.display_name} — Real Estate Pro`;
+                      const text = `Here’s ${pro.display_name}’s Homeworke page.`;
+
+                      // Prefer native share when available.
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const nav: any = navigator;
+                      if (nav?.share && shareUrl) {
+                        try {
+                          await nav.share({ title, text, url: shareUrl });
+                          return;
+                        } catch {
+                          // fall through to copy
+                        }
+                      }
+
+                      if (shareUrl && navigator.clipboard?.writeText) {
+                        await navigator.clipboard.writeText(shareUrl);
+                        alert("Link copied.");
+                      }
+                    }}
+                    disabled={!shareUrl}
+                  >
+                    Share
+                  </Button>
+
+                  <a
+                    href={
+                      shareUrl
+                        ? `sms:&body=${encodeURIComponent(`Check this out: ${shareUrl}`)}`
+                        : undefined
+                    }
+                  >
+                    <Button variant="secondary" disabled={!shareUrl}>Text</Button>
+                  </a>
+
+                  <a
+                    href={
+                      shareUrl
+                        ? `mailto:?subject=${encodeURIComponent(`Homeworke — ${pro.display_name}`)}&body=${encodeURIComponent(
+                            `Thought you might like this: ${shareUrl}`
+                          )}`
+                        : undefined
+                    }
+                  >
+                    <Button variant="secondary" disabled={!shareUrl}>Email</Button>
+                  </a>
+
+                  <Button
+                    variant="ghost"
+                    onClick={async () => {
+                      if (!shareUrl) return;
+                      if (navigator.clipboard?.writeText) {
+                        await navigator.clipboard.writeText(shareUrl);
+                        alert("Link copied.");
+                      }
+                    }}
+                    disabled={!shareUrl}
+                  >
+                    Copy link
+                  </Button>
+                </div>
+
+                <div className="mt-3 text-xs text-[var(--hw-muted)]">
+                  Tip: sharing keeps your referral attached automatically.
+                </div>
+              </div>
             </div>
           </Card>
         </Container>
