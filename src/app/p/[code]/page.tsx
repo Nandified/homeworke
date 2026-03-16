@@ -21,7 +21,7 @@ import {
   Building2,
 } from "lucide-react";
 
-import { Button, Card, Chip, Container, Pill, StatTile } from "@/components/ui";
+import { Button, Card, Chip, Container, Pill, StatTile, Input, Textarea } from "@/components/ui";
 import { PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
 import { resolvePartner, partnerIdFor } from "@/lib/partners";
 import spec from "@/../spec/pro_landing_polish_opus.json";
@@ -97,6 +97,12 @@ export default function Page() {
 
   const pro = useMemo(() => resolvePartner(code) as ProProfile | null, [code]);
   const [partnerSet, setPartnerSet] = useState(false);
+
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteName, setNoteName] = useState("");
+  const [noteEmail, setNoteEmail] = useState("");
+  const [noteBody, setNoteBody] = useState("");
+  const [noteStatus, setNoteStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   useEffect(() => {
     if (!pro) return;
@@ -289,25 +295,28 @@ export default function Page() {
           <Card className="mt-6 overflow-hidden p-0">
             <div className="px-8 pb-10 pt-9 md:px-10 md:pb-12 md:pt-11">
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Homeworke</div>
-              <h2 className="mt-2 max-w-xl text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">
-                {spec.page.subheadline}
+              <h2 className="mt-2 max-w-2xl text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">
+                One place to request, schedule, and track home repairs — from quick fixes to full projects.
               </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--hw-muted)]">
+                Homeworke brings together homeowners, vetted service providers, and real estate pros so your next step is always clear.
+              </p>
 
               <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <StatTile
-                  label="Funnel"
-                  value="No friction"
-                  note="Browse and start a request without creating an account first."
+                  label="All-in-one"
+                  value="Request → schedule → track"
+                  note="Everything stays organized in one simple flow."
                 />
                 <StatTile
                   label="Trust"
-                  value="Vetted pros"
-                  note="Curated matching and clear next steps."
+                  value="Vetted providers"
+                  note="Clear expectations, clean scopes, and next steps."
                 />
                 <StatTile
                   label="Partner"
-                  value="Permissioned"
-                  note="Your agent stays in the loop only when you allow it."
+                  value="You control sharing"
+                  note="Your pro can stay in the loop only when you want."
                 />
               </div>
 
@@ -318,12 +327,88 @@ export default function Page() {
                 <Link href={`/p/${code}/express-estimate`}>
                   <Button variant="secondary">Express Estimate (upload report)</Button>
                 </Link>
-                <Link href="/">
-                  <Button variant="ghost">{spec.page.secondaryCta}</Button>
-                </Link>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setNoteOpen((v) => !v);
+                    setNoteStatus("idle");
+                  }}
+                >
+                  Message {pro.display_name.split(" ")[0]}
+                </Button>
               </div>
 
-              <p className="mt-6 max-w-lg text-[13px] leading-relaxed text-[var(--hw-muted)]">
+              {noteOpen ? (
+                <div className="mt-6 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Send a message</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                    Your note will be delivered to {pro.display_name} inside their Homeworke dashboard.
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="sm:col-span-1">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Name</div>
+                      <Input value={noteName} onChange={(e) => setNoteName(e.target.value)} placeholder="Your name" />
+                    </div>
+                    <div className="sm:col-span-1">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Email</div>
+                      <Input
+                        value={noteEmail}
+                        onChange={(e) => setNoteEmail(e.target.value)}
+                        placeholder="you@company.com"
+                        inputMode="email"
+                        autoComplete="email"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Message</div>
+                      <Textarea
+                        value={noteBody}
+                        onChange={(e) => setNoteBody(e.target.value)}
+                        placeholder="What can we help with?"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <Button
+                      onClick={async () => {
+                        setNoteStatus("sending");
+                        try {
+                          const res = await fetch("/api/messages", {
+                            method: "POST",
+                            headers: { "content-type": "application/json" },
+                            body: JSON.stringify({
+                              partnerId: partnerIdFor(pro.pro_code),
+                              name: noteName,
+                              email: noteEmail,
+                              message: noteBody,
+                            }),
+                          });
+                          if (!res.ok) throw new Error("send_failed");
+                          setNoteStatus("sent");
+                          setNoteName("");
+                          setNoteEmail("");
+                          setNoteBody("");
+                        } catch {
+                          setNoteStatus("error");
+                        }
+                      }}
+                      disabled={!noteName || !noteEmail.includes("@") || !noteBody || noteStatus === "sending"}
+                    >
+                      {noteStatus === "sending" ? "Sending…" : noteStatus === "sent" ? "Sent" : "Send message"}
+                    </Button>
+                    {noteStatus === "sent" ? <div className="text-sm text-[var(--hw-muted)]">Delivered.</div> : null}
+                    {noteStatus === "error" ? <div className="text-sm text-[var(--hw-red)]">Could not send. Try again.</div> : null}
+                  </div>
+
+                  <div className="mt-3 text-xs text-[var(--hw-muted)]">
+                    By sending, you agree Homeworke may contact you about this request.
+                  </div>
+                </div>
+              ) : null}
+
+              <p className="mt-6 max-w-2xl text-[13px] leading-relaxed text-[var(--hw-muted)]">
                 Your request will start with this partner pre-attached for attribution. You control sharing on a per-request basis.
               </p>
             </div>
