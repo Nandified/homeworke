@@ -308,8 +308,18 @@ export default function Page() {
                 </div>
               </button>
 
-              {expressExpanded ? (
-                <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+              <div
+                className={
+                  "overflow-hidden transition-all duration-300 ease-out " +
+                  (expressExpanded ? "mt-5 max-h-[260px] opacity-100" : "mt-0 max-h-0 opacity-0")
+                }
+              >
+                <div
+                  className={
+                    "rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 transition-transform duration-300 ease-out " +
+                    (expressExpanded ? "translate-y-0" : "-translate-y-2")
+                  }
+                >
                   <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload your report</div>
                   <div className="mt-1 text-sm text-[var(--hw-muted)]">We’ll email you when it’s ready.</div>
                   <div className="mt-4">
@@ -318,7 +328,7 @@ export default function Page() {
                     </Link>
                   </div>
                 </div>
-              ) : null}
+              </div>
             </div>
           </Card>
 
