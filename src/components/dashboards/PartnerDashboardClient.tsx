@@ -614,8 +614,8 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               title="Instant Estimate"
               description="Help clients currently buying or selling a Home. Submit a Home Inspection or Appraisal report to get a Free Instant Express Estimate of repair costs."
             >
-              <Card
-                className="relative overflow-hidden border-[rgba(229,57,53,.35)]"
+              <div
+                className="relative overflow-hidden rounded-[var(--hw-radius-xl)] border border-[rgba(229,57,53,.35)]"
                 style={{ boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}
               >
                 <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[var(--hw-red)]/20 blur-[60px]" />
@@ -626,9 +626,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                     <Zap className="h-3.5 w-3.5 text-[var(--hw-red)]" />
                     Instant estimate
                   </div>
-                  <div className="mt-2 text-base font-extrabold tracking-tight text-[var(--hw-ink)]">
-                    Express Estimate
-                  </div>
+                  <div className="mt-2 text-base font-extrabold tracking-tight text-[var(--hw-ink)]">Express Estimate</div>
                   <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">
                     Help clients currently buying or selling a Home. Submit a Home Inspection or Appraisal report to get a Free Instant Express Estimate of repair costs.
                   </div>
@@ -679,7 +677,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                     </Link>
                   </div>
                 </div>
-              </Card>
+              </div>
             </DashboardSection>
 
             <DashboardSection
