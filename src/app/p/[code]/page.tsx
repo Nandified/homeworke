@@ -218,16 +218,22 @@ export default function Page() {
                     </div>
                   )}
 
-                  {pro.intro_video_url ? (
-                    <button
-                      type="button"
-                      onClick={() => setVideoOpen(true)}
-                      className="absolute bottom-2 right-2 inline-flex items-center gap-2 rounded-full border border-[rgba(17,24,39,.12)] bg-white/90 px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] shadow-sm backdrop-blur hover:bg-white"
-                    >
-                      <Play className="h-3.5 w-3.5 text-[var(--hw-red)]" />
-                      Intro video
-                    </button>
-                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!pro.intro_video_url) return;
+                      setVideoOpen(true);
+                    }}
+                    disabled={!pro.intro_video_url}
+                    className={
+                      "absolute bottom-2 right-2 inline-flex items-center justify-center rounded-full border border-[rgba(17,24,39,.12)] bg-white/90 p-2 shadow-sm backdrop-blur transition hover:bg-white " +
+                      (!pro.intro_video_url ? "opacity-60 cursor-not-allowed" : "")
+                    }
+                    aria-label={pro.intro_video_url ? "Play intro video" : "Intro video coming soon"}
+                    title={pro.intro_video_url ? "Play intro video" : "Intro video coming soon"}
+                  >
+                    <Play className="h-4 w-4 text-[var(--hw-red)]" />
+                  </button>
                 </div>
 
                 <div className="min-w-0">
@@ -295,34 +301,53 @@ export default function Page() {
               )}
             </Card>
 
-            {/* Estimate Request (like homepage) */}
+            {/* Estimate Request (homepage style) */}
             <Card className="p-8 lg:col-span-7 lg:p-9">
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Estimate request</div>
-              <div className="mt-1 text-xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-2xl">
-                What’s going on with your home?
-              </div>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-                Tell us what you need — we’ll guide you to the right next step.
-              </p>
-
-              <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-                <Textarea
-                  value={issue}
-                  onChange={(e) => setIssue(e.target.value)}
-                  placeholder="Try: outlet stopped working, water leak under sink, HVAC not cooling…"
-                />
-
-                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                  <Link href="/marketplace/intake">
-                    <Button>Book a repair</Button>
-                  </Link>
-                  <Link href={`/p/${code}/express-estimate`}>
-                    <Button variant="secondary">Express Estimate</Button>
-                  </Link>
+              <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass">
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Estimate request</div>
+                <div className="mt-1 text-xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-2xl">
+                  What’s going on with your home?
                 </div>
 
-                <div className="mt-3 text-xs text-[var(--hw-muted)]">
-                  Express Estimates are best for inspection/appraisal reports. For everything else, we’ll confirm scope and schedule.
+                <div className="mt-4">
+                  <div className="rounded-[var(--hw-radius-lg)] hw-glass-field">
+                    <Textarea
+                      value={issue}
+                      onChange={(e) => setIssue(e.target.value)}
+                      placeholder="Try: need drywall patch, outlet stopped working, water under sink…"
+                      className="min-h-[110px] border-0 bg-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Or pick a category</div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {[
+                    "Handyman",
+                    "Plumbing",
+                    "Electrical",
+                    "HVAC",
+                    "Appliance Repair",
+                    "Cleaning",
+                  ].map((label) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setIssue((prev) => (prev ? prev : label))}
+                      className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-sm font-semibold text-[var(--hw-ink)] shadow-sm hover:bg-[var(--hw-soft)]"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-6 grid gap-3">
+                  <Link href="/marketplace/intake">
+                    <Button className="w-full">Request an estimate visit</Button>
+                  </Link>
+                  <Link href="/marketplace/request">
+                    <Button variant="secondary" className="w-full">Browse marketplace</Button>
+                  </Link>
                 </div>
               </div>
             </Card>
@@ -336,17 +361,15 @@ export default function Page() {
                 onClick={() => setExpressExpanded((v) => !v)}
                 className="w-full rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-left transition hover:bg-[var(--hw-soft)]"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">
-                      Are you currently buying or selling?
-                    </div>
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Are you currently buying or selling?</div>
                     <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">
                       Submit your <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span> or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get an Express Estimate of repair costs.
                     </div>
                   </div>
-                  <div className="shrink-0">
-                    <Button variant="secondary" size="sm">
+                  <div className="shrink-0 sm:pt-0">
+                    <Button variant="secondary" size="sm" className="w-full sm:w-auto justify-between">
                       {expressExpanded ? "Close" : "Get Express Estimate"}
                       {expressExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </Button>
