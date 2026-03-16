@@ -555,16 +555,16 @@ Watch the short intro video.
                 Your request will start with this partner pre-attached for attribution. You control sharing on a per-request basis.
               </p>
 
-              {/* Share CTA */}
-              <div className="mt-8 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-6">
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">
+              {/* Share CTA (simple ask, one native share button) */}
+              <div className="mt-12">
+                <div className="max-w-2xl text-base font-semibold text-[var(--hw-ink)]">
                   Know someone who could benefit from my services?
                 </div>
-                <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+                <div className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--hw-muted)]">
                   If you know anyone who could use help with a home repair or maintenance, feel free to share this page.
                 </div>
 
-                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <div className="mt-5">
                   <Button
                     onClick={async () => {
                       const title = `${pro.display_name} — Real Estate Pro`;
@@ -574,14 +574,11 @@ Watch the short intro video.
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       const nav: any = navigator;
                       if (nav?.share && shareUrl) {
-                        try {
-                          await nav.share({ title, text, url: shareUrl });
-                          return;
-                        } catch {
-                          // fall through to copy
-                        }
+                        await nav.share({ title, text, url: shareUrl });
+                        return;
                       }
 
+                      // Fallback: copy link
                       if (shareUrl && navigator.clipboard?.writeText) {
                         await navigator.clipboard.writeText(shareUrl);
                         alert("Link copied.");
@@ -589,49 +586,11 @@ Watch the short intro video.
                     }}
                     disabled={!shareUrl}
                   >
-                    Share
-                  </Button>
-
-                  <a
-                    href={
-                      shareUrl
-                        ? `sms:&body=${encodeURIComponent(`Check this out: ${shareUrl}`)}`
-                        : undefined
-                    }
-                  >
-                    <Button variant="secondary" disabled={!shareUrl}>Text</Button>
-                  </a>
-
-                  <a
-                    href={
-                      shareUrl
-                        ? `mailto:?subject=${encodeURIComponent(`Homeworke — ${pro.display_name}`)}&body=${encodeURIComponent(
-                            `Thought you might like this: ${shareUrl}`
-                          )}`
-                        : undefined
-                    }
-                  >
-                    <Button variant="secondary" disabled={!shareUrl}>Email</Button>
-                  </a>
-
-                  <Button
-                    variant="ghost"
-                    onClick={async () => {
-                      if (!shareUrl) return;
-                      if (navigator.clipboard?.writeText) {
-                        await navigator.clipboard.writeText(shareUrl);
-                        alert("Link copied.");
-                      }
-                    }}
-                    disabled={!shareUrl}
-                  >
-                    Copy link
+                    Share this page
                   </Button>
                 </div>
 
-                <div className="mt-3 text-xs text-[var(--hw-muted)]">
-                  Tip: sharing keeps your referral attached automatically.
-                </div>
+                <div className="mt-3 text-xs text-[var(--hw-muted)]">Tip: sharing keeps your referral attached automatically.</div>
               </div>
             </div>
           </Card>
