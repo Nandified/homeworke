@@ -223,14 +223,18 @@ export default function Page() {
             {/* Intro video (first) */}
             <Card className="p-8 lg:col-span-7 lg:p-9">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Intro video</h2>
-              <p className="mt-4 text-[15px] leading-[1.8] text-[var(--hw-muted)]">{spec.proCard.videoRule}</p>
-              <div className="mt-6 flex flex-col items-center rounded-xl border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)]/60 px-6 py-10">
-                <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(229,57,53,.14)] bg-white shadow-sm">
-                  <Play className="h-5 w-5 text-[var(--hw-red)]" />
-                </div>
-                <div className="mt-5 text-sm font-semibold text-[var(--hw-ink)]">Video placeholder</div>
-                <div className="mt-1.5 text-center text-sm leading-relaxed text-[var(--hw-muted)]">
-                  Upload and playback will be enabled in a future release.
+
+              <div className="mt-6 flex items-center justify-center rounded-xl border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)]/60 p-6">
+                <div className="w-full max-w-sm">
+                  <div className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl bg-white shadow-sm">
+                    <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(229,57,53,.14)] bg-white shadow-sm">
+                      <Play className="h-5 w-5 text-[var(--hw-red)]" />
+                    </div>
+                    <div className="mt-5 text-sm font-semibold text-[var(--hw-ink)]">Video coming soon</div>
+                    <div className="mt-1.5 text-center text-sm leading-relaxed text-[var(--hw-muted)]">
+                      Short intro videos will be supported in a future release.
+                    </div>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -254,8 +258,35 @@ export default function Page() {
             </Card>
           </div>
 
-          {/* ── CTA section ── */}
+          {/* ── Express Estimate (inline card, like dashboard) ── */}
           <Card className="mt-10 overflow-hidden p-0">
+            <div className="px-8 pb-8 pt-9 md:px-10 md:pb-10 md:pt-11">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Express Estimate</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                    Upload an inspection/appraisal PDF and generate a polished repair estimate.
+                  </div>
+                </div>
+                <Link href={`/p/${code}/express-estimate`}>
+                  <Button size="sm" variant="secondary">Open</Button>
+                </Link>
+              </div>
+
+              <div className="mt-6 rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Choose a PDF to upload</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">We’ll email you a one-time link to view your estimate.</div>
+                <div className="mt-4">
+                  <Link href={`/p/${code}/express-estimate`}>
+                    <Button variant="secondary">Upload report</Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* ── What is Homeworke / CTA section ── */}
+          <Card className="mt-6 overflow-hidden p-0">
             <div className="px-8 pb-10 pt-9 md:px-10 md:pb-12 md:pt-11">
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Homeworke</div>
               <h2 className="mt-2 max-w-xl text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">
@@ -282,13 +313,10 @@ export default function Page() {
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <Link href="/marketplace/intake">
-                  <Button>{spec.page.primaryCta}</Button>
+                  <Button>Book a repair</Button>
                 </Link>
                 <Link href={`/p/${code}/express-estimate`}>
-                  <Button variant="secondary">Upload report (Express Estimate)</Button>
-                </Link>
-                <Link href="/estimate">
-                  <Button variant="secondary">Get an Instant Estimate</Button>
+                  <Button variant="secondary">Express Estimate (upload report)</Button>
                 </Link>
                 <Link href="/">
                   <Button variant="ghost">{spec.page.secondaryCta}</Button>
