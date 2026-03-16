@@ -158,7 +158,7 @@ export default function Page() {
             Homeworke
           </Link>
           <nav className="flex items-center gap-3">
-            <Pill>Partner link</Pill>
+            <Pill>Real Estate Pro</Pill>
             <Link href="/marketplace/intake" className="hidden md:block">
               <Button variant="ghost">Request service</Button>
             </Link>
@@ -226,13 +226,13 @@ export default function Page() {
                     }}
                     disabled={!pro.intro_video_url}
                     className={
-                      "absolute bottom-2 right-2 inline-flex items-center justify-center rounded-full border border-[rgba(17,24,39,.12)] bg-white/90 p-2 shadow-sm backdrop-blur transition hover:bg-white " +
-                      (!pro.intro_video_url ? "opacity-60 cursor-not-allowed" : "")
+                      "absolute -bottom-3 -right-3 inline-flex items-center justify-center rounded-full border border-[rgba(0,0,0,.08)] bg-[var(--hw-red)] p-2.5 shadow-[0_10px_25px_rgba(0,0,0,.18)] transition hover:brightness-[1.03] " +
+                      (!pro.intro_video_url ? "opacity-50 cursor-not-allowed" : "")
                     }
                     aria-label={pro.intro_video_url ? "Play intro video" : "Intro video coming soon"}
                     title={pro.intro_video_url ? "Play intro video" : "Intro video coming soon"}
                   >
-                    <Play className="h-4 w-4 text-[var(--hw-red)]" />
+                    <Play className="h-4 w-4 text-white" />
                   </button>
                 </div>
 
@@ -247,7 +247,7 @@ export default function Page() {
                     <Chip>
                       License: {pro.license_state} {pro.license_number}
                     </Chip>
-                    {partnerSet ? <Chip>Partner attached</Chip> : <Chip>Partner pending</Chip>}
+                    {/* Partner chip removed on public pro landing */}
                   </div>
                 </div>
               </div>
