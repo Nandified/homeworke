@@ -24,6 +24,7 @@ import {
   MessagesSquare,
   ChevronDown,
   ChevronUp,
+  Zap,
 } from "lucide-react";
 
 import { Button, Card, Chip, Container, Pill, Input, Textarea, Modal } from "@/components/ui";
@@ -314,7 +315,7 @@ Watch the short intro video.
 
             {/* Estimate Request (homepage style) */}
             <Card id="estimate-request" className="p-8 lg:col-span-7 lg:p-9 hw-glass">
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Estimate request</div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Job work order</div>
               <div className="mt-1 text-xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-2xl">
                 What’s going on with your home?
               </div>
@@ -363,8 +364,14 @@ Watch the short intro video.
           </div>
 
           {/* ── Express Estimate (expandable) ── */}
-          <Card className="mt-10 p-8 md:p-10" style={{ borderColor: "rgba(229,57,53,.35)", boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}>
-            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant estimate</div>
+          <Card className="relative mt-10 overflow-hidden p-8 md:p-10" style={{ borderColor: "rgba(229,57,53,.35)", boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}>
+            <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[var(--hw-red)]/20 blur-[60px]" />
+            <div aria-hidden className="pointer-events-none absolute -left-24 bottom-0 h-48 w-48 rounded-full bg-[var(--hw-red)]/10 blur-[70px]" />
+
+            <div className="relative inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+              <Zap className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+              Instant estimate
+            </div>
 
             <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -376,8 +383,8 @@ Watch the short intro video.
               <div className="shrink-0">
                 <Button
                   variant="primary"
-                  size="sm"
-                  className="w-full sm:w-auto justify-between"
+                  size="md"
+                  className="w-full sm:w-auto justify-between px-6"
                   onClick={() => setExpressExpanded((v) => !v)}
                 >
                   {expressExpanded ? "Close" : "Get Express Estimate"}
