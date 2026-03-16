@@ -111,6 +111,9 @@ export default function Page() {
 
   const [expressExpanded, setExpressExpanded] = useState(false);
 
+  const [videoOpen, setVideoOpen] = useState(false);
+  const [issue, setIssue] = useState("");
+
   useEffect(() => {
     if (!pro) return;
     localStorage.setItem(PARTNER_STORAGE_KEY, JSON.stringify(toPartnerContext(pro)));
@@ -167,6 +170,30 @@ export default function Page() {
       </header>
 
       <main>
+        <Modal
+          open={videoOpen}
+          title="Intro video"
+          onClose={() => {
+            setVideoOpen(false);
+          }}
+        >
+          <div className="grid gap-4">
+            <div className="text-sm text-[var(--hw-muted)]">
+              {pro.intro_video_url ? "Watch the short intro video." : "No video uploaded yet."}
+            </div>
+            {pro.intro_video_url ? (
+              <a
+                href={pro.intro_video_url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-semibold text-[var(--hw-red)] underline"
+              >
+                Open video
+              </a>
+            ) : null}
+          </div>
+        </Modal>
+
         {/* ── Hero section ── */}
         <section className="border-b border-[var(--hw-line)] bg-white">
           <Container className="py-10 md:py-16">
@@ -190,6 +217,17 @@ export default function Page() {
                         .join("")}
                     </div>
                   )}
+
+                  {pro.intro_video_url ? (
+                    <button
+                      type="button"
+                      onClick={() => setVideoOpen(true)}
+                      className="absolute bottom-2 right-2 inline-flex items-center gap-2 rounded-full border border-[rgba(17,24,39,.12)] bg-white/90 px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] shadow-sm backdrop-blur hover:bg-white"
+                    >
+                      <Play className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                      Intro video
+                    </button>
+                  ) : null}
                 </div>
 
                 <div className="min-w-0">
@@ -239,31 +277,7 @@ export default function Page() {
         {/* ── Content grid ── */}
         <Container className="py-10 md:py-14">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            {/* Intro video (first) */}
-            <Card className="p-8 lg:col-span-7 lg:p-9">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Intro video</h2>
-                <span className="text-xs text-[var(--hw-muted)]">Coming soon</span>
-              </div>
-
-              <div className="mt-6 overflow-hidden rounded-xl border border-[var(--hw-line)] bg-[var(--hw-soft)]">
-                <div className="relative aspect-[4/3] w-full">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex flex-col items-center">
-                      <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(229,57,53,.14)] bg-white shadow-sm">
-                        <Play className="h-5 w-5 text-[var(--hw-red)]" />
-                      </div>
-                      <div className="mt-4 text-sm font-semibold text-[var(--hw-ink)]">Watch an intro</div>
-                      <div className="mt-1 text-center text-sm leading-relaxed text-[var(--hw-muted)]">
-                        A short video from {pro.display_name.split(" ")[0]} will appear here.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* About (second) */}
+            {/* About */}
             <Card className="p-8 lg:col-span-5 lg:p-9">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">About</h2>
               <p className="mt-4 text-[15px] leading-[1.8] text-[var(--hw-muted)]">{pro.bio}</p>
@@ -279,6 +293,38 @@ export default function Page() {
                   </div>
                 </div>
               )}
+            </Card>
+
+            {/* Estimate Request (like homepage) */}
+            <Card className="p-8 lg:col-span-7 lg:p-9">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Estimate request</div>
+              <div className="mt-1 text-xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-2xl">
+                What’s going on with your home?
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+                Tell us what you need — we’ll guide you to the right next step.
+              </p>
+
+              <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                <Textarea
+                  value={issue}
+                  onChange={(e) => setIssue(e.target.value)}
+                  placeholder="Try: outlet stopped working, water leak under sink, HVAC not cooling…"
+                />
+
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                  <Link href="/marketplace/intake">
+                    <Button>Book a repair</Button>
+                  </Link>
+                  <Link href={`/p/${code}/express-estimate`}>
+                    <Button variant="secondary">Express Estimate</Button>
+                  </Link>
+                </div>
+
+                <div className="mt-3 text-xs text-[var(--hw-muted)]">
+                  Express Estimates are best for inspection/appraisal reports. For everything else, we’ll confirm scope and schedule.
+                </div>
+              </div>
             </Card>
           </div>
 
@@ -398,6 +444,9 @@ export default function Page() {
                   setNoteStatus("idle");
                 }}
               >
+                <div className="sr-only" aria-live="polite">
+                  {noteStatus === "sent" ? "Message sent" : noteStatus === "error" ? "Message failed" : ""}
+                </div>
                 <div className="grid gap-4">
                   <div className="text-sm text-[var(--hw-muted)]">
                     Send a quick note. We’ll deliver it to {pro.display_name} in Homeworke.
