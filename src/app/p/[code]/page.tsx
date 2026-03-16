@@ -186,7 +186,15 @@ Watch the short intro video.
               <video className="w-full rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)]" controls playsInline>
                 <source src={pro.intro_video_url} />
               </video>
-            ) : null}
+            ) : (
+              <div className="overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)]">
+                <div className="flex aspect-video items-center justify-center">
+                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm">
+                    <Play className="h-5 w-5 text-[var(--hw-red)]" />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {pro.intro_video_url ? (
               <a
@@ -227,19 +235,17 @@ Watch the short intro video.
                     )}
                   </div>
 
-                  {pro.intro_video_url ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setVideoOpen(true);
-                      }}
-                      className="absolute z-10 -bottom-3 -right-3 inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] p-3 shadow-[0_12px_28px_rgba(0,0,0,.22)] ring-2 ring-white transition hover:brightness-[1.03]"
-                      aria-label="Play intro video"
-                      title="Play intro video"
-                    >
-                      <Play className="h-4 w-4 text-white" />
-                    </button>
-                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVideoOpen(true);
+                    }}
+                    className="absolute z-10 -bottom-3 -right-3 inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] p-3 shadow-[0_12px_28px_rgba(0,0,0,.22)] ring-2 ring-white transition hover:brightness-[1.03]"
+                    aria-label="Play intro video"
+                    title="Play intro video"
+                  >
+                    <Play className="h-4 w-4 text-white" />
+                  </button>
                 </div>
 
                 <div className="min-w-0">
@@ -456,8 +462,13 @@ Watch the short intro video.
                   onClick={() => {
                     const el = document.getElementById("estimate-request");
                     if (!el) return;
-                    const headerOffset = 96; // account for sticky header + a little breathing room
-                    const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+                    const rect = el.getBoundingClientRect();
+                    const elTop = rect.top + window.scrollY;
+                    const elHeight = rect.height;
+                    const viewport = window.innerHeight;
+
+                    // Center the card in the viewport (with a small top bias so the title isn't flush).
+                    const top = Math.max(0, elTop - (viewport - elHeight) / 2 - 16);
                     window.scrollTo({ top, behavior: "smooth" });
                   }}
                 >
