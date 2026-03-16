@@ -146,7 +146,7 @@ export function StatTile(props: { label: string; value: string; note?: string; c
       <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--hw-muted)]">{props.label}</div>
       <div>
         <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{props.value}</div>
-        {props.note ? <div className="mt-1 line-clamp-1 text-sm text-[var(--hw-muted)]">{props.note}</div> : null}
+        {props.note ? <div className="mt-1 line-clamp-2 text-sm text-[var(--hw-muted)]">{props.note}</div> : null}
       </div>
     </div>
   );

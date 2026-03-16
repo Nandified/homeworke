@@ -21,7 +21,7 @@ import {
   Building2,
 } from "lucide-react";
 
-import { Button, Card, Chip, Container, Pill, StatTile, Input, Textarea } from "@/components/ui";
+import { Button, Card, Chip, Container, Pill, StatTile, Input, Textarea, Modal } from "@/components/ui";
 import { PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
 import { resolvePartner, partnerIdFor } from "@/lib/partners";
 import spec from "@/../spec/pro_landing_polish_opus.json";
@@ -171,7 +171,7 @@ export default function Page() {
               {/* Left: identity */}
               <div className="flex items-start gap-5">
                 {/* Avatar */}
-                <div className="relative h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-2xl border border-[rgba(229,57,53,.14)] bg-[var(--hw-soft)] shadow-sm md:h-20 md:w-20">
+                <div className="relative h-[112px] w-[90px] flex-shrink-0 overflow-hidden rounded-2xl border border-[rgba(229,57,53,.14)] bg-[var(--hw-soft)] shadow-sm md:h-[128px] md:w-[104px]">
                   {pro.headshot_url ? (
                     <Image src={pro.headshot_url} alt={pro.display_name} fill className="object-cover" />
                   ) : (
@@ -215,9 +215,15 @@ export default function Page() {
                     Call
                   </Button>
                 </a>
-                <Link href="/pro/dashboard">
-                  <Button variant="secondary">Open Pro Portal</Button>
-                </Link>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setNoteOpen(true);
+                    setNoteStatus("idle");
+                  }}
+                >
+                  Message
+                </Button>
               </div>
             </div>
           </Container>
@@ -228,17 +234,22 @@ export default function Page() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             {/* Intro video (first) */}
             <Card className="p-8 lg:col-span-7 lg:p-9">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Intro video</h2>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Intro video</h2>
+                <span className="text-xs text-[var(--hw-muted)]">Coming soon</span>
+              </div>
 
-              <div className="mt-6 flex items-center justify-center rounded-xl border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)]/60 p-6">
-                <div className="w-full max-w-sm">
-                  <div className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl bg-white shadow-sm">
-                    <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(229,57,53,.14)] bg-white shadow-sm">
-                      <Play className="h-5 w-5 text-[var(--hw-red)]" />
-                    </div>
-                    <div className="mt-5 text-sm font-semibold text-[var(--hw-ink)]">Video coming soon</div>
-                    <div className="mt-1.5 text-center text-sm leading-relaxed text-[var(--hw-muted)]">
-                      Short intro videos will be supported in a future release.
+              <div className="mt-6 overflow-hidden rounded-xl border border-[var(--hw-line)] bg-[var(--hw-soft)]">
+                <div className="relative aspect-[4/3] w-full">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="flex flex-col items-center">
+                      <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(229,57,53,.14)] bg-white shadow-sm">
+                        <Play className="h-5 w-5 text-[var(--hw-red)]" />
+                      </div>
+                      <div className="mt-4 text-sm font-semibold text-[var(--hw-ink)]">Watch an intro</div>
+                      <div className="mt-1 text-center text-sm leading-relaxed text-[var(--hw-muted)]">
+                        A short video from {pro.display_name.split(" ")[0]} will appear here.
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -274,14 +285,12 @@ export default function Page() {
                     Upload an inspection/appraisal PDF and generate a polished repair estimate.
                   </div>
                 </div>
-                <Link href={`/p/${code}/express-estimate`}>
-                  <Button size="sm" variant="secondary">Open</Button>
-                </Link>
+                {/* Next step: upload a report */}
               </div>
 
               <div className="mt-6 rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Choose a PDF to upload</div>
-                <div className="mt-1 text-sm text-[var(--hw-muted)]">We’ll email you a one-time link to view your estimate.</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">We’ll email you when it’s ready.</div>
                 <div className="mt-4">
                   <Link href={`/p/${code}/express-estimate`}>
                     <Button variant="secondary">Upload report</Button>
@@ -324,33 +333,30 @@ export default function Page() {
                 <Link href="/marketplace/intake">
                   <Button>Book a repair</Button>
                 </Link>
-                <Link href={`/p/${code}/express-estimate`}>
-                  <Button variant="secondary">Express Estimate (upload report)</Button>
+                <Link href="/">
+                  <Button variant="ghost">Learn more</Button>
                 </Link>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setNoteOpen((v) => !v);
-                    setNoteStatus("idle");
-                  }}
-                >
-                  Message {pro.display_name.split(" ")[0]}
-                </Button>
               </div>
 
-              {noteOpen ? (
-                <div className="mt-6 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Send a message</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                    Your note will be delivered to {pro.display_name} inside their Homeworke dashboard.
+              <Modal
+                open={noteOpen}
+                title={`Message ${pro.display_name}`}
+                onClose={() => {
+                  setNoteOpen(false);
+                  setNoteStatus("idle");
+                }}
+              >
+                <div className="grid gap-4">
+                  <div className="text-sm text-[var(--hw-muted)]">
+                    Send a quick note. We’ll deliver it to {pro.display_name} in Homeworke.
                   </div>
 
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="sm:col-span-1">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
                       <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Name</div>
                       <Input value={noteName} onChange={(e) => setNoteName(e.target.value)} placeholder="Your name" />
                     </div>
-                    <div className="sm:col-span-1">
+                    <div>
                       <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Email</div>
                       <Input
                         value={noteEmail}
@@ -362,15 +368,11 @@ export default function Page() {
                     </div>
                     <div className="sm:col-span-2">
                       <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Message</div>
-                      <Textarea
-                        value={noteBody}
-                        onChange={(e) => setNoteBody(e.target.value)}
-                        placeholder="What can we help with?"
-                      />
+                      <Textarea value={noteBody} onChange={(e) => setNoteBody(e.target.value)} placeholder="How can we help?" />
                     </div>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <Button
                       onClick={async () => {
                         setNoteStatus("sending");
@@ -396,17 +398,18 @@ export default function Page() {
                       }}
                       disabled={!noteName || !noteEmail.includes("@") || !noteBody || noteStatus === "sending"}
                     >
-                      {noteStatus === "sending" ? "Sending…" : noteStatus === "sent" ? "Sent" : "Send message"}
+                      {noteStatus === "sending" ? "Sending…" : noteStatus === "sent" ? "Sent" : "Send"}
                     </Button>
-                    {noteStatus === "sent" ? <div className="text-sm text-[var(--hw-muted)]">Delivered.</div> : null}
+                    <Button variant="secondary" onClick={() => setNoteOpen(false)}>
+                      Close
+                    </Button>
                     {noteStatus === "error" ? <div className="text-sm text-[var(--hw-red)]">Could not send. Try again.</div> : null}
+                    {noteStatus === "sent" ? <div className="text-sm text-[var(--hw-muted)]">Sent.</div> : null}
                   </div>
 
-                  <div className="mt-3 text-xs text-[var(--hw-muted)]">
-                    By sending, you agree Homeworke may contact you about this request.
-                  </div>
+                  <div className="text-xs text-[var(--hw-muted)]">By sending, you agree Homeworke may contact you about this request.</div>
                 </div>
-              ) : null}
+              </Modal>
 
               <p className="mt-6 max-w-2xl text-[13px] leading-relaxed text-[var(--hw-muted)]">
                 Your request will start with this partner pre-attached for attribution. You control sharing on a per-request basis.
