@@ -179,8 +179,20 @@ export default function Page() {
         >
           <div className="grid gap-4">
             <div className="text-sm text-[var(--hw-muted)]">
-              {pro.intro_video_url ? "Watch the short intro video." : "No video uploaded yet."}
+              {pro.intro_video_url ? "Watch the short intro video." : "Intro video preview (will play here once uploaded)."}
             </div>
+
+            {pro.intro_video_url ? (
+              <video className="w-full rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)]" controls playsInline>
+                <source src={pro.intro_video_url} />
+              </video>
+            ) : (
+              <div className="rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-6 text-center">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Video coming soon</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">Once the pro uploads a video, this modal will play it.</div>
+              </div>
+            )}
+
             {pro.intro_video_url ? (
               <a
                 href={pro.intro_video_url}
@@ -188,7 +200,7 @@ export default function Page() {
                 rel="noreferrer"
                 className="text-sm font-semibold text-[var(--hw-red)] underline"
               >
-                Open video
+                Open video in new tab
               </a>
             ) : null}
           </div>
@@ -223,16 +235,11 @@ export default function Page() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (!pro.intro_video_url) return;
                       setVideoOpen(true);
                     }}
-                    disabled={!pro.intro_video_url}
-                    className={
-                      "absolute z-10 -bottom-3 -right-3 inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] p-3 shadow-[0_12px_28px_rgba(0,0,0,.22)] ring-2 ring-white transition hover:brightness-[1.03] " +
-                      (!pro.intro_video_url ? "opacity-60 cursor-not-allowed" : "")
-                    }
-                    aria-label={pro.intro_video_url ? "Play intro video" : "Intro video coming soon"}
-                    title={pro.intro_video_url ? "Play intro video" : "Intro video coming soon"}
+                    className="absolute z-10 -bottom-3 -right-3 inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] p-3 shadow-[0_12px_28px_rgba(0,0,0,.22)] ring-2 ring-white transition hover:brightness-[1.03]"
+                    aria-label={pro.intro_video_url ? "Play intro video" : "Intro video preview"}
+                    title={pro.intro_video_url ? "Play intro video" : "Intro video preview"}
                   >
                     <Play className="h-4 w-4 text-white" />
                   </button>
@@ -304,7 +311,7 @@ export default function Page() {
             </Card>
 
             {/* Estimate Request (homepage style) */}
-            <Card className="p-8 lg:col-span-7 lg:p-9 hw-glass">
+            <Card id="estimate-request" className="p-8 lg:col-span-7 lg:p-9 hw-glass">
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Estimate request</div>
               <div className="mt-1 text-xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-2xl">
                 What’s going on with your home?
@@ -357,9 +364,9 @@ export default function Page() {
           <Card className="mt-10 p-8 md:p-10">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">Are you currently buying or selling?</div>
-                <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">
-                  Submit your <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span> or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get an Express Estimate of repair costs.
+                <div className="text-lg font-extrabold tracking-tight text-[var(--hw-ink)] md:text-xl">Are you currently buying or selling a Home?</div>
+                <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+                  Submit your <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span> or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get a <span className="font-semibold text-[var(--hw-ink)]">Free Instant Express Estimate</span> of repair costs.
                 </div>
               </div>
               <div className="shrink-0">
@@ -448,9 +455,14 @@ export default function Page() {
               </div>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <Link href="/marketplace/intake">
-                  <Button>Book a repair</Button>
-                </Link>
+                <Button
+                  onClick={() => {
+                    const el = document.getElementById("estimate-request");
+                    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                >
+                  Book a repair
+                </Button>
                 <Link href="/">
                   <Button variant="ghost">Learn more</Button>
                 </Link>
