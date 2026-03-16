@@ -562,7 +562,7 @@ Watch the short intro video.
           <div className="mx-auto mt-10 max-w-2xl pb-12 text-center">
             <div className="text-base font-semibold text-[var(--hw-ink)]">Know someone who could benefit from my services?</div>
             <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-              If you know anyone who could use help with a home repair or maintenance, feel free to share this page.
+              If you know anyone who could use help buying or selling a home — or even with a home repair or maintenance project — feel free to share this page.
             </div>
 
             <div className="mt-5 flex justify-center">
@@ -570,29 +570,39 @@ Watch the short intro video.
                 size="sm"
                 variant="secondary"
                 onClick={async () => {
+                  const url = shareUrl || (typeof window !== "undefined" ? window.location.href : "");
                   const title = `${pro.display_name} — Real Estate Pro`;
                   const text = `Here’s ${pro.display_name}’s Homeworke page.`;
 
                   // Prefer native share when available.
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const nav: any = navigator;
-                  if (nav?.share && shareUrl) {
-                    await nav.share({ title, text, url: shareUrl });
+                  if (nav?.share && url) {
+                    try {
+                      await nav.share({ title, text, url });
+                      return;
+                    } catch {
+                      // fall through to copy
+                    }
+                  }
+
+                  if (url && navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(url);
+                    alert("Link copied.");
                     return;
                   }
 
-                  if (shareUrl && navigator.clipboard?.writeText) {
-                    await navigator.clipboard.writeText(shareUrl);
-                    alert("Link copied.");
-                  }
+                  // Last resort
+                  try {
+                    window.prompt("Copy this link:", url);
+                  } catch {}
                 }}
-                disabled={!shareUrl}
               >
                 Share
               </Button>
             </div>
 
-            <div className="mt-3 text-xs text-[var(--hw-muted)]">Tip: sharing keeps your referral attached automatically.</div>
+            <div className="mt-3 text-xs text-[var(--hw-muted)]">Thank you — every referral is truly appreciated.</div>
           </div>
         </Container>
       </main>
