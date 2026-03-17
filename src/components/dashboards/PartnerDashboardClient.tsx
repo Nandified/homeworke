@@ -726,82 +726,122 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                 </Link>
               }
             >
-              <Card className="p-4">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Your QR Code</div>
-                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Clients can scan to connect using your invite link.</div>
-                  </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Card className="p-4">
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Your QR Code</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Clients can scan to connect using your invite link.</div>
 
-                  <div className="shrink-0">
-                    <div className="mt-2 flex items-center gap-3">
-                      {marketingQr ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          alt="Invite QR"
-                          src={marketingQr}
-                          className="h-[84px] w-[84px] rounded-[12px] border border-[var(--hw-line)] bg-white p-1"
-                        />
-                      ) : (
-                        <div className="h-[84px] w-[84px] rounded-[12px] border border-[var(--hw-line)] bg-[var(--hw-soft)]" />
-                      )}
-                      <div className="grid gap-2">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={async () => {
-                            try {
-                              await navigator.clipboard.writeText(partnerInviteLink);
-                              setCopied(true);
-                              window.setTimeout(() => setCopied(false), 1200);
-                            } catch {
-                              // ignore
-                            }
-                          }}
-                          disabled={!partnerInviteLink}
-                        >
-                          <Copy className="h-4 w-4" />
-                          {copied ? "Copied" : "Copy link"}
-                        </Button>
+                  <div className="mt-3 flex items-center gap-3">
+                    {marketingQr ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        alt="Invite QR"
+                        src={marketingQr}
+                        className="h-[92px] w-[92px] rounded-[12px] border border-[var(--hw-line)] bg-white p-1"
+                      />
+                    ) : (
+                      <div className="h-[92px] w-[92px] rounded-[12px] border border-[var(--hw-line)] bg-[var(--hw-soft)]" />
+                    )}
 
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => {
-                            if (!marketingQr) return;
-                            const a = document.createElement("a");
-                            a.href = marketingQr;
-                            a.download = "homeworke-invite-qr.png";
-                            a.click();
-                          }}
-                          disabled={!marketingQr}
-                        >
-                          <ImageIcon className="h-4 w-4" />
-                          Download QR
-                        </Button>
+                    <div className="grid gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(partnerInviteLink);
+                            setCopied(true);
+                            window.setTimeout(() => setCopied(false), 1200);
+                          } catch {
+                            // ignore
+                          }
+                        }}
+                        disabled={!partnerInviteLink}
+                      >
+                        <Copy className="h-4 w-4" />
+                        {copied ? "Copied" : "Copy link"}
+                      </Button>
 
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => {
-                            if (!partnerInviteLink) return;
-                            const url = new URL("/api/marketing/flyer", window.location.origin);
-                            url.searchParams.set("name", partner?.partnerName || "Real Estate Pro");
-                            if (partner?.officeName) url.searchParams.set("office", partner.officeName);
-                            url.searchParams.set("invite", partnerInviteLink);
-                            if (marketingQr) url.searchParams.set("qr", marketingQr);
-                            window.open(url.toString(), "_blank");
-                          }}
-                          disabled={!partnerInviteLink}
-                        >
-                          <FileDown className="h-4 w-4" />
-                          Download PDF
-                        </Button>
-                      </div>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          if (!marketingQr) return;
+                          const a = document.createElement("a");
+                          a.href = marketingQr;
+                          a.download = "homeworke-invite-qr.png";
+                          a.click();
+                        }}
+                        disabled={!marketingQr}
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                        Download QR
+                      </Button>
                     </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+
+                <Card className="p-4">
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">PDF Flyers</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Download one-page PDFs you can email or print.</div>
+
+                  <div className="mt-3 grid gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        if (!partnerInviteLink) return;
+                        const url = new URL("/api/marketing/flyer", window.location.origin);
+                        url.searchParams.set("name", partner?.partnerName || "Real Estate Pro");
+                        if (partner?.officeName) url.searchParams.set("office", partner.officeName);
+                        url.searchParams.set("invite", partnerInviteLink);
+                        if (marketingQr) url.searchParams.set("qr", marketingQr);
+                        window.open(url.toString(), "_blank");
+                      }}
+                      disabled={!partnerInviteLink}
+                    >
+                      <FileDown className="h-4 w-4" />
+                      Download: General flyer
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        if (!partnerInviteLink) return;
+                        const url = new URL("/api/marketing/flyer-listing", window.location.origin);
+                        url.searchParams.set("name", partner?.partnerName || "Real Estate Pro");
+                        if (partner?.officeName) url.searchParams.set("office", partner.officeName);
+                        url.searchParams.set("invite", partnerInviteLink);
+                        if (marketingQr) url.searchParams.set("qr", marketingQr);
+                        window.open(url.toString(), "_blank");
+                      }}
+                      disabled={!partnerInviteLink}
+                    >
+                      <FileDown className="h-4 w-4" />
+                      Download: Listing repairs
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        if (!partnerInviteLink) return;
+                        const url = new URL("/api/marketing/flyer-inspection", window.location.origin);
+                        url.searchParams.set("name", partner?.partnerName || "Real Estate Pro");
+                        if (partner?.officeName) url.searchParams.set("office", partner.officeName);
+                        url.searchParams.set("invite", partnerInviteLink);
+                        if (marketingQr) url.searchParams.set("qr", marketingQr);
+                        window.open(url.toString(), "_blank");
+                      }}
+                      disabled={!partnerInviteLink}
+                    >
+                      <FileDown className="h-4 w-4" />
+                      Download: Inspection → estimate
+                    </Button>
+                  </div>
+                </Card>
+              </div>
             </DashboardSection>
           </div>
         </div>
