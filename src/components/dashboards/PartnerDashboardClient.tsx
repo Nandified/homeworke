@@ -618,7 +618,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               <div aria-hidden className="pointer-events-none absolute -left-24 bottom-0 h-48 w-48 rounded-full bg-[var(--hw-red)]/10 blur-[70px]" />
 
               <div className="relative">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
                       <Zap className="h-3.5 w-3.5 text-[var(--hw-red)]" />
@@ -628,7 +628,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                   </div>
                   <div className="shrink-0">
                     <Link href={`${basePath}/express-estimate`}>
-                      <Button variant="secondary" size="sm">Open</Button>
+                      <Button variant="secondary" size="sm">Open Estimates</Button>
                     </Link>
                   </div>
                 </div>
