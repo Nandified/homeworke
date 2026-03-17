@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, Copy, FileDown, Image as ImageIcon, Share2, UserPlus, Zap } from "lucide-react";
+import { ChevronDown, ChevronUp, Image as ImageIcon, Share2, UserPlus, Zap } from "lucide-react";
 
 import QRCode from "qrcode";
 
@@ -751,24 +751,6 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText(partnerInviteLink);
-                            setCopied(true);
-                            window.setTimeout(() => setCopied(false), 1200);
-                          } catch {
-                            // ignore
-                          }
-                        }}
-                        disabled={!partnerInviteLink}
-                      >
-                        <Copy className="h-4 w-4" />
-                        {copied ? "Copied" : "Copy link"}
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="secondary"
                         onClick={() => {
                           if (!marketingQr) return;
                           const a = document.createElement("a");
@@ -804,8 +786,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                       }}
                       disabled={!partnerInviteLink}
                     >
-                      <FileDown className="h-4 w-4" />
-                      Download: General flyer
+                      General flyer
                     </Button>
 
                     <Button
@@ -822,8 +803,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                       }}
                       disabled={!partnerInviteLink}
                     >
-                      <FileDown className="h-4 w-4" />
-                      Download: Listing repairs
+                      Listing repairs
                     </Button>
 
                     <Button
@@ -840,8 +820,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                       }}
                       disabled={!partnerInviteLink}
                     >
-                      <FileDown className="h-4 w-4" />
-                      Download: Inspection → estimate
+                      Inspection → estimate
                     </Button>
                   </div>
                 </Card>
