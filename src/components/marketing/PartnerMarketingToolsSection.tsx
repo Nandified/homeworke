@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
-import { Copy, FileDown, Image as ImageIcon, Share2 } from "lucide-react";
+import { Copy, Image as ImageIcon, Share2 } from "lucide-react";
 
 import * as htmlToImage from "html-to-image";
 import QRCode from "qrcode";
@@ -248,22 +248,23 @@ export function PartnerMarketingToolsSection({
           <div className="mt-1 text-sm text-[var(--hw-muted)]">Download a branded square image you can post or send.</div>
 
           <div className="mt-3 grid gap-2">
-            <Label className="text-xs">Layout</Label>
-            <select
-              className="h-10 w-full rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 text-sm"
-              value={socialChoice}
-              onChange={(e) => setSocialChoice(e.target.value)}
-            >
-              <option value="express_estimate">Express Estimate</option>
-              <option value="listing_prep">Listing Prep Repairs</option>
-              <option value="partner_cred">Partnered with Homeworke</option>
-            </select>
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-xs">Layout</Label>
+              <select
+                className="h-9 rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 text-sm"
+                value={socialChoice}
+                onChange={(e) => setSocialChoice(e.target.value)}
+              >
+                <option value="express_estimate">Express Estimate</option>
+                <option value="listing_prep">Listing Prep Repairs</option>
+                <option value="partner_cred">Partnered with Homeworke</option>
+              </select>
+            </div>
 
-            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
+            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
               <div
                 ref={socialRef}
-                className="relative overflow-hidden rounded-[16px] border border-[rgba(229,57,53,.25)] bg-white"
-                style={{ width: 360, height: 360 }}
+                className="relative aspect-square w-full max-w-[420px] overflow-hidden rounded-[16px] border border-[rgba(229,57,53,.25)] bg-white"
               >
                 <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[var(--hw-red)]/20 blur-[55px]" />
                 <div aria-hidden className="pointer-events-none absolute -left-24 -bottom-24 h-64 w-64 rounded-full bg-[var(--hw-red)]/10 blur-[70px]" />
@@ -321,16 +322,13 @@ export function PartnerMarketingToolsSection({
 
           <div className="mt-3 grid gap-2">
             <Button size="sm" variant="secondary" onClick={() => downloadFlyerPdf("general")} disabled={!inviteLink}>
-              <FileDown className="h-4 w-4" />
-              Download: General flyer
+              General flyer
             </Button>
             <Button size="sm" variant="secondary" onClick={() => downloadFlyerPdf("listing")} disabled={!inviteLink}>
-              <FileDown className="h-4 w-4" />
-              Download: Listing repairs
+              Listing repairs
             </Button>
             <Button size="sm" variant="secondary" onClick={() => downloadFlyerPdf("inspection")} disabled={!inviteLink}>
-              <FileDown className="h-4 w-4" />
-              Download: Inspection → estimate
+              Inspection → estimate
             </Button>
             <div className="text-xs text-[var(--hw-muted)]">Includes your name, office, invite link, and QR.</div>
           </div>
