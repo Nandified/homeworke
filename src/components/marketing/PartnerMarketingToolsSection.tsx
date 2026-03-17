@@ -56,12 +56,12 @@ function Picker({
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="group flex h-10 w-full items-center justify-between gap-3 rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 text-left shadow-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
+          className="group flex h-10 w-full items-center justify-between gap-3 rounded-[999px] border border-[var(--hw-line)] bg-gradient-to-b from-white to-[var(--hw-soft)] px-4 text-left shadow-[0_10px_22px_rgba(17,24,39,.06)] outline-none transition hover:shadow-[0_12px_26px_rgba(17,24,39,.08)] focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
           aria-haspopup="listbox"
           aria-expanded={open}
         >
           <span className="min-w-0 truncate text-sm font-medium text-[var(--hw-ink)]">{active?.label}</span>
-          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-muted)] transition group-hover:bg-white">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white/80 text-[var(--hw-muted)] shadow-sm transition group-hover:bg-white">
             <ChevronDown className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} />
           </span>
         </button>
