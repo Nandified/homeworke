@@ -57,7 +57,9 @@ export function PartnerMarketingToolsPageClient({ basePath }: { basePath: "/part
   }, []);
 
   const inviteLink =
-    partner?.partnerId && typeof window !== "undefined" ? `${window.location.origin}/p/${partner.partnerId}` : "";
+    partner?.partnerId && typeof window !== "undefined"
+      ? `${window.location.origin}/p/${partner.partnerId.replace(/^(pro_|partner_)/, "")}`
+      : "";
 
   return (
     <PortalShell

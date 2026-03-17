@@ -281,7 +281,11 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
   const partnerInviteLink = useMemo(() => {
     if (!partner?.partnerId) return "";
     if (typeof window === "undefined") return "";
-    return `${window.location.origin}/p/${partner.partnerId}`;
+
+    // Partner links are currently expected in the format /p/<code> (e.g. /p/frj)
+    // Some stored partnerIds may be prefixed (e.g. pro_frj). Normalize for link-sharing.
+    const code = partner.partnerId.replace(/^(pro_|partner_)/, "");
+    return `${window.location.origin}/p/${code}`;
   }, [partner?.partnerId]);
 
   useEffect(() => {
