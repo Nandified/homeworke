@@ -52,6 +52,7 @@ function Picker({
     <div ref={wrapRef} className="grid gap-2">
       <Label className="text-xs">{label}</Label>
       <div className="relative">
+        {/* Compact control (keeps card layout unchanged) */}
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -59,10 +60,7 @@ function Picker({
           aria-haspopup="listbox"
           aria-expanded={open}
         >
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-medium text-[var(--hw-ink)]">{active?.label}</span>
-            {active?.sublabel ? <span className="block truncate text-xs text-[var(--hw-muted)]">{active.sublabel}</span> : null}
-          </span>
+          <span className="min-w-0 truncate text-sm font-medium text-[var(--hw-ink)]">{active?.label}</span>
           <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-muted)] transition group-hover:bg-white">
             <ChevronDown className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} />
           </span>
@@ -93,8 +91,8 @@ function Picker({
                         : "hover:bg-[var(--hw-soft)] text-[var(--hw-ink)]"
                     }`}
                   >
-                    <div className="text-sm font-medium">{o.label}</div>
-                    {o.sublabel ? <div className="mt-0.5 text-xs text-[var(--hw-muted)]">{o.sublabel}</div> : null}
+                    <div className="truncate text-sm font-medium">{o.label}</div>
+                    {o.sublabel ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{o.sublabel}</div> : null}
                   </button>
                 );
               })}
@@ -307,7 +305,7 @@ export function PartnerMarketingToolsSection({
               options={smsTemplates.map((t) => ({
                 id: t.id,
                 label: t.label,
-                sublabel: t.body,
+                sublabel: t.body.slice(0, 80) + (t.body.length > 80 ? "…" : ""),
               }))}
             />
 
