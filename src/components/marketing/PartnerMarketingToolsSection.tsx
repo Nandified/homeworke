@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
-import { Copy, Image as ImageIcon, Share2 } from "lucide-react";
+import { ChevronDown, Copy, Image as ImageIcon, Share2 } from "lucide-react";
 
 import * as htmlToImage from "html-to-image";
 import QRCode from "qrcode";
@@ -123,9 +123,16 @@ export function PartnerMarketingToolsSection({
         pixelRatio: 4,
       });
 
-      // iOS Safari often ignores the `download` attribute on data URLs.
-      // Opening in a new tab reliably lets the user View/Share/Save.
-      window.open(dataUrl, "_blank");
+      // iOS Safari is unreliable with direct data-url downloads.
+      // Render into a new tab so the user can long-press → Save Image.
+      const w = window.open("", "_blank");
+      if (w) {
+        w.document.write(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="${dataUrl}" style="max-width:100%;height:auto;" /></body></html>`);
+        w.document.close();
+      } else {
+        // Fallback: navigate current tab
+        window.location.href = dataUrl;
+      }
     } finally {
       setDownloadingImage(false);
     }
@@ -155,39 +162,47 @@ export function PartnerMarketingToolsSection({
 
           <div className="mt-3 grid gap-2">
             <Label className="text-xs">Template</Label>
-            <select
-              className="h-10 w-full rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 text-sm"
-              value={emailChoice}
-              onChange={(e) => setEmailChoice(e.target.value)}
-            >
-              {emailTemplates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                className="h-10 w-full appearance-none rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 pr-9 text-sm shadow-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
+                value={emailChoice}
+                onChange={(e) => setEmailChoice(e.target.value)}
+              >
+                {emailTemplates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--hw-muted)]" />
+            </div>
 
             <div className="mt-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
-              <div className="text-xs font-semibold text-[var(--hw-ink)]">Subject</div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-xs font-semibold text-[var(--hw-ink)]">Subject</div>
+                <Button size="sm" variant="secondary" onClick={() => copy(chosenEmail.subject, "Subject") }>
+                  <Copy className="h-4 w-4" />
+                  Copy
+                </Button>
+              </div>
               <div className="mt-1 text-xs text-[var(--hw-muted)] whitespace-pre-wrap">{chosenEmail.subject}</div>
-              <div className="mt-3 text-xs font-semibold text-[var(--hw-ink)]">Body</div>
+
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <div className="text-xs font-semibold text-[var(--hw-ink)]">Body</div>
+                <Button size="sm" variant="secondary" onClick={() => copy(chosenEmail.body, "Body") }>
+                  <Copy className="h-4 w-4" />
+                  Copy
+                </Button>
+              </div>
               <div className="mt-1 text-xs text-[var(--hw-muted)] whitespace-pre-wrap">{chosenEmail.body}</div>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => copy(`${chosenEmail.subject}\n\n${chosenEmail.body}`, "Email")}
-              >
-                <Copy className="h-4 w-4" />
-                Copy email
-              </Button>
               <Link href={`${basePath}/clients`}>
                 <Button size="sm" variant="secondary">View clients</Button>
               </Link>
             </div>
-            {copyToast ? <div className="text-xs text-[var(--hw-muted)]">{copyToast}</div> : null}
+            {copyToast ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{copyToast}</div> : null}
           </div>
         </Card>
 
@@ -197,17 +212,20 @@ export function PartnerMarketingToolsSection({
 
           <div className="mt-3 grid gap-2">
             <Label className="text-xs">Template</Label>
-            <select
-              className="h-10 w-full rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 text-sm"
-              value={smsChoice}
-              onChange={(e) => setSmsChoice(e.target.value)}
-            >
-              {smsTemplates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                className="h-10 w-full appearance-none rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 pr-9 text-sm shadow-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
+                value={smsChoice}
+                onChange={(e) => setSmsChoice(e.target.value)}
+              >
+                {smsTemplates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--hw-muted)]" />
+            </div>
 
             <div className="mt-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
               <div className="text-xs text-[var(--hw-muted)] whitespace-pre-wrap">{chosenSms.body}</div>
@@ -244,21 +262,24 @@ export function PartnerMarketingToolsSection({
         </Card>
 
         <Card className="p-4">
-          <div className="text-sm font-semibold text-[var(--hw-ink)]">Social post image</div>
-          <div className="mt-1 text-sm text-[var(--hw-muted)]">Download a branded square image you can post or send.</div>
+          <div className="text-sm font-semibold text-[var(--hw-ink)]">Social Media Posts</div>
+          <div className="mt-1 text-sm text-[var(--hw-muted)]">Save a branded square image you can post or send.</div>
 
           <div className="mt-3 grid gap-2">
             <div className="flex items-center justify-between gap-3">
               <Label className="text-xs">Layout</Label>
-              <select
-                className="h-9 rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 text-sm"
-                value={socialChoice}
-                onChange={(e) => setSocialChoice(e.target.value)}
-              >
-                <option value="express_estimate">Express Estimate</option>
-                <option value="listing_prep">Listing Prep Repairs</option>
-                <option value="partner_cred">Partnered with Homeworke</option>
-              </select>
+              <div className="relative">
+                <select
+                  className="h-9 appearance-none rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 pr-9 text-sm shadow-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
+                  value={socialChoice}
+                  onChange={(e) => setSocialChoice(e.target.value)}
+                >
+                  <option value="express_estimate">Express Estimate</option>
+                  <option value="listing_prep">Listing Prep Repairs</option>
+                  <option value="partner_cred">Partnered with Homeworke</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--hw-muted)]" />
+              </div>
             </div>
 
             <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
@@ -309,7 +330,7 @@ export function PartnerMarketingToolsSection({
               <div className="mt-3 flex items-center gap-2">
                 <Button size="sm" variant="secondary" onClick={downloadSocialImage} disabled={downloadingImage}>
                   <ImageIcon className="h-4 w-4" />
-                  {downloadingImage ? "Generating…" : "View / Save PNG"}
+                  {downloadingImage ? "Generating…" : "Save PNG"}
                 </Button>
               </div>
             </div>
