@@ -13,7 +13,6 @@ import { Button, Card, Chip, EmptyState, Input, Label, StatTile } from "@/compon
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 import { PortalShell } from "@/components/portal-shell";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
-import { KpiGrid } from "@/components/dashboard/KpiGrid";
 import { ListRow } from "@/components/dashboard/ListRow";
 import { loadPartner, PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
 import { ensureDemoPartnerContext, isDemoMode } from "@/lib/demo";
@@ -182,6 +181,7 @@ function PartnerMarketingToolsSection({
   const [copyToast, setCopyToast] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [downloadingImage, setDownloadingImage] = useState(false);
+  const [socialChoice, setSocialChoice] = useState("express_estimate");
 
   const socialRef = useRef<HTMLDivElement | null>(null);
 
@@ -281,8 +281,11 @@ function PartnerMarketingToolsSection({
     }
   }
 
-  async function downloadFlyerPdf() {
-    const url = new URL("/api/marketing/flyer", window.location.origin);
+  async function downloadFlyerPdf(kind: "general" | "listing" | "inspection") {
+    const path =
+      kind === "general" ? "/api/marketing/flyer" : kind === "listing" ? "/api/marketing/flyer-listing" : "/api/marketing/flyer-inspection";
+
+    const url = new URL(path, window.location.origin);
     url.searchParams.set("name", proName);
     if (office) url.searchParams.set("office", office);
     if (inviteLink) url.searchParams.set("invite", inviteLink);
@@ -394,7 +397,18 @@ function PartnerMarketingToolsSection({
           <div className="text-sm font-semibold text-[var(--hw-ink)]">Social post image</div>
           <div className="mt-1 text-sm text-[var(--hw-muted)]">Download a branded square image you can post or send.</div>
 
-          <div className="mt-3">
+          <div className="mt-3 grid gap-2">
+            <Label className="text-xs">Layout</Label>
+            <select
+              className="h-10 w-full rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 text-sm"
+              value={socialChoice}
+              onChange={(e) => setSocialChoice(e.target.value)}
+            >
+              <option value="express_estimate">Express Estimate</option>
+              <option value="listing_prep">Listing Prep Repairs</option>
+              <option value="partner_cred">Partnered with Homeworke</option>
+            </select>
+
             <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
               <div
                 ref={socialRef}
@@ -407,8 +421,22 @@ function PartnerMarketingToolsSection({
                 <div className="relative flex h-full flex-col justify-between p-5">
                   <div>
                     <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Homeworke • Partner</div>
-                    <div className="mt-2 text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">Instant Express Estimate</div>
-                    <div className="mt-2 text-sm text-[var(--hw-muted)]">Fast repair-cost ranges from inspection reports.</div>
+                    {socialChoice === "express_estimate" ? (
+                      <>
+                        <div className="mt-2 text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">Instant Express Estimate</div>
+                        <div className="mt-2 text-sm text-[var(--hw-muted)]">Fast repair-cost ranges from inspection reports.</div>
+                      </>
+                    ) : socialChoice === "listing_prep" ? (
+                      <>
+                        <div className="mt-2 text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">Listing Prep Repairs</div>
+                        <div className="mt-2 text-sm text-[var(--hw-muted)]">Coordinate licensed & insured pros — deadline-friendly.</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="mt-2 text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">Partnered with Homeworke</div>
+                        <div className="mt-2 text-sm text-[var(--hw-muted)]">All-in-one home services + dedicated support.</div>
+                      </>
+                    )}
                   </div>
 
                   <div className="flex items-end justify-between gap-3">
@@ -438,15 +466,23 @@ function PartnerMarketingToolsSection({
         </Card>
 
         <Card className="p-4">
-          <div className="text-sm font-semibold text-[var(--hw-ink)]">PDF flyer</div>
-          <div className="mt-1 text-sm text-[var(--hw-muted)]">Download a one-page flyer you can email or print.</div>
+          <div className="text-sm font-semibold text-[var(--hw-ink)]">PDF flyers</div>
+          <div className="mt-1 text-sm text-[var(--hw-muted)]">Download one-page PDFs you can email or print.</div>
 
-          <div className="mt-3 flex items-center gap-2">
-            <Button size="sm" variant="secondary" onClick={downloadFlyerPdf} disabled={!inviteLink}>
+          <div className="mt-3 grid gap-2">
+            <Button size="sm" variant="secondary" onClick={() => downloadFlyerPdf("general")} disabled={!inviteLink}>
               <FileDown className="h-4 w-4" />
-              Download PDF
+              Download: General flyer
             </Button>
-            <div className="text-xs text-[var(--hw-muted)]">Includes your name, office, and invite link.</div>
+            <Button size="sm" variant="secondary" onClick={() => downloadFlyerPdf("listing")} disabled={!inviteLink}>
+              <FileDown className="h-4 w-4" />
+              Download: Listing repairs
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => downloadFlyerPdf("inspection")} disabled={!inviteLink}>
+              <FileDown className="h-4 w-4" />
+              Download: Inspection → estimate
+            </Button>
+            <div className="text-xs text-[var(--hw-muted)]">Includes your name, office, invite link, and QR.</div>
           </div>
         </Card>
       </div>
@@ -455,7 +491,6 @@ function PartnerMarketingToolsSection({
 }
 
 export function PartnerDashboardClient(props: PartnerDashboardProps) {
-  const router = useRouter();
   const basePath = props.basePath;
 
   const nav = useMemo(
