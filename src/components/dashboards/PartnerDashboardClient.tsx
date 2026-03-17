@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, Copy, Image as ImageIcon, Share2, UserPlus, Zap } from "lucide-react";
+import { ChevronDown, ChevronUp, Copy, FileDown, Image as ImageIcon, Share2, UserPlus, Zap } from "lucide-react";
 
 import QRCode from "qrcode";
 
@@ -729,19 +729,11 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               <Card className="p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Included</div>
-                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Copy/paste templates + downloadable marketing assets.</div>
-                    <ul className="mt-3 list-disc pl-5 text-sm text-[var(--hw-muted)] space-y-1">
-                      <li>Email templates (buyer, seller, post‑inspection)</li>
-                      <li>Text/SMS templates</li>
-                      <li>Social post images (PNG) with QR</li>
-                      <li>PDF flyers (general, listing repairs, inspection → estimate)</li>
-                    </ul>
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Your QR Code</div>
+                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Clients can scan to connect using your invite link.</div>
                   </div>
 
-                  {/* Quick tools (dashboard-friendly) */}
                   <div className="shrink-0">
-                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Quick tools</div>
                     <div className="mt-2 flex items-center gap-3">
                       {marketingQr ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -787,9 +779,26 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                           <ImageIcon className="h-4 w-4" />
                           Download QR
                         </Button>
+
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            if (!partnerInviteLink) return;
+                            const url = new URL("/api/marketing/flyer", window.location.origin);
+                            url.searchParams.set("name", partner?.partnerName || "Real Estate Pro");
+                            if (partner?.officeName) url.searchParams.set("office", partner.officeName);
+                            url.searchParams.set("invite", partnerInviteLink);
+                            if (marketingQr) url.searchParams.set("qr", marketingQr);
+                            window.open(url.toString(), "_blank");
+                          }}
+                          disabled={!partnerInviteLink}
+                        >
+                          <FileDown className="h-4 w-4" />
+                          Download PDF
+                        </Button>
                       </div>
                     </div>
-                    <div className="mt-2 text-xs text-[var(--hw-muted)]">Scan or share your invite link.</div>
                   </div>
                 </div>
               </Card>
