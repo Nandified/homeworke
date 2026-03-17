@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, Share2, UserPlus, Zap } from "lucide-react";
+import { ChevronDown, ChevronUp, Copy, Image as ImageIcon, Share2, UserPlus, Zap } from "lucide-react";
+
+import QRCode from "qrcode";
 
 
 import { Button, Card, Chip, EmptyState, Input, Label, StatTile } from "@/components/ui";
@@ -186,6 +188,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [copied, setCopied] = useState(false);
+  const [marketingQr, setMarketingQr] = useState<string>("");
 
   const [inviteExpanded, setInviteExpanded] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -280,6 +283,25 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     if (typeof window === "undefined") return "";
     return `${window.location.origin}/p/${partner.partnerId}`;
   }, [partner?.partnerId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!partnerInviteLink) {
+        setMarketingQr("");
+        return;
+      }
+      try {
+        const dataUrl = await QRCode.toDataURL(partnerInviteLink, { margin: 1, width: 220 });
+        if (!cancelled) setMarketingQr(dataUrl);
+      } catch {
+        if (!cancelled) setMarketingQr("");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [partnerInviteLink]);
 
   // Still reading localStorage
   if (partner === undefined) {
@@ -705,14 +727,71 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               }
             >
               <Card className="p-4">
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">Included</div>
-                <div className="mt-1 text-sm text-[var(--hw-muted)]">Copy/paste templates + downloadable marketing assets.</div>
-                <ul className="mt-3 list-disc pl-5 text-sm text-[var(--hw-muted)] space-y-1">
-                  <li>Email templates (buyer, seller, post‑inspection)</li>
-                  <li>Text/SMS templates</li>
-                  <li>Social post images (PNG) with QR</li>
-                  <li>PDF flyers (general, listing repairs, inspection → estimate)</li>
-                </ul>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Included</div>
+                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Copy/paste templates + downloadable marketing assets.</div>
+                    <ul className="mt-3 list-disc pl-5 text-sm text-[var(--hw-muted)] space-y-1">
+                      <li>Email templates (buyer, seller, post‑inspection)</li>
+                      <li>Text/SMS templates</li>
+                      <li>Social post images (PNG) with QR</li>
+                      <li>PDF flyers (general, listing repairs, inspection → estimate)</li>
+                    </ul>
+                  </div>
+
+                  {/* Quick tools (dashboard-friendly) */}
+                  <div className="shrink-0">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Quick tools</div>
+                    <div className="mt-2 flex items-center gap-3">
+                      {marketingQr ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          alt="Invite QR"
+                          src={marketingQr}
+                          className="h-[84px] w-[84px] rounded-[12px] border border-[var(--hw-line)] bg-white p-1"
+                        />
+                      ) : (
+                        <div className="h-[84px] w-[84px] rounded-[12px] border border-[var(--hw-line)] bg-[var(--hw-soft)]" />
+                      )}
+                      <div className="grid gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(partnerInviteLink);
+                              setCopied(true);
+                              window.setTimeout(() => setCopied(false), 1200);
+                            } catch {
+                              // ignore
+                            }
+                          }}
+                          disabled={!partnerInviteLink}
+                        >
+                          <Copy className="h-4 w-4" />
+                          {copied ? "Copied" : "Copy link"}
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            if (!marketingQr) return;
+                            const a = document.createElement("a");
+                            a.href = marketingQr;
+                            a.download = "homeworke-invite-qr.png";
+                            a.click();
+                          }}
+                          disabled={!marketingQr}
+                        >
+                          <ImageIcon className="h-4 w-4" />
+                          Download QR
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-[var(--hw-muted)]">Scan or share your invite link.</div>
+                  </div>
+                </div>
               </Card>
             </DashboardSection>
           </div>
