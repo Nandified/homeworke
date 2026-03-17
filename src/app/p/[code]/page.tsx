@@ -401,7 +401,7 @@ Watch the short intro video.
             >
               <div
                 className={
-                  "rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 transition-transform duration-300 ease-out " +
+                  "rounded-[var(--hw-radius-lg)] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] p-4 transition-transform duration-300 ease-out " +
                   (expressExpanded ? "translate-y-0" : "-translate-y-2")
                 }
               >
