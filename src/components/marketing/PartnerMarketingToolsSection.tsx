@@ -12,6 +12,100 @@ import type { PartnerContext } from "@/lib/partner-context";
 import { Button, Card, Label } from "@/components/ui";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 
+type PickerOption = { id: string; label: string; sublabel?: string };
+
+function Picker({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: PickerOption[];
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  const active = options.find((o) => o.id === value) || options[0];
+
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      const el = wrapRef.current;
+      if (!el) return;
+      if (el.contains(e.target as Node)) return;
+      setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  return (
+    <div ref={wrapRef} className="grid gap-2">
+      <Label className="text-xs">{label}</Label>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="group flex h-10 w-full items-center justify-between gap-3 rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 text-left shadow-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+        >
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-medium text-[var(--hw-ink)]">{active?.label}</span>
+            {active?.sublabel ? <span className="block truncate text-xs text-[var(--hw-muted)]">{active.sublabel}</span> : null}
+          </span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-muted)] transition group-hover:bg-white">
+            <ChevronDown className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} />
+          </span>
+        </button>
+
+        {open ? (
+          <div
+            role="listbox"
+            className="absolute z-20 mt-2 w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]"
+          >
+            <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[var(--hw-red)]/10 blur-[40px]" />
+            <div className="relative max-h-64 overflow-auto p-1">
+              {options.map((o) => {
+                const selected = o.id === value;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    onClick={() => {
+                      onChange(o.id);
+                      setOpen(false);
+                    }}
+                    className={`w-full rounded-[12px] px-3 py-2 text-left transition ${
+                      selected
+                        ? "bg-[rgba(229,57,53,.08)] text-[var(--hw-ink)]"
+                        : "hover:bg-[var(--hw-soft)] text-[var(--hw-ink)]"
+                    }`}
+                  >
+                    <div className="text-sm font-medium">{o.label}</div>
+                    {o.sublabel ? <div className="mt-0.5 text-xs text-[var(--hw-muted)]">{o.sublabel}</div> : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function PartnerMarketingToolsSection({
   basePath,
   partner,
@@ -161,23 +255,18 @@ export function PartnerMarketingToolsSection({
           <div className="mt-1 text-sm text-[var(--hw-muted)]">Pick a template, personalize, and send from your email.</div>
 
           <div className="mt-3 grid gap-2">
-            <Label className="text-xs">Template</Label>
-            <div className="relative">
-              <select
-                className="h-10 w-full appearance-none rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 pr-9 text-sm shadow-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
-                value={emailChoice}
-                onChange={(e) => setEmailChoice(e.target.value)}
-              >
-                {emailTemplates.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--hw-muted)]" />
-            </div>
+            <Picker
+              label="Template"
+              value={emailChoice}
+              onChange={setEmailChoice}
+              options={emailTemplates.map((t) => ({
+                id: t.id,
+                label: t.label,
+                sublabel: t.subject,
+              }))}
+            />
 
-            <div className="mt-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
+            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-xs font-semibold text-[var(--hw-ink)]">Subject</div>
                 <Button size="sm" variant="secondary" onClick={() => copy(chosenEmail.subject, "Subject") }>
@@ -211,23 +300,18 @@ export function PartnerMarketingToolsSection({
           <div className="mt-1 text-sm text-[var(--hw-muted)]">Quick scripts you can paste into iMessage/SMS.</div>
 
           <div className="mt-3 grid gap-2">
-            <Label className="text-xs">Template</Label>
-            <div className="relative">
-              <select
-                className="h-10 w-full appearance-none rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 pr-9 text-sm shadow-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
-                value={smsChoice}
-                onChange={(e) => setSmsChoice(e.target.value)}
-              >
-                {smsTemplates.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--hw-muted)]" />
-            </div>
+            <Picker
+              label="Template"
+              value={smsChoice}
+              onChange={setSmsChoice}
+              options={smsTemplates.map((t) => ({
+                id: t.id,
+                label: t.label,
+                sublabel: t.body,
+              }))}
+            />
 
-            <div className="mt-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
+            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
               <div className="text-xs text-[var(--hw-muted)] whitespace-pre-wrap">{chosenSms.body}</div>
             </div>
 
@@ -266,21 +350,16 @@ export function PartnerMarketingToolsSection({
           <div className="mt-1 text-sm text-[var(--hw-muted)]">Save a branded square image you can post or send.</div>
 
           <div className="mt-3 grid gap-2">
-            <div className="flex items-center justify-between gap-3">
-              <Label className="text-xs">Layout</Label>
-              <div className="relative">
-                <select
-                  className="h-9 appearance-none rounded-[var(--hw-radius-md)] border border-[var(--hw-line)] bg-white px-3 pr-9 text-sm shadow-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
-                  value={socialChoice}
-                  onChange={(e) => setSocialChoice(e.target.value)}
-                >
-                  <option value="express_estimate">Express Estimate</option>
-                  <option value="listing_prep">Listing Prep Repairs</option>
-                  <option value="partner_cred">Partnered with Homeworke</option>
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--hw-muted)]" />
-              </div>
-            </div>
+            <Picker
+              label="Layout"
+              value={socialChoice}
+              onChange={setSocialChoice}
+              options={[
+                { id: "express_estimate", label: "Express Estimate", sublabel: "Fast repair-cost ranges from inspection reports" },
+                { id: "listing_prep", label: "Listing Prep Repairs", sublabel: "Deadline-friendly repair coordination" },
+                { id: "partner_cred", label: "Partnered with Homeworke", sublabel: "Credibility + value prop" },
+              ]}
+            />
 
             <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
               <div
