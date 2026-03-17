@@ -288,6 +288,11 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     return `${window.location.origin}/p/${code}`;
   }, [partner?.partnerId]);
 
+  const qrUrl = useMemo(() => {
+    if (!partnerInviteLink) return "";
+    return `/api/marketing/qr?data=${encodeURIComponent(partnerInviteLink)}`;
+  }, [partnerInviteLink]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -721,16 +726,18 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                 })}
               </div>
             </DashboardSection>
-            <DashboardSection
-              title="Marketing Tools"
-              description="Templates and branded assets to help you market yourself with Homeworke."
-              action={
-                <Link href={`${basePath}/marketing-tools`}>
-                  <Button variant="secondary">Open</Button>
+                        <Card className="p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Marketing Tools</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Templates and branded assets to help you market yourself with Homeworke.</div>
+                </div>
+                <Link href={`${basePath}/marketing-tools`} className="shrink-0">
+                  <Button size="sm" variant="secondary">Open</Button>
                 </Link>
-              }
-            >
-              <div className="grid gap-3 sm:grid-cols-2">
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <Card className="p-4">
                   <div className="text-sm font-semibold text-[var(--hw-ink)]">Your QR Code</div>
                   <div className="mt-1 text-sm text-[var(--hw-muted)]">Clients can scan to connect using your invite link.</div>
@@ -752,13 +759,13 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                         size="sm"
                         variant="secondary"
                         onClick={() => {
-                          if (!marketingQr) return;
-                          window.open(marketingQr, "_blank");
+                          if (!qrUrl) return;
+                          window.open(qrUrl, "_blank");
                         }}
-                        disabled={!marketingQr}
+                        disabled={!qrUrl}
                       >
                         <ImageIcon className="h-4 w-4" />
-                        View QR
+                        Download QR
                       </Button>
                     </div>
                   </div>
@@ -822,7 +829,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                   </div>
                 </Card>
               </div>
-            </DashboardSection>
+            </Card>
           </div>
         </div>
       </div>
