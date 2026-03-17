@@ -634,7 +634,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                 </div>
 
                 <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-                  Help clients currently buying or selling a Home. Submit a <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span> / <span className="font-semibold text-[var(--hw-ink)]">Village Inspection</span> or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get a <span className="font-semibold text-[var(--hw-ink)]">Free Instant Express Estimate</span> of repair costs.
+                  Help clients currently buying or selling a Home. Submit a <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span>, <span className="font-semibold text-[var(--hw-ink)]">Village Inspection</span>, or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get a <span className="font-semibold text-[var(--hw-ink)]">Free Instant Express Estimate</span> of repair costs.
                 </div>
 
                 <div className="mt-5">

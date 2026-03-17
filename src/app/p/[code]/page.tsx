@@ -377,7 +377,7 @@ Watch the short intro video.
               <div>
                 <div className="text-lg font-extrabold tracking-tight text-[var(--hw-ink)] md:text-xl">Are you currently buying or selling a Home?</div>
                 <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-                  Submit your <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span> / <span className="font-semibold text-[var(--hw-ink)]">Village Inspection</span> or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get a <span className="font-semibold text-[var(--hw-ink)]">Free Instant Express Estimate</span> of repair costs.
+                  Submit your <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span>, <span className="font-semibold text-[var(--hw-ink)]">Village Inspection</span>, or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get a <span className="font-semibold text-[var(--hw-ink)]">Free Instant Express Estimate</span> of repair costs.
                 </div>
               </div>
               <div className="shrink-0">
