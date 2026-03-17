@@ -8,6 +8,7 @@ const nav = [
   { href: "/pro/clients", label: "My Clients" },
   { href: "/pro/properties", label: "Properties" },
   { href: "/pro/messages", label: "Messages" },
+  { href: "/pro/marketing-tools", label: "Marketing Tools" },
   { href: "/pro/support", label: "Support" },
   { href: "/pro/account", label: "My Account" }
 ];
