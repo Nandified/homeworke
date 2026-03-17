@@ -753,15 +753,12 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                         variant="secondary"
                         onClick={() => {
                           if (!marketingQr) return;
-                          const a = document.createElement("a");
-                          a.href = marketingQr;
-                          a.download = "homeworke-invite-qr.png";
-                          a.click();
+                          window.open(marketingQr, "_blank");
                         }}
                         disabled={!marketingQr}
                       >
                         <ImageIcon className="h-4 w-4" />
-                        Download QR
+                        View QR
                       </Button>
                     </div>
                   </div>

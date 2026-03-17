@@ -144,10 +144,10 @@ export async function GET(req: NextRequest) {
   const instance = pdf(Doc);
   const buf = (await instance.toBuffer()) as unknown as Uint8Array;
 
-  return new Response(buf as any, {
+  return new Response(buf as unknown as BodyInit, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=Homeworke-Inspection-Estimate-${encodeURIComponent(proName.replace(/\s+/g, "-"))}.pdf`,
+      "Content-Disposition": `inline; filename=Homeworke-Inspection-Estimate-${encodeURIComponent(proName.replace(/\s+/g, "-"))}.pdf`,
       "Cache-Control": "no-store",
     },
   });

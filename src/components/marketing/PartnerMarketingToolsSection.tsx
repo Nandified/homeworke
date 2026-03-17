@@ -23,7 +23,6 @@ export function PartnerMarketingToolsSection({
 }) {
 
   const proName = partner?.partnerName || "Your Real Estate Pro";
-  const proFirst = (partner?.partnerName || "").split(" ")[0] || "";
   const office = partner?.officeName || "";
 
   const [emailChoice, setEmailChoice] = useState("intro_buy");
@@ -118,14 +117,15 @@ export function PartnerMarketingToolsSection({
     if (!socialRef.current) return;
     setDownloadingImage(true);
     try {
+      // Higher pixel ratio to avoid blurry exports (aim for ~1080x1080+ effective)
       const dataUrl = await htmlToImage.toPng(socialRef.current, {
         cacheBust: true,
-        pixelRatio: 2,
+        pixelRatio: 4,
       });
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `homeworke-social-${proFirst || "pro"}.png`;
-      a.click();
+
+      // iOS Safari often ignores the `download` attribute on data URLs.
+      // Opening in a new tab reliably lets the user View/Share/Save.
+      window.open(dataUrl, "_blank");
     } finally {
       setDownloadingImage(false);
     }
@@ -308,7 +308,7 @@ export function PartnerMarketingToolsSection({
               <div className="mt-3 flex items-center gap-2">
                 <Button size="sm" variant="secondary" onClick={downloadSocialImage} disabled={downloadingImage}>
                   <ImageIcon className="h-4 w-4" />
-                  {downloadingImage ? "Generating…" : "Download PNG"}
+                  {downloadingImage ? "Generating…" : "View / Save PNG"}
                 </Button>
               </div>
             </div>
