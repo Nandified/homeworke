@@ -88,6 +88,8 @@ function safeParam(req: NextRequest, key: string, max = 180) {
   return v.slice(0, max);
 }
 
+export const runtime = "nodejs";
+
 export async function GET(req: NextRequest) {
   const proName = safeParam(req, "name", 80) || "Your Real Estate Pro";
   const office = safeParam(req, "office", 100);
@@ -140,9 +142,9 @@ export async function GET(req: NextRequest) {
   );
 
   const instance = pdf(Doc);
-  const buf = await instance.toBuffer();
+  const buf = (await instance.toBuffer()) as unknown as Uint8Array;
 
-  return new Response(buf, {
+  return new Response(buf as any, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename=Homeworke-Inspection-Estimate-${encodeURIComponent(proName.replace(/\s+/g, "-"))}.pdf`,
