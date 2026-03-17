@@ -560,9 +560,7 @@ Watch the short intro video.
                 </div>
               </Modal>
 
-              <p className="mt-6 max-w-2xl text-[13px] leading-relaxed text-[var(--hw-muted)]">
-                Your request will start with this partner pre-attached for attribution. You control sharing on a per-request basis.
-              </p>
+              {/* Attribution copy removed for partner landing polish */}
 
             </div>
           </Card>
