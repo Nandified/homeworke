@@ -207,6 +207,17 @@ export function PartnerMarketingToolsSection({
 
   async function downloadSocialImage() {
     if (!socialRef.current) return;
+
+    // IMPORTANT: open the popup synchronously (before any await),
+    // otherwise Safari will block it and the button will appear to "glitch".
+    const popup = window.open("", "_blank");
+    if (popup) {
+      popup.document.write(
+        `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /></head><body style="margin:0;padding:24px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#fff;"><div>Generating image…</div></body></html>`
+      );
+      popup.document.close();
+    }
+
     setDownloadingImage(true);
     try {
       // Higher pixel ratio to avoid blurry exports (aim for ~1080x1080+ effective)
@@ -215,12 +226,26 @@ export function PartnerMarketingToolsSection({
         pixelRatio: 4,
       });
 
-      // iOS Safari is unreliable with direct data-url downloads.
-      // Render into a new tab so the user can long-press → Save Image.
-      const w = window.open("", "_blank");
-      if (w) {
-        w.document.write(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="${dataUrl}" style="max-width:100%;height:auto;" /></body></html>`);
-        w.document.close();
+      // Best effort: on desktop browsers, attempt a real download.
+      // (iOS Safari generally ignores download= and is better with a new tab.)
+      try {
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = "homeworke-social.png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } catch {
+        // ignore
+      }
+
+      // Always render into the popup if we got one, so the user can right-click / long-press.
+      if (popup) {
+        popup.document.open();
+        popup.document.write(
+          `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1" /></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="${dataUrl}" style="max-width:100%;height:auto;" /></body></html>`
+        );
+        popup.document.close();
       } else {
         // Fallback: navigate current tab
         window.location.href = dataUrl;
