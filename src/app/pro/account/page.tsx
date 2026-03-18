@@ -233,7 +233,7 @@ export default function Page() {
                 {!profileEditing ? (
                   <Pill
                     className={
-                      "absolute -bottom-3 left-1/2 -translate-x-1/2 border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)] shadow-sm"
+                      "absolute -bottom-2 left-1/2 -translate-x-1/2 border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)] shadow-sm"
                     }
                   >
                     PRO
