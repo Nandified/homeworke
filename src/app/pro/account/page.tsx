@@ -290,7 +290,7 @@ export default function Page() {
                   {profileEditing ? (
                     <Input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="name@company.com" />
                   ) : (
-                    <div className="rounded-[14px] border border-[var(--hw-line)] bg-white px-4 py-3 text-sm text-[var(--hw-ink)]">
+                    <div className="flex h-11 items-center rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm text-[var(--hw-ink)]">
                       <span className="block truncate">{contactEmail || <span className="text-[var(--hw-muted)]">Not set</span>}</span>
                     </div>
                   )}
@@ -315,7 +315,7 @@ export default function Page() {
             </Button>
           </div>
 
-          <div className="mt-4 rounded-[14px] border border-[var(--hw-line)] bg-white px-4 py-3 text-sm text-[var(--hw-ink)]">
+          <div className="mt-4 flex h-11 items-center rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm text-[var(--hw-ink)]">
             <span className="block truncate">{loginEmail}</span>
           </div>
           <div className="mt-2 text-xs text-[var(--hw-muted)]">Changing login email requires verification.</div>
