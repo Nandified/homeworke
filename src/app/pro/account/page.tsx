@@ -158,21 +158,76 @@ export default function Page() {
 
           <Divider className="my-5" />
 
-          <div className="grid gap-5 sm:grid-cols-[140px_1fr]">
+          <div className="grid gap-5 sm:grid-cols-[160px_1fr]">
             <div className="flex flex-col items-center gap-3">
-              <div className="relative">
-                {photoPreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={photoPreview}
-                    alt="Profile"
-                    className="h-32 w-24 rounded-[22px] border border-[var(--hw-line)] bg-white object-cover object-top shadow-sm"
-                  />
-                ) : (
-                  <div className="flex h-32 w-24 items-center justify-center rounded-[22px] border border-[var(--hw-line)] bg-[var(--hw-soft)] text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">
-                    {initials(fullName)}
+              {/* Hidden inputs (click targets trigger these) */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const url = URL.createObjectURL(file);
+                  setPhotoPreview(url);
+                  setPhotoFileName(file.name);
+                  setToast("Photo selected (stub)");
+                }}
+              />
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/quicktime,video/webm"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const url = URL.createObjectURL(file);
+                  setIntroVideoPreview(url);
+                  setIntroVideoFileName(file.name);
+                  setToast("Video selected (stub)");
+                }}
+              />
+
+              {/* Avatar (click to upload while editing) */}
+              <button
+                type="button"
+                className={
+                  "relative overflow-hidden rounded-[22px] border border-[var(--hw-line)] bg-white shadow-sm transition " +
+                  (profileEditing
+                    ? "cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,.08)]"
+                    : "cursor-default")
+                }
+                onClick={() => {
+                  if (!profileEditing) return;
+                  fileInputRef.current?.click();
+                }}
+                aria-label={profileEditing ? "Upload profile photo" : "Profile photo"}
+              >
+                <div className="h-36 w-28 bg-[var(--hw-soft)]">
+                  {photoPreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={photoPreview}
+                      alt="Profile"
+                      className="h-full w-full object-cover object-top"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">
+                      {initials(fullName)}
+                    </div>
+                  )}
+                </div>
+
+                {profileEditing ? (
+                  <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-b from-transparent via-transparent to-black/40 p-2">
+                    <div className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-[var(--hw-ink)] shadow-sm">
+                      Click to change photo
+                    </div>
                   </div>
-                )}
+                ) : null}
+
                 <Pill
                   className={
                     "absolute -bottom-2 left-1/2 -translate-x-1/2 border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)]"
@@ -180,114 +235,51 @@ export default function Page() {
                 >
                   PRO
                 </Pill>
-              </div>
+              </button>
 
-              {profileEditing ? (
-                <div className="grid w-full gap-5">
-                  {/* PHOTO */}
-                  <div className="grid gap-2">
-                    <Label className="text-xs">Profile photo</Label>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        const url = URL.createObjectURL(file);
-                        setPhotoPreview(url);
-                        setPhotoFileName(file.name);
-                        setToast("Photo selected (stub)");
-                      }}
-                    />
+              {/* Video placeholder / preview under avatar (click to upload while editing) */}
+              <button
+                type="button"
+                className={
+                  "group w-full overflow-hidden rounded-[18px] border border-[var(--hw-line)] bg-white shadow-sm transition " +
+                  (profileEditing
+                    ? "cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,.08)]"
+                    : "cursor-default")
+                }
+                onClick={() => {
+                  if (!profileEditing) return;
+                  videoInputRef.current?.click();
+                }}
+                aria-label={profileEditing ? "Upload intro video" : "Intro video"}
+              >
+                <div className="relative aspect-[4/5] w-full bg-[var(--hw-soft)]">
+                  {introVideoPreview ? (
+                    // eslint-disable-next-line jsx-a11y/media-has-caption
+                    <video src={introVideoPreview} controls className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-3 text-center">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white text-[var(--hw-muted)] shadow-sm">
+                        ▶
+                      </div>
+                      <div className="text-xs font-semibold text-[var(--hw-ink)]">Intro video</div>
+                      <div className="text-xs text-[var(--hw-muted)]">30s max • shows on your landing page</div>
+                    </div>
+                  )}
 
-                    <div className="grid gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => fileInputRef.current?.click()} type="button">
-                        Choose photo…
-                      </Button>
-                      <div className="text-xs text-[var(--hw-muted)]">
-                        {photoFileName ? (
-                          <span className="inline-flex max-w-full truncate rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 shadow-sm">
-                            {photoFileName}
-                          </span>
-                        ) : (
-                          "PNG, JPG up to ~5MB"
-                        )}
+                  {profileEditing ? (
+                    <div className="pointer-events-none absolute inset-0 flex items-end justify-center bg-gradient-to-b from-transparent via-transparent to-black/40 p-2 opacity-100 transition group-hover:opacity-100">
+                      <div className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-[var(--hw-ink)] shadow-sm">
+                        {introVideoPreview ? "Click to replace video" : "Click to upload video"}
                       </div>
                     </div>
+                  ) : null}
+                </div>
+              </button>
 
-                    {photoPreview ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setPhotoPreview("");
-                          setPhotoFileName("");
-                          if (fileInputRef.current) fileInputRef.current.value = "";
-                          setToast("Photo removed (stub)");
-                        }}
-                      >
-                        Remove photo
-                      </Button>
-                    ) : null}
-                  </div>
-
-                  {/* INTRO VIDEO */}
-                  <div className="grid gap-2">
-                    <Label className="text-xs">Intro video (max 30s)</Label>
-                    <input
-                      ref={videoInputRef}
-                      type="file"
-                      accept="video/mp4,video/quicktime,video/webm"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        const url = URL.createObjectURL(file);
-                        setIntroVideoPreview(url);
-                        setIntroVideoFileName(file.name);
-                        setToast("Video selected (stub)");
-                      }}
-                    />
-
-                    <div className="grid gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => videoInputRef.current?.click()} type="button">
-                        Upload intro video…
-                      </Button>
-                      <div className="text-xs text-[var(--hw-muted)]">
-                        {introVideoFileName ? (
-                          <span className="inline-flex max-w-full truncate rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 shadow-sm">
-                            {introVideoFileName}
-                          </span>
-                        ) : (
-                          "MP4/MOV/WebM • we’ll enforce 30s on upload when wired"
-                        )}
-                      </div>
-                    </div>
-
-                    {introVideoPreview ? (
-                      <div className="mt-1 overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-white">
-                        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                        <video src={introVideoPreview} controls className="w-full" />
-                      </div>
-                    ) : null}
-
-                    {introVideoPreview ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setIntroVideoPreview("");
-                          setIntroVideoFileName("");
-                          if (videoInputRef.current) videoInputRef.current.value = "";
-                          setToast("Video removed (stub)");
-                        }}
-                      >
-                        Remove video
-                      </Button>
-                    ) : null}
-                  </div>
+              {profileEditing && (photoFileName || introVideoFileName) ? (
+                <div className="w-full text-center text-[11px] text-[var(--hw-muted)]">
+                  {photoFileName ? <div className="truncate">Photo: {photoFileName}</div> : null}
+                  {introVideoFileName ? <div className="truncate">Video: {introVideoFileName}</div> : null}
                 </div>
               ) : null}
             </div>
