@@ -222,8 +222,8 @@ export default function Page() {
 
                 {profileEditing ? (
                   <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-b from-transparent via-transparent to-black/40 p-2">
-                    <div className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-[var(--hw-ink)] shadow-sm">
-                      Click to change photo
+                    <div className="rounded-full border border-[rgba(229,57,53,.18)] bg-white/85 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--hw-ink)] shadow-sm">
+                      Change photo
                     </div>
                   </div>
                 ) : null}
@@ -252,24 +252,24 @@ export default function Page() {
                 }}
                 aria-label={profileEditing ? "Upload intro video" : "Intro video"}
               >
-                <div className="relative aspect-[4/5] w-full bg-[var(--hw-soft)]">
+                <div className="relative mx-auto aspect-video w-full max-w-[160px] bg-[var(--hw-soft)]">
                   {introVideoPreview ? (
                     // eslint-disable-next-line jsx-a11y/media-has-caption
                     <video src={introVideoPreview} controls className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-3 text-center">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white text-[var(--hw-muted)] shadow-sm">
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 p-3 text-center">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white text-[var(--hw-muted)] shadow-sm">
                         ▶
                       </div>
                       <div className="text-xs font-semibold text-[var(--hw-ink)]">Intro video</div>
-                      <div className="text-xs text-[var(--hw-muted)]">30s max • shows on your landing page</div>
+                      <div className="text-[11px] text-[var(--hw-muted)]">30s max</div>
                     </div>
                   )}
 
                   {profileEditing ? (
-                    <div className="pointer-events-none absolute inset-0 flex items-end justify-center bg-gradient-to-b from-transparent via-transparent to-black/40 p-2 opacity-100 transition group-hover:opacity-100">
-                      <div className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-[var(--hw-ink)] shadow-sm">
-                        {introVideoPreview ? "Click to replace video" : "Click to upload video"}
+                    <div className="pointer-events-none absolute inset-0 flex items-end justify-center bg-gradient-to-b from-transparent via-transparent to-black/35 p-2 opacity-100 transition group-hover:opacity-100">
+                      <div className="rounded-full border border-[rgba(229,57,53,.18)] bg-white/85 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--hw-ink)] shadow-sm">
+                        {introVideoPreview ? "Replace" : "Upload"}
                       </div>
                     </div>
                   ) : null}
