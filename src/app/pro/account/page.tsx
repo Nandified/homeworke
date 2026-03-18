@@ -264,7 +264,7 @@ export default function Page() {
                 )}
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid items-start gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <Label className="text-xs">Phone</Label>
                   {profileEditing ? (
