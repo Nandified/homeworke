@@ -6,14 +6,28 @@ import { PRO_NAV } from "@/components/pro/nav";
 import { PortalShell } from "@/components/portal-shell";
 import { Button, Card, Checkbox, Divider, EmptyState, Input, Label, Modal, Pill } from "@/components/ui";
 
+const BROKERAGE_OPTIONS = [
+  "RE/MAX Loyalty",
+  "RE/MAX United",
+  "RE/MAX Legends",
+  "Compass",
+  "Coldwell Banker Realty",
+  "Berkshire Hathaway HomeServices",
+  "@properties Christie’s International Real Estate",
+  "Keller Williams",
+  "Century 21",
+] as const;
+
 function initials(name: string) {
   const parts = name
     .trim()
     .split(/\s+/)
     .filter(Boolean);
-  const a = parts[0]?.[0] ?? "";
-  const b = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
-  return (a + b).toUpperCase();
+
+  // Use up to 3 initials (e.g., "Fernando Rocha Jr" → "FRJ").
+  // We prefer first three tokens rather than first+last to preserve suffixes like Jr/Sr.
+  const letters = parts.slice(0, 3).map((p) => p[0] ?? "");
+  return letters.join("").toUpperCase();
 }
 
 function Toggle({ label, value, onChange, help }: { label: string; value: boolean; onChange: (v: boolean) => void; help?: string }) {
@@ -51,12 +65,19 @@ export default function Page() {
   const [toast, setToast] = React.useState<string | null>(null);
 
   const [photoPreview, setPhotoPreview] = React.useState<string>("");
+  const [photoFileName, setPhotoFileName] = React.useState<string>("");
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [profileEditing, setProfileEditing] = React.useState(false);
 
   const [fullName, setFullName] = React.useState("Your Real Estate Pro");
   const [office, setOffice] = React.useState("");
   const [phone, setPhone] = React.useState("");
-  const [email, setEmail] = React.useState("you@example.com");
+
+  // Contact email: shown to clients in the product (marketing / sharing context)
+  const [contactEmail, setContactEmail] = React.useState("you@example.com");
+
+  // Login email: used for authentication + password reset
+  const [loginEmail, setLoginEmail] = React.useState("you@example.com");
 
   const [smsOn, setSmsOn] = React.useState(true);
   const [emailOn, setEmailOn] = React.useState(true);
@@ -140,17 +161,40 @@ export default function Page() {
               {profileEditing ? (
                 <div className="grid w-full gap-2">
                   <Label className="text-xs">Profile photo</Label>
-                  <Input
+                  <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       const url = URL.createObjectURL(file);
                       setPhotoPreview(url);
+                      setPhotoFileName(file.name);
                       setToast("Photo selected (stub)");
                     }}
                   />
+
+                  <div className="grid gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => fileInputRef.current?.click()}
+                      type="button"
+                    >
+                      Choose photo…
+                    </Button>
+                    <div className="text-xs text-[var(--hw-muted)]">
+                      {photoFileName ? (
+                        <span className="inline-flex max-w-full truncate rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 shadow-sm">
+                          {photoFileName}
+                        </span>
+                      ) : (
+                        "PNG, JPG up to ~5MB"
+                      )}
+                    </div>
+                  </div>
                   {photoPreview ? (
                     <Button
                       size="sm"
@@ -182,7 +226,22 @@ export default function Page() {
               <div className="grid gap-2">
                 <Label className="text-xs">Office / Brokerage</Label>
                 {profileEditing ? (
-                  <Input value={office} onChange={(e) => setOffice(e.target.value)} placeholder="Optional" />
+                  <>
+                    <Input
+                      value={office}
+                      onChange={(e) => setOffice(e.target.value)}
+                      placeholder="Start typing to search…"
+                      list="hw_brokerage_list"
+                    />
+                    <datalist id="hw_brokerage_list">
+                      {BROKERAGE_OPTIONS.map((b) => (
+                        <option key={b} value={b} />
+                      ))}
+                    </datalist>
+                    <div className="text-xs text-[var(--hw-muted)]">
+                      Pick from the list when possible to keep brokerage names consistent (we’ll wire a full directory next).
+                    </div>
+                  </>
                 ) : (
                   <div className="rounded-[14px] border border-[var(--hw-line)] bg-white px-4 py-3 text-sm text-[var(--hw-ink)]">
                     {office || <span className="text-[var(--hw-muted)]">Not set</span>}
@@ -202,20 +261,39 @@ export default function Page() {
                   )}
                 </div>
                 <div className="grid gap-2">
-                  <Label className="text-xs">Email</Label>
-                  <div className="flex items-center gap-2">
-                    <div className="min-w-0 flex-1 rounded-[14px] border border-[var(--hw-line)] bg-white px-4 py-3 text-sm text-[var(--hw-ink)]">
-                      <span className="block truncate">{email}</span>
+                  <Label className="text-xs">Contact email</Label>
+                  {profileEditing ? (
+                    <Input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="name@company.com" />
+                  ) : (
+                    <div className="rounded-[14px] border border-[var(--hw-line)] bg-white px-4 py-3 text-sm text-[var(--hw-ink)]">
+                      <span className="block truncate">{contactEmail || <span className="text-[var(--hw-muted)]">Not set</span>}</span>
                     </div>
-                    <Button size="sm" variant="secondary" onClick={() => setChangeEmailOpen(true)}>
-                      Change
-                    </Button>
-                  </div>
-                  <div className="text-xs text-[var(--hw-muted)]">Changing email requires verification.</div>
+                  )}
+                  <div className="text-xs text-[var(--hw-muted)]">This is the email clients may see on shared assets.</div>
                 </div>
               </div>
             </div>
           </div>
+        </Card>
+
+        {/* LOGIN EMAIL */}
+        <Card className="p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Login email</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                This email is used to sign in. If you switch brokerages and lose access to your old work email, update it here.
+              </div>
+            </div>
+            <Button size="sm" variant="secondary" onClick={() => setChangeEmailOpen(true)}>
+              Change login email
+            </Button>
+          </div>
+
+          <div className="mt-4 rounded-[14px] border border-[var(--hw-line)] bg-white px-4 py-3 text-sm text-[var(--hw-ink)]">
+            <span className="block truncate">{loginEmail}</span>
+          </div>
+          <div className="mt-2 text-xs text-[var(--hw-muted)]">Changing login email requires verification.</div>
         </Card>
 
         {/* SECURITY */}
@@ -325,7 +403,7 @@ export default function Page() {
       {/* MODALS */}
       <Modal
         open={changeEmailOpen}
-        title="Change email"
+        title="Change login email"
         onClose={() => {
           setChangeEmailOpen(false);
           setNextEmail("");
@@ -333,7 +411,7 @@ export default function Page() {
       >
         <div className="grid gap-4">
           <div className="text-sm text-[var(--hw-muted)]">
-            We’ll send a verification link to your new email address.
+            We’ll send a verification link to your new login email. You’ll use that email the next time you sign in.
           </div>
           <div className="grid gap-2">
             <Label className="text-xs">New email</Label>
@@ -349,7 +427,7 @@ export default function Page() {
                 if (!nextEmail.trim()) return;
                 setChangeEmailOpen(false);
                 setToast("Verification email sent (stub)");
-                setEmail(nextEmail.trim());
+                setLoginEmail(nextEmail.trim());
                 setNextEmail("");
               }}
             >
@@ -366,7 +444,7 @@ export default function Page() {
       >
         <div className="grid gap-4">
           <div className="text-sm text-[var(--hw-muted)]">
-            We’ll email a secure reset link to <span className="font-semibold text-[var(--hw-ink)]">{email}</span>.
+            We’ll email a secure reset link to <span className="font-semibold text-[var(--hw-ink)]">{loginEmail}</span>.
           </div>
           <div className="flex items-center justify-end gap-2">
             <Button variant="ghost" onClick={() => setResetPasswordOpen(false)}>
