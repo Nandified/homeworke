@@ -101,6 +101,9 @@ export default function Page() {
 
   const [addCardOpen, setAddCardOpen] = React.useState(false);
 
+  const [deleteAccountOpen, setDeleteAccountOpen] = React.useState(false);
+  const [deleteConfirm, setDeleteConfirm] = React.useState("");
+
   React.useEffect(() => {
     if (!toast) return;
     const t = window.setTimeout(() => setToast(null), 1800);
@@ -273,14 +276,14 @@ export default function Page() {
                         const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
                         setPhone(digits);
                       }}
-                      placeholder="(773) 000-0000"
+                      placeholder="(000) 000-0000"
                     />
                   ) : (
-                    <div className="rounded-[14px] border border-[var(--hw-line)] bg-white px-4 py-3 text-sm text-[var(--hw-ink)]">
+                    <div className="flex h-11 items-center rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm text-[var(--hw-ink)]">
                       {phone ? formatPhone(phone) : <span className="text-[var(--hw-muted)]">Not set</span>}
                     </div>
                   )}
-                  {profileEditing ? <div className="text-xs text-[var(--hw-muted)]">Format: (773) 000-0000</div> : null}
+                  {/* Format hint removed */}
                 </div>
                 <div className="grid gap-2">
                   <Label className="text-xs">Contact email</Label>
@@ -322,8 +325,8 @@ export default function Page() {
         <Card className="p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Security</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">Manage sign-in and account protection.</div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Password Reset</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">Send yourself a secure link to reset your password.</div>
             </div>
             <Button size="sm" variant="secondary" onClick={() => setResetPasswordOpen(true)}>
               Send reset link
@@ -420,6 +423,21 @@ export default function Page() {
             <Button variant="secondary" onClick={() => setToast("Logged out (stub)")}>Log out</Button>
           </div>
         </Card>
+
+        {/* DANGER ZONE */}
+        <Card className="p-5 sm:p-6 border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.03)]">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Danger zone</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                Delete your account and remove your data. This cannot be undone.
+              </div>
+            </div>
+            <Button size="sm" variant="destructive" onClick={() => setDeleteAccountOpen(true)}>
+              Delete account
+            </Button>
+          </div>
+        </Card>
       </div>
 
       {/* MODALS */}
@@ -487,9 +505,7 @@ export default function Page() {
 
       <Modal open={addCardOpen} title="Add payment method" onClose={() => setAddCardOpen(false)}>
         <div className="grid gap-4">
-          <div className="text-sm text-[var(--hw-muted)]">
-            Stripe setup is coming next. For now, this is the UI shell.
-          </div>
+          <div className="text-sm text-[var(--hw-muted)]">Stripe setup is coming next. For now, this is the UI shell.</div>
           <div className="rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-sm text-[var(--hw-muted)]">
             Placeholder: Stripe Payment Element
           </div>
@@ -505,6 +521,46 @@ export default function Page() {
               }}
             >
               Save
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={deleteAccountOpen}
+        title="Delete account"
+        onClose={() => {
+          setDeleteAccountOpen(false);
+          setDeleteConfirm("");
+        }}
+      >
+        <div className="grid gap-4">
+          <div className="rounded-[14px] border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.06)] p-4 text-sm leading-7 text-[var(--hw-ink)]">
+            <div className="font-semibold">This action is permanent.</div>
+            <div className="mt-1 text-[var(--hw-muted)]">
+              Deleting your account will remove your profile and access. If you’re part of an office, contact support before deleting.
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Type DELETE to confirm</Label>
+            <Input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="DELETE" />
+          </div>
+
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="ghost" onClick={() => setDeleteAccountOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteConfirm.trim().toUpperCase() !== "DELETE"}
+              onClick={() => {
+                setDeleteAccountOpen(false);
+                setDeleteConfirm("");
+                setToast("Account deletion requested (stub)");
+              }}
+            >
+              Permanently delete
             </Button>
           </div>
         </div>
