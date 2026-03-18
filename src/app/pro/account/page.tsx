@@ -30,6 +30,17 @@ function initials(name: string) {
   return letters.join("").toUpperCase();
 }
 
+function formatPhone(digits: string) {
+  const d = (digits || "").replace(/\D/g, "").slice(0, 10);
+  const a = d.slice(0, 3);
+  const b = d.slice(3, 6);
+  const c = d.slice(6, 10);
+  if (!d) return "";
+  if (d.length < 4) return `(${a}`;
+  if (d.length < 7) return `(${a}) ${b}`;
+  return `(${a}) ${b}-${c}`;
+}
+
 function Toggle({ label, value, onChange, help }: { label: string; value: boolean; onChange: (v: boolean) => void; help?: string }) {
   return (
     <div className="flex items-center justify-between gap-4 rounded-[14px] border border-[var(--hw-line)] bg-white p-4">
@@ -71,6 +82,7 @@ export default function Page() {
 
   const [fullName, setFullName] = React.useState("Your Real Estate Pro");
   const [office, setOffice] = React.useState("");
+  // Store digits only; render as (773) 000-0000
   const [phone, setPhone] = React.useState("");
 
   // Contact email: shown to clients in the product (marketing / sharing context)
@@ -253,12 +265,22 @@ export default function Page() {
                 <div className="grid gap-2">
                   <Label className="text-xs">Phone</Label>
                   {profileEditing ? (
-                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(###) ###-####" />
+                    <Input
+                      inputMode="tel"
+                      autoComplete="tel"
+                      value={formatPhone(phone)}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        setPhone(digits);
+                      }}
+                      placeholder="(773) 000-0000"
+                    />
                   ) : (
                     <div className="rounded-[14px] border border-[var(--hw-line)] bg-white px-4 py-3 text-sm text-[var(--hw-ink)]">
-                      {phone || <span className="text-[var(--hw-muted)]">Not set</span>}
+                      {phone ? formatPhone(phone) : <span className="text-[var(--hw-muted)]">Not set</span>}
                     </div>
                   )}
+                  {profileEditing ? <div className="text-xs text-[var(--hw-muted)]">Format: (773) 000-0000</div> : null}
                 </div>
                 <div className="grid gap-2">
                   <Label className="text-xs">Contact email</Label>
