@@ -94,7 +94,8 @@ export default function Page() {
   const [contactEmail, setContactEmail] = React.useState("");
 
   // Login email: used for authentication + password reset
-  const [loginEmail, setLoginEmail] = React.useState("you@example.com");
+  const DEFAULT_LOGIN_EMAIL = "you@example.com";
+  const [loginEmail, setLoginEmail] = React.useState(DEFAULT_LOGIN_EMAIL);
 
   const [smsOn, setSmsOn] = React.useState(true);
   const [emailOn, setEmailOn] = React.useState(true);
@@ -245,7 +246,7 @@ export default function Page() {
               <button
                 type="button"
                 className={
-                  "group w-full overflow-hidden rounded-[18px] border border-[var(--hw-line)] bg-white shadow-sm transition " +
+                  "group mx-auto w-fit overflow-hidden rounded-[18px] border border-[var(--hw-line)] bg-white shadow-sm transition " +
                   (profileEditing
                     ? "cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,.08)]"
                     : "cursor-default")
@@ -256,7 +257,7 @@ export default function Page() {
                 }}
                 aria-label={profileEditing ? "Upload intro video" : "Intro video"}
               >
-                <div className="relative mx-auto aspect-video w-full max-w-[160px] bg-[var(--hw-soft)]">
+                <div className="relative aspect-video w-[220px] max-w-[78vw] bg-[var(--hw-soft)]">
                   {introVideoPreview ? (
                     // eslint-disable-next-line jsx-a11y/media-has-caption
                     <video src={introVideoPreview} controls className="h-full w-full object-cover" />
@@ -384,7 +385,11 @@ export default function Page() {
           </div>
 
           <div className="mt-4">
-            <Input readOnly value={loginEmail} className="text-[var(--hw-ink)]" />
+            <Input
+              readOnly
+              value={loginEmail}
+              className={loginEmail === DEFAULT_LOGIN_EMAIL ? "text-[var(--hw-muted)]" : "text-[var(--hw-ink)]"}
+            />
           </div>
           <div className="mt-2 text-xs text-[var(--hw-muted)]">Changing login email requires verification.</div>
         </Card>
