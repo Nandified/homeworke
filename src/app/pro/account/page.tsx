@@ -78,6 +78,11 @@ export default function Page() {
   const [photoPreview, setPhotoPreview] = React.useState<string>("");
   const [photoFileName, setPhotoFileName] = React.useState<string>("");
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const [introVideoPreview, setIntroVideoPreview] = React.useState<string>("");
+  const [introVideoFileName, setIntroVideoFileName] = React.useState<string>("");
+  const videoInputRef = React.useRef<HTMLInputElement | null>(null);
+
   const [profileEditing, setProfileEditing] = React.useState(false);
 
   const [fullName, setFullName] = React.useState("Your Real Estate Pro");
@@ -168,60 +173,121 @@ export default function Page() {
                     {initials(fullName)}
                   </div>
                 )}
-                <Pill className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+                <Pill
+                  className={
+                    "absolute -bottom-2 left-1/2 -translate-x-1/2 border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)]"
+                  }
+                >
                   PRO
                 </Pill>
               </div>
 
               {profileEditing ? (
-                <div className="grid w-full gap-2">
-                  <Label className="text-xs">Profile photo</Label>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const url = URL.createObjectURL(file);
-                      setPhotoPreview(url);
-                      setPhotoFileName(file.name);
-                      setToast("Photo selected (stub)");
-                    }}
-                  />
-
+                <div className="grid w-full gap-5">
+                  {/* PHOTO */}
                   <div className="grid gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => fileInputRef.current?.click()}
-                      type="button"
-                    >
-                      Choose photo…
-                    </Button>
-                    <div className="text-xs text-[var(--hw-muted)]">
-                      {photoFileName ? (
-                        <span className="inline-flex max-w-full truncate rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 shadow-sm">
-                          {photoFileName}
-                        </span>
-                      ) : (
-                        "PNG, JPG up to ~5MB"
-                      )}
-                    </div>
-                  </div>
-                  {photoPreview ? (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setPhotoPreview("");
-                        setToast("Photo removed (stub)");
+                    <Label className="text-xs">Profile photo</Label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const url = URL.createObjectURL(file);
+                        setPhotoPreview(url);
+                        setPhotoFileName(file.name);
+                        setToast("Photo selected (stub)");
                       }}
-                    >
-                      Remove photo
-                    </Button>
-                  ) : null}
+                    />
+
+                    <div className="grid gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => fileInputRef.current?.click()} type="button">
+                        Choose photo…
+                      </Button>
+                      <div className="text-xs text-[var(--hw-muted)]">
+                        {photoFileName ? (
+                          <span className="inline-flex max-w-full truncate rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 shadow-sm">
+                            {photoFileName}
+                          </span>
+                        ) : (
+                          "PNG, JPG up to ~5MB"
+                        )}
+                      </div>
+                    </div>
+
+                    {photoPreview ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setPhotoPreview("");
+                          setPhotoFileName("");
+                          if (fileInputRef.current) fileInputRef.current.value = "";
+                          setToast("Photo removed (stub)");
+                        }}
+                      >
+                        Remove photo
+                      </Button>
+                    ) : null}
+                  </div>
+
+                  {/* INTRO VIDEO */}
+                  <div className="grid gap-2">
+                    <Label className="text-xs">Intro video (max 30s)</Label>
+                    <input
+                      ref={videoInputRef}
+                      type="file"
+                      accept="video/mp4,video/quicktime,video/webm"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const url = URL.createObjectURL(file);
+                        setIntroVideoPreview(url);
+                        setIntroVideoFileName(file.name);
+                        setToast("Video selected (stub)");
+                      }}
+                    />
+
+                    <div className="grid gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => videoInputRef.current?.click()} type="button">
+                        Upload intro video…
+                      </Button>
+                      <div className="text-xs text-[var(--hw-muted)]">
+                        {introVideoFileName ? (
+                          <span className="inline-flex max-w-full truncate rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 shadow-sm">
+                            {introVideoFileName}
+                          </span>
+                        ) : (
+                          "MP4/MOV/WebM • we’ll enforce 30s on upload when wired"
+                        )}
+                      </div>
+                    </div>
+
+                    {introVideoPreview ? (
+                      <div className="mt-1 overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-white">
+                        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                        <video src={introVideoPreview} controls className="w-full" />
+                      </div>
+                    ) : null}
+
+                    {introVideoPreview ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setIntroVideoPreview("");
+                          setIntroVideoFileName("");
+                          if (videoInputRef.current) videoInputRef.current.value = "";
+                          setToast("Video removed (stub)");
+                        }}
+                      >
+                        Remove video
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               ) : null}
             </div>
