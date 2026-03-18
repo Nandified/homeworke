@@ -228,13 +228,15 @@ export default function Page() {
                   </div>
                 ) : null}
 
-                <Pill
-                  className={
-                    "absolute -bottom-2 left-1/2 -translate-x-1/2 border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)]"
-                  }
-                >
-                  PRO
-                </Pill>
+                {!profileEditing ? (
+                  <Pill
+                    className={
+                      "absolute -bottom-2 left-1/2 -translate-x-1/2 border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)]"
+                    }
+                  >
+                    PRO
+                  </Pill>
+                ) : null}
               </button>
 
               {/* Video placeholder / preview under avatar (click to upload while editing) */}
