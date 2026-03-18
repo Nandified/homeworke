@@ -194,7 +194,7 @@ export default function Page() {
               <button
                 type="button"
                 className={
-                  "relative overflow-hidden rounded-[22px] border border-[var(--hw-line)] bg-white shadow-sm transition " +
+                  "relative overflow-visible rounded-[22px] border border-[var(--hw-line)] bg-white shadow-sm transition " +
                   (profileEditing
                     ? "cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,.08)]"
                     : "cursor-default")
@@ -205,19 +205,21 @@ export default function Page() {
                 }}
                 aria-label={profileEditing ? "Upload profile photo" : "Profile photo"}
               >
-                <div className="h-36 w-28 bg-[var(--hw-soft)]">
-                  {photoPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={photoPreview}
-                      alt="Profile"
-                      className="h-full w-full object-cover object-top"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">
-                      {initials(fullName)}
-                    </div>
-                  )}
+                <div className="overflow-hidden rounded-[22px]">
+                  <div className="h-36 w-28 bg-[var(--hw-soft)]">
+                    {photoPreview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={photoPreview}
+                        alt="Profile"
+                        className="h-full w-full object-cover object-top"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">
+                        {initials(fullName)}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {profileEditing ? (
@@ -231,7 +233,7 @@ export default function Page() {
                 {!profileEditing ? (
                   <Pill
                     className={
-                      "absolute -bottom-1 left-1/2 -translate-x-1/2 border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)] shadow-sm"
+                      "absolute -bottom-3 left-1/2 -translate-x-1/2 border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)] shadow-sm"
                     }
                   >
                     PRO
