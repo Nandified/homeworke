@@ -91,7 +91,7 @@ export default function Page() {
   const [phone, setPhone] = React.useState("");
 
   // Contact email: shown to clients in the product (marketing / sharing context)
-  const [contactEmail, setContactEmail] = React.useState("you@example.com");
+  const [contactEmail, setContactEmail] = React.useState("");
 
   // Login email: used for authentication + password reset
   const [loginEmail, setLoginEmail] = React.useState("you@example.com");
@@ -166,10 +166,10 @@ export default function Page() {
                   <img
                     src={photoPreview}
                     alt="Profile"
-                    className="h-28 w-28 rounded-[22px] border border-[var(--hw-line)] bg-white object-cover shadow-sm"
+                    className="h-32 w-24 rounded-[22px] border border-[var(--hw-line)] bg-white object-cover object-top shadow-sm"
                   />
                 ) : (
-                  <div className="flex h-28 w-28 items-center justify-center rounded-[22px] border border-[var(--hw-line)] bg-[var(--hw-soft)] text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">
+                  <div className="flex h-32 w-24 items-center justify-center rounded-[22px] border border-[var(--hw-line)] bg-[var(--hw-soft)] text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">
                     {initials(fullName)}
                   </div>
                 )}
@@ -357,7 +357,7 @@ export default function Page() {
                 <div className="grid gap-2">
                   <Label className="text-xs">Contact email</Label>
                   {profileEditing ? (
-                    <Input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="name@company.com" />
+                    <Input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="you@example.com" />
                   ) : (
                     <Input
                       readOnly
