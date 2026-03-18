@@ -279,9 +279,12 @@ export default function Page() {
                       placeholder="(000) 000-0000"
                     />
                   ) : (
-                    <div className="flex h-11 items-center rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm text-[var(--hw-ink)]">
-                      {phone ? formatPhone(phone) : <span className="text-[var(--hw-muted)]">Not set</span>}
-                    </div>
+                    <Input
+                      readOnly
+                      value={phone ? formatPhone(phone) : ""}
+                      placeholder="Not set"
+                      className="text-[var(--hw-ink)]"
+                    />
                   )}
                   {/* Format hint removed */}
                 </div>
@@ -290,9 +293,12 @@ export default function Page() {
                   {profileEditing ? (
                     <Input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="name@company.com" />
                   ) : (
-                    <div className="flex h-11 items-center rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm text-[var(--hw-ink)]">
-                      <span className="block truncate">{contactEmail || <span className="text-[var(--hw-muted)]">Not set</span>}</span>
-                    </div>
+                    <Input
+                      readOnly
+                      value={contactEmail}
+                      placeholder="Not set"
+                      className="text-[var(--hw-ink)]"
+                    />
                   )}
                   <div className="text-xs text-[var(--hw-muted)]">This is the email clients may see on shared assets.</div>
                 </div>
@@ -315,8 +321,8 @@ export default function Page() {
             </Button>
           </div>
 
-          <div className="mt-4 flex h-11 items-center rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm text-[var(--hw-ink)]">
-            <span className="block truncate">{loginEmail}</span>
+          <div className="mt-4">
+            <Input readOnly value={loginEmail} className="text-[var(--hw-ink)]" />
           </div>
           <div className="mt-2 text-xs text-[var(--hw-muted)]">Changing login email requires verification.</div>
         </Card>
