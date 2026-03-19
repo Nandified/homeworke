@@ -119,7 +119,6 @@ export function PartnerMarketingToolsSection({
 
   const [emailChoice, setEmailChoice] = useState("intro_buy");
   const [smsChoice, setSmsChoice] = useState("sms_intro");
-  const [copyToast, setCopyToast] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [downloadingImage, setDownloadingImage] = useState(false);
@@ -179,19 +178,16 @@ export function PartnerMarketingToolsSection({
   const chosenEmail = emailTemplates.find((t) => t.id === emailChoice) || emailTemplates[0];
   const chosenSms = smsTemplates.find((t) => t.id === smsChoice) || smsTemplates[0];
 
-  async function copy(text: string, label: string, key?: string) {
+  async function copy(text: string, _label: string, key?: string) {
     try {
       await navigator.clipboard.writeText(text);
-      setCopyToast(`${label} copied`);
       if (key) setCopiedKey(key);
       window.setTimeout(() => {
-        setCopyToast(null);
         if (key) setCopiedKey((v) => (v === key ? null : v));
       }, 1200);
     } catch {
-      setCopyToast("Copy failed");
+      // best-effort; no toast needed because the button animates on success
       window.setTimeout(() => {
-        setCopyToast(null);
         if (key) setCopiedKey((v) => (v === key ? null : v));
       }, 1200);
     }
@@ -334,7 +330,7 @@ export function PartnerMarketingToolsSection({
                 <Button size="sm" variant="secondary">View clients</Button>
               </Link>
             </div>
-            {copyToast ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{copyToast}</div> : null}
+            {/* (no copy toast; button state indicates success) */}
           </div>
         </Card>
 
