@@ -206,7 +206,7 @@ export default function Page() {
                 }}
                 aria-label={profileEditing ? "Upload profile photo" : "Profile photo"}
               >
-                <div className="overflow-hidden rounded-[22px]">
+                <div className="relative overflow-hidden rounded-[22px]">
                   <div className="h-36 w-28 bg-[var(--hw-soft)]">
                     {photoPreview ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -221,15 +221,15 @@ export default function Page() {
                       </div>
                     )}
                   </div>
-                </div>
 
-                {profileEditing ? (
-                  <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-b from-transparent via-transparent to-black/40 p-2">
-                    <div className="rounded-full border border-[rgba(229,57,53,.18)] bg-white/85 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--hw-ink)] shadow-sm">
-                      Change photo
+                  {profileEditing ? (
+                    <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-b from-transparent via-transparent to-black/40 p-2">
+                      <div className="rounded-full border border-[rgba(229,57,53,.18)] bg-white/85 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--hw-ink)] shadow-sm">
+                        Change photo
+                      </div>
                     </div>
-                  </div>
-                ) : null}
+                  ) : null}
+                </div>
 
                 {!profileEditing ? (
                   <Pill
