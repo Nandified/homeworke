@@ -246,7 +246,7 @@ export default function Page() {
               <button
                 type="button"
                 className={
-                  "group mx-auto w-fit overflow-hidden rounded-[18px] border border-[var(--hw-line)] bg-white shadow-sm transition " +
+                  "group mx-auto w-full max-w-[220px] overflow-hidden rounded-[18px] border border-[var(--hw-line)] bg-white shadow-sm transition sm:max-w-[160px] " +
                   (profileEditing
                     ? "cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,.08)]"
                     : "cursor-default")
@@ -257,7 +257,7 @@ export default function Page() {
                 }}
                 aria-label={profileEditing ? "Upload intro video" : "Intro video"}
               >
-                <div className="relative aspect-video w-[220px] max-w-[78vw] bg-[var(--hw-soft)]">
+                <div className="relative aspect-video w-full bg-[var(--hw-soft)]">
                   {introVideoPreview ? (
                     // eslint-disable-next-line jsx-a11y/media-has-caption
                     <video src={introVideoPreview} controls className="h-full w-full object-cover" />
