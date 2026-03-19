@@ -120,6 +120,7 @@ export function PartnerMarketingToolsSection({
   const [emailChoice, setEmailChoice] = useState("intro_buy");
   const [smsChoice, setSmsChoice] = useState("sms_intro");
   const [copyToast, setCopyToast] = useState<string | null>(null);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [downloadingImage, setDownloadingImage] = useState(false);
   const [socialChoice, setSocialChoice] = useState("express_estimate");
@@ -178,14 +179,21 @@ export function PartnerMarketingToolsSection({
   const chosenEmail = emailTemplates.find((t) => t.id === emailChoice) || emailTemplates[0];
   const chosenSms = smsTemplates.find((t) => t.id === smsChoice) || smsTemplates[0];
 
-  async function copy(text: string, label: string) {
+  async function copy(text: string, label: string, key?: string) {
     try {
       await navigator.clipboard.writeText(text);
       setCopyToast(`${label} copied`);
-      window.setTimeout(() => setCopyToast(null), 1200);
+      if (key) setCopiedKey(key);
+      window.setTimeout(() => {
+        setCopyToast(null);
+        if (key) setCopiedKey((v) => (v === key ? null : v));
+      }, 1200);
     } catch {
       setCopyToast("Copy failed");
-      window.setTimeout(() => setCopyToast(null), 1200);
+      window.setTimeout(() => {
+        setCopyToast(null);
+        if (key) setCopiedKey((v) => (v === key ? null : v));
+      }, 1200);
     }
   }
 
@@ -292,18 +300,30 @@ export function PartnerMarketingToolsSection({
             <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-xs font-semibold text-[var(--hw-ink)]">Subject</div>
-                <Button size="sm" variant="secondary" onClick={() => copy(chosenEmail.subject, "Subject") }>
-                  <Copy className="h-4 w-4" />
-                  Copy
+                <Button size="sm" variant="secondary" onClick={() => copy(chosenEmail.subject, "Subject", "email_subject")}>
+                  {copiedKey === "email_subject" ? (
+                    "Copied"
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </>
+                  )}
                 </Button>
               </div>
               <div className="mt-1 text-xs text-[var(--hw-muted)] whitespace-pre-wrap">{chosenEmail.subject}</div>
 
               <div className="mt-4 flex items-center justify-between gap-3">
                 <div className="text-xs font-semibold text-[var(--hw-ink)]">Body</div>
-                <Button size="sm" variant="secondary" onClick={() => copy(chosenEmail.body, "Body") }>
-                  <Copy className="h-4 w-4" />
-                  Copy
+                <Button size="sm" variant="secondary" onClick={() => copy(chosenEmail.body, "Body", "email_body")}>
+                  {copiedKey === "email_body" ? (
+                    "Copied"
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </>
+                  )}
                 </Button>
               </div>
               <div className="mt-1 text-xs text-[var(--hw-muted)] whitespace-pre-wrap">{chosenEmail.body}</div>
@@ -339,9 +359,15 @@ export function PartnerMarketingToolsSection({
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <Button size="sm" variant="secondary" onClick={() => copy(chosenSms.body, "Text")}>
-                <Copy className="h-4 w-4" />
-                Copy text
+              <Button size="sm" variant="secondary" onClick={() => copy(chosenSms.body, "Text", "sms_text")}>
+                {copiedKey === "sms_text" ? (
+                  "Copied"
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4" />
+                    Copy text
+                  </>
+                )}
               </Button>
               <Button
                 size="sm"
