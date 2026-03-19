@@ -361,7 +361,7 @@ export function PartnerMarketingToolsSection({
                 ) : (
                   <>
                     <Copy className="h-4 w-4" />
-                    Copy text
+                    Copy
                   </>
                 )}
               </Button>
