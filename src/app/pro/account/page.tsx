@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { PRO_NAV } from "@/components/pro/nav";
 import { PortalShell } from "@/components/portal-shell";
+import { PROFILE_STORAGE_KEYS } from "@/components/user-avatar";
 import { Button, Card, Checkbox, Divider, EmptyState, Input, Label, Modal, Pill } from "@/components/ui";
 
 const BROKERAGE_OPTIONS = [
@@ -111,6 +112,38 @@ export default function Page() {
   const [deleteConfirm, setDeleteConfirm] = React.useState("");
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const storedName = window.localStorage.getItem(PROFILE_STORAGE_KEYS.fullName) || "";
+      const storedPhoto = window.localStorage.getItem(PROFILE_STORAGE_KEYS.photoDataUrl) || "";
+      if (storedName) setFullName(storedName);
+      if (storedPhoto) setPhotoPreview(storedPhoto);
+    } catch {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(PROFILE_STORAGE_KEYS.fullName, fullName || "");
+    } catch {
+      // ignore
+    }
+  }, [fullName]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (photoPreview) window.localStorage.setItem(PROFILE_STORAGE_KEYS.photoDataUrl, photoPreview);
+      else window.localStorage.removeItem(PROFILE_STORAGE_KEYS.photoDataUrl);
+    } catch {
+      // ignore
+    }
+  }, [photoPreview]);
+
+  React.useEffect(() => {
     if (!toast) return;
     const t = window.setTimeout(() => setToast(null), 1800);
     return () => window.clearTimeout(t);
@@ -170,10 +203,17 @@ export default function Page() {
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  const url = URL.createObjectURL(file);
-                  setPhotoPreview(url);
-                  setPhotoFileName(file.name);
-                  setToast("Photo selected (stub)");
+
+                  // Use a data URL so the header thumbnail can reuse it across pages (localStorage).
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    const result = typeof reader.result === "string" ? reader.result : "";
+                    if (!result) return;
+                    setPhotoPreview(result);
+                    setPhotoFileName(file.name);
+                    setToast("Photo selected");
+                  };
+                  reader.readAsDataURL(file);
                 }}
               />
               <input

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Button, Card, Container, Pill } from "@/components/ui";
+import { UserAvatar, useStoredProfile } from "@/components/user-avatar";
 import { isDemoMode, withDemo } from "@/lib/demo";
 
 export type PortalNavItem = { href: string; label: string };
@@ -30,8 +31,15 @@ export function PortalShell(props: {
 
   const portalTitle = props.portalTitle ?? props.title;
 
+  const profile = useStoredProfile();
+  const baseRole = (props.role || "").toLowerCase();
+  const basePath = baseRole === "pro" || baseRole === "pm" || baseRole === "sp" ? `/${baseRole}` : "";
+  const accountHref = basePath ? `${basePath}/account` : "/";
+  const supportHref = basePath ? `${basePath}/support` : "/";
+
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
 
   const stackKey = "hw_portal_nav_stack_v1";
   const scrollKeyPrefix = "hw_portal_scroll_v1:";
@@ -138,6 +146,18 @@ export function PortalShell(props: {
     return () => window.clearTimeout(t);
   }, [rolePopoverOpen]);
 
+  React.useEffect(() => {
+    if (!profileMenuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (!el) return;
+      // close if click is outside the menu/button cluster
+      if (el.closest("[data-profile-menu-root]") == null) setProfileMenuOpen(false);
+    };
+    window.addEventListener("mousedown", onDown);
+    return () => window.removeEventListener("mousedown", onDown);
+  }, [profileMenuOpen]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
       {/* ── Header ── */}
@@ -175,6 +195,7 @@ export function PortalShell(props: {
           <div className="flex flex-1 items-center justify-end gap-2">
             {isDemoMode() ? <Pill className="bg-white">Demo</Pill> : null}
 
+            {/* Role pill */}
             <div className="relative">
               <button type="button" onClick={() => setRolePopoverOpen((v) => !v)} aria-label="Portal info">
                 <Pill
@@ -190,6 +211,51 @@ export function PortalShell(props: {
                 <div className="absolute right-0 top-[46px] z-30 w-56 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3 shadow-[0_20px_60px_rgba(0,0,0,.18)]">
                   <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
                   <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{portalTitle}</div>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Profile thumbnail (click for account/support links) */}
+            <div className="relative" data-profile-menu-root>
+              <button
+                type="button"
+                onClick={() => setProfileMenuOpen((v) => !v)}
+                className="rounded-full"
+                aria-label="Open profile menu"
+              >
+                <UserAvatar
+                  fullName={profile.fullName || "Your Real Estate Pro"}
+                  photoUrl={profile.photoDataUrl}
+                  size={34}
+                  className="shadow-sm"
+                />
+              </button>
+
+              {profileMenuOpen ? (
+                <div className="absolute right-0 top-[46px] z-30 w-56 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.18)]">
+                  <div className="px-3 py-3">
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Signed in as</div>
+                    <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">
+                      {profile.fullName || "Your Real Estate Pro"}
+                    </div>
+                  </div>
+                  <div className="h-px bg-[var(--hw-line)]" />
+                  <nav className="p-2">
+                    <Link
+                      href={withDemo(accountHref)}
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="block rounded-[var(--hw-radius-sm)] px-3 py-2 text-sm font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                    >
+                      Settings
+                    </Link>
+                    <Link
+                      href={withDemo(supportHref)}
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="block rounded-[var(--hw-radius-sm)] px-3 py-2 text-sm font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                    >
+                      Support
+                    </Link>
+                  </nav>
                 </div>
               ) : null}
             </div>
