@@ -30,6 +30,15 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
   const [item, setItem] = React.useState<ProPropertyDetail>(props.property);
   const [editOpen, setEditOpen] = React.useState(!!props.openEdit);
   const [nickname, setNickname] = React.useState(props.property.nickname || "");
+  const [photoUrl, setPhotoUrl] = React.useState("");
+
+  React.useLayoutEffect(() => {
+    try {
+      const v = window.localStorage.getItem(`hw_prop_photo_v1:${props.property.id}`) || "";
+      setPhotoUrl(v);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.property.id]);
 
   // Apply local override (UI-only) without flashing.
   React.useLayoutEffect(() => {
@@ -47,7 +56,20 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
     <div className="grid gap-6">
       {/* Hero */}
       <Card className="overflow-hidden">
-        <div className="relative h-[220px] bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
+        <div className="relative h-[240px] overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
+          {/* Photo (UI-only via localStorage until Google Places is wired) */}
+          {(() => {
+            let photo = "";
+            try {
+              photo = window.localStorage.getItem(`hw_prop_photo_v1:${item.id}`) || "";
+            } catch {}
+            return photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            ) : null;
+          })()}
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.78))]" />
+
           <div className="absolute left-5 top-5 flex flex-wrap items-center gap-2">
             <Chip>{item.sharedWithMe ? "Shared" : "My property"}</Chip>
             <Chip>Projects: {item.projectsCount || 0}</Chip>
@@ -159,6 +181,18 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
             <div className="text-xs text-[var(--hw-muted)]">This is a label for you—address stays the same.</div>
           </div>
 
+          <div className="grid gap-2">
+            <Label className="text-xs">Property photo (URL)</Label>
+            <Input
+              value={photoUrl}
+              onChange={(e) => setPhotoUrl(e.target.value)}
+              placeholder="Paste a Google Places / Maps photo URL…"
+            />
+            <div className="text-xs text-[var(--hw-muted)]">
+              Recommended: <span className="font-semibold text-[var(--hw-ink)]">16:9 landscape</span> (e.g. 1200×675). We render it with object-cover (Bosscat-style).
+            </div>
+          </div>
+
           <div className="flex items-center justify-end gap-2">
             <Button variant="secondary" onClick={() => setEditOpen(false)}>
               Cancel
@@ -169,6 +203,12 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                   window.localStorage.setItem(`hw_prop_nickname_v1:${item.id}`, nickname);
                 } catch {}
                 setItem((p) => ({ ...p, nickname }));
+
+                try {
+                  if (photoUrl) window.localStorage.setItem(`hw_prop_photo_v1:${item.id}`, photoUrl);
+                  else window.localStorage.removeItem(`hw_prop_photo_v1:${item.id}`);
+                } catch {}
+
                 setEditOpen(false);
               }}
             >

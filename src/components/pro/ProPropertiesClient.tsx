@@ -128,19 +128,23 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
             key={p.id}
             className="group overflow-hidden"
           >
-            <div className="relative h-32 bg-[linear-gradient(135deg,rgba(229,57,53,.14),rgba(17,24,39,.04))]">
+            <div className="relative h-36 overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.14),rgba(17,24,39,.04))]">
+              {/* Photo (UI-only via localStorage until Google Places is wired) */}
+              {(() => {
+                let photo = "";
+                try {
+                  photo = window.localStorage.getItem(`hw_prop_photo_v1:${p.id}`) || "";
+                } catch {}
+                return photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                ) : null;
+              })()}
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.0),rgba(255,255,255,.40))]" />
+
               <div className="absolute left-4 top-4">
                 <Chip>{propertyBadge(p)}</Chip>
               </div>
-              <div className="absolute right-4 top-4">
-                <Link
-                  href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}?edit=1`)}
-                  className="rounded-full border border-[rgba(255,255,255,.7)] bg-white/80 px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] shadow-sm hover:bg-white"
-                >
-                  Edit
-                </Link>
-              </div>
-
               <div className="absolute bottom-4 left-4 right-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
@@ -162,6 +166,11 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
                 <Link href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}`)}>
                   <Button size="sm" variant="secondary">
                     Property detail
+                  </Button>
+                </Link>
+                <Link href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}?edit=1`)}>
+                  <Button size="sm" variant="ghost">
+                    Edit
                   </Button>
                 </Link>
                 <Link href={withDemo(`/pro/jobs?property=${encodeURIComponent(p.id)}`)}>
