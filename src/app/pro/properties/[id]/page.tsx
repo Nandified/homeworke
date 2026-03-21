@@ -53,8 +53,24 @@ export default function Page(props: { params: { id: string } }) {
 
     fetch(url)
       .then((r) => r.json())
-      .then((j) => {
-        const p = (j.property || null) as ApiProperty | null;
+      .then(async (j) => {
+        let p = (j.property || null) as ApiProperty | null;
+
+        // Fallback: if the detail endpoint isn't reachable on an edge cache yet,
+        // load the list and resolve the property client-side.
+        if (!p) {
+          try {
+            const listUrl = new URL("/api/properties", window.location.origin);
+            if (isDemoMode()) listUrl.searchParams.set("demo", "1");
+            else listUrl.searchParams.set("token", "demo");
+            const lj = await fetch(listUrl).then((r) => r.json());
+            const items = (lj.properties || []) as ApiProperty[];
+            p = items.find((x) => x.id === id) || null;
+          } catch {
+            // ignore
+          }
+        }
+
         if (p) {
           try {
             const override = window.localStorage.getItem(`hw_prop_nickname_v1:${p.id}`) || "";
