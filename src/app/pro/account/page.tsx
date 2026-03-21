@@ -114,6 +114,15 @@ function Toggle({ label, value, onChange, help }: { label: string; value: boolea
   );
 }
 
+const ACCOUNT_STORAGE_KEYS = {
+  office: "hw_profile_office_v1",
+  phone: "hw_profile_phone_v1",
+  contactEmail: "hw_profile_contactEmail_v1",
+  loginEmail: "hw_profile_loginEmail_v1",
+  smsOn: "hw_profile_smsOn_v1",
+  emailOn: "hw_profile_emailOn_v1",
+} as const;
+
 export default function Page() {
   // Phase 1: UI only; pull from demo/local context later.
   const [toast, setToast] = React.useState<string | null>(null);
@@ -158,8 +167,21 @@ export default function Page() {
     try {
       const storedName = window.localStorage.getItem(PROFILE_STORAGE_KEYS.fullName) || "";
       const storedPhoto = window.localStorage.getItem(PROFILE_STORAGE_KEYS.photoDataUrl) || "";
+      const storedOffice = window.localStorage.getItem(ACCOUNT_STORAGE_KEYS.office) || "";
+      const storedPhone = window.localStorage.getItem(ACCOUNT_STORAGE_KEYS.phone) || "";
+      const storedContactEmail = window.localStorage.getItem(ACCOUNT_STORAGE_KEYS.contactEmail) || "";
+      const storedLoginEmail = window.localStorage.getItem(ACCOUNT_STORAGE_KEYS.loginEmail) || "";
+      const storedSmsOn = window.localStorage.getItem(ACCOUNT_STORAGE_KEYS.smsOn);
+      const storedEmailOn = window.localStorage.getItem(ACCOUNT_STORAGE_KEYS.emailOn);
+
       if (storedName) setFullName(storedName);
       if (storedPhoto) setPhotoPreview(storedPhoto);
+      if (storedOffice) setOffice(storedOffice);
+      if (storedPhone) setPhone(storedPhone);
+      if (storedContactEmail) setContactEmail(storedContactEmail);
+      if (storedLoginEmail) setLoginEmail(storedLoginEmail);
+      if (storedSmsOn != null) setSmsOn(storedSmsOn === "1");
+      if (storedEmailOn != null) setEmailOn(storedEmailOn === "1");
     } catch {
       // ignore
     }
@@ -174,6 +196,60 @@ export default function Page() {
       // ignore
     }
   }, [fullName]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(ACCOUNT_STORAGE_KEYS.office, office || "");
+    } catch {
+      // ignore
+    }
+  }, [office]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(ACCOUNT_STORAGE_KEYS.phone, phone || "");
+    } catch {
+      // ignore
+    }
+  }, [phone]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(ACCOUNT_STORAGE_KEYS.contactEmail, contactEmail || "");
+    } catch {
+      // ignore
+    }
+  }, [contactEmail]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(ACCOUNT_STORAGE_KEYS.loginEmail, loginEmail || "");
+    } catch {
+      // ignore
+    }
+  }, [loginEmail]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(ACCOUNT_STORAGE_KEYS.smsOn, smsOn ? "1" : "0");
+    } catch {
+      // ignore
+    }
+  }, [smsOn]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(ACCOUNT_STORAGE_KEYS.emailOn, emailOn ? "1" : "0");
+    } catch {
+      // ignore
+    }
+  }, [emailOn]);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
