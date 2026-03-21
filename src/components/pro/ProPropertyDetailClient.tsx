@@ -83,25 +83,24 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
           </div>
 
           <div className="absolute bottom-5 left-5 right-5">
-            <div className="text-2xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,.55)] md:text-3xl">
-              {shortTitle(item)}
-            </div>
-            {subAddress(item) ? (
-              <div className="mt-1 text-sm text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,.55)]">{subAddress(item)}</div>
-            ) : null}
+            {/* Glass panel keeps text readable on any photo */}
+            <div className="inline-block max-w-full rounded-[18px] border border-white/35 bg-white/86 p-4 shadow-sm backdrop-blur">
+              <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">{shortTitle(item)}</div>
+              {subAddress(item) ? <div className="mt-1 text-sm text-[var(--hw-muted)]">{subAddress(item)}</div> : null}
 
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Link href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(item.id)}`)}>
-                <Button>Start Express Estimate</Button>
-              </Link>
-              <Link href={withDemo(`/pro/jobs?property=${encodeURIComponent(item.id)}`)}>
-                <Button variant="secondary">View jobs</Button>
-              </Link>
-            </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Link href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(item.id)}`)}>
+                  <Button>Start Express Estimate</Button>
+                </Link>
+                <Link href={withDemo(`/pro/jobs?property=${encodeURIComponent(item.id)}`)}>
+                  <Button variant="secondary">View jobs</Button>
+                </Link>
+              </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,.55)]">
-              <span className="font-semibold text-white">Owner:</span>
-              <span>{item.ownerName || "—"}</span>
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[var(--hw-muted)]">
+                <span className="font-semibold text-[var(--hw-ink)]">Owner:</span>
+                <span className="text-[var(--hw-ink)]">{item.ownerName || "—"}</span>
+              </div>
             </div>
           </div>
         </div>

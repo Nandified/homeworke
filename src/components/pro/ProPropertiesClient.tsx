@@ -251,18 +251,17 @@ export function ProPropertiesClient(props: {
               <div className="absolute bottom-4 left-4 right-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-extrabold tracking-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,.45)]">
-                      {shortLabel(p)}
+                    {/* Glass label to prevent text blending into photo */}
+                    <div className="inline-block max-w-full rounded-[14px] border border-white/35 bg-white/85 px-3 py-2 shadow-sm backdrop-blur">
+                      <div className="truncate text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{shortLabel(p)}</div>
+                      {subtitle(p) ? (
+                        <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{subtitle(p)}</div>
+                      ) : null}
                     </div>
-                    {subtitle(p) ? (
-                      <div className="mt-0.5 truncate text-xs text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,.45)]">
-                        {subtitle(p)}
-                      </div>
-                    ) : null}
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className="text-[11px] font-semibold text-[var(--hw-muted)]">Projects</div>
-                    <div className="text-sm font-extrabold text-[var(--hw-ink)]">{p.projectsCount || 0}</div>
+                    <div className="text-[11px] font-semibold text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,.45)]">Projects</div>
+                    <div className="text-sm font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,.45)]">{p.projectsCount || 0}</div>
                   </div>
                 </div>
               </div>
