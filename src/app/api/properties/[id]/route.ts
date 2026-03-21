@@ -10,12 +10,12 @@ function json(data: unknown, init?: { status?: number }) {
   return NextResponse.json(data, { status: init?.status ?? 200 });
 }
 
-export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, ctx: { params: { id: string } }) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
   const demo = url.searchParams.get("demo") === "1";
 
-  const { id } = await ctx.params;
+  const { id } = ctx.params;
 
   if (demo || token === "demo") seedDemoStoreIfEmpty();
 
