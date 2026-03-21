@@ -26,6 +26,11 @@ export type Property = {
   city?: string;
   state?: string;
   zip?: string;
+  /** UI-only demo metadata until real data model is wired. */
+  sharedWithMe?: boolean;
+  ownerName?: string;
+  /** Count of active projects/work orders attached to the property (demo). */
+  projectsCount?: number;
 };
 
 export type Message = {
@@ -62,9 +67,17 @@ export function seedDemoStoreIfEmpty() {
     "8020 S Brandon Ave, Chicago, IL 60617, USA",
     "16877 Anthony Ave, Hazel Crest, IL 60429, USA",
   ];
-  for (const address of props) {
-    createProperty({ token, address });
-  }
+  props.forEach((address, idx) => {
+    createProperty({
+      token,
+      address,
+      nickname:
+        idx === 0 ? "Home" : idx === 3 ? "Lake St Condo" : idx === 5 ? "Hazel Crest" : undefined,
+      sharedWithMe: idx % 3 === 1,
+      ownerName: idx % 3 === 1 ? "Client" : "Me",
+      projectsCount: idx % 3 === 2 ? 2 : idx % 3 === 1 ? 1 : 0,
+    });
+  });
 
   // Work orders (mix statuses so dashboard looks “full”)
   const wos: Array<Partial<WorkOrder> & Pick<WorkOrder, "serviceCategory" | "token" | "status">> = [

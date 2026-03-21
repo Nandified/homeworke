@@ -17,7 +17,9 @@ export async function GET(req: Request) {
   const token = url.searchParams.get("token");
 
   const demo = url.searchParams.get("demo") === "1";
-  if (demo) seedDemoStoreIfEmpty();
+  // In serverless, the in-memory mock store is per-invocation.
+  // Seed whenever we are in demo mode OR using the demo token.
+  if (demo || token === "demo") seedDemoStoreIfEmpty();
 
   if (dbEnabled() && !demo) {
     const sessionToken = await getSessionTokenFromCookie();
