@@ -47,29 +47,18 @@ export default function Page(props: { params: { id: string } }) {
 
   React.useEffect(() => {
     setLoading(true);
-    const url = new URL(`/api/properties/${id}`, window.location.origin);
-    if (isDemoMode()) url.searchParams.set("demo", "1");
-    else url.searchParams.set("token", "demo");
 
-    fetch(url)
+    // Use the list endpoint as the source of truth so Property Detail never depends
+    // on a separate dynamic API route (less brittle on Vercel/serverless).
+    const listUrl = new URL("/api/properties", window.location.origin);
+    if (isDemoMode()) listUrl.searchParams.set("demo", "1");
+    else listUrl.searchParams.set("token", "demo");
+
+    fetch(listUrl)
       .then((r) => r.json())
-      .then(async (j) => {
-        let p = (j.property || null) as ApiProperty | null;
-
-        // Fallback: if the detail endpoint isn't reachable on an edge cache yet,
-        // load the list and resolve the property client-side.
-        if (!p) {
-          try {
-            const listUrl = new URL("/api/properties", window.location.origin);
-            if (isDemoMode()) listUrl.searchParams.set("demo", "1");
-            else listUrl.searchParams.set("token", "demo");
-            const lj = await fetch(listUrl).then((r) => r.json());
-            const items = (lj.properties || []) as ApiProperty[];
-            p = items.find((x) => x.id === id) || null;
-          } catch {
-            // ignore
-          }
-        }
+      .then((j) => {
+        const items = (j.properties || []) as ApiProperty[];
+        const p = items.find((x) => x.id === id) || null;
 
         if (p) {
           try {
@@ -77,6 +66,7 @@ export default function Page(props: { params: { id: string } }) {
             if (override) p.nickname = override;
           } catch {}
         }
+
         setItem(p);
         setNickname(p?.nickname || "");
       })
