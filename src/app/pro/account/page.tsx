@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { PRO_NAV } from "@/components/pro/nav";
 import { PortalShell } from "@/components/portal-shell";
+
 import { PROFILE_STORAGE_KEYS } from "@/components/user-avatar";
 import { Button, Card, Checkbox, Divider, EmptyState, Input, Label, Modal, Pill } from "@/components/ui";
 
@@ -18,6 +19,47 @@ const BROKERAGE_OPTIONS = [
   "Keller Williams",
   "Century 21",
 ] as const;
+
+async function fileToSmallJpegDataUrl(file: File, maxSize = 256, quality = 0.82): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("read_failed"));
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.readAsDataURL(file);
+  });
+
+  // If we can't get a data URL, bail.
+  if (!dataUrl) return "";
+
+  // Downscale/compress to keep localStorage under quota (Safari is strict).
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error("img_load_failed"));
+    i.src = dataUrl;
+  });
+
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+  if (!w || !h) return dataUrl;
+
+  const scale = Math.min(1, maxSize / Math.max(w, h));
+  const cw = Math.max(1, Math.round(w * scale));
+  const ch = Math.max(1, Math.round(h * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = cw;
+  canvas.height = ch;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl;
+  ctx.drawImage(img, 0, 0, cw, ch);
+
+  try {
+    return canvas.toDataURL("image/jpeg", quality);
+  } catch {
+    return dataUrl;
+  }
+}
 
 function initials(name: string) {
   const parts = name
@@ -139,7 +181,7 @@ export default function Page() {
       if (photoPreview) window.localStorage.setItem(PROFILE_STORAGE_KEYS.photoDataUrl, photoPreview);
       else window.localStorage.removeItem(PROFILE_STORAGE_KEYS.photoDataUrl);
     } catch {
-      // ignore
+      setToast("Profile photo couldn’t be saved (storage full)");
     }
   }, [photoPreview]);
 
@@ -204,16 +246,15 @@ export default function Page() {
                   const file = e.target.files?.[0];
                   if (!file) return;
 
-                  // Use a data URL so the header thumbnail can reuse it across pages (localStorage).
-                  const reader = new FileReader();
-                  reader.onload = () => {
-                    const result = typeof reader.result === "string" ? reader.result : "";
-                    if (!result) return;
-                    setPhotoPreview(result);
-                    setPhotoFileName(file.name);
-                    setToast("Photo selected");
-                  };
-                  reader.readAsDataURL(file);
+                  // Use a SMALL data URL so the header thumbnail can reuse it across pages (localStorage).
+                  fileToSmallJpegDataUrl(file)
+                    .then((result) => {
+                      if (!result) return;
+                      setPhotoPreview(result);
+                      setPhotoFileName(file.name);
+                      setToast("Photo selected");
+                    })
+                    .catch(() => setToast("Could not read image"));
                 }}
               />
               <input
