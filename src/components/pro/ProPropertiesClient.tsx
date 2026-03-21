@@ -2,8 +2,10 @@
 
 import * as React from "react";
 
+import Link from "next/link";
+
 import { Button, Card, Chip, Divider, Input, Pill } from "@/components/ui";
-import { isDemoMode } from "@/lib/demo";
+import { isDemoMode, withDemo } from "@/lib/demo";
 
 import { usePartnerContext } from "./usePartnerContext";
 
@@ -131,12 +133,12 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
                 <Chip>{propertyBadge(p)}</Chip>
               </div>
               <div className="absolute right-4 top-4">
-                <button
-                  type="button"
+                <Link
+                  href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}?edit=1`)}
                   className="rounded-full border border-[rgba(255,255,255,.7)] bg-white/80 px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] shadow-sm hover:bg-white"
                 >
                   Edit
-                </button>
+                </Link>
               </div>
 
               <div className="absolute bottom-4 left-4 right-4">
@@ -157,15 +159,21 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
 
             <div className="p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <Button size="sm" variant="secondary">
-                  Property detail
-                </Button>
-                <Button size="sm" variant="ghost">
-                  View projects
-                </Button>
-                <Button size="sm" variant="ghost">
-                  Start estimate
-                </Button>
+                <Link href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}`)}>
+                  <Button size="sm" variant="secondary">
+                    Property detail
+                  </Button>
+                </Link>
+                <Link href={withDemo(`/pro/jobs?property=${encodeURIComponent(p.id)}`)}>
+                  <Button size="sm" variant="ghost">
+                    View jobs
+                  </Button>
+                </Link>
+                <Link href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(p.id)}`)}>
+                  <Button size="sm" variant="ghost">
+                    Start estimate
+                  </Button>
+                </Link>
               </div>
 
               <Divider className="my-4" />

@@ -69,12 +69,12 @@ export function seedDemoStoreIfEmpty() {
   ];
   props.forEach((address, idx) => {
     createProperty({
+      id: `prop_demo_${idx + 1}`,
       token,
       address,
-      nickname:
-        idx === 0 ? "Home" : idx === 3 ? "Lake St Condo" : idx === 5 ? "Hazel Crest" : undefined,
+      nickname: idx === 0 ? "Home" : idx === 3 ? "Lake St Condo" : idx === 5 ? "Hazel Crest" : undefined,
       sharedWithMe: idx % 3 === 1,
-      ownerName: idx % 3 === 1 ? "Client" : "Me",
+      ownerName: idx % 3 === 1 ? "Fernando Rocha Jr" : "Fernando Rocha Jr",
       projectsCount: idx % 3 === 2 ? 2 : idx % 3 === 1 ? 1 : 0,
     });
   });
@@ -219,9 +219,10 @@ export function countSharedWorkOrdersForPartner(partnerId: string): number {
   return listSharedWorkOrdersForPartner(partnerId).length;
 }
 
-export function createProperty(input: Omit<Property, "id" | "createdAt">) {
-  const id = `prop_${Math.random().toString(36).slice(2, 10)}`;
-  const p: Property = { id, createdAt: new Date().toISOString(), ...input };
+export function createProperty(input: Omit<Property, "createdAt"> & { id?: string }) {
+  const id = input.id || `prop_${Math.random().toString(36).slice(2, 10)}`;
+  const { id: _ignored, ...rest } = input;
+  const p: Property = { id, createdAt: new Date().toISOString(), ...(rest as Omit<Property, "id" | "createdAt">) };
   store().properties.unshift(p);
   return p;
 }
