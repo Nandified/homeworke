@@ -242,32 +242,25 @@ export function ProPropertiesClient(props: {
                   <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 ) : null;
               })()}
-              {/* Contrast overlay for legibility */}
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.10),rgba(255,255,255,.65))]" />
+              {/* Brand tint overlay (keep red-led, avoid muddy brown) */}
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(229,57,53,.18),rgba(229,57,53,.05),rgba(255,255,255,.0))]" />
 
               <div className="absolute left-4 top-4">
                 <Chip>{propertyBadge(p)}</Chip>
               </div>
-              <div className="absolute bottom-4 left-4 right-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    {/* Glass label to prevent text blending into photo */}
-                    <div className="inline-block max-w-full rounded-[14px] border border-white/35 bg-white/85 px-3 py-2 shadow-sm backdrop-blur">
-                      <div className="truncate text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{shortLabel(p)}</div>
-                      {subtitle(p) ? (
-                        <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{subtitle(p)}</div>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <div className="text-[11px] font-semibold text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,.45)]">Projects</div>
-                    <div className="text-sm font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,.45)]">{p.projectsCount || 0}</div>
-                  </div>
-                </div>
+              <div className="absolute right-4 top-4">
+                <Chip>Projects: {p.projectsCount || 0}</Chip>
               </div>
             </div>
 
             <div className="p-4">
+              <div className="min-w-0">
+                <div className="truncate text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{shortLabel(p)}</div>
+                {subtitle(p) ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{subtitle(p)}</div> : null}
+              </div>
+
+              <Divider className="my-3" />
+
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}?edit=1`)}

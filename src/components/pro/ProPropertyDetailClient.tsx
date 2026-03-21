@@ -56,7 +56,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
     <div className="grid gap-6">
       {/* Hero */}
       <Card className="overflow-hidden">
-        <div className="relative h-[240px] overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
+        <div className="relative h-[260px] overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
           {/* Photo (UI-only via localStorage until Google Places is wired) */}
           {(() => {
             let photo = "";
@@ -69,26 +69,37 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
               <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
             ) : null;
           })()}
-          {/* Contrast overlay for legibility */}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.40),rgba(0,0,0,.12),rgba(255,255,255,.82))]" />
 
+          {/* Brand tint overlay (keep red-led, avoid muddy brown) */}
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(229,57,53,.14),rgba(229,57,53,.04),rgba(0,0,0,0))]" />
+
+          {/* Top pills */}
           <div className="absolute left-5 top-5 flex flex-wrap items-center gap-2">
             <Chip>{item.sharedWithMe ? "Shared" : "My property"}</Chip>
             <Chip>Projects: {item.projectsCount || 0}</Chip>
           </div>
+
+          {/* Top-right action */}
           <div className="absolute right-5 top-5">
             <Button variant="secondary" onClick={() => setEditOpen(true)}>
               Edit
             </Button>
           </div>
+        </div>
 
-          <div className="absolute bottom-5 left-5 right-5">
-            {/* Glass panel keeps text readable on any photo */}
-            <div className="inline-block max-w-full rounded-[18px] border border-white/35 bg-white/86 p-4 shadow-sm backdrop-blur">
+        {/* Below-image header (keeps photo visible) */}
+        <div className="p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="min-w-0">
               <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">{shortTitle(item)}</div>
               {subAddress(item) ? <div className="mt-1 text-sm text-[var(--hw-muted)]">{subAddress(item)}</div> : null}
+              <div className="mt-3 text-xs text-[var(--hw-muted)]">
+                <span className="font-semibold text-[var(--hw-ink)]">Owner:</span> <span className="text-[var(--hw-ink)]">{item.ownerName || "—"}</span>
+              </div>
+            </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="shrink-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <Link href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(item.id)}`)}>
                   <Button>Start Express Estimate</Button>
                 </Link>
@@ -96,16 +107,11 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                   <Button variant="secondary">View jobs</Button>
                 </Link>
               </div>
-
-              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[var(--hw-muted)]">
-                <span className="font-semibold text-[var(--hw-ink)]">Owner:</span>
-                <span className="text-[var(--hw-ink)]">{item.ownerName || "—"}</span>
-              </div>
             </div>
           </div>
-        </div>
 
-        <div className="p-6">
+          <Divider className="my-5" />
+
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Shared with</div>
@@ -198,8 +204,6 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
-
-                    // Downscale/compress so it persists in localStorage during demo.
                     const reader = new FileReader();
                     reader.onload = () => {
                       const dataUrl = typeof reader.result === "string" ? reader.result : "";
@@ -207,11 +211,12 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                       setPhotoUrl(dataUrl);
                     };
                     reader.readAsDataURL(file);
-                    // allow re-selecting the same file
                     e.currentTarget.value = "";
                   }}
                 />
-                <Button size="sm" variant="secondary">Upload photo</Button>
+                <Button size="sm" variant="secondary">
+                  Upload photo
+                </Button>
               </label>
               <Button size="sm" variant="ghost" disabled>
                 Choose from Google (soon)
