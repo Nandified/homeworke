@@ -4,7 +4,7 @@ import * as React from "react";
 
 import Link from "next/link";
 
-import { Button, Card, Chip, Divider, Input, Pill } from "@/components/ui";
+import { Button, Card, Chip, Divider, EmptyState, Input, Label, Modal, Pill } from "@/components/ui";
 import { isDemoMode, withDemo } from "@/lib/demo";
 
 import { usePartnerContext } from "./usePartnerContext";
@@ -41,13 +41,58 @@ function propertyBadge(p: ApiProperty) {
   return "My property";
 }
 
-export function ProPropertiesClient(props: { empty: React.ReactNode }) {
+type StoredProperty = {
+  id: string;
+  address: string;
+  nickname?: string;
+  createdAt: string;
+};
+
+const STORAGE_KEYS = {
+  customProps: "hw_props_custom_v1",
+  photoPrefix: "hw_prop_photo_v1:",
+} as const;
+
+function readCustomProperties(): StoredProperty[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEYS.customProps) || "[]";
+    const arr = JSON.parse(raw) as StoredProperty[];
+    return Array.isArray(arr) ? arr.filter((p) => p && typeof p.id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeCustomProperties(items: StoredProperty[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEYS.customProps, JSON.stringify(items.slice(0, 50)));
+  } catch {
+    // ignore
+  }
+}
+
+export function ProPropertiesClient(props: {
+  empty: React.ReactNode;
+  addOpen?: boolean;
+  onAddOpenChange?: (v: boolean) => void;
+}) {
   // partnerId is used only to know whether we're in a partner-linked context.
   // The properties endpoint is token-based in mock mode.
   const { partnerId } = usePartnerContext();
   const [items, setItems] = React.useState<ApiProperty[] | null>(null);
   const [tab, setTab] = React.useState<"my" | "shared">("my");
   const [q, setQ] = React.useState("");
+
+  const [addOpenInternal, setAddOpenInternal] = React.useState(false);
+  const addOpen = props.addOpen ?? addOpenInternal;
+  const setAddOpen = props.onAddOpenChange ?? setAddOpenInternal;
+
+  const [newAddress, setNewAddress] = React.useState("");
+  const [newNickname, setNewNickname] = React.useState("");
+
+  const [photos, setPhotos] = React.useState<Record<string, string>>({});
 
   React.useEffect(() => {
     // Allow demo to load even if partner context isn't present yet.
@@ -61,7 +106,40 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
 
     fetch(url)
       .then((r) => r.json())
-      .then((j) => setItems(j.properties || []))
+      .then((j) => {
+        const base = (j.properties || []) as ApiProperty[];
+
+        // Merge custom properties stored locally (demo UX until DB is wired).
+        const custom = readCustomProperties().map<ApiProperty>((p) => ({
+          id: p.id,
+          createdAt: p.createdAt,
+          address: p.address,
+          nickname: p.nickname || null,
+          sharedWithMe: false,
+          ownerName: "Fernando Rocha Jr",
+          projectsCount: 0,
+        }));
+
+        const seen = new Set<string>();
+        const merged: ApiProperty[] = [];
+        [...custom, ...base].forEach((p) => {
+          if (seen.has(p.id)) return;
+          seen.add(p.id);
+          merged.push(p);
+        });
+
+        setItems(merged);
+
+        // Load photos (if any) from localStorage.
+        const nextPhotos: Record<string, string> = {};
+        merged.forEach((p) => {
+          try {
+            const v = window.localStorage.getItem(`${STORAGE_KEYS.photoPrefix}${p.id}`) || "";
+            if (v) nextPhotos[p.id] = v;
+          } catch {}
+        });
+        setPhotos(nextPhotos);
+      })
       .catch(() => setItems([]));
   }, [partnerId]);
 
@@ -73,7 +151,21 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
     );
   }
 
-  if (!items.length) return <>{props.empty}</>;
+  if (!items.length) {
+    return (
+      <div>
+        <EmptyState
+          title="No properties yet"
+          text="Properties will appear once a client shares a work order or you add one manually."
+        />
+        <div className="mt-4">
+          <Button variant="secondary" onClick={() => setAddOpen(true)}>
+            Add property
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const filtered = items
     .filter((p) => (tab === "shared" ? !!p.sharedWithMe : !p.sharedWithMe))
@@ -89,6 +181,9 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="secondary" onClick={() => setAddOpen(true)}>
+            Add property
+          </Button>
           <button
             type="button"
             onClick={() => setTab("my")}
@@ -124,28 +219,26 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
       {/* Grid */}
       <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {filtered.map((p) => (
-          <Card
-            key={p.id}
-            className="group overflow-hidden"
-          >
-            <div className="relative h-36 overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.14),rgba(17,24,39,.04))]">
-              {/* Photo (UI-only via localStorage until Google Places is wired) */}
-              {(() => {
-                let photo = "";
-                try {
-                  photo = window.localStorage.getItem(`hw_prop_photo_v1:${p.id}`) || "";
-                } catch {}
-                return photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                ) : null;
-              })()}
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.0),rgba(255,255,255,.40))]" />
+          <Card key={p.id} className="group relative overflow-hidden">
+            {/* Whole card is clickable */}
+            <Link
+              href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}`)}
+              className="absolute inset-0 z-0"
+              aria-label={`Open property: ${shortLabel(p)}`}
+            />
 
-              <div className="absolute left-4 top-4">
-                <Chip>{propertyBadge(p)}</Chip>
-              </div>
-              <div className="absolute bottom-4 left-4 right-4">
+            <div className="relative z-10">
+              <div className="relative h-36 overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.14),rgba(17,24,39,.04))]">
+                {photos[p.id] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={photos[p.id]} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                ) : null}
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.0),rgba(255,255,255,.40))]" />
+
+                <div className="absolute left-4 top-4">
+                  <Chip>{propertyBadge(p)}</Chip>
+                </div>
+                <div className="absolute bottom-4 left-4 right-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{shortLabel(p)}</div>
@@ -163,22 +256,17 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
 
             <div className="p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}`)}>
+                <Link href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}?edit=1`)} className="relative z-20">
                   <Button size="sm" variant="secondary">
-                    Property detail
-                  </Button>
-                </Link>
-                <Link href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}?edit=1`)}>
-                  <Button size="sm" variant="ghost">
                     Edit
                   </Button>
                 </Link>
-                <Link href={withDemo(`/pro/jobs?property=${encodeURIComponent(p.id)}`)}>
+                <Link href={withDemo(`/pro/jobs?property=${encodeURIComponent(p.id)}`)} className="relative z-20">
                   <Button size="sm" variant="ghost">
                     View jobs
                   </Button>
                 </Link>
-                <Link href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(p.id)}`)}>
+                <Link href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(p.id)}`)} className="relative z-20">
                   <Button size="sm" variant="ghost">
                     Start estimate
                   </Button>
@@ -190,6 +278,7 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
               <div className="text-xs text-[var(--hw-muted)]">
                 {p.sharedWithMe ? "Shared by" : "Owner"}: <span className="font-semibold text-[var(--hw-ink)]">{p.ownerName || "—"}</span>
               </div>
+            </div>
             </div>
           </Card>
         ))}
@@ -203,6 +292,55 @@ export function ProPropertiesClient(props: { empty: React.ReactNode }) {
           </Card>
         </div>
       ) : null}
+
+      {/* Add property modal (demo) */}
+      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add property">
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label className="text-xs">Address</Label>
+            <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St, Chicago, IL 606.." />
+            <div className="text-xs text-[var(--hw-muted)]">We’ll wire Google Places autocomplete next. For now, type the full address.</div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Nickname (optional)</Label>
+            <Input value={newNickname} onChange={(e) => setNewNickname(e.target.value)} placeholder="Home, Lake Condo…" />
+          </div>
+
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="secondary" onClick={() => setAddOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                const address = newAddress.trim();
+                if (!address) return;
+                const id = `prop_local_${Math.random().toString(36).slice(2, 10)}`;
+                const createdAt = new Date().toISOString();
+                const nextStored = [{ id, address, nickname: newNickname.trim() || undefined, createdAt }, ...readCustomProperties()];
+                writeCustomProperties(nextStored);
+
+                const next: ApiProperty = {
+                  id,
+                  createdAt,
+                  address,
+                  nickname: newNickname.trim() || null,
+                  sharedWithMe: false,
+                  ownerName: "Fernando Rocha Jr",
+                  projectsCount: 0,
+                };
+
+                setItems((prev) => (prev ? [next, ...prev] : [next]));
+                setNewAddress("");
+                setNewNickname("");
+                setAddOpen(false);
+              }}
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

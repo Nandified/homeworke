@@ -182,14 +182,43 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
           </div>
 
           <div className="grid gap-2">
-            <Label className="text-xs">Property photo (URL)</Label>
-            <Input
-              value={photoUrl}
-              onChange={(e) => setPhotoUrl(e.target.value)}
-              placeholder="Paste a Google Places / Maps photo URL…"
-            />
+            <Label className="text-xs">Property photo</Label>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="inline-flex cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    // Downscale/compress so it persists in localStorage during demo.
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const dataUrl = typeof reader.result === "string" ? reader.result : "";
+                      if (!dataUrl) return;
+                      setPhotoUrl(dataUrl);
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+                <Button size="sm" variant="secondary">Upload photo</Button>
+              </label>
+              <Button size="sm" variant="ghost" disabled>
+                Choose from Google (soon)
+              </Button>
+              {photoUrl ? (
+                <Button size="sm" variant="ghost" onClick={() => setPhotoUrl("")}
+                >
+                  Remove
+                </Button>
+              ) : null}
+            </div>
+
             <div className="text-xs text-[var(--hw-muted)]">
-              Recommended: <span className="font-semibold text-[var(--hw-ink)]">16:9 landscape</span> (e.g. 1200×675). We render it with object-cover (Bosscat-style).
+              Recommended style: <span className="font-semibold text-[var(--hw-ink)]">16:9 landscape</span>, rendered with object-cover + a soft overlay (Bosscat-style).
             </div>
           </div>
 
