@@ -242,7 +242,8 @@ export function ProPropertiesClient(props: {
                   <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 ) : null;
               })()}
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.0),rgba(255,255,255,.40))]" />
+              {/* Contrast overlay for legibility */}
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.10),rgba(255,255,255,.65))]" />
 
               <div className="absolute left-4 top-4">
                 <Chip>{propertyBadge(p)}</Chip>
@@ -250,9 +251,13 @@ export function ProPropertiesClient(props: {
               <div className="absolute bottom-4 left-4 right-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{shortLabel(p)}</div>
+                    <div className="truncate text-sm font-extrabold tracking-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,.45)]">
+                      {shortLabel(p)}
+                    </div>
                     {subtitle(p) ? (
-                      <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{subtitle(p)}</div>
+                      <div className="mt-0.5 truncate text-xs text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,.45)]">
+                        {subtitle(p)}
+                      </div>
                     ) : null}
                   </div>
                   <div className="shrink-0 text-right">

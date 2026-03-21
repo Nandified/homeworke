@@ -69,7 +69,8 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
               <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
             ) : null;
           })()}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.78))]" />
+          {/* Contrast overlay for legibility */}
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.40),rgba(0,0,0,.12),rgba(255,255,255,.82))]" />
 
           <div className="absolute left-5 top-5 flex flex-wrap items-center gap-2">
             <Chip>{item.sharedWithMe ? "Shared" : "My property"}</Chip>
@@ -82,8 +83,12 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
           </div>
 
           <div className="absolute bottom-5 left-5 right-5">
-            <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">{shortTitle(item)}</div>
-            {subAddress(item) ? <div className="mt-1 text-sm text-[var(--hw-muted)]">{subAddress(item)}</div> : null}
+            <div className="text-2xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,.55)] md:text-3xl">
+              {shortTitle(item)}
+            </div>
+            {subAddress(item) ? (
+              <div className="mt-1 text-sm text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,.55)]">{subAddress(item)}</div>
+            ) : null}
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Link href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(item.id)}`)}>
@@ -94,8 +99,8 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
               </Link>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[var(--hw-muted)]">
-              <span className="font-semibold text-[var(--hw-ink)]">Owner:</span>
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,.55)]">
+              <span className="font-semibold text-white">Owner:</span>
               <span>{item.ownerName || "—"}</span>
             </div>
           </div>
@@ -203,6 +208,8 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                       setPhotoUrl(dataUrl);
                     };
                     reader.readAsDataURL(file);
+                    // allow re-selecting the same file
+                    e.currentTarget.value = "";
                   }}
                 />
                 <Button size="sm" variant="secondary">Upload photo</Button>
@@ -219,7 +226,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
             </div>
 
             <div className="text-xs text-[var(--hw-muted)]">
-              Recommended style: <span className="font-semibold text-[var(--hw-ink)]">16:9 landscape</span>, rendered with object-cover + a soft overlay (Bosscat-style).
+              Recommended style: <span className="font-semibold text-[var(--hw-ink)]">16:9 landscape</span>.
             </div>
           </div>
 
