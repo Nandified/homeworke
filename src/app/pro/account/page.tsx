@@ -162,7 +162,10 @@ export default function Page() {
   const [deleteAccountOpen, setDeleteAccountOpen] = React.useState(false);
   const [deleteConfirm, setDeleteConfirm] = React.useState("");
 
-  React.useEffect(() => {
+  const useIsoLayoutEffect = typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
+
+  // Hydrate from localStorage before paint to avoid a "placeholder → real" flash on refresh/nav.
+  useIsoLayoutEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const storedName = window.localStorage.getItem(PROFILE_STORAGE_KEYS.fullName) || "";

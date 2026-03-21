@@ -16,13 +16,16 @@ export const PROFILE_STORAGE_KEYS = {
   photoDataUrl: "hw_profile_photoDataUrl_v1",
 } as const;
 
+const useIsoLayoutEffect = typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
+
 export function useStoredProfile() {
   const [profile, setProfile] = React.useState<{ fullName: string; photoDataUrl: string }>(() => ({
     fullName: "",
     photoDataUrl: "",
   }));
 
-  React.useEffect(() => {
+  // Use layout effect so nav/refresh doesn't paint placeholder initials before we hydrate from storage.
+  useIsoLayoutEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const fullName = window.localStorage.getItem(PROFILE_STORAGE_KEYS.fullName) || "";
