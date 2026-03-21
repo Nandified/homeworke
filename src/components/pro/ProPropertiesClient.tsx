@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button, Card, Chip, Divider, EmptyState, Input, Label, Modal, Pill } from "@/components/ui";
 import { isDemoMode, withDemo } from "@/lib/demo";
@@ -81,6 +82,7 @@ export function ProPropertiesClient(props: {
   // partnerId is used only to know whether we're in a partner-linked context.
   // The properties endpoint is token-based in mock mode.
   const { partnerId } = usePartnerContext();
+  const router = useRouter();
   const [items, setItems] = React.useState<ApiProperty[] | null>(null);
   const [tab, setTab] = React.useState<"my" | "shared">("my");
   const [q, setQ] = React.useState("");
@@ -219,26 +221,33 @@ export function ProPropertiesClient(props: {
       {/* Grid */}
       <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {filtered.map((p) => (
-          <Card key={p.id} className="group relative overflow-hidden">
-            {/* Whole card is clickable */}
-            <Link
-              href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}`)}
-              className="absolute inset-0 z-0"
-              aria-label={`Open property: ${shortLabel(p)}`}
-            />
-
-            <div className="relative z-10">
-              <div className="relative h-36 overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.14),rgba(17,24,39,.04))]">
-                {photos[p.id] ? (
+          <Card
+            key={p.id}
+            className="group overflow-hidden transition hover:shadow-[0_14px_40px_rgba(17,24,39,.10)] cursor-pointer"
+            onClick={() => router.push(withDemo(`/pro/properties/${encodeURIComponent(p.id)}`))}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                router.push(withDemo(`/pro/properties/${encodeURIComponent(p.id)}`));
+              }
+            }}
+          >
+            <div className="relative h-36 overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.14),rgba(17,24,39,.04))]">
+              {(() => {
+                const photo = photos[p.id] || (p.id === "prop_demo_6" ? "/demo_prop_demo_6.jpg" : "");
+                return photo ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={photos[p.id]} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                ) : null}
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.0),rgba(255,255,255,.40))]" />
+                  <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                ) : null;
+              })()}
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.0),rgba(255,255,255,.40))]" />
 
-                <div className="absolute left-4 top-4">
-                  <Chip>{propertyBadge(p)}</Chip>
-                </div>
-                <div className="absolute bottom-4 left-4 right-4">
+              <div className="absolute left-4 top-4">
+                <Chip>{propertyBadge(p)}</Chip>
+              </div>
+              <div className="absolute bottom-4 left-4 right-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{shortLabel(p)}</div>
@@ -256,17 +265,26 @@ export function ProPropertiesClient(props: {
 
             <div className="p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}?edit=1`)} className="relative z-20">
+                <Link
+                  href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}?edit=1`)}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Button size="sm" variant="secondary">
                     Edit
                   </Button>
                 </Link>
-                <Link href={withDemo(`/pro/jobs?property=${encodeURIComponent(p.id)}`)} className="relative z-20">
+                <Link
+                  href={withDemo(`/pro/jobs?property=${encodeURIComponent(p.id)}`)}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Button size="sm" variant="ghost">
                     View jobs
                   </Button>
                 </Link>
-                <Link href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(p.id)}`)} className="relative z-20">
+                <Link
+                  href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(p.id)}`)}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Button size="sm" variant="ghost">
                     Start estimate
                   </Button>
@@ -278,7 +296,6 @@ export function ProPropertiesClient(props: {
               <div className="text-xs text-[var(--hw-muted)]">
                 {p.sharedWithMe ? "Shared by" : "Owner"}: <span className="font-semibold text-[var(--hw-ink)]">{p.ownerName || "—"}</span>
               </div>
-            </div>
             </div>
           </Card>
         ))}

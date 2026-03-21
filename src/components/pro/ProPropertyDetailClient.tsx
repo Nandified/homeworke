@@ -63,6 +63,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
             try {
               photo = window.localStorage.getItem(`hw_prop_photo_v1:${item.id}`) || "";
             } catch {}
+            if (!photo && item.id === "prop_demo_6") photo = "/demo_prop_demo_6.jpg";
             return photo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
