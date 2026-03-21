@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { dbEnabled, db } from "@/lib/db";
 import { getSessionTokenFromCookie, getSessionUserId } from "@/lib/session";
@@ -10,12 +10,12 @@ function json(data: unknown, init?: { status?: number }) {
   return NextResponse.json(data, { status: init?.status ?? 200 });
 }
 
-export async function GET(req: Request, ctx: { params: { id: string } }) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
   const demo = url.searchParams.get("demo") === "1";
 
-  const { id } = ctx.params;
+  const { id } = await ctx.params;
 
   if (demo || token === "demo") seedDemoStoreIfEmpty();
 
