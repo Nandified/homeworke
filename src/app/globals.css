@@ -29,7 +29,7 @@ body{
 }
 
 a{color:var(--hw-red);text-decoration:none}
-a:hover{text-decoration:underline}
+a:hover{text-decoration:none}
 
 @keyframes hw-pulse {
   0% { transform: scale(1); opacity: .95; }

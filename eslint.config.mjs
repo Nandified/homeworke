@@ -9,9 +9,15 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    "**/.next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
+
+    // Workspace/tooling folders that can contain huge vendored code.
+    "Relays/**",
+    "**/.venv/**",
+    "node_modules/**",
   ]),
 ]);
 
