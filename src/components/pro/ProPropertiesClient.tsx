@@ -160,11 +160,6 @@ export function ProPropertiesClient(props: {
           title="No properties yet"
           text="Properties will appear once a client shares a work order or you add one manually."
         />
-        <div className="mt-4">
-          <Button variant="secondary" onClick={() => setAddOpen(true)}>
-            Add property
-          </Button>
-        </div>
       </div>
     );
   }
@@ -183,9 +178,6 @@ export function ProPropertiesClient(props: {
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="secondary" onClick={() => setAddOpen(true)}>
-            Add property
-          </Button>
           <button
             type="button"
             onClick={() => setTab("my")}

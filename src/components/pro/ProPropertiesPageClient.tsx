@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
@@ -28,24 +29,32 @@ export function ProPropertiesPageClient() {
       nav={PRO_NAV as unknown as { href: string; label: string }[]}
       description="Properties connected to your active clients and shared projects."
       primaryAction={
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setAddOpen(true);
-            if (typeof window !== "undefined") {
-              const u = new URL(window.location.href);
-              u.searchParams.delete("add");
-              window.history.replaceState({}, "", u.toString());
-            }
-          }}
-        >
-          Add property
-        </Button>
+        <Link href={withDemo("/pro/dashboard")} className="inline-flex">
+          <Button variant="secondary">Back to dashboard</Button>
+        </Link>
       }
     >
       <Card className="p-6">
-        <div className="text-sm font-semibold text-[var(--hw-ink)]">Properties</div>
-        <div className="mt-1 text-sm text-[var(--hw-muted)]">Track addresses involved in inspections, repairs, and negotiation packets.</div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Properties</div>
+            <div className="mt-1 text-sm text-[var(--hw-muted)]">Track addresses involved in inspections, repairs, and negotiation packets.</div>
+          </div>
+
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setAddOpen(true);
+              if (typeof window !== "undefined") {
+                const u = new URL(window.location.href);
+                u.searchParams.delete("add");
+                window.history.replaceState({}, "", u.toString());
+              }
+            }}
+          >
+            Add property
+          </Button>
+        </div>
 
         <div className="mt-5">
           <ProPropertiesClient empty={null} addOpen={addOpen} onAddOpenChange={setAddOpen} />
