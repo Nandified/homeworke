@@ -249,39 +249,13 @@ export function ProPropertiesClient(props: {
                 {subtitle(p) ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{subtitle(p)}</div> : null}
               </div>
 
-              <Divider className="my-3" />
-
-              <div className="flex flex-wrap items-center gap-2">
-                <Link
-                  href={withDemo(`/pro/properties/${encodeURIComponent(p.id)}?edit=1`)}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Button size="sm" variant="secondary">
-                    Edit
-                  </Button>
-                </Link>
-                <Link
-                  href={withDemo(`/pro/jobs?property=${encodeURIComponent(p.id)}`)}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Button size="sm" variant="ghost">
-                    View jobs
-                  </Button>
-                </Link>
-                <Link
-                  href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(p.id)}`)}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Button size="sm" variant="ghost">
-                    Start estimate
-                  </Button>
-                </Link>
-              </div>
-
               <Divider className="my-4" />
 
-              <div className="text-xs text-[var(--hw-muted)]">
-                {p.sharedWithMe ? "Shared by" : "Owner"}: <span className="font-semibold text-[var(--hw-ink)]">{p.ownerName || "—"}</span>
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-xs text-[var(--hw-muted)]">
+                  {p.sharedWithMe ? "Shared by" : "Owner"}: <span className="font-semibold text-[var(--hw-ink)]">{p.ownerName || "—"}</span>
+                </div>
+                <div className="text-xs font-semibold text-[var(--hw-muted)]">View details →</div>
               </div>
             </div>
           </Card>
