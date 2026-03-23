@@ -252,10 +252,10 @@ export function ProPropertiesClient(props: {
               <Divider className="my-4" />
 
               <div className="flex items-center justify-between gap-3">
-                <div className="text-xs text-[var(--hw-muted)]">
+                <div className="min-w-0 text-xs text-[var(--hw-muted)] truncate">
                   {p.sharedWithMe ? "Shared by" : "Owner"}: <span className="font-semibold text-[var(--hw-ink)]">{p.ownerName || "—"}</span>
                 </div>
-                <div className="text-xs font-semibold text-[var(--hw-muted)]">View details →</div>
+                <div className="shrink-0 whitespace-nowrap text-xs font-semibold text-[var(--hw-red)]">Details →</div>
               </div>
             </div>
           </Card>
