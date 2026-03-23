@@ -237,9 +237,9 @@ export function ProPropertiesClient(props: {
               {/* Brand tint overlay (keep red-led, avoid muddy brown) */}
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(229,57,53,.18),rgba(229,57,53,.05),rgba(255,255,255,.0))]" />
 
-              <div className="absolute inset-x-4 top-4 flex items-start justify-between gap-2">
-                <Chip className="max-w-[60%] truncate">{propertyBadge(p)}</Chip>
-                <Chip className="shrink-0">Projects: {p.projectsCount || 0}</Chip>
+              <div className="absolute inset-x-4 top-4 flex flex-wrap items-start gap-2">
+                <Chip>{propertyBadge(p)}</Chip>
+                <Chip className="ml-auto shrink-0">Projects: {p.projectsCount || 0}</Chip>
               </div>
             </div>
 
