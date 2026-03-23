@@ -2,6 +2,9 @@
 
 import * as React from "react";
 
+import { isDemoMode } from "@/lib/demo";
+import { loadPartner } from "@/lib/partner-context";
+
 function initials(name: string) {
   const parts = (name || "")
     .trim()
@@ -18,6 +21,12 @@ export const PROFILE_STORAGE_KEYS = {
 
 const useIsoLayoutEffect = typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
 
+function demoPhotoForPartner(partnerId: string | null | undefined) {
+  if (!partnerId) return "";
+  if (partnerId === "frj") return "/partners/frj-headshot.jpg";
+  return "";
+}
+
 export function useStoredProfile() {
   const [profile, setProfile] = React.useState<{ fullName: string; photoDataUrl: string }>(() => ({
     fullName: "",
@@ -30,6 +39,19 @@ export function useStoredProfile() {
     try {
       const fullName = window.localStorage.getItem(PROFILE_STORAGE_KEYS.fullName) || "";
       const photoDataUrl = window.localStorage.getItem(PROFILE_STORAGE_KEYS.photoDataUrl) || "";
+
+      // Cross-device note: localStorage doesn't sync. In demo mode, seed a sensible default
+      // from the partner context so mobile doesn't fall back to "Your Real Estate Pro".
+      if (!fullName && isDemoMode()) {
+        const partner = loadPartner();
+        const seededName = partner?.partnerName || "";
+        const seededPhoto = demoPhotoForPartner(partner?.partnerId) || "";
+        if (seededName) window.localStorage.setItem(PROFILE_STORAGE_KEYS.fullName, seededName);
+        if (seededPhoto) window.localStorage.setItem(PROFILE_STORAGE_KEYS.photoDataUrl, seededPhoto);
+        setProfile({ fullName: seededName, photoDataUrl: seededPhoto });
+        return;
+      }
+
       setProfile({ fullName, photoDataUrl });
     } catch {
       // ignore
