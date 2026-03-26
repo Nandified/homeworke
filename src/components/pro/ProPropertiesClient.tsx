@@ -368,7 +368,7 @@ export function ProPropertiesClient(props: {
         onClose={() => {
           setAddOpen(false);
         }}
-        title={addMode === "client" ? "Add client property" : "Add property"}
+        title="Add property"
       >
         <div className="grid gap-4">
           {/* Mode toggle */}
@@ -395,79 +395,85 @@ export function ProPropertiesClient(props: {
                   : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
               }
             >
-              Client property (create account)
+              Client property
             </button>
           </div>
 
-          {addMode === "client" ? (
-            <Card className="p-4">
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Client details</div>
-              <div className="mt-2 grid gap-3 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label className="text-xs">Client name</Label>
-                  <Input value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="Jane Client" />
+          {/* Fixed-height body so the modal doesn't jump when switching modes */}
+          <div className="grid gap-4 min-h-[420px]">
+            {addMode === "client" ? (
+              <Card className="p-4">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Client details</div>
+                <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label className="text-xs">Client name</Label>
+                    <Input value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="Jane Client" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label className="text-xs">Phone (optional)</Label>
+                    <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="(312) 555-0123" />
+                  </div>
+                  <div className="grid gap-2 sm:col-span-2">
+                    <Label className="text-xs">Email (optional)</Label>
+                    <Input value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} placeholder="jane@email.com" />
+                    <div className="text-xs text-[var(--hw-muted)]">We’ll send an invite later.</div>
+                  </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label className="text-xs">Phone (optional)</Label>
-                  <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="(312) 555-0123" />
-                </div>
-                <div className="grid gap-2 sm:col-span-2">
-                  <Label className="text-xs">Email (recommended)</Label>
-                  <Input value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} placeholder="jane@email.com" />
-                  <div className="text-xs text-[var(--hw-muted)]">We’ll use this later for a magic-link invite. For now this is stored locally (demo).</div>
-                </div>
-              </div>
-            </Card>
-          ) : null}
+              </Card>
+            ) : (
+              // Spacer: keep the modal height stable when the client card is hidden.
+              <div className="h-[162px]" />
+            )}
 
-          <div className="grid gap-2">
-            <Label className="text-xs">Address</Label>
-            <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St, Chicago, IL 606.." />
-            <div className="text-xs text-[var(--hw-muted)]">We’ll wire Google Places autocomplete next. For now, type the full address.</div>
-          </div>
+            <div className="grid gap-2">
+              <Label className="text-xs">Address</Label>
+              <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St, Chicago, IL 606.." />
+              <div className="text-xs text-[var(--hw-muted)]">We’ll wire Google Places autocomplete next. For now, type the full address.</div>
+            </div>
 
-          <div className="grid gap-2">
-            <Label className="text-xs">Nickname (optional)</Label>
-            <Input value={newNickname} onChange={(e) => setNewNickname(e.target.value)} placeholder="Home, Lake Condo…" />
-          </div>
+            <div className="grid gap-2">
+              <Label className="text-xs">Nickname (optional)</Label>
+              <Input value={newNickname} onChange={(e) => setNewNickname(e.target.value)} placeholder="Home, Lake Condo…" />
+            </div>
 
-          <div className="grid gap-2">
-            <Label className="text-xs">Type of property</Label>
-            <select
-              className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3 text-sm text-[var(--hw-ink)]"
-              value={newPropertyType}
-              onChange={(e) => setNewPropertyType(e.target.value as typeof newPropertyType)}
-            >
-              <option value="">Type of Property</option>
-              <option value="Condo">Condo</option>
-              <option value="House">House</option>
-              <option value="Multi-Units">Multi-Units</option>
-              <option value="Town house">Town house</option>
-              <option value="Commercial">Commercial</option>
-            </select>
-          </div>
+            <div className="grid gap-2">
+              <Label className="text-xs">Type of property</Label>
+              <select
+                className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3 text-sm text-[var(--hw-ink)]"
+                value={newPropertyType}
+                onChange={(e) => setNewPropertyType(e.target.value as typeof newPropertyType)}
+              >
+                <option value="">Type of Property</option>
+                <option value="Condo">Condo</option>
+                <option value="House">House</option>
+                <option value="Multi-Units">Multi-Units</option>
+                <option value="Town house">Town house</option>
+                <option value="Commercial">Commercial</option>
+              </select>
+            </div>
 
-          <div className="grid gap-2">
-            <Label className="text-xs">Photo (optional)</Label>
-            <input
-              type="file"
-              accept="image/*"
-              className="block w-full text-sm text-[var(--hw-muted)] file:mr-3 file:rounded-full file:border-0 file:bg-[var(--hw-soft)] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-[var(--hw-ink)] hover:file:bg-[rgba(229,57,53,.08)]"
-              onChange={async (e) => {
-                const f = e.target.files?.[0];
-                if (!f) return;
-                try {
-                  const dataUrl = await fileToDataUrl(f);
-                  setNewPhotoDataUrl(dataUrl);
-                } catch {
-                  // ignore
-                }
-              }}
-            />
-            {newPhotoDataUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={newPhotoDataUrl} alt="" className="mt-2 h-28 w-full rounded-[var(--hw-radius-sm)] object-cover" />
-            ) : null}
+            <div className="grid gap-2">
+              <Label className="text-xs">Photo (optional)</Label>
+              <input
+                type="file"
+                accept="image/*"
+                className="block w-full text-sm text-[var(--hw-muted)] file:mr-3 file:rounded-full file:border-0 file:bg-[var(--hw-soft)] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-[var(--hw-ink)] hover:file:bg-[rgba(229,57,53,.08)]"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  try {
+                    const dataUrl = await fileToDataUrl(f);
+                    setNewPhotoDataUrl(dataUrl);
+                  } catch {
+                    // ignore
+                  }
+                }}
+              />
+              {newPhotoDataUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={newPhotoDataUrl} alt="" className="mt-2 h-28 w-full rounded-[var(--hw-radius-sm)] object-cover" />
+              ) : null}
+            </div>
           </div>
 
           <div className="flex items-center justify-end gap-2">
@@ -558,7 +564,7 @@ export function ProPropertiesClient(props: {
                 setAddOpen(false);
               }}
             >
-              {addMode === "client" ? "Add client property" : "Add"}
+              {addMode === "client" ? "Add property" : "Add"}
             </Button>
           </div>
         </div>
