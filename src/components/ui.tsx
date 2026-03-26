@@ -169,7 +169,12 @@ export function Modal(props: {
             ✕
           </Button>
         </div>
-        <div className="max-h-[calc(100vh-8rem)] overflow-y-auto p-4 sm:p-6">{props.children}</div>
+        <div
+          className="max-h-[calc(100vh-8rem)] overflow-y-auto p-4 sm:p-6 overscroll-contain"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {props.children}
+        </div>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Button, Card, Chip, Divider, EmptyState, Input, Label, Modal, Pill } from "@/components/ui";
+import { Button, Card, Chip, Divider, EmptyState, Input, Label, Modal } from "@/components/ui";
 import { isDemoMode, withDemo } from "@/lib/demo";
 
 import { usePartnerContext } from "./usePartnerContext";
@@ -260,6 +260,20 @@ export function ProPropertiesClient(props: {
       return hay.includes(needle);
     });
 
+  const counts = {
+    my: items.filter((p) => !p.sharedWithMe && !p.clientProperty).length,
+    clients: items.filter((p) => !!p.clientProperty).length,
+    shared: items.filter((p) => !!p.sharedWithMe).length,
+  };
+
+  function CountBadge({ n }: { n: number }) {
+    return (
+      <span className="ml-2 inline-flex min-w-6 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-2 py-0.5 text-[11px] font-extrabold text-[var(--hw-ink)]">
+        {n}
+      </span>
+    );
+  }
+
   return (
     <div>
       {/* Toolbar */}
@@ -274,8 +288,8 @@ export function ProPropertiesClient(props: {
                 ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
                 : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
             }
-          >
-            My properties
+>
+            My properties <CountBadge n={counts.my} />
           </button>
 
           <button
@@ -287,8 +301,8 @@ export function ProPropertiesClient(props: {
                 ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
                 : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
             }
-          >
-            Client properties
+>
+            Client properties <CountBadge n={counts.clients} />
           </button>
 
           <button
@@ -300,11 +314,9 @@ export function ProPropertiesClient(props: {
                 ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
                 : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
             }
-          >
-            Shared with me
+>
+            Shared with me <CountBadge n={counts.shared} />
           </button>
-
-          <Pill className="bg-white">{filtered.length}</Pill>
         </div>
 
         <div className="w-full sm:w-[320px]">
@@ -487,7 +499,7 @@ export function ProPropertiesClient(props: {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2">
+          <div className="sticky bottom-0 -mx-4 mt-2 flex items-center justify-end gap-2 border-t border-[var(--hw-line)] bg-white px-4 py-3 sm:static sm:mx-0 sm:mt-0 sm:border-0 sm:px-0 sm:py-0">
             <Button
               variant="secondary"
               onClick={() => {
