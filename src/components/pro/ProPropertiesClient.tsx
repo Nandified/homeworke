@@ -410,8 +410,8 @@ export function ProPropertiesClient(props: {
             </button>
           </div>
 
-          {/* Fixed-height body so the modal doesn't jump when switching modes */}
-          <div className="grid gap-4 min-h-[420px]">
+          {/* Keep desktop height stable; on mobile avoid giant empty gaps. */}
+          <div className="grid gap-4 sm:min-h-[420px]">
             {addMode === "client" ? (
               <Card className="p-4">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Client details</div>
@@ -432,8 +432,8 @@ export function ProPropertiesClient(props: {
                 </div>
               </Card>
             ) : (
-              // Spacer: keep the modal height stable when the client card is hidden.
-              <div className="h-[162px]" />
+              // Spacer only on desktop to prevent the "jump" effect.
+              <div className="hidden h-[162px] sm:block" />
             )}
 
             <div className="grid gap-2">

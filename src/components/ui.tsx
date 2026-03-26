@@ -161,15 +161,15 @@ export function Modal(props: {
 }) {
   if (!props.open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5 backdrop-blur-sm">
-      <div className="w-full max-w-xl animate-[fadeScaleIn_150ms_ease-out] rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.15)]">
-        <div className="flex items-center justify-between border-b border-[var(--hw-line)] px-6 py-4">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-3 backdrop-blur-sm sm:items-center sm:p-5">
+      <div className="w-full max-w-xl animate-[fadeScaleIn_150ms_ease-out] overflow-hidden rounded-t-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.15)] sm:rounded-[var(--hw-radius-lg)] max-h-[calc(100vh-1.5rem)]">
+        <div className="flex items-center justify-between border-b border-[var(--hw-line)] px-4 py-3 sm:px-6 sm:py-4">
           <div className="text-sm font-semibold text-[var(--hw-ink)]">{props.title}</div>
           <Button variant="ghost" onClick={props.onClose} aria-label="Close modal">
             ✕
           </Button>
         </div>
-        <div className="p-6">{props.children}</div>
+        <div className="max-h-[calc(100vh-8rem)] overflow-y-auto p-4 sm:p-6">{props.children}</div>
       </div>
     </div>
   );
