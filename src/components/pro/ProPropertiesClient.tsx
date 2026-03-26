@@ -147,6 +147,16 @@ export function ProPropertiesClient(props: {
   const [newClientPhone, setNewClientPhone] = React.useState("");
 
   const [addMode, setAddMode] = React.useState<"property" | "client">("property");
+
+  React.useEffect(() => {
+    // Context-aware default: when the modal opens, default to the current tab.
+    if (!addOpen) return;
+    if (tab === "clients") setAddMode("client");
+    if (tab === "my") setAddMode("property");
+    // If we're on "shared", default to "client" since this page is PRO-centric.
+    if (tab === "shared") setAddMode("client");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addOpen]);
   const [newPhotoDataUrl, setNewPhotoDataUrl] = React.useState<string>("");
 
   const [photos, setPhotos] = React.useState<Record<string, string>>({});
@@ -254,7 +264,7 @@ export function ProPropertiesClient(props: {
     <div>
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap">
           <button
             type="button"
             onClick={() => setTab("my")}
@@ -266,18 +276,6 @@ export function ProPropertiesClient(props: {
             }
           >
             My properties
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab("shared")}
-            className={
-              "rounded-full px-4 py-2 text-xs font-semibold transition " +
-              (tab === "shared"
-                ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-            }
-          >
-            Shared with me
           </button>
 
           <button
@@ -291,6 +289,19 @@ export function ProPropertiesClient(props: {
             }
           >
             Client properties
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTab("shared")}
+            className={
+              "rounded-full px-4 py-2 text-xs font-semibold transition " +
+              (tab === "shared"
+                ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+            }
+          >
+            Shared with me
           </button>
 
           <Pill className="bg-white">{filtered.length}</Pill>
