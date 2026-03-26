@@ -19,7 +19,12 @@ type ApiProperty = {
   state?: string | null;
   zip?: string | null;
   sharedWithMe?: boolean | null;
+  /** Properties the PRO added on behalf of a client ("secret account" creation). */
+  clientProperty?: boolean | null;
   ownerName?: string | null;
+  ownerEmail?: string | null;
+  ownerPhone?: string | null;
+  propertyType?: string | null;
   projectsCount?: number | null;
 };
 
@@ -38,7 +43,8 @@ function subtitle(p: ApiProperty) {
 }
 
 function propertyBadge(p: ApiProperty) {
-  if (p.sharedWithMe) return "Shared";
+  if (p.sharedWithMe) return "Shared with me";
+  if (p.clientProperty) return "Client property";
   return "My property";
 }
 
@@ -49,8 +55,20 @@ type StoredProperty = {
   createdAt: string;
 };
 
+type StoredClientProperty = {
+  id: string;
+  createdAt: string;
+  address: string;
+  nickname?: string;
+  propertyType?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
+};
+
 const STORAGE_KEYS = {
   customProps: "hw_props_custom_v1",
+  clientProps: "hw_props_client_v1",
   photoPrefix: "hw_prop_photo_v1:",
 } as const;
 
@@ -74,6 +92,35 @@ function writeCustomProperties(items: StoredProperty[]) {
   }
 }
 
+function readClientProperties(): StoredClientProperty[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEYS.clientProps) || "[]";
+    const arr = JSON.parse(raw) as StoredClientProperty[];
+    return Array.isArray(arr) ? arr.filter((p) => p && typeof p.id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeClientProperties(items: StoredClientProperty[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEYS.clientProps, JSON.stringify(items.slice(0, 200)));
+  } catch {
+    // ignore
+  }
+}
+
+async function fileToDataUrl(file: File): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("read_failed"));
+    reader.readAsDataURL(file);
+  });
+}
+
 export function ProPropertiesClient(props: {
   empty: React.ReactNode;
   addOpen?: boolean;
@@ -84,7 +131,7 @@ export function ProPropertiesClient(props: {
   const { partnerId } = usePartnerContext();
   const router = useRouter();
   const [items, setItems] = React.useState<ApiProperty[] | null>(null);
-  const [tab, setTab] = React.useState<"my" | "shared">("my");
+  const [tab, setTab] = React.useState<"my" | "shared" | "clients">("my");
   const [q, setQ] = React.useState("");
 
   const [addOpenInternal, setAddOpenInternal] = React.useState(false);
@@ -93,6 +140,14 @@ export function ProPropertiesClient(props: {
 
   const [newAddress, setNewAddress] = React.useState("");
   const [newNickname, setNewNickname] = React.useState("");
+  const [newPropertyType, setNewPropertyType] = React.useState<"Condo" | "House" | "Multi-Units" | "Town house" | "Commercial" | "">("");
+
+  const [newClientName, setNewClientName] = React.useState("");
+  const [newClientEmail, setNewClientEmail] = React.useState("");
+  const [newClientPhone, setNewClientPhone] = React.useState("");
+
+  const [addMode, setAddMode] = React.useState<"property" | "client">("property");
+  const [newPhotoDataUrl, setNewPhotoDataUrl] = React.useState<string>("");
 
   const [photos, setPhotos] = React.useState<Record<string, string>>({});
 
@@ -118,13 +173,30 @@ export function ProPropertiesClient(props: {
           address: p.address,
           nickname: p.nickname || null,
           sharedWithMe: false,
+          clientProperty: false,
           ownerName: "Fernando Rocha Jr",
+          projectsCount: 0,
+        }));
+
+        // Local-only "client properties" (added by the PRO on behalf of a client).
+        const clientProps = readClientProperties().map<ApiProperty>((p) => ({
+          id: p.id,
+          createdAt: p.createdAt,
+          address: p.address,
+          nickname: p.nickname || null,
+          sharedWithMe: false,
+          clientProperty: true,
+          ownerName: p.clientName || null,
+          ownerEmail: p.clientEmail || null,
+          ownerPhone: p.clientPhone || null,
+          propertyType: p.propertyType || null,
           projectsCount: 0,
         }));
 
         const seen = new Set<string>();
         const merged: ApiProperty[] = [];
-        [...custom, ...base].forEach((p) => {
+        // Order matters: we want PRO-created client props and manual props to feel "first-class" in demo.
+        ;[...clientProps, ...custom, ...base].forEach((p) => {
           if (seen.has(p.id)) return;
           seen.add(p.id);
           merged.push(p);
@@ -165,9 +237,14 @@ export function ProPropertiesClient(props: {
   }
 
   const filtered = items
-    .filter((p) => (tab === "shared" ? !!p.sharedWithMe : !p.sharedWithMe))
     .filter((p) => {
-      const hay = `${p.nickname || ""} ${p.address || ""} ${p.city || ""} ${p.state || ""} ${p.zip || ""}`.toLowerCase();
+      if (tab === "shared") return !!p.sharedWithMe;
+      if (tab === "clients") return !!p.clientProperty;
+      // "my" tab
+      return !p.sharedWithMe && !p.clientProperty;
+    })
+    .filter((p) => {
+      const hay = `${p.nickname || ""} ${p.address || ""} ${p.city || ""} ${p.state || ""} ${p.zip || ""} ${p.ownerName || ""} ${p.ownerEmail || ""}`.toLowerCase();
       const needle = (q || "").trim().toLowerCase();
       if (!needle) return true;
       return hay.includes(needle);
@@ -202,6 +279,20 @@ export function ProPropertiesClient(props: {
           >
             Shared with me
           </button>
+
+          <button
+            type="button"
+            onClick={() => setTab("clients")}
+            className={
+              "rounded-full px-4 py-2 text-xs font-semibold transition " +
+              (tab === "clients"
+                ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+            }
+          >
+            Client properties
+          </button>
+
           <Pill className="bg-white">{filtered.length}</Pill>
         </div>
 
@@ -272,8 +363,63 @@ export function ProPropertiesClient(props: {
       ) : null}
 
       {/* Add property modal (demo) */}
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add property">
+      <Modal
+        open={addOpen}
+        onClose={() => {
+          setAddOpen(false);
+        }}
+        title={addMode === "client" ? "Add client property" : "Add property"}
+      >
         <div className="grid gap-4">
+          {/* Mode toggle */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setAddMode("property")}
+              className={
+                "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                (addMode === "property"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              My property
+            </button>
+            <button
+              type="button"
+              onClick={() => setAddMode("client")}
+              className={
+                "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                (addMode === "client"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              Client property (create account)
+            </button>
+          </div>
+
+          {addMode === "client" ? (
+            <Card className="p-4">
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Client details</div>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label className="text-xs">Client name</Label>
+                  <Input value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="Jane Client" />
+                </div>
+                <div className="grid gap-2">
+                  <Label className="text-xs">Phone (optional)</Label>
+                  <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="(312) 555-0123" />
+                </div>
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label className="text-xs">Email (recommended)</Label>
+                  <Input value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} placeholder="jane@email.com" />
+                  <div className="text-xs text-[var(--hw-muted)]">We’ll use this later for a magic-link invite. For now this is stored locally (demo).</div>
+                </div>
+              </div>
+            </Card>
+          ) : null}
+
           <div className="grid gap-2">
             <Label className="text-xs">Address</Label>
             <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St, Chicago, IL 606.." />
@@ -285,36 +431,134 @@ export function ProPropertiesClient(props: {
             <Input value={newNickname} onChange={(e) => setNewNickname(e.target.value)} placeholder="Home, Lake Condo…" />
           </div>
 
+          <div className="grid gap-2">
+            <Label className="text-xs">Type of property</Label>
+            <select
+              className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3 text-sm text-[var(--hw-ink)]"
+              value={newPropertyType}
+              onChange={(e) => setNewPropertyType(e.target.value as typeof newPropertyType)}
+            >
+              <option value="">Type of Property</option>
+              <option value="Condo">Condo</option>
+              <option value="House">House</option>
+              <option value="Multi-Units">Multi-Units</option>
+              <option value="Town house">Town house</option>
+              <option value="Commercial">Commercial</option>
+            </select>
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Photo (optional)</Label>
+            <input
+              type="file"
+              accept="image/*"
+              className="block w-full text-sm text-[var(--hw-muted)] file:mr-3 file:rounded-full file:border-0 file:bg-[var(--hw-soft)] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-[var(--hw-ink)] hover:file:bg-[rgba(229,57,53,.08)]"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                try {
+                  const dataUrl = await fileToDataUrl(f);
+                  setNewPhotoDataUrl(dataUrl);
+                } catch {
+                  // ignore
+                }
+              }}
+            />
+            {newPhotoDataUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={newPhotoDataUrl} alt="" className="mt-2 h-28 w-full rounded-[var(--hw-radius-sm)] object-cover" />
+            ) : null}
+          </div>
+
           <div className="flex items-center justify-end gap-2">
-            <Button variant="secondary" onClick={() => setAddOpen(false)}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setAddOpen(false);
+              }}
+            >
               Cancel
             </Button>
             <Button
               onClick={() => {
                 const address = newAddress.trim();
                 if (!address) return;
-                const id = `prop_local_${Math.random().toString(36).slice(2, 10)}`;
+
+                const id = `${addMode === "client" ? "prop_client" : "prop_local"}_${Math.random().toString(36).slice(2, 10)}`;
                 const createdAt = new Date().toISOString();
-                const nextStored = [{ id, address, nickname: newNickname.trim() || undefined, createdAt }, ...readCustomProperties()];
-                writeCustomProperties(nextStored);
 
-                const next: ApiProperty = {
-                  id,
-                  createdAt,
-                  address,
-                  nickname: newNickname.trim() || null,
-                  sharedWithMe: false,
-                  ownerName: "Fernando Rocha Jr",
-                  projectsCount: 0,
-                };
+                if (newPhotoDataUrl) {
+                  try {
+                    window.localStorage.setItem(`${STORAGE_KEYS.photoPrefix}${id}`, newPhotoDataUrl);
+                  } catch {}
+                }
 
-                setItems((prev) => (prev ? [next, ...prev] : [next]));
+                if (addMode === "client") {
+                  const clientName = newClientName.trim();
+                  if (!clientName) return;
+
+                  const nextStored: StoredClientProperty[] = [
+                    {
+                      id,
+                      createdAt,
+                      address,
+                      nickname: newNickname.trim() || undefined,
+                      propertyType: newPropertyType || undefined,
+                      clientName,
+                      clientEmail: newClientEmail.trim() || undefined,
+                      clientPhone: newClientPhone.trim() || undefined,
+                    },
+                    ...readClientProperties(),
+                  ];
+                  writeClientProperties(nextStored);
+
+                  const next: ApiProperty = {
+                    id,
+                    createdAt,
+                    address,
+                    nickname: newNickname.trim() || null,
+                    sharedWithMe: false,
+                    clientProperty: true,
+                    ownerName: clientName,
+                    ownerEmail: newClientEmail.trim() || null,
+                    ownerPhone: newClientPhone.trim() || null,
+                    propertyType: newPropertyType || null,
+                    projectsCount: 0,
+                  };
+
+                  setItems((prev) => (prev ? [next, ...prev] : [next]));
+                  if (newPhotoDataUrl) setPhotos((prev) => ({ ...prev, [id]: newPhotoDataUrl }));
+
+                  setNewClientName("");
+                  setNewClientEmail("");
+                  setNewClientPhone("");
+                } else {
+                  const nextStored = [{ id, address, nickname: newNickname.trim() || undefined, createdAt }, ...readCustomProperties()];
+                  writeCustomProperties(nextStored);
+
+                  const next: ApiProperty = {
+                    id,
+                    createdAt,
+                    address,
+                    nickname: newNickname.trim() || null,
+                    sharedWithMe: false,
+                    clientProperty: false,
+                    ownerName: "Fernando Rocha Jr",
+                    projectsCount: 0,
+                  };
+
+                  setItems((prev) => (prev ? [next, ...prev] : [next]));
+                  if (newPhotoDataUrl) setPhotos((prev) => ({ ...prev, [id]: newPhotoDataUrl }));
+                }
+
                 setNewAddress("");
                 setNewNickname("");
+                setNewPropertyType("");
+                setNewPhotoDataUrl("");
                 setAddOpen(false);
               }}
             >
-              Add
+              {addMode === "client" ? "Add client property" : "Add"}
             </Button>
           </div>
         </div>
