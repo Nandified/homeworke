@@ -102,6 +102,44 @@ export function ExpressEstimateReportClient(props: {
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
   const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
 
+  function parseMoneyToNumber(raw: string): number | null {
+    const s = (raw || "").toLowerCase().replace(/\s+/g, " ").trim();
+    if (!s) return null;
+
+    // Extract first numeric token and optional suffix.
+    const m = s.match(/\$?([0-9]+(?:\.[0-9]+)?)(k|m)?/i);
+    if (!m) return null;
+    const n = Number(m[1]);
+    if (!Number.isFinite(n)) return null;
+    const suf = (m[2] || "").toLowerCase();
+    const mult = suf === "k" ? 1000 : suf === "m" ? 1_000_000 : 1;
+    return n * mult;
+  }
+
+  function estimateItemValue(item: { range?: string }): number | null {
+    const r = (item.range || "").replace(/–/g, "-");
+    const parts = r.split("-").map((p) => p.trim());
+    if (parts.length >= 2) {
+      const a = parseMoneyToNumber(parts[0]);
+      const b = parseMoneyToNumber(parts[1]);
+      if (a !== null && b !== null) return (a + b) / 2;
+      return a ?? b;
+    }
+    return parseMoneyToNumber(r);
+  }
+
+  function formatUSD(n: number): string {
+    return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  }
+
+  const totals = useMemo(() => {
+    const fullNums = allItems.map(estimateItemValue).filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+    const selNums = selected.map(estimateItemValue).filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+    const full = fullNums.reduce((a, b) => a + b, 0);
+    const sel = selNums.reduce((a, b) => a + b, 0);
+    return { full, selected: sel };
+  }, [allItems, selected]);
+
   // Load staged file (if present) when arriving from list.
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -251,6 +289,13 @@ export function ExpressEstimateReportClient(props: {
 
               {/* Selected */}
               <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
+                <div className="mb-4 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Total</div>
+                  <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(selected.length ? totals.selected : totals.full)}</div>
+                  <div className="mt-1 text-xs text-[var(--hw-muted)]">
+                    {selected.length ? "Based on selected items (avg of ranges)." : "Based on all items (avg of ranges)."}
+                  </div>
+                </div>
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-sm font-semibold text-[var(--hw-ink)]">Selected</div>

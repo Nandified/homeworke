@@ -16,12 +16,63 @@ type Body = {
   lanes: Lane[];
 };
 
+function parseMoneyToNumber(raw: string): number | null {
+  const s = (raw || "").toLowerCase().replace(/\s+/g, " ").trim();
+  if (!s) return null;
+  const m = s.match(/\$?([0-9]+(?:\.[0-9]+)?)(k|m)?/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  if (!Number.isFinite(n)) return null;
+  const suf = (m[2] || "").toLowerCase();
+  const mult = suf === "k" ? 1000 : suf === "m" ? 1_000_000 : 1;
+  return n * mult;
+}
+
+function estimateItemValue(item: { range?: string }): number | null {
+  const r = (item.range || "").replace(/–/g, "-");
+  const parts = r.split("-").map((p) => p.trim());
+  if (parts.length >= 2) {
+    const a = parseMoneyToNumber(parts[0]);
+    const b = parseMoneyToNumber(parts[1]);
+    if (a !== null && b !== null) return (a + b) / 2;
+    return a ?? b;
+  }
+  return parseMoneyToNumber(r);
+}
+
+function formatUSD(n: number): string {
+  return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+}
+
 const styles = StyleSheet.create({
   page: { padding: 28, fontSize: 11, fontFamily: "Helvetica" },
+
+  header: {
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 14,
+    backgroundColor: "#ffffff",
+  },
   title: { fontSize: 16, fontWeight: 700, marginBottom: 4 },
-  meta: { color: "#6b7280", marginBottom: 12 },
-  laneTitle: { fontSize: 12, fontWeight: 700, marginTop: 10, marginBottom: 6 },
-  item: { marginBottom: 6, paddingBottom: 6, borderBottomWidth: 1, borderBottomColor: "#e5e7eb" },
+  meta: { color: "#6b7280", fontSize: 10 },
+
+  totalCard: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#fecaca",
+    backgroundColor: "#fff1f2",
+    borderRadius: 14,
+    padding: 12,
+  },
+  totalLabel: { color: "#6b7280", fontSize: 9, textTransform: "uppercase" },
+  totalValue: { fontSize: 18, fontWeight: 800, marginTop: 4 },
+  totalNote: { color: "#6b7280", fontSize: 9, marginTop: 2 },
+
+  laneTitle: { fontSize: 10, fontWeight: 700, marginTop: 10, marginBottom: 6, color: "#6b7280", textTransform: "uppercase" },
+
+  item: { marginBottom: 8, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: "#e5e7eb" },
   itemRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
   itemLabel: { fontSize: 11, fontWeight: 600 },
   itemRange: { fontSize: 10, color: "#6b7280" },
@@ -31,14 +82,31 @@ const styles = StyleSheet.create({
 function ReportPdf(props: { body: Body; filtered: Lane[] }) {
   const { body, filtered } = props;
   const now = new Date();
+
+  const nums = filtered
+    .flatMap((l) => l.items)
+    .map((it) => estimateItemValue(it))
+    .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+  const total = nums.reduce((a, b) => a + b, 0);
+
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
-        <Text style={styles.title}>Express Estimate</Text>
-        <Text style={styles.meta}>
-          {body.address} {body.reportType ? `• ${body.reportType}` : ""} • {now.toLocaleString()} •{" "}
-          {body.mode === "selected" ? "Selected items" : "Full"}
-        </Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>Express Estimate</Text>
+          <Text style={styles.meta}>
+            {body.address} {body.reportType ? `• ${body.reportType}` : ""}
+          </Text>
+          <Text style={styles.meta}>
+            {now.toLocaleString()} • {body.mode === "selected" ? "Selected items" : "Full"}
+          </Text>
+
+          <View style={styles.totalCard}>
+            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalValue}>{formatUSD(total)}</Text>
+            <Text style={styles.totalNote}>Based on avg of provided ranges (demo).</Text>
+          </View>
+        </View>
 
         {filtered.map((lane) => (
           <View key={lane.title}>
