@@ -60,6 +60,94 @@ export function Label(props: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return <label {...props} className={cn("text-sm font-semibold text-[var(--hw-ink)] select-none", props.className)} />;
 }
 
+type PickerOption = { id: string; label: string; sublabel?: string };
+
+export function Picker(props: {
+  label?: string;
+  value: string;
+  options: PickerOption[];
+  placeholder?: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const wrapRef = React.useRef<HTMLDivElement | null>(null);
+
+  const active = props.options.find((o) => o.id === props.value) || null;
+
+  React.useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      const el = wrapRef.current;
+      if (!el) return;
+      if (el.contains(e.target as Node)) return;
+      setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  return (
+    <div ref={wrapRef} className="grid gap-2">
+      {props.label ? <Label className="text-xs">{props.label}</Label> : null}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="group flex h-11 w-full items-center justify-between gap-3 rounded-[999px] border border-[var(--hw-line)] bg-gradient-to-b from-white to-[var(--hw-soft)] px-4 text-left shadow-[0_10px_22px_rgba(17,24,39,.06)] outline-none transition hover:shadow-[0_12px_26px_rgba(17,24,39,.08)] focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+        >
+          <span className="min-w-0 truncate text-sm font-medium text-[var(--hw-ink)]">
+            {active?.label || props.placeholder || "Select…"}
+          </span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white/80 text-[var(--hw-muted)] shadow-sm transition group-hover:bg-white">
+            <span className={cn("transition", open ? "rotate-180" : "")}>⌄</span>
+          </span>
+        </button>
+
+        {open ? (
+          <div
+            role="listbox"
+            className="absolute z-20 mt-2 w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]"
+          >
+            <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[var(--hw-red)]/10 blur-[40px]" />
+            <div className="relative max-h-64 overflow-auto p-1">
+              {props.options.map((o) => {
+                const selected = o.id === props.value;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    onClick={() => {
+                      props.onChange(o.id);
+                      setOpen(false);
+                    }}
+                    className={cn(
+                      "w-full rounded-[12px] px-3 py-2 text-left transition",
+                      selected ? "bg-[rgba(229,57,53,.08)] text-[var(--hw-ink)]" : "hover:bg-[var(--hw-soft)] text-[var(--hw-ink)]"
+                    )}
+                  >
+                    <div className="truncate text-sm font-medium">{o.label}</div>
+                    {o.sublabel ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{o.sublabel}</div> : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 export function Input({ className, ...props }: InputProps) {
   return (

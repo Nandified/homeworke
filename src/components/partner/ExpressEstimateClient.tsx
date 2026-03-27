@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 
-import { Button, Card, Chip, Textarea } from "@/components/ui";
+import { Button, Card, Chip, Picker, Textarea } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { stageFile } from "@/lib/staged-files";
@@ -279,18 +279,16 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
               {propertyMode === "existing" ? (
                 <div className="mt-3 grid gap-2">
-                  <select
-                    className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3 text-sm text-[var(--hw-ink)]"
+                  <Picker
                     value={selectedPropertyId}
-                    onChange={(e) => setSelectedPropertyId(e.target.value)}
-                  >
-                    <option value="">Select a property…</option>
-                    {properties.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.kind === "client" ? "Client" : "My"}: {p.label}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Select a property…"
+                    options={properties.map((p) => ({
+                      id: p.id,
+                      label: `${p.kind === "client" ? "Client" : "My"}: ${p.label}`,
+                      sublabel: p.address,
+                    }))}
+                    onChange={setSelectedPropertyId}
+                  />
                   {selectedProperty ? <div className="text-xs text-[var(--hw-muted)]">Using: {selectedProperty.address}</div> : null}
                 </div>
               ) : (
