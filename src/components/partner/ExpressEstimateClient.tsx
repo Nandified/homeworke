@@ -20,6 +20,10 @@ type ExtractedLane = {
   items: Array<{ id: string; label: string; note?: string; range?: string }>;
 };
 
+type AnalyzeResponse =
+  | { ok: true; summary?: string; lanes: ExtractedLane[]; used?: "openai" | "demo" | string }
+  | { ok: false; error: string; detail?: string };
+
 type Report = {
   id: string;
   address: string;
@@ -32,6 +36,9 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string>("");
+  const [analysisSummary, setAnalysisSummary] = useState<string>("");
   const [notes, setNotes] = useState("");
 
   // If a file was staged from the dashboard, load it once on mount.
@@ -85,43 +92,46 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
   const [activeReportId, setActiveReportId] = useState<string | null>(demoMode ? reports[0]?.id ?? null : null);
 
-  const extracted = useMemo((): ExtractedLane[] => {
-    // Stubbed demo parse output — this will be wired to PDF ingestion.
-    return [
-      {
-        title: "Exterior",
-        items: [
-          { id: "roof", label: "Roofing patch / replace", note: "shingles + underlayment", range: "$4.8k–$8.2k" },
-          { id: "gutters", label: "Gutters + downspouts", range: "$1.1k–$1.9k" },
-        ],
-      },
-      {
-        title: "Interior",
-        items: [
-          { id: "paint", label: "Interior paint refresh", note: "living + hall", range: "$1.3k–$2.5k" },
-          { id: "floor", label: "Floor repair / refinish", range: "$900–$2.1k" },
-        ],
-      },
-      {
-        title: "Systems",
-        items: [
-          { id: "hvac", label: "HVAC tune-up / diagnostic", range: "$180–$450" },
-          { id: "plumbing", label: "Plumbing leak locate", range: "$250–$650" },
-        ],
-      },
-      {
-        title: "Need more info",
-        items: [
-          { id: "foundation", label: "Foundation crack severity", note: "photos needed" },
-          { id: "mold", label: "Mold / moisture source", note: "inspection recommended" },
-        ],
-      },
-    ];
-  }, []);
+  const [extracted, setExtracted] = useState<ExtractedLane[]>([]);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
+
+  async function analyzeAndOpen(nextFile: File) {
+    setAnalyzing(true);
+    setAnalysisError("");
+    setAnalysisSummary("");
+
+    try {
+      const location = activeReport?.address || "";
+      const fd = new FormData();
+      fd.set("file", nextFile);
+      fd.set("notes", notes || "");
+      fd.set("location", location);
+
+      const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
+      const j = (await r.json()) as AnalyzeResponse;
+
+      if (!j || !("ok" in (j as any)) || (j as any).ok !== true) {
+        const err = j as Extract<AnalyzeResponse, { ok: false }>;
+        const e = err?.detail ? `${err.error}: ${err.detail}` : String(err?.error || "analyze_failed");
+        throw new Error(e);
+      }
+
+      const ok = j as Extract<AnalyzeResponse, { ok: true }>;
+      setExtracted(ok.lanes || []);
+      setAnalysisSummary(ok.summary || (ok.used === "demo" ? "Demo analysis" : ""));
+
+      // Mark as submitted + open the first report (demo behavior until reports are persisted).
+      setSubmitted(true);
+      setActiveReportId(reports[0]?.id ?? null);
+    } catch (e: any) {
+      setAnalysisError(String(e?.message || e || "analyze_failed"));
+    } finally {
+      setAnalyzing(false);
+    }
+  }
   const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
 
   const activeReport = useMemo(() => reports.find((r) => r.id === activeReportId) || null, [reports, activeReportId]);
@@ -193,17 +203,18 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Button
                 onClick={() => {
-                  if (!file) return;
-                  setSubmitted(true);
-                  // In real wiring: create a report, set it active.
-                  setActiveReportId(reports[0]?.id ?? null);
+                  if (!file || analyzing) return;
+                  analyzeAndOpen(file);
                 }}
-                disabled={!file}
+                disabled={!file || analyzing}
               >
-                {submitted ? "Submitted" : "Submit"}
+                {analyzing ? "Analyzing…" : submitted ? "Submitted" : "Submit"}
               </Button>
-              <div className="text-xs text-[var(--hw-muted)]">We’ll generate suggested line items you can review and edit.</div>
+              <div className="text-xs text-[var(--hw-muted)]">We’ll analyze the PDF and generate location-based pricing you can review and edit.</div>
             </div>
+
+            {analysisError ? <div className="text-xs font-semibold text-[var(--hw-red)]">{analysisError}</div> : null}
+            {analysisSummary ? <div className="text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
           </div>
         </Card>
 
@@ -253,10 +264,9 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               );
             })}
           </div>
-        </Card>
 
-        {/* Open report */}
-        <Card className="p-6">
+          {/* Open report (inside Reports) */}
+          <div className="mt-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">{activeReport ? activeReport.address : "Open a report"}</div>
@@ -276,7 +286,11 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
           {!activeReport ? (
             <div className="mt-5">
-              <EmptyState title="No report selected" text="Choose a report above to view categories and select items." />
+              <EmptyState title="No report selected" text="Choose a report above to view categories and price results." />
+            </div>
+          ) : extracted.length === 0 ? (
+            <div className="mt-5">
+              <EmptyState title="No analysis yet" text="Submit a PDF above to analyze the report and generate price results." />
             </div>
           ) : (
             <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_360px]">
@@ -367,6 +381,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               </div>
             </div>
           )}
+          </div>
         </Card>
       </div>
     </PortalShell>
