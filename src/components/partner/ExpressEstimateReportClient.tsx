@@ -11,7 +11,7 @@ import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
 
 type ExtractedLane = {
   title: string;
-  items: Array<{ id: string; label: string; note?: string; range?: string }>;
+  items: Array<{ id: string; label: string; note?: string; range?: string; price?: number }>;
 };
 
 type AnalyzeResponse =
@@ -67,29 +67,29 @@ export function ExpressEstimateReportClient(props: {
       {
         title: "Exterior",
         items: [
-          { id: "roof", label: "Roofing patch / replace", note: "shingles + underlayment", range: "$4.8k–$8.2k" },
-          { id: "gutters", label: "Gutters + downspouts", range: "$1.1k–$1.9k" },
+          { id: "roof", label: "Roofing patch / replace", note: "shingles + underlayment", range: "$4.8k–$8.2k", price: 6500 },
+          { id: "gutters", label: "Gutters + downspouts", range: "$1.1k–$1.9k", price: 1500 },
         ],
       },
       {
         title: "Interior",
         items: [
-          { id: "paint", label: "Interior paint refresh", note: "living + hall", range: "$1.3k–$2.5k" },
-          { id: "floor", label: "Floor repair / refinish", range: "$900–$2.1k" },
+          { id: "paint", label: "Interior paint refresh", note: "living + hall", range: "$1.3k–$2.5k", price: 1900 },
+          { id: "floor", label: "Floor repair / refinish", range: "$900–$2.1k", price: 1500 },
         ],
       },
       {
         title: "Systems",
         items: [
-          { id: "hvac", label: "HVAC tune-up / diagnostic", range: "$180–$450" },
-          { id: "plumbing", label: "Plumbing leak locate", range: "$250–$650" },
+          { id: "hvac", label: "HVAC tune-up / diagnostic", range: "$180–$450", price: 300 },
+          { id: "plumbing", label: "Plumbing leak locate", range: "$250–$650", price: 450 },
         ],
       },
       {
         title: "Need more info",
         items: [
-          { id: "foundation", label: "Foundation crack severity", note: "photos needed" },
-          { id: "mold", label: "Mold / moisture source", note: "inspection recommended" },
+          { id: "foundation", label: "Foundation crack severity", note: "photos needed", price: 0 },
+          { id: "mold", label: "Mold / moisture source", note: "inspection recommended", price: 0 },
         ],
       },
     ];
@@ -116,7 +116,8 @@ export function ExpressEstimateReportClient(props: {
     return n * mult;
   }
 
-  function estimateItemValue(item: { range?: string }): number | null {
+  function estimateItemValue(item: { range?: string; price?: number }): number | null {
+    if (typeof item.price === "number" && Number.isFinite(item.price)) return item.price;
     const r = (item.range || "").replace(/–/g, "-");
     const parts = r.split("-").map((p) => p.trim());
     if (parts.length >= 2) {
@@ -277,7 +278,10 @@ export function ExpressEstimateReportClient(props: {
                                 <div className="text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
                                 {item.note ? <div className="mt-0.5 text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
                               </div>
-                              <div className="text-xs text-[var(--hw-muted)]">{item.range || "—"}</div>
+                              <div className="text-right">
+                                <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
+                                <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
+                              </div>
                             </div>
                           </button>
                         );
@@ -314,18 +318,28 @@ export function ExpressEstimateReportClient(props: {
                       <div key={item.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
-                          <button
-                            className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
-                            onClick={() => {
-                              setSelectedIds((prev) => {
-                                const next = new Set(prev);
-                                next.delete(item.id);
-                                return next;
-                              });
-                            }}
-                          >
-                            Remove
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
+                              onClick={() => {
+                                // demo: cart action will be wired later
+                              }}
+                            >
+                              Add to cart
+                            </button>
+                            <button
+                              className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                              onClick={() => {
+                                setSelectedIds((prev) => {
+                                  const next = new Set(prev);
+                                  next.delete(item.id);
+                                  return next;
+                                });
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </div>
                         {item.note ? <div className="mt-1 text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
                         {item.range ? <div className="mt-1 text-xs text-[var(--hw-muted)]">{item.range}</div> : null}

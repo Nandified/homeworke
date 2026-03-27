@@ -211,7 +211,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           Open report
                         </Button>
                       </Link>
-                      {!stagedId ? <div className="mt-2 text-[11px] text-[var(--hw-muted)]">(Demo reports open without a new upload.)</div> : null}
+                      {null}
                     </div>
                   </div>
                 </div>

@@ -4,7 +4,7 @@ import { Document, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer
 
 export const runtime = "nodejs";
 
-type LaneItem = { id: string; label: string; note?: string; range?: string };
+type LaneItem = { id: string; label: string; note?: string; range?: string; price?: number };
 type Lane = { title: string; items: LaneItem[] };
 
 type Body = {
@@ -28,7 +28,8 @@ function parseMoneyToNumber(raw: string): number | null {
   return n * mult;
 }
 
-function estimateItemValue(item: { range?: string }): number | null {
+function estimateItemValue(item: { range?: string; price?: number }): number | null {
+  if (typeof item.price === "number" && Number.isFinite(item.price)) return item.price;
   const r = (item.range || "").replace(/–/g, "-");
   const parts = r.split("-").map((p) => p.trim());
   if (parts.length >= 2) {
