@@ -183,7 +183,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       .catch(() => {});
   }, []);
 
-  const propertyRequiredMissing = propertyMode === "existing" && !selectedPropertyId;
+  const propertyRequiredMissing = !selectedPropertyId;
   const selectedProperty = properties.find((p) => p.id === selectedPropertyId) || null;
 
   useEffect(() => {
@@ -195,8 +195,9 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   }, []);
 
   useEffect(() => {
+    // Intentionally do NOT auto-select a property.
+    // We want the user to explicitly confirm the property to avoid accidental submissions.
     if (!properties.length) return;
-    setSelectedPropertyId((prev) => prev || properties[0]?.id || "");
   }, [properties]);
 
   return (
@@ -268,7 +269,15 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               <div className="flex items-center justify-between gap-3">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Property</div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant={propertyMode === "existing" ? "primary" : "secondary"} onClick={() => setPropertyMode("existing")}>
+                  <Button
+                    size="sm"
+                    variant={propertyMode === "existing" ? "primary" : "secondary"}
+                    onClick={() => {
+                      setPropertyMode("existing");
+                      // Force explicit selection to avoid accidental submits.
+                      setSelectedPropertyId("");
+                    }}
+                  >
                     Select
                   </Button>
                   <Button size="sm" variant={propertyMode === "new" ? "primary" : "secondary"} onClick={() => setPropertyMode("new")}>
@@ -289,7 +298,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                     }))}
                     onChange={setSelectedPropertyId}
                   />
-                  {selectedProperty ? <div className="text-xs text-[var(--hw-muted)]">Using: {selectedProperty.address}</div> : null}
+                  {selectedProperty ? <div className="text-xs text-[var(--hw-muted)]">Using: {selectedProperty.address}</div> : <div className="text-xs text-[var(--hw-muted)]">Select a property to continue.</div>}
                 </div>
               ) : (
                 <div className="mt-3 grid gap-3">
