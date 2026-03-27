@@ -4,25 +4,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 
-import { Button, Card, Chip, EmptyState, Textarea } from "@/components/ui";
+import { Button, Card, Chip, Textarea } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
-import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
+import { stageFile } from "@/lib/staged-files";
 
 export type ExpressEstimateClientProps = {
   basePath: "/partner" | "/pro";
   title?: string;
   role: "PARTNER" | "PRO";
 };
-
-type ExtractedLane = {
-  title: string;
-  items: Array<{ id: string; label: string; note?: string; range?: string }>;
-};
-
-type AnalyzeResponse =
-  | { ok: true; summary?: string; lanes: ExtractedLane[]; used?: "openai" | "demo" | string }
-  | { ok: false; error: string; detail?: string };
 
 type Report = {
   id: string;
@@ -34,41 +25,11 @@ type Report = {
 
 export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [file, setFile] = useState<File | null>(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analysisError, setAnalysisError] = useState<string>("");
-  const [analysisSummary, setAnalysisSummary] = useState<string>("");
+  const [fileName, setFileName] = useState<string>("");
+  const [stagedId, setStagedId] = useState<string>("");
   const [notes, setNotes] = useState("");
 
-  // If a file was staged from the dashboard, load it once on mount.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const sp = new URLSearchParams(window.location.search);
-    const staged = sp.get("staged");
-    if (!staged) return;
-
-    (async () => {
-      try {
-        const f = await getStagedFile(staged);
-        if (f) {
-          setFile(f);
-          setSubmitted(false);
-          setSelectedIds(new Set());
-        }
-      } finally {
-        // Always cleanup.
-        try {
-          await deleteStagedFile(staged);
-        } catch {}
-      }
-    })();
-  }, []);
-
   const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
-
-  // Demo mode: prefill so people can instantly see the report UI.
-  const demoMode = typeof window !== "undefined" && window.location.search.includes("demo=1");
 
   const reports = useMemo<Report[]>(() => {
     const now = Date.now();
@@ -90,50 +51,13 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     ];
   }, []);
 
-  // Start with no open report; user must explicitly open one.
-  const [activeReportId, setActiveReportId] = useState<string | null>(null);
-
-  const [extracted, setExtracted] = useState<ExtractedLane[]>([]);
-
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
-  const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
-
-  const activeReport = useMemo(() => reports.find((r) => r.id === activeReportId) || null, [reports, activeReportId]);
-
-  async function analyzeAndOpen(nextFile: File) {
-    setAnalyzing(true);
-    setAnalysisError("");
-    setAnalysisSummary("");
-
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
-      const location = activeReport?.address || "";
-      const fd = new FormData();
-      fd.set("file", nextFile);
-      fd.set("notes", notes || "");
-      fd.set("location", location);
-
-      const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
-      const j = (await r.json()) as AnalyzeResponse;
-
-      if (!j || !("ok" in (j as any)) || (j as any).ok !== true) {
-        const err = j as Extract<AnalyzeResponse, { ok: false }>;
-        const e = err?.detail ? `${err.error}: ${err.detail}` : String(err?.error || "analyze_failed");
-        throw new Error(e);
-      }
-
-      const ok = j as Extract<AnalyzeResponse, { ok: true }>;
-      setExtracted(ok.lanes || []);
-      setAnalysisSummary(ok.summary || (ok.used === "demo" ? "Demo analysis" : ""));
-      setSubmitted(true);
-    } catch (e: any) {
-      setAnalysisError(String(e?.message || e || "analyze_failed"));
-    } finally {
-      setAnalyzing(false);
-    }
-  }
-
-  const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
+      const saved = window.sessionStorage.getItem("hw.expressEstimate.notes") || "";
+      if (saved) setNotes(saved);
+    } catch {}
+  }, []);
 
   return (
     <PortalShell
@@ -141,7 +65,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       title={props.title || "Express Estimate"}
       portalTitle={props.role === "PRO" ? "Real Estate Pro" : undefined}
       nav={nav}
-      description="Upload an inspection/appraisal PDF and generate a polished repair estimate in minutes."
+      description="Upload an inspection/appraisal PDF, then open a report to analyze and download an estimate."
       primaryAction={
         <Link href={`${props.basePath}/dashboard`}>
           <Button variant="secondary">Back to dashboard</Button>
@@ -153,15 +77,17 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         <Card className="p-6">
           <div>
             <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload a PDF</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">Inspection report or appraisal repair request.</div>
+            <div className="mt-1 text-sm text-[var(--hw-muted)]">This PDF will be used when you open a report to analyze it.</div>
           </div>
 
           <div className="mt-4 grid gap-3">
             <label className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 hover:bg-white">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{file ? file.name : "Choose a PDF to upload"}</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">{file ? "Ready to submit." : "Drag & drop or click to browse."}</div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{fileName || "Choose a PDF to upload"}</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                    {fileName ? "Attached. Now open a report below." : "Drag & drop or click to browse."}
+                  </div>
                 </div>
                 <div className="shrink-0">
                   <Button
@@ -184,9 +110,23 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 accept="application/pdf"
                 onChange={(e) => {
                   const next = e.target.files?.[0] ?? null;
-                  setFile(next);
-                  setSubmitted(false);
-                  setSelectedIds(new Set());
+                  if (!next) return;
+                  setFileName(next.name);
+
+                  // Persist notes for the detail page.
+                  try {
+                    window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
+                  } catch {}
+
+                  // Stage file for the report detail page.
+                  void (async () => {
+                    try {
+                      const id = await stageFile(next);
+                      setStagedId(id);
+                    } catch {
+                      setStagedId("");
+                    }
+                  })();
                 }}
               />
             </label>
@@ -195,11 +135,23 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Notes (optional)</div>
               <div className="mt-1 text-sm text-[var(--hw-muted)]">Anything you want the estimate to focus on?</div>
               <div className="mt-2">
-                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add a note…" />
+                <Textarea
+                  value={notes}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setNotes(v);
+                    try {
+                      window.sessionStorage.setItem("hw.expressEstimate.notes", v);
+                    } catch {}
+                  }}
+                  placeholder="Add a note…"
+                />
               </div>
             </div>
 
-            <div className="text-xs text-[var(--hw-muted)]">Pick a report below, then analyze it to generate location-based pricing.</div>
+            <div className="text-xs text-[var(--hw-muted)]">
+              Tip: choose the PDF first, then open a report below to analyze + download from inside that report.
+            </div>
           </div>
         </Card>
 
@@ -208,32 +160,20 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Reports</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">Your uploaded PDFs live here. Open a report to build and download an estimate.</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                Open a report to view results, select items, analyze, and download.
+              </div>
             </div>
             <Chip className="border-[var(--hw-line)] bg-white">{reports.length}</Chip>
           </div>
 
           <div className="mt-4 grid gap-3">
             {reports.map((r) => {
-              const active = r.id === activeReportId;
+              const href = `${props.basePath}/express-estimate/${encodeURIComponent(r.id)}${stagedId ? `?staged=${encodeURIComponent(stagedId)}` : ""}`;
               return (
                 <div
                   key={r.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setActiveReportId(r.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setActiveReportId(r.id);
-                    }
-                  }}
-                  className={
-                    "w-full cursor-pointer rounded-[var(--hw-radius-lg)] border p-4 text-left transition " +
-                    (active
-                      ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.04)]"
-                      : "border-[var(--hw-line)] bg-white hover:bg-[var(--hw-soft)]")
-                  }
+                  className="w-full rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 text-left"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
@@ -247,161 +187,18 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       </div>
                     </div>
                     <div className="shrink-0">
-                      <Button
-                        size="sm"
-                        variant={active ? "primary" : "secondary"}
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setActiveReportId(r.id);
-                        }}
-                      >
-                        Open report
-                      </Button>
+                      <Link href={href}>
+                        <Button size="sm" variant="primary" disabled={!stagedId}>
+                          Open report
+                        </Button>
+                      </Link>
+                      {!stagedId ? <div className="mt-2 text-[11px] text-[var(--hw-muted)]">Attach a PDF above to open.</div> : null}
                     </div>
                   </div>
                 </div>
               );
             })}
           </div>
-
-          {/* Open report (inside Reports) */}
-          {activeReport ? (
-            <div className="mt-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">{activeReport ? activeReport.address : "Open a report"}</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                {activeReport ? `${activeReport.type} • ${activeReport.status}` : "Select a report above to review line items."}
-              </div>
-
-              {analysisError ? <div className="mt-2 text-xs font-semibold text-[var(--hw-red)]">{analysisError}</div> : null}
-              {analysisSummary ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                disabled={!activeReport || !file || analyzing}
-                onClick={() => {
-                  if (!activeReport || !file || analyzing) return;
-                  // Reset prior results before re-analyzing.
-                  setExtracted([]);
-                  setSelectedIds(new Set());
-                  analyzeAndOpen(file);
-                }}
-              >
-                {analyzing ? "Analyzing…" : extracted.length ? "Re-analyze" : "Analyze report"}
-              </Button>
-              <Button size="sm" variant="secondary" disabled={!activeReport || selected.length === 0}>
-                Download selected
-              </Button>
-              <Button size="sm" disabled={!activeReport || extracted.length === 0}>
-                Download full
-              </Button>
-            </div>
-          </div>
-
-          {!activeReport ? (
-            <div className="mt-5">
-              <EmptyState title="No report selected" text="Choose a report above to view categories and price results." />
-            </div>
-          ) : extracted.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState title="No analysis yet" text="Submit a PDF above to analyze the report and generate price results." />
-            </div>
-          ) : (
-            <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_360px]">
-              {/* Lanes */}
-              <div className="grid gap-4">
-                {extracted.map((lane) => (
-                  <div key={lane.title} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
-                    <div className="flex items-center justify-between gap-3 border-b border-[var(--hw-line)] px-4 py-3">
-                      <div className="text-xs font-semibold tracking-wide uppercase text-[var(--hw-muted)]">{lane.title}</div>
-                      <Chip className="border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-ink)]">{lane.items.length}</Chip>
-                    </div>
-                    <div className="grid gap-1 p-2">
-                      {lane.items.map((item) => {
-                        const on = selectedIds.has(item.id);
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedIds((prev) => {
-                                const next = new Set(prev);
-                                if (next.has(item.id)) next.delete(item.id);
-                                else next.add(item.id);
-                                return next;
-                              });
-                            }}
-                            className={
-                              "w-full rounded-[calc(var(--hw-radius-lg)-8px)] border px-3 py-2 text-left transition " +
-                              (on
-                                ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.06)]"
-                                : "border-transparent hover:border-[var(--hw-line)] hover:bg-white")
-                            }
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <div className="text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
-                                {item.note ? <div className="mt-0.5 text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
-                              </div>
-                              <div className="text-xs text-[var(--hw-muted)]">{item.range || "—"}</div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Embedded selection */}
-              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Selected</div>
-                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Items included in your estimate.</div>
-                  </div>
-                  <Chip className="border-[var(--hw-line)] bg-white">{selected.length}</Chip>
-                </div>
-
-                {selected.length === 0 ? (
-                  <div className="mt-4">
-                    <EmptyState title="Nothing selected" text="Tap items to add them here." />
-                  </div>
-                ) : (
-                  <div className="mt-4 grid gap-2">
-                    {selected.map((item) => (
-                      <div key={item.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
-                          <button
-                            className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
-                            onClick={() => {
-                              setSelectedIds((prev) => {
-                                const next = new Set(prev);
-                                next.delete(item.id);
-                                return next;
-                              });
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                        {item.note ? <div className="mt-1 text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
-                        {item.range ? <div className="mt-1 text-xs text-[var(--hw-muted)]">{item.range}</div> : null}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          </div>
-          ) : null}
         </Card>
       </div>
     </PortalShell>
