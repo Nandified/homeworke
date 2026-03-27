@@ -25,8 +25,11 @@ type Report = {
 
 export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const [stagedId, setStagedId] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
   const [notes, setNotes] = useState("");
 
   const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
@@ -111,22 +114,14 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 onChange={(e) => {
                   const next = e.target.files?.[0] ?? null;
                   if (!next) return;
+                  setFile(next);
                   setFileName(next.name);
+                  setStagedId("");
 
                   // Persist notes for the detail page.
                   try {
                     window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
                   } catch {}
-
-                  // Stage file for the report detail page.
-                  void (async () => {
-                    try {
-                      const id = await stageFile(next);
-                      setStagedId(id);
-                    } catch {
-                      setStagedId("");
-                    }
-                  })();
                 }}
               />
             </label>
@@ -149,9 +144,33 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               </div>
             </div>
 
-            <div className="text-xs text-[var(--hw-muted)]">
-              Tip: choose the PDF first, then open a report below to analyze + download from inside that report.
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-xs text-[var(--hw-muted)]">Upload attaches a PDF to create a new report.</div>
+              <Button
+                size="sm"
+                disabled={!file || submitting}
+                onClick={() => {
+                  if (!file || submitting) return;
+                  setSubmitting(true);
+                  setSubmitError("");
+
+                  void (async () => {
+                    try {
+                      const id = await stageFile(file);
+                      setStagedId(id);
+                    } catch {
+                      setSubmitError("Upload failed. Please try again.");
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  })();
+                }}
+              >
+                {submitting ? "Uploading…" : "Upload"}
+              </Button>
             </div>
+
+            {submitError ? <div className="text-xs font-semibold text-[var(--hw-red)]">{submitError}</div> : null}
           </div>
         </Card>
 
@@ -188,11 +207,11 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                     </div>
                     <div className="shrink-0">
                       <Link href={href}>
-                        <Button size="sm" variant="primary" disabled={!stagedId}>
+                        <Button size="sm" variant="primary" disabled={false}>
                           Open report
                         </Button>
                       </Link>
-                      {!stagedId ? <div className="mt-2 text-[11px] text-[var(--hw-muted)]">Attach a PDF above to open.</div> : null}
+                      {!stagedId ? <div className="mt-2 text-[11px] text-[var(--hw-muted)]">(Demo reports open without a new upload.)</div> : null}
                     </div>
                   </div>
                 </div>

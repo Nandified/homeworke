@@ -93,37 +93,8 @@ export function ExpressEstimateReportClient(props: {
     })();
   }, [props.stagedId]);
 
-  async function analyze() {
-    if (!file || !report) return;
-    setAnalyzing(true);
-    setAnalysisError("");
-    setAnalysisSummary("");
-
-    try {
-      const fd = new FormData();
-      fd.set("file", file);
-      fd.set("notes", notes || "");
-      fd.set("location", report.address);
-
-      const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
-      const j = (await r.json()) as AnalyzeResponse;
-
-      if (!j || !("ok" in (j as any)) || (j as any).ok !== true) {
-        const err = j as Extract<AnalyzeResponse, { ok: false }>;
-        const e = err?.detail ? `${err.error}: ${err.detail}` : String(err?.error || "analyze_failed");
-        throw new Error(e);
-      }
-
-      const ok = j as Extract<AnalyzeResponse, { ok: true }>;
-      setExtracted(ok.lanes || []);
-      setAnalysisSummary(ok.summary || (ok.used === "demo" ? "Demo analysis" : ""));
-      setSelectedIds(new Set());
-    } catch (e: any) {
-      setAnalysisError(String(e?.message || e || "analyze_failed"));
-    } finally {
-      setAnalyzing(false);
-    }
-  }
+  // Analysis is triggered during the upload/submit step (list page).
+  // This page focuses on viewing results and downloading.
 
   return (
     <PortalShell
@@ -151,9 +122,6 @@ export function ExpressEstimateReportClient(props: {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" disabled={!report || !file || analyzing} onClick={analyze}>
-                {analyzing ? "Analyzing…" : extracted.length ? "Re-analyze" : "Analyze report"}
-              </Button>
               <Button size="sm" variant="secondary" disabled={!report || selected.length === 0}>
                 Download selected
               </Button>
