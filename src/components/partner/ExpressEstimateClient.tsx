@@ -90,13 +90,16 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     ];
   }, []);
 
-  const [activeReportId, setActiveReportId] = useState<string | null>(demoMode ? reports[0]?.id ?? null : null);
+  // Start with no open report; user must explicitly open one.
+  const [activeReportId, setActiveReportId] = useState<string | null>(null);
 
   const [extracted, setExtracted] = useState<ExtractedLane[]>([]);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
+
+  const activeReport = useMemo(() => reports.find((r) => r.id === activeReportId) || null, [reports, activeReportId]);
 
   async function analyzeAndOpen(nextFile: File) {
     setAnalyzing(true);
@@ -129,9 +132,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       setAnalyzing(false);
     }
   }
-  const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
 
-  const activeReport = useMemo(() => reports.find((r) => r.id === activeReportId) || null, [reports, activeReportId]);
+  const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
 
   return (
     <PortalShell
@@ -215,12 +217,19 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             {reports.map((r) => {
               const active = r.id === activeReportId;
               return (
-                <button
+                <div
                   key={r.id}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setActiveReportId(r.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveReportId(r.id);
+                    }
+                  }}
                   className={
-                    "w-full rounded-[var(--hw-radius-lg)] border p-4 text-left transition " +
+                    "w-full cursor-pointer rounded-[var(--hw-radius-lg)] border p-4 text-left transition " +
                     (active
                       ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.04)]"
                       : "border-[var(--hw-line)] bg-white hover:bg-[var(--hw-soft)]")
@@ -238,18 +247,28 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       </div>
                     </div>
                     <div className="shrink-0">
-                      <Button size="sm" variant={active ? "primary" : "secondary"}>
-                        {active ? "Open" : "View"}
+                      <Button
+                        size="sm"
+                        variant={active ? "primary" : "secondary"}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setActiveReportId(r.id);
+                        }}
+                      >
+                        Open report
                       </Button>
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
 
           {/* Open report (inside Reports) */}
-          <div className="mt-6">
+          {activeReport ? (
+            <div className="mt-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">{activeReport ? activeReport.address : "Open a report"}</div>
@@ -382,6 +401,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             </div>
           )}
           </div>
+          ) : null}
         </Card>
       </div>
     </PortalShell>
