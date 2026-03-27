@@ -62,7 +62,40 @@ export function ExpressEstimateReportClient(props: {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string>("");
   const [analysisSummary, setAnalysisSummary] = useState<string>("");
-  const [extracted, setExtracted] = useState<ExtractedLane[]>([]);
+  const demoExtracted = useMemo<ExtractedLane[]>(() => {
+    return [
+      {
+        title: "Exterior",
+        items: [
+          { id: "roof", label: "Roofing patch / replace", note: "shingles + underlayment", range: "$4.8k–$8.2k" },
+          { id: "gutters", label: "Gutters + downspouts", range: "$1.1k–$1.9k" },
+        ],
+      },
+      {
+        title: "Interior",
+        items: [
+          { id: "paint", label: "Interior paint refresh", note: "living + hall", range: "$1.3k–$2.5k" },
+          { id: "floor", label: "Floor repair / refinish", range: "$900–$2.1k" },
+        ],
+      },
+      {
+        title: "Systems",
+        items: [
+          { id: "hvac", label: "HVAC tune-up / diagnostic", range: "$180–$450" },
+          { id: "plumbing", label: "Plumbing leak locate", range: "$250–$650" },
+        ],
+      },
+      {
+        title: "Need more info",
+        items: [
+          { id: "foundation", label: "Foundation crack severity", note: "photos needed" },
+          { id: "mold", label: "Mold / moisture source", note: "inspection recommended" },
+        ],
+      },
+    ];
+  }, []);
+
+  const [extracted, setExtracted] = useState<ExtractedLane[]>(demoExtracted);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -96,6 +129,40 @@ export function ExpressEstimateReportClient(props: {
   // Analysis is triggered during the upload/submit step (list page).
   // This page focuses on viewing results and downloading.
 
+  async function download(mode: "full" | "selected") {
+    if (!report) return;
+
+    const ids = mode === "selected" ? selected.map((s) => s.id) : null;
+
+    const r = await fetch("/api/express-estimate/download", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        reportId: report.id,
+        address: report.address,
+        reportType: report.type,
+        mode,
+        selectedIds: ids,
+        lanes: extracted,
+      }),
+    });
+
+    if (!r.ok) {
+      setAnalysisError("Download failed.");
+      return;
+    }
+
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${report.address.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase()}-${mode}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <PortalShell
       role={props.role}
@@ -122,22 +189,18 @@ export function ExpressEstimateReportClient(props: {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="secondary" disabled={!report || selected.length === 0}>
+              <Button size="sm" variant="secondary" disabled={!report || selected.length === 0} onClick={() => download("selected")}>
                 Download selected
               </Button>
-              <Button size="sm" disabled={!report || extracted.length === 0}>
+              <Button size="sm" disabled={!report || extracted.length === 0} onClick={() => download("full")}>
                 Download full
               </Button>
             </div>
           </div>
 
-          {!file ? (
+          {extracted.length === 0 ? (
             <div className="mt-5">
-              <EmptyState title="No PDF attached" text="Go back to reports and select a PDF to analyze." />
-            </div>
-          ) : extracted.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState title="No analysis yet" text="Click Analyze report to generate price results." />
+              <EmptyState title="No demo data" text="No items available yet." />
             </div>
           ) : (
             <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_360px]">
