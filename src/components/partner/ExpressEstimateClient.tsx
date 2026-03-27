@@ -122,10 +122,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       const ok = j as Extract<AnalyzeResponse, { ok: true }>;
       setExtracted(ok.lanes || []);
       setAnalysisSummary(ok.summary || (ok.used === "demo" ? "Demo analysis" : ""));
-
-      // Mark as submitted + open the first report (demo behavior until reports are persisted).
       setSubmitted(true);
-      setActiveReportId(reports[0]?.id ?? null);
     } catch (e: any) {
       setAnalysisError(String(e?.message || e || "analyze_failed"));
     } finally {
@@ -200,21 +197,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Button
-                onClick={() => {
-                  if (!file || analyzing) return;
-                  analyzeAndOpen(file);
-                }}
-                disabled={!file || analyzing}
-              >
-                {analyzing ? "Analyzing…" : submitted ? "Submitted" : "Submit"}
-              </Button>
-              <div className="text-xs text-[var(--hw-muted)]">We’ll analyze the PDF and generate location-based pricing you can review and edit.</div>
-            </div>
-
-            {analysisError ? <div className="text-xs font-semibold text-[var(--hw-red)]">{analysisError}</div> : null}
-            {analysisSummary ? <div className="text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
+            <div className="text-xs text-[var(--hw-muted)]">Pick a report below, then analyze it to generate location-based pricing.</div>
           </div>
         </Card>
 
@@ -273,12 +256,29 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               <div className="mt-1 text-sm text-[var(--hw-muted)]">
                 {activeReport ? `${activeReport.type} • ${activeReport.status}` : "Select a report above to review line items."}
               </div>
+
+              {analysisError ? <div className="mt-2 text-xs font-semibold text-[var(--hw-red)]">{analysisError}</div> : null}
+              {analysisSummary ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
             </div>
+
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="secondary" disabled={!activeReport}>
+              <Button
+                size="sm"
+                disabled={!activeReport || !file || analyzing}
+                onClick={() => {
+                  if (!activeReport || !file || analyzing) return;
+                  // Reset prior results before re-analyzing.
+                  setExtracted([]);
+                  setSelectedIds(new Set());
+                  analyzeAndOpen(file);
+                }}
+              >
+                {analyzing ? "Analyzing…" : extracted.length ? "Re-analyze" : "Analyze report"}
+              </Button>
+              <Button size="sm" variant="secondary" disabled={!activeReport || selected.length === 0}>
                 Download selected
               </Button>
-              <Button size="sm" disabled={!activeReport}>
+              <Button size="sm" disabled={!activeReport || extracted.length === 0}>
                 Download full
               </Button>
             </div>
