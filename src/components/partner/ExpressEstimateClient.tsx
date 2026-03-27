@@ -213,168 +213,177 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       }
     >
       <div className="grid gap-6">
-        {/* Property */}
-        <Card className="p-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Property</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">Choose an existing property, or create a new one (my property or a client property).</div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant={propertyMode === "existing" ? "primary" : "secondary"} onClick={() => setPropertyMode("existing")}>Existing</Button>
-              <Button size="sm" variant={propertyMode === "new" ? "primary" : "secondary"} onClick={() => setPropertyMode("new")}>New</Button>
-            </div>
-          </div>
-
-          {propertyMode === "existing" ? (
-            <div className="mt-4 grid gap-2">
-              <div className="text-xs font-semibold text-[var(--hw-muted)]">Select a property</div>
-              <select
-                className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3 text-sm text-[var(--hw-ink)]"
-                value={selectedPropertyId}
-                onChange={(e) => setSelectedPropertyId(e.target.value)}
-              >
-                {properties.length === 0 ? <option value="">No properties yet</option> : null}
-                {properties.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.kind === "client" ? "Client" : "My"}: {p.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <div className="mt-4 grid gap-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPropertyOwner("my")}
-                  className={
-                    "rounded-full px-3 py-2 text-xs font-semibold transition " +
-                    (propertyOwner === "my"
-                      ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                      : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-                  }
-                >
-                  My property
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPropertyOwner("client")}
-                  className={
-                    "rounded-full px-3 py-2 text-xs font-semibold transition " +
-                    (propertyOwner === "client"
-                      ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                      : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-                  }
-                >
-                  Client property
-                </button>
-              </div>
-
-              {propertyOwner === "client" ? (
-                <Card className="p-4">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Client details (optional)</div>
-                  <div className="mt-2 grid gap-3 sm:grid-cols-2">
-                    <input
-                      className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                      value={newClientName}
-                      onChange={(e) => setNewClientName(e.target.value)}
-                      placeholder="Client name"
-                    />
-                    <input
-                      className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                      value={newClientPhone}
-                      onChange={(e) => setNewClientPhone(e.target.value)}
-                      placeholder="Phone"
-                    />
-                    <input
-                      className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm sm:col-span-2"
-                      value={newClientEmail}
-                      onChange={(e) => setNewClientEmail(e.target.value)}
-                      placeholder="Email"
-                    />
-                  </div>
-                </Card>
-              ) : null}
-
-              <div className="grid gap-2">
-                <div className="text-xs font-semibold text-[var(--hw-muted)]">Address</div>
-                <input
-                  className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                  value={newPropertyAddress}
-                  onChange={(e) => setNewPropertyAddress(e.target.value)}
-                  placeholder="123 Main St, Chicago, IL 606.."
-                />
-                <div className="text-xs text-[var(--hw-muted)]">(Google Places autocomplete next.)</div>
-              </div>
-
-              <div className="grid gap-2">
-                <div className="text-xs font-semibold text-[var(--hw-muted)]">Nickname (optional)</div>
-                <input
-                  className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                  value={newPropertyNickname}
-                  onChange={(e) => setNewPropertyNickname(e.target.value)}
-                  placeholder="Home, Lake Condo…"
-                />
-              </div>
-
-              <div className="flex justify-end">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    const addr = normalizeAddress(newPropertyAddress);
-                    if (!addr) return;
-
-                    const id = `${propertyOwner === "client" ? "prop_client" : "prop_local"}_${Math.random().toString(36).slice(2, 10)}`;
-                    const createdAt = new Date().toISOString();
-
-                    if (propertyOwner === "client") {
-                      const next: StoredClientProperty = {
-                        id,
-                        createdAt,
-                        address: addr,
-                        nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
-                        clientName: newClientName || undefined,
-                        clientEmail: newClientEmail || undefined,
-                        clientPhone: newClientPhone || undefined,
-                      };
-                      const items = [next, ...readClientProperties()];
-                      writeClientProperties(items);
-                    } else {
-                      const next: StoredProperty = {
-                        id,
-                        createdAt,
-                        address: addr,
-                        nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
-                      };
-                      const items = [next, ...readCustomProperties()];
-                      writeCustomProperties(items);
-                    }
-
-                    const p = { id, label: normalizeAddress(newPropertyNickname || addr), address: addr, kind: propertyOwner } as const;
-                    setProperties((prev) => [p, ...prev]);
-                    setSelectedPropertyId(id);
-                    setPropertyMode("existing");
-
-                    setNewPropertyAddress("");
-                    setNewPropertyNickname("");
-                    setNewClientName("");
-                    setNewClientEmail("");
-                    setNewClientPhone("");
-                  }}
-                >
-                  Create property
-                </Button>
-              </div>
-            </div>
-          )}
-        </Card>
-
         {/* Upload */}
         <Card className="p-6">
           <div>
             <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload a PDF</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">This PDF will be used when you open a report to analyze it.</div>
+            <div className="mt-1 text-sm text-[var(--hw-muted)]">Choose a property context, attach a PDF, then submit the report.</div>
+          </div>
+
+          {/* Property selection lives inside Upload */}
+          <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Property</div>
+                <div className="mt-1 text-xs text-[var(--hw-muted)]">Required for location-based pricing.</div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant={propertyMode === "existing" ? "primary" : "secondary"} onClick={() => setPropertyMode("existing")}>
+                  Existing
+                </Button>
+                <Button size="sm" variant={propertyMode === "new" ? "primary" : "secondary"} onClick={() => setPropertyMode("new")}>
+                  New
+                </Button>
+              </div>
+            </div>
+
+            {propertyMode === "existing" ? (
+              <div className="mt-3 grid gap-2">
+                <div className="text-xs font-semibold text-[var(--hw-muted)]">Select a property</div>
+                <select
+                  className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3 text-sm text-[var(--hw-ink)]"
+                  value={selectedPropertyId}
+                  onChange={(e) => setSelectedPropertyId(e.target.value)}
+                >
+                  {properties.length === 0 ? <option value="">No properties yet</option> : null}
+                  {properties.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.kind === "client" ? "Client" : "My"}: {p.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div className="mt-3 grid gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPropertyOwner("my")}
+                    className={
+                      "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                      (propertyOwner === "my"
+                        ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                        : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                    }
+                  >
+                    My property
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPropertyOwner("client")}
+                    className={
+                      "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                      (propertyOwner === "client"
+                        ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                        : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                    }
+                  >
+                    Client property
+                  </button>
+                </div>
+
+                {propertyOwner === "client" ? (
+                  <Card className="p-4">
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Client details (optional)</div>
+                    <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                      <input
+                        className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
+                        value={newClientName}
+                        onChange={(e) => setNewClientName(e.target.value)}
+                        placeholder="Client name"
+                      />
+                      <input
+                        className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
+                        value={newClientPhone}
+                        onChange={(e) => setNewClientPhone(e.target.value)}
+                        placeholder="Phone"
+                      />
+                      <input
+                        className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm sm:col-span-2"
+                        value={newClientEmail}
+                        onChange={(e) => setNewClientEmail(e.target.value)}
+                        placeholder="Email"
+                      />
+                    </div>
+                  </Card>
+                ) : null}
+
+                <div className="grid gap-2">
+                  <div className="text-xs font-semibold text-[var(--hw-muted)]">Address</div>
+                  <input
+                    className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
+                    value={newPropertyAddress}
+                    onChange={(e) => setNewPropertyAddress(e.target.value)}
+                    placeholder="123 Main St, Chicago, IL 606.."
+                  />
+                  <div className="text-xs text-[var(--hw-muted)]">(Google Places autocomplete next.)</div>
+                </div>
+
+                <div className="grid gap-2">
+                  <div className="text-xs font-semibold text-[var(--hw-muted)]">Nickname (optional)</div>
+                  <input
+                    className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
+                    value={newPropertyNickname}
+                    onChange={(e) => setNewPropertyNickname(e.target.value)}
+                    placeholder="Home, Lake Condo…"
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const addr = normalizeAddress(newPropertyAddress);
+                      if (!addr) return;
+
+                      const id = `${propertyOwner === "client" ? "prop_client" : "prop_local"}_${Math.random().toString(36).slice(2, 10)}`;
+                      const createdAt = new Date().toISOString();
+
+                      if (propertyOwner === "client") {
+                        const next: StoredClientProperty = {
+                          id,
+                          createdAt,
+                          address: addr,
+                          nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
+                          clientName: newClientName || undefined,
+                          clientEmail: newClientEmail || undefined,
+                          clientPhone: newClientPhone || undefined,
+                        };
+                        const items = [next, ...readClientProperties()];
+                        writeClientProperties(items);
+                      } else {
+                        const next: StoredProperty = {
+                          id,
+                          createdAt,
+                          address: addr,
+                          nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
+                        };
+                        const items = [next, ...readCustomProperties()];
+                        writeCustomProperties(items);
+                      }
+
+                      const p = { id, label: normalizeAddress(newPropertyNickname || addr), address: addr, kind: propertyOwner } as const;
+                      setProperties((prev) => [p, ...prev]);
+                      setSelectedPropertyId(id);
+                      setPropertyMode("existing");
+
+                      setNewPropertyAddress("");
+                      setNewPropertyNickname("");
+                      setNewClientName("");
+                      setNewClientEmail("");
+                      setNewClientPhone("");
+                    }}
+                  >
+                    Create property
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {propertyRequiredMissing ? (
+              <div className="mt-2 text-xs font-semibold text-[var(--hw-red)]">Select a property (or create a new one) before uploading.</div>
+            ) : null}
+            {selectedProperty ? <div className="mt-2 text-xs text-[var(--hw-muted)]">Using address for pricing: {selectedProperty.address}</div> : null}
           </div>
 
           <div className="mt-4 grid gap-3">
