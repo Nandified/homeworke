@@ -158,10 +158,36 @@ export function Modal(props: {
   title: string;
   children: React.ReactNode;
   onClose: () => void;
+  /**
+   * Mobile placement: some modals should feel like a bottom-sheet, others should float centered.
+   * Defaults to bottom-sheet on mobile to match the existing UX.
+   */
+  mobilePlacement?: "bottom" | "center";
+  /**
+   * When this value changes (or when opening), the modal body will scroll to top.
+   * Useful for tabbed/step flows inside a modal.
+   */
+  scrollKey?: unknown;
 }) {
+  const bodyRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!props.open) return;
+    // Ensure the user always lands at the top when opening or switching tabs/steps.
+    bodyRef.current?.scrollTo({ top: 0 });
+  }, [props.open, props.scrollKey]);
+
   if (!props.open) return null;
+
+  const placement = props.mobilePlacement ?? "bottom";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-3 backdrop-blur-sm sm:items-center sm:p-5">
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex justify-center bg-black/50 p-3 backdrop-blur-sm sm:items-center sm:p-5",
+        placement === "bottom" ? "items-end" : "items-center"
+      )}
+    >
       <div className="w-full max-w-xl animate-[fadeScaleIn_150ms_ease-out] overflow-hidden rounded-t-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.15)] sm:rounded-[var(--hw-radius-lg)] max-h-[calc(100vh-1.5rem)]">
         <div className="flex items-center justify-between border-b border-[var(--hw-line)] px-4 py-3 sm:px-6 sm:py-4">
           <div className="text-sm font-semibold text-[var(--hw-ink)]">{props.title}</div>
@@ -170,6 +196,7 @@ export function Modal(props: {
           </Button>
         </div>
         <div
+          ref={bodyRef}
           className="max-h-[calc(100vh-8rem)] overflow-y-auto p-4 sm:p-6 overscroll-contain"
           style={{ WebkitOverflowScrolling: "touch" }}
         >

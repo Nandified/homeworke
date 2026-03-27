@@ -392,6 +392,8 @@ export function ProPropertiesClient(props: {
           setAddOpen(false);
         }}
         title="Add property"
+        mobilePlacement="center"
+        scrollKey={addMode}
       >
         <div className="grid gap-4">
           {/* Mode toggle */}
