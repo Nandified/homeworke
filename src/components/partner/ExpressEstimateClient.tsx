@@ -91,6 +91,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [notes, setNotes] = useState("");
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [reportQuery, setReportQuery] = useState("");
 
   const [propertyMode, setPropertyMode] = useState<"existing" | "new">("existing");
   const [propertyOwner, setPropertyOwner] = useState<"my" | "client">("my");
@@ -124,6 +125,15 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       },
     ];
   }, []);
+
+  const filteredReports = useMemo(() => {
+    const q = normalizeAddress(reportQuery).toLowerCase();
+    if (!q) return reports;
+    return reports.filter((r) => {
+      const hay = `${r.address} ${r.type} ${r.status}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [reportQuery, reports]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -237,7 +247,12 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
               <button
                 type="button"
-                className="flex w-full items-center justify-between gap-3 p-4 text-left"
+                className={
+                  "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
+                  (file
+                    ? "border-b border-[rgba(229,57,53,.14)] bg-[rgba(229,57,53,.05)] shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]"
+                    : "")
+                }
                 onClick={() => setStep(1)}
               >
                 <div className="min-w-0">
@@ -349,7 +364,13 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
               <button
                 type="button"
-                className={"flex w-full items-center justify-between gap-3 p-4 text-left " + (!file ? "opacity-60" : "")}
+                className={
+                  "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
+                  (!file ? "opacity-60 " : "") +
+                  (selectedPropertyId
+                    ? "border-b border-[rgba(229,57,53,.14)] bg-[rgba(229,57,53,.05)] shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]"
+                    : "")
+                }
                 onClick={() => {
                   if (!file) return;
                   setStep(2);
@@ -536,7 +557,13 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
               <button
                 type="button"
-                className={"flex w-full items-center justify-between gap-3 p-4 text-left " + (!file || !selectedPropertyId ? "opacity-60" : "")}
+                className={
+                  "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
+                  (!file || !selectedPropertyId ? "opacity-60 " : "") +
+                  (notes.trim()
+                    ? "border-b border-[rgba(229,57,53,.14)] bg-[rgba(229,57,53,.05)] shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]"
+                    : "")
+                }
                 onClick={() => {
                   if (!file || !selectedPropertyId) return;
                   setStep(3);
@@ -612,7 +639,25 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
           </div>
 
           <div className="mt-4 grid gap-3">
-            {reports.map((r) => {
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <input
+                className="h-10 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3 text-sm"
+                value={reportQuery}
+                onChange={(e) => setReportQuery(e.target.value)}
+                placeholder="Search reports…"
+              />
+              <div className="shrink-0 text-xs text-[var(--hw-muted)]">
+                {filteredReports.length > 10 ? `Showing 10 of ${filteredReports.length}` : `${filteredReports.length} total`}
+              </div>
+            </div>
+
+            {filteredReports.length === 0 ? (
+              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 text-sm text-[var(--hw-muted)]">
+                No reports match that search.
+              </div>
+            ) : null}
+
+            {filteredReports.slice(0, 10).map((r) => {
               const selectedProp = properties.find((p) => p.id === selectedPropertyId) || null;
               const address = selectedProp?.address || r.address;
               const q = new URLSearchParams();
