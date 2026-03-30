@@ -307,7 +307,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        fileInputRef.current?.click();
+                        setStep(1);
                       }}
                     >
                       Change
