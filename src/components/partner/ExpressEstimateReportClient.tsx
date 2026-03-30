@@ -96,6 +96,9 @@ export function ExpressEstimateReportClient(props: {
             price: 1500,
             evidence: [{ src: svgThumb("Gutter"), caption: "Gutters" }],
           },
+          { id: "siding", label: "Siding repair", note: "loose panels", range: "$900–$2.2k", price: 1500, evidence: [{ src: svgThumb("Siding") }] },
+          { id: "deck", label: "Deck board replacement", note: "rot / splintering", range: "$600–$1.6k", price: 1100, evidence: [{ src: svgThumb("Deck") }] },
+          { id: "chimney", label: "Chimney cap / flashing", range: "$450–$1.4k", price: 850 },
         ],
       },
       {
@@ -110,6 +113,9 @@ export function ExpressEstimateReportClient(props: {
             evidence: [{ src: svgThumb("Paint"), caption: "Wall" }, { src: svgThumb("Trim"), caption: "Trim" }],
           },
           { id: "floor", label: "Floor repair / refinish", range: "$900–$2.1k", price: 1500 },
+          { id: "drywall", label: "Drywall patch + texture", note: "water stain", range: "$250–$900", price: 550 },
+          { id: "window", label: "Window seal / sash repair", range: "$180–$650", price: 420 },
+          { id: "door", label: "Door alignment + weatherstrip", range: "$120–$420", price: 260 },
         ],
       },
       {
@@ -117,6 +123,9 @@ export function ExpressEstimateReportClient(props: {
         items: [
           { id: "hvac", label: "HVAC tune-up / diagnostic", range: "$180–$450", price: 300 },
           { id: "plumbing", label: "Plumbing leak locate", range: "$250–$650", price: 450 },
+          { id: "water_heater", label: "Water heater inspection", range: "$150–$400", price: 260 },
+          { id: "electrical", label: "Electrical panel evaluation", range: "$250–$850", price: 520 },
+          { id: "sump", label: "Sump pump test / replace", range: "$220–$950", price: 520 },
         ],
       },
       {
@@ -124,6 +133,8 @@ export function ExpressEstimateReportClient(props: {
         items: [
           { id: "foundation", label: "Foundation crack severity", note: "photos needed", price: 0 },
           { id: "mold", label: "Mold / moisture source", note: "inspection recommended", price: 0 },
+          { id: "attic", label: "Attic ventilation", note: "needs photos", price: 0 },
+          { id: "crawl", label: "Crawlspace moisture", note: "needs inspection", price: 0 },
         ],
       },
     ];
