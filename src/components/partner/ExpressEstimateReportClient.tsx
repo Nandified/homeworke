@@ -319,9 +319,9 @@ export function ExpressEstimateReportClient(props: {
               <EmptyState title="No demo data" text="No items available yet." />
             </div>
           ) : (
-            <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_360px]">
+            <div className="mt-5 grid gap-6">
               {/* Lanes */}
-              <div className="grid gap-4">
+              <div className="grid gap-4 lg:grid-cols-2">
                 {extracted.map((lane) => (
                   <div key={lane.title} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
                     <div className="flex items-center justify-between gap-3 border-b border-[var(--hw-line)] px-4 py-3">
@@ -429,72 +429,50 @@ export function ExpressEstimateReportClient(props: {
                 </div>
               </div>
 
-              {/* Selected */}
-              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
-                <div className="mb-4 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Instant Estimate total</div>
-                  <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">
-                    {formatUSD(selected.length ? totals.selected : totals.full)}
-                  </div>
-                  <div className="mt-1 text-xs text-[var(--hw-muted)]">
-                    {selected.length ? "Based on selected items (avg of ranges)." : "Based on all items (avg of ranges)."}
-                  </div>
-                </div>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Selected items</div>
-                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Included in your Instant Estimate download.</div>
-                  </div>
-                  <Chip className="border-[var(--hw-line)] bg-white">{selected.length}</Chip>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Button size="sm" disabled={!report || selected.length === 0} onClick={() => download("selected")}>
-                    Download selected
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    disabled={selected.length === 0}
-                    onClick={() => {
-                      setSelectedIds(new Set());
-                    }}
-                  >
-                    Clear
-                  </Button>
-                </div>
-
-
-                {selected.length === 0 ? (
-                  <div className="mt-4">
-                    <EmptyState title="Nothing selected" text="Use “Select item” to include items in the Instant Estimate download." />
-                  </div>
-                ) : (
-                  <div className="mt-4 grid gap-2">
-                    {selected.map((item) => (
-                      <div key={item.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
-                            {item.note ? <div className="mt-1 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
-                          </div>
-                          <button
-                            className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
-                            onClick={() => {
-                              setSelectedIds((prev) => {
-                                const next = new Set(prev);
-                                next.delete(item.id);
-                                return next;
-                              });
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </div>
+              {/* Sticky bottom Instant Estimate bar (content width) */}
+              <div className="sticky bottom-4 mt-2">
+                <div className="rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white/95 p-4 shadow-[0_18px_48px_rgba(17,24,39,.14)] backdrop-blur">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Instant Estimate Total</div>
+                      <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">
+                        {formatUSD(selected.length ? totals.selected : totals.full)}
                       </div>
-                    ))}
+                      <div className="mt-1 text-xs text-[var(--hw-muted)]">
+                        {selected.length
+                          ? `Selected ${selected.length} item${selected.length === 1 ? "" : "s"}`
+                          : `All items (${allItems.length})`}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button size="sm" variant="secondary" disabled={selected.length === 0} onClick={() => setDrawerOpen(true)}>
+                        Selected ({selected.length})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled={selected.length === 0}
+                        onClick={() => setSelectedIds(new Set())}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={!report || extracted.length === 0 || downloading !== ""}
+                        onClick={() => setDownloadOpen(true)}
+                        className="gap-2"
+                      >
+                        <Download className="h-4 w-4" />
+                        {downloading ? "Preparing…" : "Download report"}
+                      </Button>
+                    </div>
                   </div>
-                )}
+
+                  {selected.length === 0 ? (
+                    <div className="mt-3 text-xs text-[var(--hw-muted)]">Tip: Select items to download a shorter report for clients.</div>
+                  ) : null}
+                </div>
               </div>
             </div>
           )}
