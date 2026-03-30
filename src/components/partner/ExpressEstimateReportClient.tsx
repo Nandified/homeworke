@@ -272,9 +272,6 @@ export function ExpressEstimateReportClient(props: {
               <Button size="sm" disabled={!report || extracted.length === 0} onClick={() => download("full")}>
                 Download full
               </Button>
-              <Button size="sm" variant="secondary" disabled={selected.length === 0} onClick={() => setDrawerOpen(true)}>
-                Selected ({selected.length})
-              </Button>
               <Button size="sm" variant="secondary" disabled={repairs.length === 0} onClick={() => setRepairsOpen(true)}>
                 Repairs ({repairs.length})
               </Button>
@@ -396,6 +393,9 @@ export function ExpressEstimateReportClient(props: {
                   <Button size="sm" disabled={!report || selected.length === 0} onClick={() => download("selected")}>
                     Download selected
                   </Button>
+                  <Button size="sm" variant="secondary" disabled={selected.length === 0} onClick={() => setDrawerOpen(true)}>
+                    View selected
+                  </Button>
                   <Button
                     size="sm"
                     variant="secondary"
@@ -406,6 +406,22 @@ export function ExpressEstimateReportClient(props: {
                   >
                     Clear
                   </Button>
+                </div>
+
+                <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-semibold text-[var(--hw-ink)]">Book repairs</div>
+                      <div className="mt-1 text-sm text-[var(--hw-muted)]">Optional — move selected repairs into booking.</div>
+                    </div>
+                    <Chip className="border-[var(--hw-line)] bg-white">{repairs.length}</Chip>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Button size="sm" disabled={repairs.length === 0} onClick={() => setRepairsOpen(true)}>
+                      Review repairs
+                    </Button>
+                    <div className="text-xs font-semibold text-[var(--hw-muted)]">Est. {formatUSD(totals.repairs)}</div>
+                  </div>
                 </div>
 
                 {selected.length === 0 ? (
