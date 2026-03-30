@@ -264,7 +264,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 setFile(next);
                 setFileName(next.name);
                 setStagedId("");
-                setStep(2);
+                setStep(selectedPropertyId ? 3 : 2);
 
                 try {
                   window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
@@ -340,7 +340,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       setFile(next);
                       setFileName(next.name);
                       setStagedId("");
-                      setStep(2);
+                      setStep(selectedPropertyId ? 3 : 2);
 
                       try {
                         window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
