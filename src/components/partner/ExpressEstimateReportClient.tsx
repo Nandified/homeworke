@@ -34,6 +34,10 @@ export function ExpressEstimateReportClient(props: {
   reportId: string;
   stagedId?: string;
 }) {
+  function svgThumb(label: string, bg = "#fdecec", fg = "#b91c1c") {
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">\n  <rect x="0" y="0" width="96" height="96" rx="18" fill="${bg}"/>\n  <text x="48" y="52" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Arial" font-size="12" font-weight="700" fill="${fg}">${label}</text>\n</svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
   const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
 
   const demoReports = useMemo<Report[]>(() => {
@@ -75,14 +79,32 @@ export function ExpressEstimateReportClient(props: {
             note: "shingles + underlayment",
             range: "$4.8k–$8.2k",
             price: 6500,
+            evidence: [
+              { src: svgThumb("Roof"), caption: "Roof photo" },
+              { src: svgThumb("Shingle"), caption: "Shingles" },
+              { src: svgThumb("Flashing"), caption: "Flashing" },
+            ],
           },
-          { id: "gutters", label: "Gutters + downspouts", range: "$1.1k–$1.9k", price: 1500 },
+          {
+            id: "gutters",
+            label: "Gutters + downspouts",
+            range: "$1.1k–$1.9k",
+            price: 1500,
+            evidence: [{ src: svgThumb("Gutter"), caption: "Gutters" }],
+          },
         ],
       },
       {
         title: "Interior",
         items: [
-          { id: "paint", label: "Interior paint refresh", note: "living + hall", range: "$1.3k–$2.5k", price: 1900 },
+          {
+            id: "paint",
+            label: "Interior paint refresh",
+            note: "living + hall",
+            range: "$1.3k–$2.5k",
+            price: 1900,
+            evidence: [{ src: svgThumb("Paint"), caption: "Wall" }, { src: svgThumb("Trim"), caption: "Trim" }],
+          },
           { id: "floor", label: "Floor repair / refinish", range: "$900–$2.1k", price: 1500 },
         ],
       },
@@ -106,11 +128,15 @@ export function ExpressEstimateReportClient(props: {
   const [extracted, setExtracted] = useState<ExtractedLane[]>(demoExtracted);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [repairIds, setRepairIds] = useState<Set<string>>(new Set());
+
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [repairsOpen, setRepairsOpen] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
   const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
+  const repairs = useMemo(() => allItems.filter((item) => repairIds.has(item.id)), [allItems, repairIds]);
 
   function parseMoneyToNumber(raw: string): number | null {
     const s = (raw || "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -146,10 +172,12 @@ export function ExpressEstimateReportClient(props: {
   const totals = useMemo(() => {
     const fullNums = allItems.map(estimateItemValue).filter((v): v is number => typeof v === "number" && Number.isFinite(v));
     const selNums = selected.map(estimateItemValue).filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+    const repNums = repairs.map(estimateItemValue).filter((v): v is number => typeof v === "number" && Number.isFinite(v));
     const full = fullNums.reduce((a, b) => a + b, 0);
     const sel = selNums.reduce((a, b) => a + b, 0);
-    return { full, selected: sel };
-  }, [allItems, selected]);
+    const rep = repNums.reduce((a, b) => a + b, 0);
+    return { full, selected: sel, repairs: rep };
+  }, [allItems, repairs, selected]);
 
   // Load staged file (if present) when arriving from list.
   useEffect(() => {
@@ -244,13 +272,11 @@ export function ExpressEstimateReportClient(props: {
               <Button size="sm" disabled={!report || extracted.length === 0} onClick={() => download("full")}>
                 Download full
               </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={selected.length === 0}
-                onClick={() => setDrawerOpen(true)}
-              >
+              <Button size="sm" variant="secondary" disabled={selected.length === 0} onClick={() => setDrawerOpen(true)}>
                 Selected ({selected.length})
+              </Button>
+              <Button size="sm" variant="secondary" disabled={repairs.length === 0} onClick={() => setRepairsOpen(true)}>
+                Repairs ({repairs.length})
               </Button>
             </div>
           </div>
@@ -295,18 +321,20 @@ export function ExpressEstimateReportClient(props: {
                               </div>
 
                               {item.evidence?.length ? (
-                                <div className="flex flex-wrap gap-2">
-                                  {item.evidence.slice(0, 3).map((ev) => (
-                                    <button
-                                      key={ev.src}
-                                      type="button"
-                                      className="h-14 w-14 overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)]"
-                                      onClick={() => setLightboxSrc(ev.src)}
-                                      title={ev.caption || "Evidence"}
-                                    >
-                                      <img src={ev.src} alt={ev.caption || "Evidence"} className="h-full w-full object-cover" />
-                                    </button>
-                                  ))}
+                                <div className="-mx-1 overflow-x-auto">
+                                  <div className="flex w-max gap-2 px-1 pb-1">
+                                    {item.evidence.map((ev) => (
+                                      <button
+                                        key={ev.src}
+                                        type="button"
+                                        className="h-16 w-16 shrink-0 overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)]"
+                                        onClick={() => setLightboxSrc(ev.src)}
+                                        title={ev.caption || "Evidence"}
+                                      >
+                                        <img src={ev.src} alt={ev.caption || "Evidence"} className="h-full w-full object-cover" />
+                                      </button>
+                                    ))}
+                                  </div>
                                 </div>
                               ) : null}
 
@@ -325,8 +353,19 @@ export function ExpressEstimateReportClient(props: {
                                 >
                                   {on ? "Selected ✓" : "Select item"}
                                 </Button>
-                                <Button size="sm" variant="ghost" onClick={() => {}}>
-                                  Book repair
+                                <Button
+                                  size="sm"
+                                  variant={repairIds.has(item.id) ? "secondary" : "ghost"}
+                                  onClick={() => {
+                                    setRepairIds((prev) => {
+                                      const next = new Set(prev);
+                                      if (next.has(item.id)) next.delete(item.id);
+                                      else next.add(item.id);
+                                      return next;
+                                    });
+                                  }}
+                                >
+                                  {repairIds.has(item.id) ? "Repair ✓" : "Book repair"}
                                 </Button>
                               </div>
                             </div>
@@ -404,7 +443,7 @@ export function ExpressEstimateReportClient(props: {
           )}
         </Card>
 
-        {/* Drawer */}
+        {/* Selected Drawer */}
         {drawerOpen ? (
           <div className="fixed inset-0 z-50">
             <button
@@ -475,6 +514,79 @@ export function ExpressEstimateReportClient(props: {
                 ) : (
                   <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-6 text-sm text-[var(--hw-muted)]">
                     Nothing selected yet.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Repairs Drawer */}
+        {repairsOpen ? (
+          <div className="fixed inset-0 z-50">
+            <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setRepairsOpen(false)} aria-label="Close" />
+            <div className="absolute right-0 top-0 h-full w-full max-w-[420px] bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
+              <div className="flex items-start justify-between gap-3 border-b border-[var(--hw-line)] p-5">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Repairs to book</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Separate from the Instant Estimate download.</div>
+                </div>
+                <Button size="sm" variant="secondary" onClick={() => setRepairsOpen(false)}>
+                  Close
+                </Button>
+              </div>
+
+              <div className="p-5">
+                <div className="mb-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Repairs total (est.)</div>
+                  <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(totals.repairs)}</div>
+                  <div className="mt-1 text-xs text-[var(--hw-muted)]">This is a placeholder flow — next step will be Checkout/Booking.</div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" disabled={repairs.length === 0} onClick={() => {}}>
+                    Continue to book
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={repairs.length === 0}
+                    onClick={() => {
+                      setRepairIds(new Set());
+                    }}
+                  >
+                    Clear
+                  </Button>
+                </div>
+
+                {repairs.length ? (
+                  <div className="mt-4 grid gap-2">
+                    {repairs.map((item) => (
+                      <div key={item.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
+                            {item.note ? <div className="mt-1 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
+                          </div>
+                          <button
+                            className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                            onClick={() => {
+                              setRepairIds((prev) => {
+                                const next = new Set(prev);
+                                next.delete(item.id);
+                                return next;
+                              });
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-6 text-sm text-[var(--hw-muted)]">
+                    No repairs selected.
                   </div>
                 )}
               </div>
