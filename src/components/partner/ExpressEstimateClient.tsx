@@ -244,14 +244,15 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
           <div className="mt-4 grid gap-3">
             {/* Step 1: Upload */}
-            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
+            <div className={
+              "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white overflow-hidden " +
+              (file ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
+            }>
               <button
                 type="button"
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
-                  (file
-                    ? "border-b border-[rgba(229,57,53,.14)] bg-[rgba(229,57,53,.05)] shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]"
-                    : "")
+                  (file ? "bg-[rgba(229,57,53,.05)]" : "")
                 }
                 onClick={() => setStep(1)}
               >
@@ -361,15 +362,18 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             </div>
 
             {/* Step 2: Property */}
-            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
+            <div
+              className={
+                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white overflow-hidden " +
+                (selectedPropertyId ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
+              }
+            >
               <button
                 type="button"
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
                   (!file ? "opacity-60 " : "") +
-                  (selectedPropertyId
-                    ? "border-b border-[rgba(229,57,53,.14)] bg-[rgba(229,57,53,.05)] shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]"
-                    : "")
+                  (selectedPropertyId ? "bg-[rgba(229,57,53,.05)]" : "")
                 }
                 onClick={() => {
                   if (!file) return;
@@ -383,6 +387,21 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                     </div>
                     <div className="text-sm font-semibold text-[var(--hw-ink)]">Select Property</div>
                     {selectedPropertyId ? <div className="text-xs font-semibold text-emerald-700">✓</div> : null}
+                    {selectedPropertyId ? (
+                      <button
+                        type="button"
+                        className="ml-1 rounded-full border border-[rgba(229,57,53,.20)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-red)] hover:bg-[rgba(229,57,53,.06)]"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (!file) return;
+                          setPropertyMode("existing");
+                          setStep(2);
+                        }}
+                      >
+                        Change
+                      </button>
+                    ) : null}
                   </div>
                   <div className="mt-1 text-sm text-[var(--hw-muted)]">
                     {selectedProperty ? selectedProperty.address : file ? "Choose the property context for this report." : "Upload a PDF first."}
@@ -400,7 +419,6 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         variant={propertyMode === "existing" ? "primary" : "secondary"}
                         onClick={() => {
                           setPropertyMode("existing");
-                          setSelectedPropertyId("");
                         }}
                       >
                         Select
@@ -554,15 +572,18 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             </div>
 
             {/* Step 3: Notes */}
-            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
+            <div
+              className={
+                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white overflow-hidden " +
+                (notes.trim() ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
+              }
+            >
               <button
                 type="button"
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
                   (!file || !selectedPropertyId ? "opacity-60 " : "") +
-                  (notes.trim()
-                    ? "border-b border-[rgba(229,57,53,.14)] bg-[rgba(229,57,53,.05)] shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]"
-                    : "")
+                  (notes.trim() ? "bg-[rgba(229,57,53,.05)]" : "")
                 }
                 onClick={() => {
                   if (!file || !selectedPropertyId) return;
