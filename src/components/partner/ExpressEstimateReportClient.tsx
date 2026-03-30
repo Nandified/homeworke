@@ -75,18 +75,14 @@ export function ExpressEstimateReportClient(props: {
             note: "shingles + underlayment",
             range: "$4.8k–$8.2k",
             price: 6500,
-            evidence: [
-              { src: "/img/evidence-demo-1.jpg", caption: "Roof damage" },
-              { src: "/img/evidence-demo-2.jpg", caption: "Shingles" },
-            ],
           },
-          { id: "gutters", label: "Gutters + downspouts", range: "$1.1k–$1.9k", price: 1500, evidence: [{ src: "/img/evidence-demo-3.jpg" }] },
+          { id: "gutters", label: "Gutters + downspouts", range: "$1.1k–$1.9k", price: 1500 },
         ],
       },
       {
         title: "Interior",
         items: [
-          { id: "paint", label: "Interior paint refresh", note: "living + hall", range: "$1.3k–$2.5k", price: 1900, evidence: [{ src: "/img/evidence-demo-4.jpg" }] },
+          { id: "paint", label: "Interior paint refresh", note: "living + hall", range: "$1.3k–$2.5k", price: 1900 },
           { id: "floor", label: "Floor repair / refinish", range: "$900–$2.1k", price: 1500 },
         ],
       },
@@ -241,12 +237,20 @@ export function ExpressEstimateReportClient(props: {
               {analysisSummary ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button size="sm" variant="secondary" disabled={!report || selected.length === 0} onClick={() => download("selected")}>
                 Download selected
               </Button>
               <Button size="sm" disabled={!report || extracted.length === 0} onClick={() => download("full")}>
                 Download full
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={selected.length === 0}
+                onClick={() => setDrawerOpen(true)}
+              >
+                Selected ({selected.length})
               </Button>
             </div>
           </div>
@@ -278,37 +282,35 @@ export function ExpressEstimateReportClient(props: {
                                 : "border-transparent hover:border-[var(--hw-line)] hover:bg-white")
                             }
                           >
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                              <div className="min-w-0">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <div className="text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
-                                    {item.note ? <div className="mt-0.5 text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
-                                    <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
-                                  </div>
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{item.label}</div>
+                                  {item.note ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
                                 </div>
-
-                                {item.evidence?.length ? (
-                                  <div className="mt-3 flex flex-wrap gap-2">
-                                    {item.evidence.slice(0, 3).map((ev) => (
-                                      <button
-                                        key={ev.src}
-                                        type="button"
-                                        className="h-14 w-14 overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)]"
-                                        onClick={() => setLightboxSrc(ev.src)}
-                                        title={ev.caption || "Evidence"}
-                                      >
-                                        <img src={ev.src} alt={ev.caption || "Evidence"} className="h-full w-full object-cover" />
-                                      </button>
-                                    ))}
-                                  </div>
-                                ) : null}
+                                <div className="shrink-0 text-right">
+                                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
+                                  <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
+                                </div>
                               </div>
 
-                              <div className="shrink-0">
+                              {item.evidence?.length ? (
+                                <div className="flex flex-wrap gap-2">
+                                  {item.evidence.slice(0, 3).map((ev) => (
+                                    <button
+                                      key={ev.src}
+                                      type="button"
+                                      className="h-14 w-14 overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)]"
+                                      onClick={() => setLightboxSrc(ev.src)}
+                                      title={ev.caption || "Evidence"}
+                                    >
+                                      <img src={ev.src} alt={ev.caption || "Evidence"} className="h-full w-full object-cover" />
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : null}
+
+                              <div className="flex flex-wrap items-center gap-2">
                                 <Button
                                   size="sm"
                                   variant={on ? "secondary" : "primary"}
@@ -321,7 +323,10 @@ export function ExpressEstimateReportClient(props: {
                                     });
                                   }}
                                 >
-                                  {on ? "Selected ✓" : "Add to Book Repair"}
+                                  {on ? "Selected ✓" : "Select item"}
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => {}}>
+                                  Book repair
                                 </Button>
                               </div>
                             </div>
@@ -336,8 +341,8 @@ export function ExpressEstimateReportClient(props: {
               {/* Selected */}
               <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
                 <div className="mb-4 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Total</div>
-                  <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(selected.length ? totals.selected : totals.full)}</div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Instant Estimate total</div>
+                  <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(totals.selected)}</div>
                   <div className="mt-1 text-xs text-[var(--hw-muted)]">Based on selected items (avg of ranges).</div>
                 </div>
                 <div className="flex items-start justify-between gap-3">
@@ -366,31 +371,30 @@ export function ExpressEstimateReportClient(props: {
 
                 {selected.length === 0 ? (
                   <div className="mt-4">
-                    <EmptyState title="Nothing selected" text="Tap items to add them here." />
+                    <EmptyState title="Nothing selected" text="Use “Select item” to include items in the Instant Estimate download." />
                   </div>
                 ) : (
                   <div className="mt-4 grid gap-2">
                     {selected.map((item) => (
                       <div key={item.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
                         <div className="flex items-start justify-between gap-3">
-                          <div className="text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
-                              onClick={() => {
-                                setSelectedIds((prev) => {
-                                  const next = new Set(prev);
-                                  next.delete(item.id);
-                                  return next;
-                                });
-                              }}
-                            >
-                              Remove
-                            </button>
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
+                            {item.note ? <div className="mt-1 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
                           </div>
+                          <button
+                            className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                            onClick={() => {
+                              setSelectedIds((prev) => {
+                                const next = new Set(prev);
+                                next.delete(item.id);
+                                return next;
+                              });
+                            }}
+                          >
+                            Remove
+                          </button>
                         </div>
-                        {item.note ? <div className="mt-1 text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
-                        {item.range ? <div className="mt-1 text-xs text-[var(--hw-muted)]">{item.range}</div> : null}
                       </div>
                     ))}
                   </div>
@@ -399,18 +403,6 @@ export function ExpressEstimateReportClient(props: {
             </div>
           )}
         </Card>
-
-        {/* Sticky Selected button */}
-        <div className="fixed bottom-5 right-5 z-40">
-          <Button
-            size="sm"
-            disabled={selected.length === 0}
-            onClick={() => setDrawerOpen(true)}
-            className="shadow-[0_14px_34px_rgba(17,24,39,.18)]"
-          >
-            Selected ({selected.length}) • {formatUSD(totals.selected)}
-          </Button>
-        </div>
 
         {/* Drawer */}
         {drawerOpen ? (
