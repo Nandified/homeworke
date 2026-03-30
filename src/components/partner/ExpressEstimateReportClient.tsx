@@ -151,7 +151,7 @@ export function ExpressEstimateReportClient(props: {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState<string>("");
   const [shareMode, _setShareMode] = useState<"full" | "selected">("full");
-  const [shareTab, setShareTab] = useState<"contacts" | "new">("new");
+  const [shareTab, setShareTab] = useState<"new" | "contacts" | "link">("new");
   const [shareFirstName, setShareFirstName] = useState("");
   const [shareLastName, setShareLastName] = useState("");
   const [shareEmail, setShareEmail] = useState("");
@@ -603,6 +603,9 @@ export function ExpressEstimateReportClient(props: {
                   <Button size="sm" variant={shareTab === "contacts" ? "primary" : "secondary"} onClick={() => setShareTab("contacts")}>
                     Contact list
                   </Button>
+                  <Button size="sm" variant={shareTab === "link" ? "primary" : "secondary"} onClick={() => setShareTab("link")}>
+                    Generic link
+                  </Button>
                 </div>
 
                 {shareTab === "contacts" ? (
@@ -657,60 +660,25 @@ export function ExpressEstimateReportClient(props: {
                       ]}
                       onChange={setShareRole}
                     />
-                  </div>
-                ) : null}
 
-                <div className="mt-3 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Sharing</div>
-                  <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">
-                    {shareMode === "selected" ? `Selected items (${selected.length})` : "Full report"}
-                  </div>
-                  <div className="mt-1 text-xs text-[var(--hw-muted)]">Link expires in 30 days. Email sending is stubbed for now.</div>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant={shareMode === "full" ? "primary" : "secondary"}
-                      onClick={() => setShareMode("full")}
-                    >
-                      Full
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={shareMode === "selected" ? "primary" : "secondary"}
-                      disabled={selected.length === 0}
-                      onClick={() => setShareMode("selected")}
-                    >
-                      Selected{selected.length ? ` (${selected.length})` : ""}
-                    </Button>
-
-                    <div className="flex-1" />
-
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      disabled={!report || shareBusy || (shareMode === "selected" && selected.length === 0)}
-                      className="gap-2"
-                      onClick={async () => {
-                        if (!report) return;
-                        setShareBusy(true);
-                        try {
-                          let url = shareUrl;
-                          if (!url) {
+                    <div className="sm:col-span-2 flex flex-wrap items-center justify-end gap-2">
+                      <Button
+                        size="sm"
+                        disabled={!report || shareBusy || !shareEmail}
+                        onClick={async () => {
+                          if (!report) return;
+                          setShareBusy(true);
+                          try {
                             const name = `${shareFirstName} ${shareLastName}`.trim();
-                            const r = await fetch("/api/express-estimate/share/create", {
+                            const r = await fetch("/api/express-estimate/share/send", {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
                                 reportId: report.id,
                                 address: report.address,
                                 reportType: report.type,
-                                mode: shareMode,
-                                selectedIds: shareMode === "selected" ? selected.map((s) => s.id) : undefined,
+                                mode: "full",
                                 lanes: extracted,
-                                // TODO: wire real client details from submission step once reports are persisted
-                                client: undefined,
-                                // Pro snapshot for courtesy section (use account profile in real system)
                                 pro: {
                                   name: "Fernando Rocha Jr",
                                   email: "Fernando@TheFRJgroup.com",
@@ -726,6 +694,144 @@ export function ExpressEstimateReportClient(props: {
                               }),
                             });
                             const j = (await r.json().catch(() => null)) as any;
+                            if (!j?.ok) {
+                              setToast("Send failed.");
+                              window.setTimeout(() => setToast(""), 2000);
+                              return;
+                            }
+                            // Also add to saved contacts store (local for now)
+                            try {
+                              const raw = window.localStorage.getItem("hw_props_client_v1") || "[]";
+                              const arr = (JSON.parse(raw) as any[]) || [];
+                              arr.unshift({
+                                clientName: name,
+                                clientEmail: shareEmail,
+                                clientPhone: sharePhone,
+                              });
+                              window.localStorage.setItem("hw_props_client_v1", JSON.stringify(arr.slice(0, 200)));
+                            } catch {}
+                            setToast("Sent.");
+                            window.setTimeout(() => setToast(""), 1800);
+                          } finally {
+                            setShareBusy(false);
+                          }
+                        }}
+                      >
+                        {shareBusy ? "Sending…" : "Send & Add Contact +"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {shareTab === "contacts" ? (
+                  <div className="mt-3 grid gap-3">
+                    <Picker
+                      searchable
+                      value={contactId}
+                      placeholder="Select a contact"
+                      options={savedContacts.map((c) => ({
+                        id: c.id,
+                        label: c.name,
+                        sublabel: [c.email, c.phone].filter(Boolean).join(" • "),
+                      }))}
+                      onChange={(id) => {
+                        setContactId(id);
+                        const c = savedContacts.find((x) => x.id === id);
+                        if (c) {
+                          const parts = (c.name || "").trim().split(/\s+/g);
+                          setShareFirstName(parts[0] || c.name || "");
+                          setShareLastName(parts.slice(1).join(" ") || "");
+                          setShareEmail(c.email || "");
+                          setSharePhone(c.phone || "");
+                          setShareRole("");
+                        }
+                      }}
+                    />
+
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <Button
+                        size="sm"
+                        disabled={!report || shareBusy || !shareEmail}
+                        onClick={async () => {
+                          if (!report) return;
+                          setShareBusy(true);
+                          try {
+                            const name = `${shareFirstName} ${shareLastName}`.trim();
+                            const r = await fetch("/api/express-estimate/share/send", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                reportId: report.id,
+                                address: report.address,
+                                reportType: report.type,
+                                mode: "full",
+                                lanes: extracted,
+                                pro: {
+                                  name: "Fernando Rocha Jr",
+                                  email: "Fernando@TheFRJgroup.com",
+                                  phone: "",
+                                  brokerageName: "The FRJ Group",
+                                },
+                                recipient: {
+                                  name: name || undefined,
+                                  email: shareEmail || undefined,
+                                  phone: sharePhone || undefined,
+                                },
+                              }),
+                            });
+                            const j = (await r.json().catch(() => null)) as any;
+                            if (!j?.ok) {
+                              setToast("Send failed.");
+                              window.setTimeout(() => setToast(""), 2000);
+                              return;
+                            }
+                            setToast("Sent.");
+                            window.setTimeout(() => setToast(""), 1800);
+                          } finally {
+                            setShareBusy(false);
+                          }
+                        }}
+                      >
+                        {shareBusy ? "Sending…" : "Send"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {shareTab === "link" ? (
+                  <div className="mt-3 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Generic share link</div>
+                    <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">Full report</div>
+                    <div className="mt-1 text-xs text-[var(--hw-muted)]">
+                      Anyone with this link can view the estimate. Booking repairs and additional details are gated until they log in via magic link.
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <Button size="sm" variant="secondary" disabled={!report || shareBusy} className="gap-2" onClick={async () => {
+                        if (!report) return;
+                        setShareBusy(true);
+                        try {
+                          let url = shareUrl;
+                          if (!url) {
+                            const r = await fetch("/api/express-estimate/share/create", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                reportId: report.id,
+                                address: report.address,
+                                reportType: report.type,
+                                mode: "full",
+                                lanes: extracted,
+                                pro: {
+                                  name: "Fernando Rocha Jr",
+                                  email: "Fernando@TheFRJgroup.com",
+                                  phone: "",
+                                  brokerageName: "The FRJ Group",
+                                },
+                                recipient: {},
+                              }),
+                            });
+                            const j = (await r.json().catch(() => null)) as any;
                             if (!j?.ok || !j?.url) {
                               setToast("Share link failed.");
                               window.setTimeout(() => setToast(""), 2200);
@@ -734,7 +840,6 @@ export function ExpressEstimateReportClient(props: {
                             url = String(j.url);
                             setShareUrl(url);
                           }
-
                           await navigator.clipboard.writeText(url);
                           setToast("Link copied.");
                           window.setTimeout(() => setToast(""), 1800);
@@ -744,17 +849,17 @@ export function ExpressEstimateReportClient(props: {
                         } finally {
                           setShareBusy(false);
                         }
-                      }}
-                    >
-                      <Copy className="h-4 w-4" />
-                      {shareBusy ? "Working…" : "Copy link"}
-                    </Button>
-                  </div>
+                      }}>
+                        <Copy className="h-4 w-4" />
+                        {shareBusy ? "Working…" : "Copy link"}
+                      </Button>
+                    </div>
 
-                  <div className="mt-2 text-xs text-[var(--hw-muted)]">
-                    {shareUrl ? `Link ready: ${shareUrl.replace(/^https?:\/\//, "").slice(0, 42)}…` : "A share link will be generated when you copy."}
+                    <div className="mt-2 text-xs text-[var(--hw-muted)]">
+                      {shareUrl ? `Link ready: ${shareUrl.replace(/^https?:\/\//, "").slice(0, 42)}…` : "A link will be generated when you copy."}
+                    </div>
                   </div>
-                </div>
+                ) : null}
               </div>
             </div>
           </div>
