@@ -91,12 +91,7 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
               ) : null}
               <a
                 className="inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(229,57,53,.3)] hover:brightness-[1.05]"
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const el = document.getElementById("book-repairs");
-                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
+                href="#book-repairs"
               >
                 Book repairs
               </a>
