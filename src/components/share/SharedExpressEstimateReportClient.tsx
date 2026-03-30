@@ -117,10 +117,12 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
               {props.payload.client?.name ? `${props.payload.client.name} — ` : ""}
               {props.payload.address || "Shared Express Estimate"}
             </div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">
-              Shared with {props.payload.recipient?.name || "you"}
-              {props.payload.recipient?.role ? ` • ${props.payload.recipient.role}` : ""}
-            </div>
+            {props.payload.recipient?.name || props.payload.recipient?.role ? (
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                Shared with {props.payload.recipient?.name || ""}
+                {props.payload.recipient?.role ? ` • ${props.payload.recipient.role}` : ""}
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {props.payload.mode === "selected" ? (

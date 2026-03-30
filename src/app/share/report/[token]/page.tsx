@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import partners from "@/../spec/partners.json";
+
 import { Container, Card, Pill } from "@/components/ui";
 import { ShareLoginCta } from "@/components/share/ShareLoginCta";
 import { SharedExpressEstimateReportClient } from "@/components/share/SharedExpressEstimateReportClient";
@@ -30,7 +32,23 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
 
   const payload = v.payload;
 
-  const enrichedPro = payload.pro?.code ? (resolvePartner(payload.pro.code) as any) : null;
+  const enrichedPro = (() => {
+    if (payload.pro?.code) return resolvePartner(payload.pro.code) as any;
+
+    const email = (payload.pro?.email || "").trim().toLowerCase();
+    if (email) {
+      const m = (partners as any[]).find((p) => String(p?.email || "").trim().toLowerCase() === email);
+      if (m) return m as any;
+    }
+
+    const name = (payload.pro?.name || "").trim().toLowerCase();
+    if (name) {
+      const m = (partners as any[]).find((p) => String(p?.display_name || "").trim().toLowerCase() === name);
+      if (m) return m as any;
+    }
+
+    return null;
+  })();
   const proName = enrichedPro?.display_name || payload.pro?.name || "Real Estate Pro";
   const proBrokerage = enrichedPro?.brokerage_name || payload.pro?.brokerageName || "";
   const proLicense = enrichedPro?.license_state && enrichedPro?.license_number ? `${enrichedPro.license_state} ${enrichedPro.license_number}` : "";
