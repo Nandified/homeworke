@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
 import { Button, Card, Chip, EmptyState } from "@/components/ui";
-import { Hammer } from "lucide-react";
+import { Download, Hammer } from "lucide-react";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
@@ -72,6 +72,9 @@ export function ExpressEstimateReportClient(props: {
 
   const [downloading, setDownloading] = useState<"" | "full" | "selected">("");
   const [toast, setToast] = useState<string>("");
+
+  const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
+  const [showMobileActions, setShowMobileActions] = useState(false);
   const demoExtracted = useMemo<ExtractedLane[]>(() => {
     return [
       {
@@ -210,6 +213,17 @@ export function ExpressEstimateReportClient(props: {
   // Analysis is triggered during the upload/submit step (list page).
   // This page focuses on viewing results and downloading.
 
+  // Mobile: show a compact action dock only after the user scrolls a bit (avoids duplicate controls at the top).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    function onScroll() {
+      setShowMobileActions(window.scrollY > 240);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   async function download(mode: "full" | "selected") {
     if (!report) return;
 
@@ -277,33 +291,75 @@ export function ExpressEstimateReportClient(props: {
           </div>
         ) : null}
 
-        {/* Mobile sticky actions (prevents scrolling back to the top on long reports) */}
-        <div className="fixed bottom-4 left-1/2 z-[60] w-[min(720px,calc(100vw-24px))] -translate-x-1/2 lg:hidden">
-          <div className="flex flex-wrap items-center justify-center gap-2 rounded-[999px] border border-[var(--hw-line)] bg-white/95 p-2 shadow-[0_16px_40px_rgba(17,24,39,.16)] backdrop-blur">
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={!report || selected.length === 0 || downloading !== ""}
-              onClick={() => download("selected")}
-            >
-              {downloading === "selected" ? "Preparing…" : "Download selected"}
-            </Button>
-            <Button
-              size="sm"
-              disabled={!report || extracted.length === 0 || selected.length > 0 || downloading !== ""}
-              onClick={() => download("full")}
-            >
-              {downloading === "full" ? "Preparing…" : "Download full"}
-            </Button>
-            <Button size="sm" variant="secondary" disabled={repairs.length === 0} onClick={() => setRepairsOpen(true)} className="gap-2">
-              <Hammer className="h-4 w-4" />
-              Repair Cart
-              <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-1 text-[11px] font-semibold text-[var(--hw-ink)]">
-                {repairs.length}
-              </span>
-            </Button>
+        {/* Mobile compact action dock */}
+        {showMobileActions ? (
+          <div className="fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 lg:hidden">
+            <div className="flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white/95 p-2 shadow-[0_16px_40px_rgba(17,24,39,.16)] backdrop-blur">
+              <Button
+                size="sm"
+                disabled={!report || extracted.length === 0 || downloading !== ""}
+                onClick={() => setMobileActionsOpen(true)}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Download
+              </Button>
+
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={repairs.length === 0}
+                onClick={() => setRepairsOpen(true)}
+                className="gap-2"
+              >
+                <Hammer className="h-4 w-4" />
+                <span className="text-xs">{repairs.length}</span>
+              </Button>
+            </div>
+
+            {mobileActionsOpen ? (
+              <div className="fixed inset-0 z-[65]">
+                <button
+                  type="button"
+                  className="absolute inset-0 bg-black/40"
+                  onClick={() => setMobileActionsOpen(false)}
+                  aria-label="Close"
+                />
+                <div className="absolute bottom-4 left-1/2 w-[min(520px,calc(100vw-24px))] -translate-x-1/2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3 shadow-[0_20px_60px_rgba(0,0,0,.25)]">
+                  <div className="flex items-center justify-between gap-2 px-2 pb-2">
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Download</div>
+                    <Button size="sm" variant="secondary" onClick={() => setMobileActionsOpen(false)}>
+                      Close
+                    </Button>
+                  </div>
+                  <div className="grid gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={!report || selected.length === 0 || downloading !== ""}
+                      onClick={() => {
+                        setMobileActionsOpen(false);
+                        void download("selected");
+                      }}
+                    >
+                      {downloading === "selected" ? "Preparing…" : `Download selected (${selected.length})`}
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={!report || extracted.length === 0 || selected.length > 0 || downloading !== ""}
+                      onClick={() => {
+                        setMobileActionsOpen(false);
+                        void download("full");
+                      }}
+                    >
+                      {downloading === "full" ? "Preparing…" : "Download full"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
-        </div>
+        ) : null}
         <Card className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
