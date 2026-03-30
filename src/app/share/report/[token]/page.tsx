@@ -155,17 +155,46 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
 
             {proSocials.length ? (
               <div className="mt-4 flex flex-wrap gap-2">
-                {proSocials.slice(0, 8).map(([k, v]) => (
-                  <a
-                    key={k}
-                    href={v}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
-                  >
-                    {k.replace(/_url$/i, "").replace(/_/g, " ")}
-                  </a>
-                ))}
+                {proSocials.slice(0, 8).map(([k, v]) => {
+                  const label = k.replace(/_url$/i, "").replace(/_/g, " ");
+                  const kind = label.toLowerCase();
+                  const icon = kind.includes("instagram")
+                    ? "Instagram"
+                    : kind.includes("facebook")
+                      ? "Facebook"
+                      : kind.includes("linkedin")
+                        ? "LinkedIn"
+                        : kind.includes("youtube")
+                          ? "YouTube"
+                          : kind.includes("tiktok")
+                            ? "TikTok"
+                            : kind.includes("twitter") || kind === "x"
+                              ? "X"
+                              : kind.includes("google")
+                                ? "Google"
+                                : kind.includes("zillow")
+                                  ? "Zillow"
+                                  : kind.includes("realtor")
+                                    ? "Realtor"
+                                    : kind.includes("website")
+                                      ? "Website"
+                                      : "Link";
+
+                  return (
+                    <a
+                      key={k}
+                      href={v}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                    >
+                      <span className="grid h-6 w-6 place-items-center rounded-full bg-[var(--hw-soft)] text-[11px] font-extrabold text-[var(--hw-red)]">
+                        {icon.slice(0, 1)}
+                      </span>
+                      <span className="capitalize">{label}</span>
+                    </a>
+                  );
+                })}
               </div>
             ) : null}
 
