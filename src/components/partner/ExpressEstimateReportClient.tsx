@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 
-import { Button, Card, Chip, EmptyState } from "@/components/ui";
-import { Download, Hammer } from "lucide-react";
+import { Button, Card, Chip, EmptyState, Input, Picker } from "@/components/ui";
+import { Copy, Download, Hammer, Share2 } from "lucide-react";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
@@ -148,6 +148,14 @@ export function ExpressEstimateReportClient(props: {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [repairsOpen, setRepairsOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string>("");
+  const [shareMode, setShareMode] = useState<"full" | "selected">("full");
+  const [shareName, setShareName] = useState("");
+  const [shareEmail, setShareEmail] = useState("");
+  const [sharePhone, setSharePhone] = useState("");
+  const [shareRole, setShareRole] = useState("");
+  const [shareBusy, setShareBusy] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
@@ -308,6 +316,20 @@ export function ExpressEstimateReportClient(props: {
               >
                 <Download className="h-4 w-4" />
                 {downloading ? "Preparing…" : "Download report"}
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={!report}
+                onClick={() => {
+                  setShareMode(selected.length ? "selected" : "full");
+                  setShareUrl("");
+                  setShareOpen(true);
+                }}
+                className="gap-2"
+              >
+                <Share2 className="h-4 w-4" />
+                Share
               </Button>
               <Button
                 size="sm"
@@ -524,8 +546,136 @@ export function ExpressEstimateReportClient(props: {
                     {downloading === "full" ? "Preparing…" : "Download full report"}
                   </Button>
                 </div>
-                <div className="mt-3 text-xs text-[var(--hw-muted)]">
-                  Tip: Select items to download a shorter report for clients.
+                <div className="mt-3 text-xs text-[var(--hw-muted)]">Tip: Select items to download a shorter report for clients.</div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Share modal */}
+        {shareOpen ? (
+          <div className="fixed inset-0 z-[56] flex items-center justify-center p-6">
+            <button type="button" className="absolute inset-0 bg-black/50" onClick={() => setShareOpen(false)} aria-label="Close" />
+            <div className="relative w-full max-w-lg overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
+              <div className="flex items-center justify-between border-b border-[var(--hw-line)] p-4">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Share report</div>
+                <Button size="sm" variant="secondary" onClick={() => setShareOpen(false)}>
+                  Close
+                </Button>
+              </div>
+
+              <div className="p-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Input value={shareName} onChange={(e) => setShareName(e.target.value)} placeholder="Name" />
+                  <Picker
+                    value={shareRole}
+                    placeholder="Role"
+                    options={[
+                      { id: "Homeowner", label: "Homeowner" },
+                      { id: "Homebuyer", label: "Homebuyer" },
+                      { id: "Listing Agent", label: "Listing Agent" },
+                      { id: "Buyer’s Agent", label: "Buyer’s Agent" },
+                      { id: "Buyer’s Closing Coordinator", label: "Buyer’s Closing Coordinator" },
+                      { id: "Seller’s Closing Coordinator", label: "Seller’s Closing Coordinator" },
+                      { id: "Assistant", label: "Assistant" },
+                      { id: "Contractor / Vendor", label: "Contractor / Vendor" },
+                      { id: "Other", label: "Other" },
+                    ]}
+                    onChange={setShareRole}
+                  />
+                  <Input value={shareEmail} onChange={(e) => setShareEmail(e.target.value)} placeholder="Email" />
+                  <Input value={sharePhone} onChange={(e) => setSharePhone(e.target.value)} placeholder="Phone (optional)" />
+                </div>
+
+                <div className="mt-3 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Sharing</div>
+                  <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">
+                    {shareMode === "selected" ? `Selected items (${selected.length})` : "Full report"}
+                  </div>
+                  <div className="mt-1 text-xs text-[var(--hw-muted)]">Link expires in 30 days. Email sending is stubbed for now.</div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Button
+                      size="sm"
+                      disabled={!report || shareBusy}
+                      onClick={async () => {
+                        if (!report) return;
+                        setShareBusy(true);
+                        try {
+                          const r = await fetch("/api/express-estimate/share/create", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              reportId: report.id,
+                              address: report.address,
+                              reportType: report.type,
+                              mode: shareMode,
+                              selectedIds: shareMode === "selected" ? selected.map((s) => s.id) : undefined,
+                              recipient: {
+                                name: shareName || undefined,
+                                email: shareEmail || undefined,
+                                phone: sharePhone || undefined,
+                                role: shareRole || undefined,
+                              },
+                            }),
+                          });
+                          const j = (await r.json().catch(() => null)) as any;
+                          if (!j?.ok || !j?.url) {
+                            setToast("Share link failed.");
+                            window.setTimeout(() => setToast(""), 2200);
+                            return;
+                          }
+                          setShareUrl(String(j.url));
+                        } finally {
+                          setShareBusy(false);
+                        }
+                      }}
+                    >
+                      {shareBusy ? "Creating…" : "Create share link"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={!shareUrl}
+                      className="gap-2"
+                      onClick={async () => {
+                        if (!shareUrl) return;
+                        try {
+                          await navigator.clipboard.writeText(shareUrl);
+                          setToast("Link copied.");
+                          window.setTimeout(() => setToast(""), 1800);
+                        } catch {
+                          setToast("Copy failed.");
+                          window.setTimeout(() => setToast(""), 1800);
+                        }
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy link
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={shareMode === "full"}
+                      onClick={() => setShareMode("full")}
+                    >
+                      Full
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={shareMode === "selected" || selected.length === 0}
+                      onClick={() => setShareMode("selected")}
+                    >
+                      Selected
+                    </Button>
+                  </div>
+
+                  {shareUrl ? (
+                    <div className="mt-3 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3 text-xs text-[var(--hw-ink)] break-all">
+                      {shareUrl}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
