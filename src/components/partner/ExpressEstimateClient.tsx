@@ -314,7 +314,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               </button>
 
               {step === 1 ? (
-                <div className="px-4 pb-4">
+                <div className={"px-4 pb-4 " + (file ? "bg-[rgba(229,57,53,.05)]" : "") }>
                   <label
                     className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] p-4 hover:bg-white"
                     onDragEnter={(e) => {
