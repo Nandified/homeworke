@@ -135,6 +135,11 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     });
   }, [reportQuery, reports]);
 
+  const notesCompleted = useMemo(() => {
+    // Treat any whitespace (including non-breaking spaces) as empty.
+    return notes.replace(/[\s\u00A0]+/g, "").length > 0;
+  }, [notes]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -575,7 +580,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             <div
               className={
                 "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white overflow-hidden " +
-                (notes.trim() ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
+                (notesCompleted ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
               }
             >
               <button
@@ -583,7 +588,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
                   (!file || !selectedPropertyId ? "opacity-60 " : "") +
-                  (notes.trim() ? "bg-[rgba(229,57,53,.05)]" : "")
+                  (notesCompleted ? "bg-[rgba(229,57,53,.05)]" : "")
                 }
                 onClick={() => {
                   if (!file || !selectedPropertyId) return;
