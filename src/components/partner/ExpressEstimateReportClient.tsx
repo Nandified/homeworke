@@ -642,24 +642,33 @@ export function ExpressEstimateReportClient(props: {
                       <Input value={shareFirstName} onChange={(e) => setShareFirstName(e.target.value)} placeholder="First name" />
                       <Input value={shareLastName} onChange={(e) => setShareLastName(e.target.value)} placeholder="Last name" />
                     </div>
-                    <Input value={shareEmail} onChange={(e) => setShareEmail(e.target.value)} placeholder="Email" />
-                    <Input value={sharePhone} onChange={(e) => setSharePhone(e.target.value)} placeholder="Phone" />
-                    <Picker
-                      value={shareRole}
-                      placeholder="Role"
-                      options={[
-                        { id: "Homeowner", label: "Homeowner" },
-                        { id: "Homebuyer", label: "Homebuyer" },
-                        { id: "Listing Agent", label: "Listing Agent" },
-                        { id: "Buyer’s Agent", label: "Buyer’s Agent" },
-                        { id: "Buyer’s Closing Coordinator", label: "Buyer’s Closing Coordinator" },
-                        { id: "Seller’s Closing Coordinator", label: "Seller’s Closing Coordinator" },
-                        { id: "Assistant", label: "Assistant" },
-                        { id: "Contractor / Vendor", label: "Contractor / Vendor" },
-                        { id: "Other", label: "Other" },
-                      ]}
-                      onChange={setShareRole}
-                    />
+
+                    <div className="sm:col-span-2">
+                      <Input value={shareEmail} onChange={(e) => setShareEmail(e.target.value)} placeholder="Email" />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <Input value={sharePhone} onChange={(e) => setSharePhone(e.target.value)} placeholder="Phone" />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <Picker
+                        value={shareRole}
+                        placeholder="Role"
+                        options={[
+                          { id: "Homeowner", label: "Homeowner" },
+                          { id: "Homebuyer", label: "Homebuyer" },
+                          { id: "Listing Agent", label: "Listing Agent" },
+                          { id: "Buyer’s Agent", label: "Buyer’s Agent" },
+                          { id: "Buyer’s Closing Coordinator", label: "Buyer’s Closing Coordinator" },
+                          { id: "Seller’s Closing Coordinator", label: "Seller’s Closing Coordinator" },
+                          { id: "Assistant", label: "Assistant" },
+                          { id: "Contractor / Vendor", label: "Contractor / Vendor" },
+                          { id: "Other", label: "Other" },
+                        ]}
+                        onChange={setShareRole}
+                      />
+                    </div>
 
                     <div className="sm:col-span-2 flex flex-wrap items-center justify-end gap-2">
                       <Button
