@@ -9,9 +9,11 @@ import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
 
+type EvidenceThumb = { src: string; caption?: string };
+
 type ExtractedLane = {
   title: string;
-  items: Array<{ id: string; label: string; note?: string; range?: string; price?: number }>;
+  items: Array<{ id: string; label: string; note?: string; range?: string; price?: number; evidence?: EvidenceThumb[] }>;
 };
 
 type AnalyzeResponse =
@@ -67,14 +69,24 @@ export function ExpressEstimateReportClient(props: {
       {
         title: "Exterior",
         items: [
-          { id: "roof", label: "Roofing patch / replace", note: "shingles + underlayment", range: "$4.8k–$8.2k", price: 6500 },
-          { id: "gutters", label: "Gutters + downspouts", range: "$1.1k–$1.9k", price: 1500 },
+          {
+            id: "roof",
+            label: "Roofing patch / replace",
+            note: "shingles + underlayment",
+            range: "$4.8k–$8.2k",
+            price: 6500,
+            evidence: [
+              { src: "/img/evidence-demo-1.jpg", caption: "Roof damage" },
+              { src: "/img/evidence-demo-2.jpg", caption: "Shingles" },
+            ],
+          },
+          { id: "gutters", label: "Gutters + downspouts", range: "$1.1k–$1.9k", price: 1500, evidence: [{ src: "/img/evidence-demo-3.jpg" }] },
         ],
       },
       {
         title: "Interior",
         items: [
-          { id: "paint", label: "Interior paint refresh", note: "living + hall", range: "$1.3k–$2.5k", price: 1900 },
+          { id: "paint", label: "Interior paint refresh", note: "living + hall", range: "$1.3k–$2.5k", price: 1900, evidence: [{ src: "/img/evidence-demo-4.jpg" }] },
           { id: "floor", label: "Floor repair / refinish", range: "$900–$2.1k", price: 1500 },
         ],
       },
@@ -98,6 +110,8 @@ export function ExpressEstimateReportClient(props: {
   const [extracted, setExtracted] = useState<ExtractedLane[]>(demoExtracted);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
   const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
@@ -255,17 +269,8 @@ export function ExpressEstimateReportClient(props: {
                       {lane.items.map((item) => {
                         const on = selectedIds.has(item.id);
                         return (
-                          <button
+                          <div
                             key={item.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedIds((prev) => {
-                                const next = new Set(prev);
-                                if (next.has(item.id)) next.delete(item.id);
-                                else next.add(item.id);
-                                return next;
-                              });
-                            }}
                             className={
                               "w-full rounded-[calc(var(--hw-radius-lg)-8px)] border px-3 py-2 text-left transition " +
                               (on
@@ -273,17 +278,54 @@ export function ExpressEstimateReportClient(props: {
                                 : "border-transparent hover:border-[var(--hw-line)] hover:bg-white")
                             }
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <div className="text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
-                                {item.note ? <div className="mt-0.5 text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                              <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <div className="text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
+                                    {item.note ? <div className="mt-0.5 text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
+                                    <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
+                                  </div>
+                                </div>
+
+                                {item.evidence?.length ? (
+                                  <div className="mt-3 flex flex-wrap gap-2">
+                                    {item.evidence.slice(0, 3).map((ev) => (
+                                      <button
+                                        key={ev.src}
+                                        type="button"
+                                        className="h-14 w-14 overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)]"
+                                        onClick={() => setLightboxSrc(ev.src)}
+                                        title={ev.caption || "Evidence"}
+                                      >
+                                        <img src={ev.src} alt={ev.caption || "Evidence"} className="h-full w-full object-cover" />
+                                      </button>
+                                    ))}
+                                  </div>
+                                ) : null}
                               </div>
-                              <div className="text-right">
-                                <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
-                                <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
+
+                              <div className="shrink-0">
+                                <Button
+                                  size="sm"
+                                  variant={on ? "secondary" : "primary"}
+                                  onClick={() => {
+                                    setSelectedIds((prev) => {
+                                      const next = new Set(prev);
+                                      if (next.has(item.id)) next.delete(item.id);
+                                      else next.add(item.id);
+                                      return next;
+                                    });
+                                  }}
+                                >
+                                  {on ? "Selected ✓" : "Add to Book Repair"}
+                                </Button>
                               </div>
                             </div>
-                          </button>
+                          </div>
                         );
                       })}
                     </div>
@@ -296,16 +338,30 @@ export function ExpressEstimateReportClient(props: {
                 <div className="mb-4 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
                   <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Total</div>
                   <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(selected.length ? totals.selected : totals.full)}</div>
-                  <div className="mt-1 text-xs text-[var(--hw-muted)]">
-                    {selected.length ? "Based on selected items (avg of ranges)." : "Based on all items (avg of ranges)."}
-                  </div>
+                  <div className="mt-1 text-xs text-[var(--hw-muted)]">Based on selected items (avg of ranges).</div>
                 </div>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Selected</div>
-                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Items included in your estimate.</div>
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Selected items</div>
+                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Included in your Instant Estimate download.</div>
                   </div>
                   <Chip className="border-[var(--hw-line)] bg-white">{selected.length}</Chip>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button size="sm" disabled={!report || selected.length === 0} onClick={() => download("selected")}>
+                    Download selected
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={selected.length === 0}
+                    onClick={() => {
+                      setSelectedIds(new Set());
+                    }}
+                  >
+                    Clear
+                  </Button>
                 </div>
 
                 {selected.length === 0 ? (
@@ -319,14 +375,6 @@ export function ExpressEstimateReportClient(props: {
                         <div className="flex items-start justify-between gap-3">
                           <div className="text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
                           <div className="flex items-center gap-2">
-                            <button
-                              className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
-                              onClick={() => {
-                                // demo: cart action will be wired later
-                              }}
-                            >
-                              Add to cart
-                            </button>
                             <button
                               className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
                               onClick={() => {
@@ -351,6 +399,114 @@ export function ExpressEstimateReportClient(props: {
             </div>
           )}
         </Card>
+
+        {/* Sticky Selected button */}
+        <div className="fixed bottom-5 right-5 z-40">
+          <Button
+            size="sm"
+            disabled={selected.length === 0}
+            onClick={() => setDrawerOpen(true)}
+            className="shadow-[0_14px_34px_rgba(17,24,39,.18)]"
+          >
+            Selected ({selected.length}) • {formatUSD(totals.selected)}
+          </Button>
+        </div>
+
+        {/* Drawer */}
+        {drawerOpen ? (
+          <div className="fixed inset-0 z-50">
+            <button
+              type="button"
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Close"
+            />
+            <div className="absolute right-0 top-0 h-full w-full max-w-[420px] bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
+              <div className="flex items-start justify-between gap-3 border-b border-[var(--hw-line)] p-5">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Selected items</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Included in your Instant Estimate download.</div>
+                </div>
+                <Button size="sm" variant="secondary" onClick={() => setDrawerOpen(false)}>
+                  Close
+                </Button>
+              </div>
+
+              <div className="p-5">
+                <div className="mb-4 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Selected total</div>
+                  <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(totals.selected)}</div>
+                  <div className="mt-1 text-xs text-[var(--hw-muted)]">Based on selected items (avg of ranges).</div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" disabled={!report || selected.length === 0} onClick={() => download("selected")}>
+                    Download selected
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={selected.length === 0}
+                    onClick={() => {
+                      setSelectedIds(new Set());
+                    }}
+                  >
+                    Clear
+                  </Button>
+                </div>
+
+                {selected.length ? (
+                  <div className="mt-4 grid gap-2">
+                    {selected.map((item) => (
+                      <div key={item.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
+                            {item.note ? <div className="mt-1 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
+                          </div>
+                          <button
+                            className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                            onClick={() => {
+                              setSelectedIds((prev) => {
+                                const next = new Set(prev);
+                                next.delete(item.id);
+                                return next;
+                              });
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-6 text-sm text-[var(--hw-muted)]">
+                    Nothing selected yet.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Lightbox */}
+        {lightboxSrc ? (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-6">
+            <button type="button" className="absolute inset-0 bg-black/60" onClick={() => setLightboxSrc("")} aria-label="Close" />
+            <div className="relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[var(--hw-radius-lg)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.35)]">
+              <div className="flex items-center justify-between border-b border-[var(--hw-line)] p-3">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Evidence</div>
+                <Button size="sm" variant="secondary" onClick={() => setLightboxSrc("")}>
+                  Close
+                </Button>
+              </div>
+              <div className="bg-black">
+                <img src={lightboxSrc} alt="Evidence" className="max-h-[80vh] w-full object-contain" />
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </PortalShell>
   );
