@@ -91,6 +91,15 @@ function InstantEstimateCard({ basePath }: { basePath: string }) {
   const router = useRouter();
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
 
+  async function handleFile(f: File) {
+    try {
+      const id = await stageFile(f);
+      router.push(`${basePath}/express-estimate?staged=${encodeURIComponent(id)}`);
+    } catch {
+      router.push(`${basePath}/express-estimate`);
+    }
+  }
+
   return (
     <Card
       className="relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7"
@@ -120,7 +129,29 @@ function InstantEstimateCard({ basePath }: { basePath: string }) {
         </div>
 
         <div className="mt-5">
-          <label className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] p-4 hover:bg-white">
+          <label
+            className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] p-4 hover:bg-white"
+            onDragEnter={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDragLeave={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const f = e.dataTransfer.files?.[0] ?? null;
+              if (!f) return;
+              if (f.type && f.type !== "application/pdf") return;
+              void handleFile(f);
+            }}
+          >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Choose a PDF to upload</div>
@@ -145,15 +176,10 @@ function InstantEstimateCard({ basePath }: { basePath: string }) {
               className="hidden"
               type="file"
               accept="application/pdf"
-              onChange={async (e) => {
+              onChange={(e) => {
                 const f = e.target.files?.[0] ?? null;
                 if (!f) return;
-                try {
-                  const id = await stageFile(f);
-                  router.push(`${basePath}/express-estimate?staged=${encodeURIComponent(id)}`);
-                } catch {
-                  router.push(`${basePath}/express-estimate`);
-                }
+                void handleFile(f);
               }}
             />
           </label>
