@@ -256,6 +256,25 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
           </div>
 
           <div className="mt-4 grid gap-3">
+            {/* Always-mounted file input so the Step 1 header "Change" button works even when collapsed */}
+            <input
+              ref={fileInputRef}
+              className="hidden"
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => {
+                const next = e.target.files?.[0] ?? null;
+                if (!next) return;
+                setFile(next);
+                setFileName(next.name);
+                setStagedId("");
+
+                try {
+                  window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
+                } catch {}
+              }}
+            />
+
             {/* Step 1: Upload */}
             <div className={
               "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white overflow-hidden " +
@@ -365,23 +384,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         </Button>
                       </div>
                     </div>
-                    <input
-                      ref={fileInputRef}
-                      className="hidden"
-                      type="file"
-                      accept="application/pdf"
-                      onChange={(e) => {
-                        const next = e.target.files?.[0] ?? null;
-                        if (!next) return;
-                        setFile(next);
-                        setFileName(next.name);
-                        setStagedId("");
-
-                        try {
-                          window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
-                        } catch {}
-                      }}
-                    />
+                    {/* file input mounted above */}
                   </label>
                 </div>
               ) : null}
