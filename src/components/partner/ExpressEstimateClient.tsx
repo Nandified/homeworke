@@ -93,6 +93,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [reportQuery, setReportQuery] = useState("");
 
+  const prevSelectedPropertyIdRef = useRef<string>("");
+
   const [propertyMode, setPropertyMode] = useState<"existing" | "new">("existing");
   const [propertyOwner, setPropertyOwner] = useState<"my" | "client">("my");
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
@@ -209,7 +211,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   }, [file, step]);
 
   useEffect(() => {
-    if (step === 2 && selectedPropertyId) setStep(3);
+    // Only auto-advance when the property selection actually changes (prevents "Change" click from instantly snapping back to Step 3).
+    const prev = prevSelectedPropertyIdRef.current;
+    if (step === 2 && selectedPropertyId && selectedPropertyId !== prev) setStep(3);
+    prevSelectedPropertyIdRef.current = selectedPropertyId;
   }, [selectedPropertyId, step]);
 
   useEffect(() => {
@@ -392,26 +397,29 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                     </div>
                     <div className="text-sm font-semibold text-[var(--hw-ink)]">Select Property</div>
                     {selectedPropertyId ? <div className="text-xs font-semibold text-emerald-700">✓</div> : null}
-                    {selectedPropertyId ? (
-                      <button
-                        type="button"
-                        className="ml-1 rounded-full border border-[rgba(229,57,53,.20)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-red)] hover:bg-[rgba(229,57,53,.06)]"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (!file) return;
-                          setPropertyMode("existing");
-                          setStep(2);
-                        }}
-                      >
-                        Change
-                      </button>
-                    ) : null}
                   </div>
                   <div className="mt-1 text-sm text-[var(--hw-muted)]">
                     {selectedProperty ? selectedProperty.address : file ? "Choose the property context for this report." : "Upload a PDF first."}
                   </div>
                 </div>
+
+                {selectedPropertyId ? (
+                  <div className="shrink-0">
+                    <button
+                      type="button"
+                      className="rounded-full border border-[rgba(229,57,53,.20)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-red)] hover:bg-[rgba(229,57,53,.06)]"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!file) return;
+                        setPropertyMode("existing");
+                        setStep(2);
+                      }}
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : null}
               </button>
 
               {step === 2 ? (
