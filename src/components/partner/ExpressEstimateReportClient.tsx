@@ -611,6 +611,13 @@ export function ExpressEstimateReportClient(props: {
                               reportType: report.type,
                               mode: shareMode,
                               selectedIds: shareMode === "selected" ? selected.map((s) => s.id) : undefined,
+                              lanes: extracted,
+                              client: {
+                                // demo: wire real client details from submission step once reports are persisted
+                                name: undefined,
+                                email: undefined,
+                                phone: undefined,
+                              },
                               recipient: {
                                 name: shareName || undefined,
                                 email: shareEmail || undefined,
@@ -655,16 +662,15 @@ export function ExpressEstimateReportClient(props: {
                     </Button>
                     <Button
                       size="sm"
-                      variant="secondary"
-                      disabled={shareMode === "full"}
+                      variant={shareMode === "full" ? "primary" : "secondary"}
                       onClick={() => setShareMode("full")}
                     >
                       Full
                     </Button>
                     <Button
                       size="sm"
-                      variant="secondary"
-                      disabled={shareMode === "selected" || selected.length === 0}
+                      variant={shareMode === "selected" ? "primary" : "secondary"}
+                      disabled={selected.length === 0}
                       onClick={() => setShareMode("selected")}
                     >
                       Selected

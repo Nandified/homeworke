@@ -13,14 +13,31 @@ export type ShareRecipientRole =
   | "Contractor / Vendor"
   | "Other";
 
+export type ReportShareLaneV1 = {
+  title: string;
+  items: Array<{ id: string; label: string; note?: string; range?: string; price?: number }>;
+};
+
 export type ReportSharePayloadV1 = {
   v: 1;
   kind: "express_estimate_report";
   reportId: string;
   address?: string;
   reportType?: string;
+
+  // Optional client context (when the report is tied to a client property)
+  client?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
+
   mode: ShareMode;
   selectedIds?: string[];
+
+  // Snapshot of lanes at share time (keeps share view consistent even as demo data changes)
+  lanes?: ReportShareLaneV1[];
+
   createdAt: number; // ms
   exp: number; // ms
   recipient: {

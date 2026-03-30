@@ -3,50 +3,26 @@
 import { useMemo, useState } from "react";
 
 import { Button, Card, Chip, EmptyState } from "@/components/ui";
-import type { ReportSharePayloadV1 } from "@/lib/share-token";
-
-type ExtractedLane = {
-  title: string;
-  items: Array<{ id: string; label: string; note?: string; range?: string; price?: number }>;
-};
+import type { ReportShareLaneV1, ReportSharePayloadV1 } from "@/lib/share-token";
 
 export function SharedExpressEstimateReportClient(props: { token: string; payload: ReportSharePayloadV1 }) {
   const [downloading, setDownloading] = useState<"" | "full" | "selected">("");
   const [toast, setToast] = useState<string>("");
 
-  const demoExtracted = useMemo<ExtractedLane[]>(() => {
-    // Mirrors the demo report lanes (kept lightweight for now).
-    return [
-      {
-        title: "Exterior",
-        items: [
-          { id: "roof", label: "Roofing patch / replace", note: "shingles + underlayment", range: "$4.8k–$8.2k", price: 6500 },
-          { id: "gutters", label: "Gutters + downspouts", range: "$1.1k–$1.9k", price: 1500 },
-          { id: "siding", label: "Siding repair", note: "loose panels", range: "$900–$2.2k", price: 1500 },
-          { id: "deck", label: "Deck board replacement", note: "rot / splintering", range: "$600–$1.6k", price: 1100 },
-        ],
-      },
-      {
-        title: "Interior",
-        items: [
-          { id: "paint", label: "Interior paint refresh", note: "living + hall", range: "$1.3k–$2.5k", price: 1900 },
-          { id: "floor", label: "Floor repair / refinish", range: "$900–$2.1k", price: 1500 },
-          { id: "drywall", label: "Drywall patch + texture", note: "water stain", range: "$250–$900", price: 550 },
-        ],
-      },
-    ];
-  }, []);
+  const baseLanes = useMemo<ReportShareLaneV1[]>(() => {
+    return Array.isArray(props.payload.lanes) && props.payload.lanes.length ? props.payload.lanes : [];
+  }, [props.payload.lanes]);
 
   const selectedIds = new Set(props.payload.selectedIds || []);
 
   const lanes = useMemo(() => {
     if (props.payload.mode === "selected") {
-      return demoExtracted
+      return baseLanes
         .map((lane) => ({ ...lane, items: lane.items.filter((it) => selectedIds.has(it.id)) }))
         .filter((l) => l.items.length);
     }
-    return demoExtracted;
-  }, [demoExtracted, props.payload.mode]);
+    return baseLanes;
+  }, [baseLanes, props.payload.mode]);
 
   async function download(mode: "full" | "selected") {
     try {
@@ -101,24 +77,30 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
       <Card className="p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">{props.payload.address || "Shared Express Estimate"}</div>
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">
+              {props.payload.client?.name ? `${props.payload.client.name} — ` : ""}
+              {props.payload.address || "Shared Express Estimate"}
+            </div>
             <div className="mt-1 text-sm text-[var(--hw-muted)]">
               Shared with {props.payload.recipient?.name || "you"}
               {props.payload.recipient?.role ? ` • ${props.payload.recipient.role}` : ""}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={props.payload.mode !== "selected" || (props.payload.selectedIds || []).length === 0 || downloading !== ""}
-              onClick={() => download("selected")}
-            >
-              {downloading === "selected" ? "Preparing…" : "Download selected"}
-            </Button>
-            <Button size="sm" disabled={downloading !== ""} onClick={() => download("full")}>
-              {downloading === "full" ? "Preparing…" : "Download full"}
-            </Button>
+            {props.payload.mode === "selected" ? (
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={(props.payload.selectedIds || []).length === 0 || downloading !== ""}
+                onClick={() => download("selected")}
+              >
+                {downloading === "selected" ? "Preparing…" : "Download selected"}
+              </Button>
+            ) : (
+              <Button size="sm" disabled={downloading !== ""} onClick={() => download("full")}>
+                {downloading === "full" ? "Preparing…" : "Download full"}
+              </Button>
+            )}
           </div>
         </div>
 
