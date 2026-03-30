@@ -374,7 +374,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             {/* Step 2: Property */}
             <div
               className={
-                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white overflow-hidden " +
+                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white " +
+                (step === 2 ? "relative z-20 " : "") +
                 (selectedPropertyId ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
               }
             >
