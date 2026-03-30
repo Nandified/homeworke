@@ -587,7 +587,7 @@ export function ExpressEstimateReportClient(props: {
         {shareOpen ? (
           <div className="fixed inset-0 z-[56] flex items-center justify-center p-6">
             <button type="button" className="absolute inset-0 bg-black/50" onClick={() => setShareOpen(false)} aria-label="Close" />
-            <div className="relative w-full max-w-lg overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
+            <div className="relative w-full max-w-lg overflow-visible rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
               <div className="flex items-center justify-between border-b border-[var(--hw-line)] p-4">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Share report</div>
                 <Button size="sm" variant="secondary" onClick={() => setShareOpen(false)}>
