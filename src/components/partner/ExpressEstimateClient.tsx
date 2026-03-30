@@ -90,6 +90,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [submitError, setSubmitError] = useState<string>("");
   const [notes, setNotes] = useState("");
 
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+
   const [propertyMode, setPropertyMode] = useState<"existing" | "new">("existing");
   const [propertyOwner, setPropertyOwner] = useState<"my" | "client">("my");
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
@@ -186,6 +188,15 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const propertyRequiredMissing = !selectedPropertyId;
   const selectedProperty = properties.find((p) => p.id === selectedPropertyId) || null;
 
+  // Guided stepper auto-advance
+  useEffect(() => {
+    if (step === 1 && file) setStep(2);
+  }, [file, step]);
+
+  useEffect(() => {
+    if (step === 2 && selectedPropertyId) setStep(3);
+  }, [selectedPropertyId, step]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -218,267 +229,353 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         <Card className="p-6">
           <div>
             <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload a PDF</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">Choose a property context, attach a PDF, then submit the report.</div>
+            <div className="mt-1 text-sm text-[var(--hw-muted)]">Upload a PDF to generate an Express Estimate.</div>
           </div>
 
           <div className="mt-4 grid gap-3">
-            <label
-              className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] p-4 hover:bg-white"
-              onDragEnter={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onDragLeave={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const next = e.dataTransfer.files?.[0] ?? null;
-                if (!next) return;
-                if (next.type && next.type !== "application/pdf") return;
-
-                setFile(next);
-                setFileName(next.name);
-                setStagedId("");
-
-                // Persist notes for the detail page.
-                try {
-                  window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
-                } catch {}
-              }}
-            >
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            {/* Step 1: Upload */}
+            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 p-4 text-left"
+                onClick={() => setStep(1)}
+              >
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{fileName || "Choose a PDF to upload"}</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                    {fileName ? "Attached. Now open a report below." : "Drag & drop or click to browse."}
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">
+                      1
+                    </div>
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload PDF</div>
+                    {file ? <div className="text-xs font-semibold text-emerald-700">✓</div> : null}
                   </div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">{fileName ? fileName : "Choose an inspection/appraisal PDF."}</div>
                 </div>
-                <div className="shrink-0">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      fileInputRef.current?.click();
-                    }}
-                  >
-                    Browse
-                  </Button>
-                </div>
-              </div>
-              <input
-                ref={fileInputRef}
-                className="hidden"
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => {
-                  const next = e.target.files?.[0] ?? null;
-                  if (!next) return;
-                  setFile(next);
-                  setFileName(next.name);
-                  setStagedId("");
-
-                  // Persist notes for the detail page.
-                  try {
-                    window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
-                  } catch {}
-                }}
-              />
-            </label>
-
-            {/* Property (condensed) */}
-            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">Property</div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant={propertyMode === "existing" ? "primary" : "secondary"}
-                    onClick={() => {
-                      setPropertyMode("existing");
-                      // Force explicit selection to avoid accidental submits.
-                      setSelectedPropertyId("");
-                    }}
-                  >
-                    Select
-                  </Button>
-                  <Button size="sm" variant={propertyMode === "new" ? "primary" : "secondary"} onClick={() => setPropertyMode("new")}>
-                    New address
-                  </Button>
-                </div>
-              </div>
-
-              {propertyMode === "existing" ? (
-                <div className="mt-3 grid gap-2">
-                  <Picker
-                    value={selectedPropertyId}
-                    placeholder="Select a property…"
-                    options={properties.map((p) => ({
-                      id: p.id,
-                      label: `${p.kind === "client" ? "Client" : "My"}: ${p.label}`,
-                      sublabel: p.address,
-                    }))}
-                    onChange={setSelectedPropertyId}
-                  />
-                  {selectedProperty ? <div className="text-xs text-[var(--hw-muted)]">Using: {selectedProperty.address}</div> : <div className="text-xs text-[var(--hw-muted)]">Select a property to continue.</div>}
-                </div>
-              ) : (
-                <div className="mt-3 grid gap-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPropertyOwner("my")}
-                      className={
-                        "rounded-full px-3 py-2 text-xs font-semibold transition " +
-                        (propertyOwner === "my"
-                          ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                          : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-                      }
-                    >
-                      My property
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPropertyOwner("client")}
-                      className={
-                        "rounded-full px-3 py-2 text-xs font-semibold transition " +
-                        (propertyOwner === "client"
-                          ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                          : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-                      }
-                    >
-                      Client property
-                    </button>
-                  </div>
-
-                  <input
-                    className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                    value={newPropertyAddress}
-                    onChange={(e) => setNewPropertyAddress(e.target.value)}
-                    placeholder="Property address (required)"
-                  />
-
-                  <div className="flex items-center justify-between gap-3">
-                    <input
-                      className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                      value={newPropertyNickname}
-                      onChange={(e) => setNewPropertyNickname(e.target.value)}
-                      placeholder="Nickname (optional)"
-                    />
+                {file ? (
+                  <div className="shrink-0">
                     <Button
                       size="sm"
-                      onClick={() => {
-                        const addr = normalizeAddress(newPropertyAddress);
-                        if (!addr) return;
-
-                        const id = `${propertyOwner === "client" ? "prop_client" : "prop_local"}_${Math.random().toString(36).slice(2, 10)}`;
-                        const createdAt = new Date().toISOString();
-
-                        if (propertyOwner === "client") {
-                          const next: StoredClientProperty = {
-                            id,
-                            createdAt,
-                            address: addr,
-                            nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
-                            clientName: newClientName || undefined,
-                            clientEmail: newClientEmail || undefined,
-                            clientPhone: newClientPhone || undefined,
-                          };
-                          writeClientProperties([next, ...readClientProperties()]);
-                        } else {
-                          const next: StoredProperty = {
-                            id,
-                            createdAt,
-                            address: addr,
-                            nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
-                          };
-                          writeCustomProperties([next, ...readCustomProperties()]);
-                        }
-
-                        const p = { id, label: normalizeAddress(newPropertyNickname || addr), address: addr, kind: propertyOwner } as const;
-                        setProperties((prev) => [p, ...prev]);
-                        setSelectedPropertyId(id);
-                        setPropertyMode("existing");
-
-                        setNewPropertyAddress("");
-                        setNewPropertyNickname("");
-                        setNewClientName("");
-                        setNewClientEmail("");
-                        setNewClientPhone("");
+                      variant="secondary"
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setFile(null);
+                        setFileName("");
+                        setStagedId("");
+                        setStep(1);
                       }}
                     >
-                      Create
+                      Remove
                     </Button>
                   </div>
+                ) : null}
+              </button>
 
-                  {propertyOwner === "client" ? (
-                    <div className="grid gap-2">
-                      <div className="text-xs font-semibold text-[var(--hw-muted)]">Client (optional)</div>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        <input
-                          className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                          value={newClientName}
-                          onChange={(e) => setNewClientName(e.target.value)}
-                          placeholder="Name"
-                        />
-                        <input
-                          className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                          value={newClientPhone}
-                          onChange={(e) => setNewClientPhone(e.target.value)}
-                          placeholder="Phone"
-                        />
-                        <input
-                          className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm sm:col-span-2"
-                          value={newClientEmail}
-                          onChange={(e) => setNewClientEmail(e.target.value)}
-                          placeholder="Email"
-                        />
+              {step === 1 ? (
+                <div className="px-4 pb-4">
+                  <label
+                    className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] p-4 hover:bg-white"
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+
+                      const next = e.dataTransfer.files?.[0] ?? null;
+                      if (!next) return;
+                      if (next.type && next.type !== "application/pdf") return;
+
+                      setFile(next);
+                      setFileName(next.name);
+                      setStagedId("");
+
+                      try {
+                        window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
+                      } catch {}
+                    }}
+                  >
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-[var(--hw-ink)]">{fileName || "Choose a PDF to upload"}</div>
+                        <div className="mt-1 text-sm text-[var(--hw-muted)]">Drag & drop or click to browse.</div>
+                      </div>
+                      <div className="shrink-0">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            fileInputRef.current?.click();
+                          }}
+                        >
+                          Browse
+                        </Button>
                       </div>
                     </div>
-                  ) : null}
-                </div>
-              )}
+                    <input
+                      ref={fileInputRef}
+                      className="hidden"
+                      type="file"
+                      accept="application/pdf"
+                      onChange={(e) => {
+                        const next = e.target.files?.[0] ?? null;
+                        if (!next) return;
+                        setFile(next);
+                        setFileName(next.name);
+                        setStagedId("");
 
-              {propertyRequiredMissing ? (
-                <div className="mt-2 text-xs font-semibold text-[var(--hw-red)]">Pick or create a property to submit.</div>
+                        try {
+                          window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
+                        } catch {}
+                      }}
+                    />
+                  </label>
+                </div>
               ) : null}
             </div>
 
-            <div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Notes (optional)</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">Anything you want the estimate to focus on?</div>
-              <div className="mt-2">
-                <Textarea
-                  value={notes}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setNotes(v);
-                    try {
-                      window.sessionStorage.setItem("hw.expressEstimate.notes", v);
-                    } catch {}
-                  }}
-                  placeholder="Add a note…"
-                />
-              </div>
+            {/* Step 2: Property */}
+            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
+              <button
+                type="button"
+                className={"flex w-full items-center justify-between gap-3 p-4 text-left " + (!file ? "opacity-60" : "")}
+                onClick={() => {
+                  if (!file) return;
+                  setStep(2);
+                }}
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">
+                      2
+                    </div>
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Select Property</div>
+                    {selectedPropertyId ? <div className="text-xs font-semibold text-emerald-700">✓</div> : null}
+                  </div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                    {selectedProperty ? selectedProperty.address : file ? "Choose the property context for this report." : "Upload a PDF first."}
+                  </div>
+                </div>
+              </button>
+
+              {step === 2 ? (
+                <div className="px-4 pb-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Property</div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={propertyMode === "existing" ? "primary" : "secondary"}
+                        onClick={() => {
+                          setPropertyMode("existing");
+                          setSelectedPropertyId("");
+                        }}
+                      >
+                        Select
+                      </Button>
+                      <Button size="sm" variant={propertyMode === "new" ? "primary" : "secondary"} onClick={() => setPropertyMode("new")}>
+                        New address
+                      </Button>
+                    </div>
+                  </div>
+
+                  {propertyMode === "existing" ? (
+                    <div className="mt-3 grid gap-2">
+                      <Picker
+                        value={selectedPropertyId}
+                        placeholder="Select a property…"
+                        options={properties.map((p) => ({
+                          id: p.id,
+                          label: (p.kind === "client" ? "Client" : "My") + ": " + p.label,
+                          sublabel: p.address,
+                        }))}
+                        onChange={setSelectedPropertyId}
+                      />
+                      {selectedProperty ? (
+                        <div className="text-xs text-[var(--hw-muted)]">Using: {selectedProperty.address}</div>
+                      ) : (
+                        <div className="text-xs text-[var(--hw-muted)]">Select a property to continue.</div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="mt-3 grid gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPropertyOwner("my")}
+                          className={
+                            "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                            (propertyOwner === "my"
+                              ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                              : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                          }
+                        >
+                          My property
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPropertyOwner("client")}
+                          className={
+                            "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                            (propertyOwner === "client"
+                              ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                              : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                          }
+                        >
+                          Client property
+                        </button>
+                      </div>
+
+                      <input
+                        className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
+                        value={newPropertyAddress}
+                        onChange={(e) => setNewPropertyAddress(e.target.value)}
+                        placeholder="Property address (required)"
+                      />
+
+                      <div className="flex items-center justify-between gap-3">
+                        <input
+                          className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
+                          value={newPropertyNickname}
+                          onChange={(e) => setNewPropertyNickname(e.target.value)}
+                          placeholder="Nickname (optional)"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            const addr = normalizeAddress(newPropertyAddress);
+                            if (!addr) return;
+
+                            const id = (propertyOwner === "client" ? "prop_client" : "prop_local") + "_" + Math.random().toString(36).slice(2, 10);
+                            const createdAt = new Date().toISOString();
+
+                            if (propertyOwner === "client") {
+                              const next = {
+                                id,
+                                createdAt,
+                                address: addr,
+                                nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
+                                clientName: newClientName || undefined,
+                                clientEmail: newClientEmail || undefined,
+                                clientPhone: newClientPhone || undefined,
+                              };
+                              writeClientProperties([next, ...readClientProperties()]);
+                            } else {
+                              const next = {
+                                id,
+                                createdAt,
+                                address: addr,
+                                nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
+                              };
+                              writeCustomProperties([next, ...readCustomProperties()]);
+                            }
+
+                            const p = { id, label: normalizeAddress(newPropertyNickname || addr), address: addr, kind: propertyOwner } as const;
+                            setProperties((prev) => [p, ...prev]);
+                            setSelectedPropertyId(id);
+                            setPropertyMode("existing");
+
+                            setNewPropertyAddress("");
+                            setNewPropertyNickname("");
+                            setNewClientName("");
+                            setNewClientEmail("");
+                            setNewClientPhone("");
+                          }}
+                        >
+                          Create
+                        </Button>
+                      </div>
+
+                      {propertyOwner === "client" ? (
+                        <div className="grid gap-2">
+                          <div className="text-xs font-semibold text-[var(--hw-muted)]">Client (optional)</div>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <input
+                              className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
+                              value={newClientName}
+                              onChange={(e) => setNewClientName(e.target.value)}
+                              placeholder="Name"
+                            />
+                            <input
+                              className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
+                              value={newClientPhone}
+                              onChange={(e) => setNewClientPhone(e.target.value)}
+                              placeholder="Phone"
+                            />
+                            <input
+                              className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm sm:col-span-2"
+                              value={newClientEmail}
+                              onChange={(e) => setNewClientEmail(e.target.value)}
+                              placeholder="Email"
+                            />
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+
+                  {propertyRequiredMissing ? (
+                    <div className="mt-2 text-xs font-semibold text-[var(--hw-red)]">Pick or create a property to continue.</div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-xs text-[var(--hw-muted)]">Upload attaches a PDF to the selected property, then generates a report.</div>
+            {/* Step 3: Notes */}
+            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
+              <button
+                type="button"
+                className={"flex w-full items-center justify-between gap-3 p-4 text-left " + (!file || !selectedPropertyId ? "opacity-60" : "")}
+                onClick={() => {
+                  if (!file || !selectedPropertyId) return;
+                  setStep(3);
+                }}
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">
+                      3
+                    </div>
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Notes (optional)</div>
+                  </div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Anything you want the estimate to focus on?</div>
+                </div>
+              </button>
+
+              {step === 3 ? (
+                <div className="px-4 pb-4">
+                  <Textarea
+                    value={notes}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setNotes(v);
+                      try {
+                        window.sessionStorage.setItem("hw.expressEstimate.notes", v);
+                      } catch {}
+                    }}
+                    placeholder="Add a note…"
+                  />
+                </div>
+              ) : null}
+            </div>
+
+            <div className="flex items-center justify-end">
               <Button
                 size="sm"
-                disabled={!file || submitting || (!selectedPropertyId && propertyMode === "existing")}
+                disabled={!file || !selectedPropertyId || submitting}
                 onClick={() => {
-                  if (!file || submitting) return;
-                  if (propertyMode === "existing" && !selectedPropertyId) return;
+                  if (!file || !selectedPropertyId || submitting) return;
                   setSubmitting(true);
                   setSubmitError("");
 
@@ -487,23 +584,17 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       const id = await stageFile(file);
                       setStagedId(id);
                     } catch {
-                      setSubmitError("Upload failed. Please try again.");
+                      setSubmitError("Submit failed. Please try again.");
                     } finally {
                       setSubmitting(false);
                     }
                   })();
                 }}
               >
-                {submitting ? "Uploading…" : "Upload"}
+                {submitting ? "Submitting…" : "Submit"}
               </Button>
             </div>
 
-            {propertyRequiredMissing ? (
-              <div className="text-xs font-semibold text-[var(--hw-red)]">Select a property (or create a new one) before uploading.</div>
-            ) : null}
-            {selectedProperty ? (
-              <div className="text-xs text-[var(--hw-muted)]">Using address for pricing: {selectedProperty.address}</div>
-            ) : null}
             {submitError ? <div className="text-xs font-semibold text-[var(--hw-red)]">{submitError}</div> : null}
           </div>
         </Card>
