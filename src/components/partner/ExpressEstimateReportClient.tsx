@@ -452,9 +452,6 @@ export function ExpressEstimateReportClient(props: {
                   <Button size="sm" disabled={!report || selected.length === 0} onClick={() => download("selected")}>
                     Download selected
                   </Button>
-                  <Button size="sm" variant="secondary" disabled={selected.length === 0} onClick={() => setDrawerOpen(true)}>
-                    View selected
-                  </Button>
                   <Button
                     size="sm"
                     variant="secondary"
