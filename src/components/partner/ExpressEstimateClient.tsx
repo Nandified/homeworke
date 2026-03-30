@@ -210,10 +210,6 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
   // Guided stepper auto-advance
   useEffect(() => {
-    if (step === 1 && file) setStep(2);
-  }, [file, step]);
-
-  useEffect(() => {
     // Only auto-advance when the property selection actually changes (prevents "Change" click from instantly snapping back to Step 3).
     const prev = prevSelectedPropertyIdRef.current;
     if (step === 2 && selectedPropertyId && selectedPropertyId !== prev) setStep(3);
@@ -268,6 +264,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 setFile(next);
                 setFileName(next.name);
                 setStagedId("");
+                setStep(2);
 
                 try {
                   window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
@@ -343,6 +340,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       setFile(next);
                       setFileName(next.name);
                       setStagedId("");
+                      setStep(2);
 
                       try {
                         window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
