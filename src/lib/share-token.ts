@@ -32,6 +32,14 @@ export type ReportSharePayloadV1 = {
     phone?: string;
   };
 
+  // Courtesy of the pro who generated/shared this report
+  pro?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    brokerageName?: string;
+  };
+
   mode: ShareMode;
   selectedIds?: string[];
 

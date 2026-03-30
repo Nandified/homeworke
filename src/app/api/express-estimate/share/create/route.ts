@@ -54,6 +54,14 @@ export async function POST(req: Request) {
     address,
     reportType,
     client,
+    pro: body?.pro
+      ? {
+          name: typeof body.pro?.name === "string" ? body.pro.name : undefined,
+          email: typeof body.pro?.email === "string" ? body.pro.email : undefined,
+          phone: typeof body.pro?.phone === "string" ? body.pro.phone : undefined,
+          brokerageName: typeof body.pro?.brokerageName === "string" ? body.pro.brokerageName : undefined,
+        }
+      : undefined,
     mode,
     selectedIds: mode === "selected" ? selectedIds || [] : undefined,
     lanes,

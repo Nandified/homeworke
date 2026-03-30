@@ -155,12 +155,35 @@ export function ExpressEstimateReportClient(props: {
   const [shareEmail, setShareEmail] = useState("");
   const [sharePhone, setSharePhone] = useState("");
   const [shareRole, setShareRole] = useState("");
+  const [contactId, setContactId] = useState("");
   const [shareBusy, setShareBusy] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
   const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
   const repairs = useMemo(() => allItems.filter((item) => repairIds.has(item.id)), [allItems, repairIds]);
+
+  const savedContacts = useMemo(() => {
+    if (typeof window === "undefined") return [] as Array<{ id: string; name: string; email?: string; phone?: string }>;
+    try {
+      const raw = window.localStorage.getItem("hw_props_client_v1") || "[]";
+      const arr = JSON.parse(raw) as Array<any>;
+      const out: Array<{ id: string; name: string; email?: string; phone?: string }> = [];
+      const seen = new Set<string>();
+      for (const p of Array.isArray(arr) ? arr : []) {
+        const name = typeof p?.clientName === "string" ? p.clientName.trim() : "";
+        const email = typeof p?.clientEmail === "string" ? p.clientEmail.trim() : "";
+        const phone = typeof p?.clientPhone === "string" ? p.clientPhone.trim() : "";
+        const key = (email || phone || name).toLowerCase();
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        out.push({ id: key, name: name || email || phone || "Client", email: email || undefined, phone: phone || undefined });
+      }
+      return out.slice(0, 50);
+    } catch {
+      return [];
+    }
+  }, []);
 
   function parseMoneyToNumber(raw: string): number | null {
     const s = (raw || "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -566,7 +589,26 @@ export function ExpressEstimateReportClient(props: {
 
               <div className="p-4">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Input value={shareName} onChange={(e) => setShareName(e.target.value)} placeholder="Name" />
+                  <Picker
+                    searchable
+                    value={contactId}
+                    placeholder="Choose contact (optional)"
+                    options={savedContacts.map((c) => ({
+                      id: c.id,
+                      label: c.name,
+                      sublabel: [c.email, c.phone].filter(Boolean).join(" • "),
+                    }))}
+                    onChange={(id) => {
+                      setContactId(id);
+                      const c = savedContacts.find((x) => x.id === id);
+                      if (c) {
+                        setShareName(c.name || "");
+                        setShareEmail(c.email || "");
+                        setSharePhone(c.phone || "");
+                        if (!shareRole) setShareRole("Homeowner");
+                      }
+                    }}
+                  />
                   <Picker
                     value={shareRole}
                     placeholder="Role"
@@ -583,6 +625,7 @@ export function ExpressEstimateReportClient(props: {
                     ]}
                     onChange={setShareRole}
                   />
+                  <Input value={shareName} onChange={(e) => setShareName(e.target.value)} placeholder="Name" />
                   <Input value={shareEmail} onChange={(e) => setShareEmail(e.target.value)} placeholder="Email" />
                   <Input value={sharePhone} onChange={(e) => setSharePhone(e.target.value)} placeholder="Phone (optional)" />
                 </div>
@@ -612,11 +655,14 @@ export function ExpressEstimateReportClient(props: {
                               mode: shareMode,
                               selectedIds: shareMode === "selected" ? selected.map((s) => s.id) : undefined,
                               lanes: extracted,
-                              client: {
-                                // demo: wire real client details from submission step once reports are persisted
-                                name: undefined,
-                                email: undefined,
-                                phone: undefined,
+                              // TODO: wire real client details from submission step once reports are persisted
+                              client: undefined,
+                              // Pro snapshot for courtesy section (use account profile in real system)
+                              pro: {
+                                name: "Fernando Rocha Jr",
+                                email: "Fernando@TheFRJgroup.com",
+                                phone: "",
+                                brokerageName: "The FRJ Group",
                               },
                               recipient: {
                                 name: shareName || undefined,
