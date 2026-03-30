@@ -391,7 +391,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               className={
                 "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white " +
                 (step === 2 ? "relative z-20 " : "") +
-                (step2Completed ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
+                (step2Completed ? "overflow-hidden shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
               }
             >
               <button
@@ -608,8 +608,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             {/* Step 3: Notes */}
             <div
               className={
-                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white overflow-hidden " +
-                (notesCompleted ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
+                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] overflow-hidden " +
+                (notesCompleted
+                  ? "bg-[rgba(229,57,53,.03)] shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]"
+                  : "bg-white")
               }
             >
               <button
