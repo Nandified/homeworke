@@ -34,6 +34,7 @@ export type ReportSharePayloadV1 = {
 
   // Courtesy of the pro who generated/shared this report
   pro?: {
+    code?: string; // partner pro_code (used to enrich from landing page profile)
     name?: string;
     email?: string;
     phone?: string;

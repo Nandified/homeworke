@@ -54,6 +54,7 @@ export async function POST(req: Request) {
 
     const pro = body?.pro
       ? {
+          code: typeof body.pro?.code === "string" ? body.pro.code : undefined,
           name: typeof body.pro?.name === "string" ? body.pro.name : undefined,
           email: typeof body.pro?.email === "string" ? body.pro.email : undefined,
           phone: typeof body.pro?.phone === "string" ? body.pro.phone : undefined,
