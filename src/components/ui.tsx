@@ -68,11 +68,24 @@ export function Picker(props: {
   options: PickerOption[];
   placeholder?: string;
   onChange: (id: string) => void;
+  searchable?: boolean;
+  searchPlaceholder?: string;
 }) {
   const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState("");
   const wrapRef = React.useRef<HTMLDivElement | null>(null);
 
   const active = props.options.find((o) => o.id === props.value) || null;
+
+  const filtered = React.useMemo(() => {
+    if (!props.searchable) return props.options;
+    const q = (query || "").trim().toLowerCase();
+    if (!q) return props.options;
+    return props.options.filter((o) => {
+      const hay = `${o.label} ${o.sublabel || ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [props.options, props.searchable, query]);
 
   React.useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -98,7 +111,13 @@ export function Picker(props: {
       <div className="relative">
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => {
+            setOpen((v) => {
+              const next = !v;
+              if (!next) setQuery("");
+              return next;
+            });
+          }}
           className="group flex h-11 w-full items-center justify-between gap-3 rounded-[999px] border border-[var(--hw-line)] bg-gradient-to-b from-white to-[var(--hw-soft)] px-4 text-left shadow-[0_10px_22px_rgba(17,24,39,.06)] outline-none transition hover:shadow-[0_12px_26px_rgba(17,24,39,.08)] focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.12)]"
           aria-haspopup="listbox"
           aria-expanded={open}
@@ -117,8 +136,23 @@ export function Picker(props: {
             className="absolute z-20 mt-2 w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]"
           >
             <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[var(--hw-red)]/10 blur-[40px]" />
+
+            {props.searchable ? (
+              <div className="relative border-b border-[rgba(229,57,53,.14)] bg-white p-2">
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={props.searchPlaceholder || "Search…"}
+                  className="h-10 w-full rounded-[999px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 text-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                />
+              </div>
+            ) : null}
+
             <div className="relative max-h-64 overflow-auto p-1">
-              {props.options.map((o) => {
+              {filtered.length === 0 ? (
+                <div className="p-3 text-sm text-[var(--hw-muted)]">No matches.</div>
+              ) : null}
+              {filtered.map((o) => {
                 const selected = o.id === props.value;
                 return (
                   <button
@@ -129,6 +163,7 @@ export function Picker(props: {
                     onClick={() => {
                       props.onChange(o.id);
                       setOpen(false);
+                      setQuery("");
                     }}
                     className={cn(
                       "w-full rounded-[12px] px-3 py-2 text-left transition",

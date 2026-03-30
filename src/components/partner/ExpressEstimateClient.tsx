@@ -143,6 +143,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   }, [notes]);
 
   const step2Completed = !!selectedPropertyId && step !== 2;
+  const notesCompletedVisual = notesCompleted && !!file && !!selectedPropertyId;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -462,6 +463,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                   {propertyMode === "existing" ? (
                     <div className="mt-3 grid gap-2">
                       <Picker
+                        searchable
+                        searchPlaceholder="Search properties…"
                         value={selectedPropertyId}
                         placeholder="Select a property…"
                         options={properties.map((p) => ({
@@ -609,7 +612,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             <div
               className={
                 "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] overflow-hidden " +
-                (notesCompleted
+                (notesCompletedVisual
                   ? "bg-[rgba(229,57,53,.05)] shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]"
                   : "bg-white")
               }
@@ -621,7 +624,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                   (!file || !selectedPropertyId ? "opacity-60 " : "")
                 }
                 onClick={() => {
-                  if (!file || !selectedPropertyId) return;
+                  // Notes are optional: allow editing anytime.
                   setStep(3);
                 }}
               >
