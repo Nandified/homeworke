@@ -142,6 +142,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     return notes.replace(/[\s\u00A0]+/g, "").length > 0;
   }, [notes]);
 
+  const step2Completed = !!selectedPropertyId && step !== 2;
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -376,7 +378,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               className={
                 "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white " +
                 (step === 2 ? "relative z-20 " : "") +
-                (selectedPropertyId ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
+                (step2Completed ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
               }
             >
               <button
@@ -384,7 +386,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
                   (!file ? "opacity-60 " : "") +
-                  (selectedPropertyId ? "bg-[rgba(229,57,53,.05)]" : "")
+                  (step2Completed ? "bg-[rgba(229,57,53,.05)]" : "")
                 }
                 onClick={() => {
                   if (!file) return;
@@ -406,9 +408,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
                 {selectedPropertyId ? (
                   <div className="shrink-0">
-                    <button
+                    <Button
+                      size="sm"
+                      variant="secondary"
                       type="button"
-                      className="rounded-full border border-[rgba(229,57,53,.20)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-red)] hover:bg-[rgba(229,57,53,.06)]"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -418,7 +421,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       }}
                     >
                       Change
-                    </button>
+                    </Button>
                   </div>
                 ) : null}
               </button>
