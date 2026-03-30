@@ -287,13 +287,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setFile(null);
-                        setFileName("");
-                        setStagedId("");
-                        setStep(1);
+                        fileInputRef.current?.click();
                       }}
                     >
-                      Remove
+                      Change
                     </Button>
                   </div>
                 ) : null}
@@ -337,7 +334,23 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         <div className="text-sm font-semibold text-[var(--hw-ink)]">{fileName || "Choose a PDF to upload"}</div>
                         <div className="mt-1 text-sm text-[var(--hw-muted)]">Drag & drop or click to browse.</div>
                       </div>
-                      <div className="shrink-0">
+                      <div className="shrink-0 flex items-center gap-2">
+                        {fileName ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFile(null);
+                              setFileName("");
+                              setStagedId("");
+                              setStep(1);
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        ) : null}
                         <Button
                           size="sm"
                           variant="secondary"
@@ -456,7 +469,11 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           label: (p.kind === "client" ? "Client" : "My") + ": " + p.label,
                           sublabel: p.address,
                         }))}
-                        onChange={setSelectedPropertyId}
+                        onChange={(id) => {
+                          setSelectedPropertyId(id);
+                          prevSelectedPropertyIdRef.current = id;
+                          setStep(3);
+                        }}
                       />
                       {selectedProperty ? (
                         <div className="text-xs text-[var(--hw-muted)]">Using: {selectedProperty.address}</div>
