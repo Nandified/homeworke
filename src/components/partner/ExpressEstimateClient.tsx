@@ -618,8 +618,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 type="button"
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
-                  (!file || !selectedPropertyId ? "opacity-60 " : "") +
-                  (notesCompleted ? "bg-[rgba(229,57,53,.05)]" : "")
+                  (!file || !selectedPropertyId ? "opacity-60 " : "")
                 }
                 onClick={() => {
                   if (!file || !selectedPropertyId) return;
