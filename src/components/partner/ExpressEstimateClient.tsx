@@ -89,7 +89,6 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
   const [notes, setNotes] = useState("");
-  const [isDragging, setIsDragging] = useState(false);
 
   const [propertyMode, setPropertyMode] = useState<"existing" | "new">("existing");
   const [propertyOwner, setPropertyOwner] = useState<"my" | "client">("my");
@@ -224,29 +223,22 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
           <div className="mt-4 grid gap-3">
             <label
-              className={
-                "block cursor-pointer rounded-[var(--hw-radius-lg)] border-2 border-dashed bg-[var(--hw-soft)] p-4 hover:bg-white " +
-                (isDragging ? "border-[rgba(17,24,39,.38)] bg-white" : "border-[rgba(17,24,39,.22)]")
-              }
+              className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] p-4 hover:bg-white"
               onDragEnter={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                setIsDragging(true);
               }}
               onDragOver={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                setIsDragging(true);
               }}
               onDragLeave={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                setIsDragging(false);
               }}
               onDrop={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                setIsDragging(false);
 
                 const next = e.dataTransfer.files?.[0] ?? null;
                 if (!next) return;
