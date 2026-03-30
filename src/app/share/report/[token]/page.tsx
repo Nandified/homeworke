@@ -2,11 +2,64 @@ import Image from "next/image";
 
 import partners from "@/../spec/partners.json";
 
+import {
+  Instagram,
+  Facebook,
+  Linkedin,
+  Youtube,
+  Twitter,
+  Music2,
+  MapPin,
+  Home,
+  Building2,
+  Globe,
+  Link as LinkIcon,
+} from "lucide-react";
+
 import { Container, Card, Pill } from "@/components/ui";
 import { ShareLoginCta } from "@/components/share/ShareLoginCta";
 import { SharedExpressEstimateReportClient } from "@/components/share/SharedExpressEstimateReportClient";
 import { resolvePartner } from "@/lib/partners";
 import { verifyShareToken } from "@/lib/share-token";
+
+function SocialIconLink(props: { href: string; label: string }) {
+  const k = (props.label || "").toLowerCase();
+  const Icon =
+    k.includes("instagram")
+      ? Instagram
+      : k.includes("facebook")
+        ? Facebook
+        : k.includes("linkedin")
+          ? Linkedin
+          : k.includes("youtube")
+            ? Youtube
+            : k.includes("tiktok")
+              ? Music2
+              : k.includes("twitter") || k === "x"
+                ? Twitter
+                : k.includes("google") || k.includes("gmb") || k.includes("business profile")
+                  ? MapPin
+                  : k.includes("zillow")
+                    ? Home
+                    : k.includes("realtor")
+                      ? Building2
+                      : k.includes("website") || k.includes("web")
+                        ? Globe
+                        : LinkIcon;
+
+  return (
+    <a
+      href={props.href}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center justify-center rounded-full border border-[var(--hw-line)] bg-white p-2.5 text-[var(--hw-muted)] transition-colors hover:border-[var(--hw-ink)]/20 hover:bg-[var(--hw-soft)] hover:text-[var(--hw-ink)]"
+      aria-label={props.label}
+      title={props.label}
+    >
+      <Icon className="h-4 w-4" />
+    </a>
+  );
+}
 
 export default async function ShareReportPage(props: { params: Promise<{ token: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const { token } = await props.params;
@@ -136,7 +189,7 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
                 </a>
               ) : null}
               <a
-                className="inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(229,57,53,.3)] hover:brightness-[1.05]"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] px-4 py-2 text-sm font-semibold !text-white shadow-[0_4px_14px_rgba(229,57,53,.3)] hover:brightness-[1.05] hover:!text-white"
                 href="#book-repairs"
               >
                 Book repairs
@@ -154,47 +207,14 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
             {proBio ? <div className="mt-3 text-sm leading-relaxed text-[var(--hw-muted)]">{proBio}</div> : null}
 
             {proSocials.length ? (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {proSocials.slice(0, 8).map(([k, v]) => {
-                  const label = k.replace(/_url$/i, "").replace(/_/g, " ");
-                  const kind = label.toLowerCase();
-                  const icon = kind.includes("instagram")
-                    ? "Instagram"
-                    : kind.includes("facebook")
-                      ? "Facebook"
-                      : kind.includes("linkedin")
-                        ? "LinkedIn"
-                        : kind.includes("youtube")
-                          ? "YouTube"
-                          : kind.includes("tiktok")
-                            ? "TikTok"
-                            : kind.includes("twitter") || kind === "x"
-                              ? "X"
-                              : kind.includes("google")
-                                ? "Google"
-                                : kind.includes("zillow")
-                                  ? "Zillow"
-                                  : kind.includes("realtor")
-                                    ? "Realtor"
-                                    : kind.includes("website")
-                                      ? "Website"
-                                      : "Link";
-
-                  return (
-                    <a
-                      key={k}
-                      href={v}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
-                    >
-                      <span className="grid h-6 w-6 place-items-center rounded-full bg-[var(--hw-soft)] text-[11px] font-extrabold text-[var(--hw-red)]">
-                        {icon.slice(0, 1)}
-                      </span>
-                      <span className="capitalize">{label}</span>
-                    </a>
-                  );
-                })}
+              <div className="mt-5">
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Social</div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {proSocials.slice(0, 10).map(([k, v]) => {
+                    const label = k.replace(/_url$/i, "").replace(/_/g, " ").trim();
+                    return <SocialIconLink key={k} href={v} label={label} />;
+                  })}
+                </div>
               </div>
             ) : null}
 
