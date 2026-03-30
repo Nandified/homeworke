@@ -80,6 +80,62 @@ AI estimating reference:
 4) Handoff
 - Best elements: “AI estimates from photos/scope” UX; confidence/range language; automation + document generation.
 
+### Research notes (Mar 27, 2026) — Handoff + BOSSCAT estimate engines (foundation for Homeworke Instant Estimates)
+Why this matters: we are building an Instant Estimate flow that must be (1) accurate enough to trust, (2) structured enough to become a shopping cart (“add to cart”), and (3) location-aware (ZIP/metro pricing).
+
+**Handoff (handoff.ai) — what they claim publicly**
+- Reads files (blueprints/photos/videos/scopes) and generates estimates.
+- Uses **real-time local pricing** with **ZIP-code intelligence** (not national averages).
+- Tracks **60M+ SKUs** and integrates supplier catalogs (they mention **Home Depot + Lowe’s**).
+- “Secret sauce” (YC profile): they built a construction cost “API” + a construction logic knowledge base.
+- Trained on **10,000+** estimates they produced by hand early on.
+- Supports business-specific rules/templates/markup logic (“your rules, your templates”).
+Sources:
+- YC profile: https://www.ycombinator.com/companies/handoff
+- Handoff marketing: https://www.handoff.ai/instant-ai-estimates
+
+**Interpretation (important): Handoff is not just an LLM guessing a number**
+Likely 2-layer architecture:
+1) Extraction/normalization: report → structured line items (trade/task/assumptions/qty/unit placeholders)
+2) Pricing engine: line item → priced via local indices + materials feeds + labor assumptions + markup rules
+
+**BOSSCAT — what they claim publicly**
+- Instant Repair Estimates digitize inspection reports into **shopping carts** with:
+  - detailed per-item pricing
+  - costs categorized by **priority + type**
+  - often also grouped by **trade** (electrical/plumbing/roofing/HVAC)
+- Key value: transparency + speed + ability to approve/schedule work inside the platform.
+Sources:
+- HousingWire profile: https://www.housingwire.com/company-profile/bosscat-home-services-and-technologies/
+- HousingWire Tech100 winner writeup: https://www.housingwire.com/company-profile/2025-tech100-winner-bosscat-home-services-technologies/
+
+**Homeworke Instant Estimates — decision (V1.5)**
+We are skipping “LLM-only pricing” and moving directly to a hybrid that supports cart + booking.
+
+V1.5 goals:
+- LLM focuses on **extraction + categorization** (and can propose ranges), but **final price is deterministic** from our pricing tables + rules.
+- Every line item must have stable fields so it can become a product/service in cart:
+  - trade, priority, task template/serviceTemplateId (or cartSkuId), price (solid), range (optional display), notes/assumptions.
+- Pricing must be location-aware:
+  - property address → ZIP/metro multiplier (initial)
+  - then expand toward materials+labor components.
+
+Why: “Add to cart” requires a **solid number** and a deterministic SKU/service mapping. Ranges are useful UX, but booking requires a clear sell price.
+
+**Express Estimate (implementation notes)**
+- Auto-generate on upload: **Upload PDF → extract findings → map to templates → deterministic pricing → report ready.**
+- Evidence/photos (BOSSCAT-like): show **inline evidence per line item** when available.
+  - Plan: render PDF pages → LLM returns `{page, bbox, caption}` per finding → crop → store image → attach `evidenceImageUrl`.
+  - Phase A: page thumbnail if bbox is missing; Phase B: bbox crops.
+- Storage requirement: we’ll need an object store for page renders + cropped evidence (S3/R2/Vercel Blob).
+
+**Local artifacts created from this research (to later convert to Google Sheets/Docs in Drive):**
+- `tmp/pricing_datasets_plan.csv` — vendor shortlist + what each dataset provides + access model + legal notes + priority.
+- `tmp/v15_pricing_templates_seed.csv` — initial seed of repair templates with solid prices (demo), to evolve into deterministic pricing tables.
+- `tmp/v15_top50_inspection_items.csv` — top 50 common inspection repair items across all trades (CSV seed for template catalog).
+- `tmp/v15_pricing_schema.md` — deterministic pricing schema (tables + formula + audit/versioning) for V1.5.
+- `tmp/v15_public_calibration_ranges_seed.csv` — initial public calibration ranges (HomeAdvisor/Thumbtack) + allowed reference links (Homewyse = reference only, no extraction).
+
 
 ## SECTION 3 — Goal for Homeworke 3.0
 North star

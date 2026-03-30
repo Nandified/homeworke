@@ -89,6 +89,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
 
   const [propertyMode, setPropertyMode] = useState<"existing" | "new">("existing");
   const [propertyOwner, setPropertyOwner] = useState<"my" | "client">("my");
@@ -222,7 +223,45 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
           </div>
 
           <div className="mt-4 grid gap-3">
-            <label className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 hover:bg-white">
+            <label
+              className={
+                "block cursor-pointer rounded-[var(--hw-radius-lg)] border-2 border-dashed bg-[var(--hw-soft)] p-4 hover:bg-white " +
+                (isDragging ? "border-[rgba(17,24,39,.38)] bg-white" : "border-[rgba(17,24,39,.22)]")
+              }
+              onDragEnter={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDragging(true);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDragging(true);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDragging(false);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDragging(false);
+
+                const next = e.dataTransfer.files?.[0] ?? null;
+                if (!next) return;
+                if (next.type && next.type !== "application/pdf") return;
+
+                setFile(next);
+                setFileName(next.name);
+                setStagedId("");
+
+                // Persist notes for the detail page.
+                try {
+                  window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
+                } catch {}
+              }}
+            >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-[var(--hw-ink)]">{fileName || "Choose a PDF to upload"}</div>
