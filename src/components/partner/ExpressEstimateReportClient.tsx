@@ -151,7 +151,7 @@ export function ExpressEstimateReportClient(props: {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState<string>("");
   const [shareMode, _setShareMode] = useState<"full" | "selected">("full");
-  const [shareTab, setShareTab] = useState<"contacts" | "new">("contacts");
+  const [shareTab, setShareTab] = useState<"contacts" | "new">("new");
   const [shareFirstName, setShareFirstName] = useState("");
   const [shareLastName, setShareLastName] = useState("");
   const [shareEmail, setShareEmail] = useState("");
@@ -597,11 +597,11 @@ export function ExpressEstimateReportClient(props: {
 
               <div className="p-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button size="sm" variant={shareTab === "contacts" ? "primary" : "secondary"} onClick={() => setShareTab("contacts")}>
-                    Choose contact
-                  </Button>
                   <Button size="sm" variant={shareTab === "new" ? "primary" : "secondary"} onClick={() => setShareTab("new")}>
                     New user
+                  </Button>
+                  <Button size="sm" variant={shareTab === "contacts" ? "primary" : "secondary"} onClick={() => setShareTab("contacts")}>
+                    Contact list
                   </Button>
                 </div>
 
