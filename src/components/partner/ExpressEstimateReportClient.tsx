@@ -608,33 +608,7 @@ export function ExpressEstimateReportClient(props: {
                   </Button>
                 </div>
 
-                {shareTab === "contacts" ? (
-                  <div className="mt-3">
-                    <Picker
-                      searchable
-                      value={contactId}
-                      placeholder="Select a contact"
-                      options={savedContacts.map((c) => ({
-                        id: c.id,
-                        label: c.name,
-                        sublabel: [c.email, c.phone].filter(Boolean).join(" • "),
-                      }))}
-                      onChange={(id) => {
-                        setContactId(id);
-                        const c = savedContacts.find((x) => x.id === id);
-                        if (c) {
-                          const parts = (c.name || "").trim().split(/\s+/g);
-                          setShareFirstName(parts[0] || c.name || "");
-                          setShareLastName(parts.slice(1).join(" ") || "");
-                          setShareEmail(c.email || "");
-                          setSharePhone(c.phone || "");
-                          // Role comes from the system for saved contacts; no input needed here.
-                          setShareRole("");
-                        }
-                      }}
-                    />
-                  </div>
-                ) : null}
+                
 
                 {shareTab === "new" ? (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
