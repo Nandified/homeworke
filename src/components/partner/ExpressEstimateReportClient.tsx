@@ -281,7 +281,7 @@ export function ExpressEstimateReportClient(props: {
                 className="gap-2"
               >
                 <Hammer className="h-4 w-4" />
-                Repairs
+                Repair cart
                 <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-1 text-[11px] font-semibold text-[var(--hw-ink)]">
                   {repairs.length}
                 </span>
@@ -585,7 +585,7 @@ export function ExpressEstimateReportClient(props: {
                             {item.note ? <div className="mt-1 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
                           </div>
                           <button
-                            className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                            className="inline-flex h-7 items-center text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
                             onClick={() => {
                               setRepairIds((prev) => {
                                 const next = new Set(prev);
