@@ -590,15 +590,18 @@ export function ExpressEstimateReportClient(props: {
         {repairsOpen ? (
           <div className="fixed inset-0 z-50">
             <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setRepairsOpen(false)} aria-label="Close" />
-            <div className="absolute right-0 top-0 h-full w-full max-w-[420px] bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
-              <div className="flex items-start justify-between gap-3 border-b border-[var(--hw-line)] p-5">
-                <div>
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Repairs to book</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Separate from the Instant Estimate download.</div>
+            <div className="absolute inset-0 bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)] lg:inset-auto lg:right-0 lg:top-0 lg:h-full lg:w-full lg:max-w-[420px]">
+              <div className="grid grid-cols-3 items-center gap-3 border-b border-[var(--hw-line)] p-5">
+                <div />
+                <div className="text-center">
+                  <div className="text-sm font-extrabold tracking-tight text-[var(--hw-red)]">Homeworke</div>
+                  <div className="mt-0.5 text-xs font-semibold text-[var(--hw-muted)]">Repairs to book</div>
                 </div>
-                <Button size="sm" variant="secondary" onClick={() => setRepairsOpen(false)}>
-                  Close
-                </Button>
+                <div className="flex justify-end">
+                  <Button size="sm" variant="secondary" onClick={() => setRepairsOpen(false)}>
+                    Close
+                  </Button>
+                </div>
               </div>
 
               <div className="p-5">
