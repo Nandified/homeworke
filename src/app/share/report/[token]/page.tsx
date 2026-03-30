@@ -44,12 +44,42 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
             <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{payload.address || "—"}</div>
 
             <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Courtesy of</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                {payload.pro?.name || "Real Estate Pro"}
-                {payload.pro?.brokerageName ? ` • ${payload.pro.brokerageName}` : ""}
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-full bg-white text-sm font-extrabold text-[var(--hw-red)] shadow-sm">
+                  {(payload.pro?.name || "Pro")
+                    .split(" ")
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((w) => w[0]?.toUpperCase())
+                    .join("")}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Courtesy of</div>
+                  <div className="mt-0.5 truncate text-sm font-extrabold text-[var(--hw-ink)]">{payload.pro?.name || "Real Estate Pro"}</div>
+                  {payload.pro?.brokerageName ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{payload.pro.brokerageName}</div> : null}
+                </div>
               </div>
-              <div className="mt-3 text-xs text-[var(--hw-muted)]">Want to book repairs and see more details?</div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {payload.pro?.email ? (
+                  <a
+                    className="inline-flex items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                    href={`mailto:${payload.pro.email}`}
+                  >
+                    Email
+                  </a>
+                ) : null}
+                {payload.pro?.phone ? (
+                  <a
+                    className="inline-flex items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                    href={`tel:${payload.pro.phone}`}
+                  >
+                    Call
+                  </a>
+                ) : null}
+              </div>
+
+              <div className="mt-4 text-xs text-[var(--hw-muted)]">Want to book repairs and see more details?</div>
               <div className="mt-3">
                 <ShareLoginCta email={payload.recipient?.email} next={`/share/report/${encodeURIComponent(token)}`} />
               </div>

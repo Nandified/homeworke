@@ -9,6 +9,35 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
   const [downloading, setDownloading] = useState<"" | "full" | "selected">("");
   const [toast, setToast] = useState<string>("");
 
+  function parseMoneyToNumber(raw: string): number | null {
+    const s = (raw || "").toLowerCase().replace(/\s+/g, " ").trim();
+    if (!s) return null;
+    const m = s.match(/\$?([0-9]+(?:\.[0-9]+)?)(k|m)?/i);
+    if (!m) return null;
+    const n = Number(m[1]);
+    if (!Number.isFinite(n)) return null;
+    const suf = (m[2] || "").toLowerCase();
+    const mult = suf === "k" ? 1000 : suf === "m" ? 1_000_000 : 1;
+    return n * mult;
+  }
+
+  function estimateItemValue(item: { range?: string; price?: number }): number | null {
+    if (typeof item.price === "number" && Number.isFinite(item.price)) return item.price;
+    const r = (item.range || "").replace(/–/g, "-");
+    const parts = r.split("-").map((p) => p.trim());
+    if (parts.length >= 2) {
+      const a = parseMoneyToNumber(parts[0]);
+      const b = parseMoneyToNumber(parts[1]);
+      if (a !== null && b !== null) return (a + b) / 2;
+      return a ?? b;
+    }
+    return parseMoneyToNumber(r);
+  }
+
+  function formatUSD(n: number): string {
+    return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  }
+
   const baseLanes = useMemo<ReportShareLaneV1[]>(() => {
     return Array.isArray(props.payload.lanes) && props.payload.lanes.length ? props.payload.lanes : [];
   }, [props.payload.lanes]);
@@ -23,6 +52,13 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
     }
     return baseLanes;
   }, [baseLanes, props.payload.mode]);
+
+  const totals = useMemo(() => {
+    const items = lanes.flatMap((l) => l.items);
+    const nums = items.map(estimateItemValue).filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+    const total = nums.reduce((a, b) => a + b, 0);
+    return { count: items.length, total };
+  }, [lanes]);
 
   async function download(mode: "full" | "selected") {
     try {
@@ -125,7 +161,9 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
                           {item.note ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
                         </div>
                         <div className="shrink-0 text-right">
-                          <div className="text-sm font-semibold text-[var(--hw-ink)]">{typeof item.price === "number" ? item.price.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 }) : "—"}</div>
+                          <div className="text-sm font-semibold text-[var(--hw-ink)]">
+                            {typeof item.price === "number" ? formatUSD(item.price) : "—"}
+                          </div>
                           <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
                         </div>
                       </div>
@@ -134,6 +172,18 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
                 </div>
               </div>
             ))}
+
+            <div className="rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Instant estimate total</div>
+                  <div className="mt-1 text-3xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(totals.total)}</div>
+                </div>
+                <div className="text-xs text-[var(--hw-muted)]">
+                  Based on {totals.count} item{totals.count === 1 ? "" : "s"} (avg of ranges when needed).
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </Card>
