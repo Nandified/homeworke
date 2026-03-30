@@ -270,7 +270,7 @@ export function ExpressEstimateReportClient(props: {
               <Button size="sm" variant="secondary" disabled={!report || selected.length === 0} onClick={() => download("selected")}>
                 Download selected
               </Button>
-              <Button size="sm" disabled={!report || extracted.length === 0} onClick={() => download("full")}>
+              <Button size="sm" disabled={!report || extracted.length === 0 || selected.length > 0} onClick={() => download("full")}>
                 Download full
               </Button>
               <Button
@@ -281,7 +281,7 @@ export function ExpressEstimateReportClient(props: {
                 className="gap-2"
               >
                 <Hammer className="h-4 w-4" />
-                Repair cart
+                Repair Cart
                 <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-1 text-[11px] font-semibold text-[var(--hw-ink)]">
                   {repairs.length}
                 </span>
