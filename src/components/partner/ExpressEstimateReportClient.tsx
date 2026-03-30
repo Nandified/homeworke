@@ -276,6 +276,34 @@ export function ExpressEstimateReportClient(props: {
             {toast}
           </div>
         ) : null}
+
+        {/* Mobile sticky actions (prevents scrolling back to the top on long reports) */}
+        <div className="fixed bottom-4 left-1/2 z-[60] w-[min(720px,calc(100vw-24px))] -translate-x-1/2 lg:hidden">
+          <div className="flex flex-wrap items-center justify-center gap-2 rounded-[999px] border border-[var(--hw-line)] bg-white/95 p-2 shadow-[0_16px_40px_rgba(17,24,39,.16)] backdrop-blur">
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={!report || selected.length === 0 || downloading !== ""}
+              onClick={() => download("selected")}
+            >
+              {downloading === "selected" ? "Preparing…" : "Download selected"}
+            </Button>
+            <Button
+              size="sm"
+              disabled={!report || extracted.length === 0 || selected.length > 0 || downloading !== ""}
+              onClick={() => download("full")}
+            >
+              {downloading === "full" ? "Preparing…" : "Download full"}
+            </Button>
+            <Button size="sm" variant="secondary" disabled={repairs.length === 0} onClick={() => setRepairsOpen(true)} className="gap-2">
+              <Hammer className="h-4 w-4" />
+              Repair Cart
+              <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-1 text-[11px] font-semibold text-[var(--hw-ink)]">
+                {repairs.length}
+              </span>
+            </Button>
+          </div>
+        </div>
         <Card className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
