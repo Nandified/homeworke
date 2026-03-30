@@ -701,7 +701,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
           <div className="mt-4 grid gap-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <input
-                className="h-10 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3 text-sm"
+                className="h-10 w-full rounded-[999px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 text-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
                 value={reportQuery}
                 onChange={(e) => setReportQuery(e.target.value)}
                 placeholder="Search reports…"
