@@ -136,6 +136,7 @@ export function ExpressEstimateReportClient(props: {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [repairsOpen, setRepairsOpen] = useState(false);
+  const [downloadOpen, setDownloadOpen] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
 
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
@@ -290,18 +291,12 @@ export function ExpressEstimateReportClient(props: {
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
-                variant="secondary"
-                disabled={!report || selected.length === 0 || downloading !== ""}
-                onClick={() => download("selected")}
+                disabled={!report || extracted.length === 0 || downloading !== ""}
+                onClick={() => setDownloadOpen(true)}
+                className="gap-2"
               >
-                {downloading === "selected" ? "Preparing…" : "Download selected"}
-              </Button>
-              <Button
-                size="sm"
-                disabled={!report || extracted.length === 0 || selected.length > 0 || downloading !== ""}
-                onClick={() => download("full")}
-              >
-                {downloading === "full" ? "Preparing…" : "Download full"}
+                <Download className="h-4 w-4" />
+                {downloading ? "Preparing…" : "Download report"}
               </Button>
               <Button
                 size="sm"
@@ -507,6 +502,49 @@ export function ExpressEstimateReportClient(props: {
             </div>
           )}
         </Card>
+
+        {/* Download modal */}
+        {downloadOpen ? (
+          <div className="fixed inset-0 z-[55] flex items-center justify-center p-6">
+            <button type="button" className="absolute inset-0 bg-black/50" onClick={() => setDownloadOpen(false)} aria-label="Close" />
+            <div className="relative w-full max-w-md overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
+              <div className="flex items-center justify-between border-b border-[var(--hw-line)] p-4">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Download report</div>
+                <Button size="sm" variant="secondary" onClick={() => setDownloadOpen(false)}>
+                  Close
+                </Button>
+              </div>
+              <div className="p-4">
+                <div className="grid gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={!report || selected.length === 0 || downloading !== ""}
+                    onClick={() => {
+                      setDownloadOpen(false);
+                      void download("selected");
+                    }}
+                  >
+                    {downloading === "selected" ? "Preparing…" : `Download selected (${selected.length})`}
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={!report || extracted.length === 0 || downloading !== ""}
+                    onClick={() => {
+                      setDownloadOpen(false);
+                      void download("full");
+                    }}
+                  >
+                    {downloading === "full" ? "Preparing…" : "Download full report"}
+                  </Button>
+                </div>
+                <div className="mt-3 text-xs text-[var(--hw-muted)]">
+                  Tip: Select items to download a shorter report for clients.
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {/* Selected Drawer */}
         {drawerOpen ? (
