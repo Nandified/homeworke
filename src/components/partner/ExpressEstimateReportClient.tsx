@@ -69,6 +69,9 @@ export function ExpressEstimateReportClient(props: {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string>("");
   const [analysisSummary, setAnalysisSummary] = useState<string>("");
+
+  const [downloading, setDownloading] = useState<"" | "full" | "selected">("");
+  const [toast, setToast] = useState<string>("");
   const demoExtracted = useMemo<ExtractedLane[]>(() => {
     return [
       {
@@ -210,35 +213,48 @@ export function ExpressEstimateReportClient(props: {
   async function download(mode: "full" | "selected") {
     if (!report) return;
 
-    const ids = mode === "selected" ? selected.map((s) => s.id) : null;
+    try {
+      setDownloading(mode);
+      setToast(mode === "full" ? "Preparing full report…" : "Preparing selected report…");
 
-    const r = await fetch("/api/express-estimate/download", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        reportId: report.id,
-        address: report.address,
-        reportType: report.type,
-        mode,
-        selectedIds: ids,
-        lanes: extracted,
-      }),
-    });
+      const ids = mode === "selected" ? selected.map((s) => s.id) : null;
 
-    if (!r.ok) {
-      setAnalysisError("Download failed.");
-      return;
+      const r = await fetch("/api/express-estimate/download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportId: report.id,
+          address: report.address,
+          reportType: report.type,
+          mode,
+          selectedIds: ids,
+          lanes: extracted,
+        }),
+      });
+
+      if (!r.ok) {
+        setAnalysisError("Download failed.");
+        setToast("Download failed.");
+        return;
+      }
+
+      const blob = await r.blob();
+      setToast("Downloading…");
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${report.address.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase()}-${mode}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      setToast("Downloaded.");
+      window.setTimeout(() => setToast(""), 2200);
+    } finally {
+      setDownloading("");
     }
-
-    const blob = await r.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${report.address.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase()}-${mode}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
   }
 
   return (
@@ -255,6 +271,11 @@ export function ExpressEstimateReportClient(props: {
       }
     >
       <div className="grid gap-6">
+        {toast ? (
+          <div className="fixed bottom-5 left-1/2 z-[70] w-[min(520px,calc(100vw-32px))] -translate-x-1/2 rounded-full border border-[rgba(229,57,53,.18)] bg-white px-4 py-2.5 text-center text-sm font-semibold text-[var(--hw-ink)] shadow-[0_16px_40px_rgba(17,24,39,.16)]">
+            {toast}
+          </div>
+        ) : null}
         <Card className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -267,11 +288,20 @@ export function ExpressEstimateReportClient(props: {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" variant="secondary" disabled={!report || selected.length === 0} onClick={() => download("selected")}>
-                Download selected
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={!report || selected.length === 0 || downloading !== ""}
+                onClick={() => download("selected")}
+              >
+                {downloading === "selected" ? "Preparing…" : "Download selected"}
               </Button>
-              <Button size="sm" disabled={!report || extracted.length === 0 || selected.length > 0} onClick={() => download("full")}>
-                Download full
+              <Button
+                size="sm"
+                disabled={!report || extracted.length === 0 || selected.length > 0 || downloading !== ""}
+                onClick={() => download("full")}
+              >
+                {downloading === "full" ? "Preparing…" : "Download full"}
               </Button>
               <Button
                 size="sm"
