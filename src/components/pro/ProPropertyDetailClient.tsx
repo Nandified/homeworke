@@ -257,11 +257,11 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                 setEditOpen(true);
               }}
             >
-              {isUsingStreetView ? "Using Street View" : "Use Street View"}
+              Street View
             </Button>
             <Button
               size="sm"
-              variant={isUsingMap ? "ghost" : "ghost"}
+              variant={isUsingMap ? "ghost" : "secondary"}
               disabled={!item.address || isUsingMap}
               onClick={() => {
                 const src = `/api/google/staticmap?address=${encodeURIComponent(item.address)}&size=1200x540&scale=2&zoom=16`;
@@ -270,7 +270,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                 setEditOpen(true);
               }}
             >
-              {isUsingMap ? "Using Map" : "Use Map"}
+              Map
             </Button>
           </div>
 
