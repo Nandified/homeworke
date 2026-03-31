@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import partners from "@/../spec/partners.json";
 
@@ -116,7 +117,19 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
-      <Container className="py-10 md:py-16">
+      {/* ── Header (match Pro landing branding) ── */}
+      <header className="sticky top-0 z-20 border-b border-[var(--hw-line)] bg-white/80 backdrop-blur">
+        <Container className="flex h-14 items-center justify-between md:h-16">
+          <Link href="/" className="text-lg font-extrabold tracking-tight text-[var(--hw-red)] md:text-xl">
+            Homeworke
+          </Link>
+          <nav className="flex items-center gap-3">
+            <Pill>Real Estate Pro</Pill>
+          </nav>
+        </Container>
+      </header>
+
+      <Container className="py-8 md:py-12">
         <div className="flex flex-wrap items-center gap-2">
           <Pill>Instant Estimate</Pill>
           <Pill>{payload.mode === "selected" ? "Shared selection" : "Shared full report"}</Pill>
