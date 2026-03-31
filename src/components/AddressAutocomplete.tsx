@@ -2,67 +2,10 @@
 
 import * as React from "react";
 
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui";
 
-type GoogleAutocomplete = {
-  addListener: (eventName: string, handler: () => void) => void;
-  getPlace: () => { formatted_address?: string };
-};
-
-type GooglePlacesApi = {
-  maps: {
-    places: {
-      Autocomplete: new (
-        el: HTMLInputElement,
-        opts: {
-          types?: string[];
-          componentRestrictions?: { country: string };
-          fields?: string[];
-        }
-      ) => GoogleAutocomplete;
-    };
-  };
-};
-
-declare global {
-  interface Window {
-    google?: GooglePlacesApi;
-  }
-}
-
-let loadingPromise: Promise<void> | null = null;
-
-function loadGooglePlaces(): Promise<void> {
-  if (typeof window === "undefined") return Promise.resolve();
-  if (window.google?.maps?.places) return Promise.resolve();
-
-  const key = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
-  if (!key) {
-    return Promise.reject(new Error("missing_NEXT_PUBLIC_GOOGLE_PLACES_API_KEY"));
-  }
-
-  if (!loadingPromise) {
-    loadingPromise = new Promise<void>((resolve, reject) => {
-      const existing = document.querySelector('script[data-google-places="1"]') as HTMLScriptElement | null;
-      if (existing) {
-        existing.addEventListener("load", () => resolve());
-        existing.addEventListener("error", () => reject(new Error("google_places_script_failed")));
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.dataset.googlePlaces = "1";
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error("google_places_script_failed"));
-      document.head.appendChild(script);
-    });
-  }
-
-  return loadingPromise;
-}
+type Prediction = { id: string; label: string };
 
 export function AddressAutocomplete(props: {
   value: string;
@@ -73,58 +16,95 @@ export function AddressAutocomplete(props: {
   /** Defaults to US. */
   country?: string;
 }) {
-  const inputRef = React.useRef<HTMLInputElement | null>(null);
-  const acRef = React.useRef<GoogleAutocomplete | null>(null);
+  const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [preds, setPreds] = React.useState<Prediction[]>([]);
+
+  const wrapRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    let alive = true;
-
-    loadGooglePlaces()
-      .then(() => {
-        if (!alive) return;
-        const el = inputRef.current;
-        if (!el) return;
-
-        // Avoid double-binding.
-        if (acRef.current) return;
-
-        const google = window.google;
-        if (!google?.maps?.places?.Autocomplete) return;
-
-        const ac = new google.maps.places.Autocomplete(el, {
-          types: ["address"],
-          componentRestrictions: props.country ? { country: props.country } : undefined,
-          fields: ["formatted_address"],
-        });
-
-        ac.addListener("place_changed", () => {
-          const place = ac.getPlace();
-          const formatted = place?.formatted_address || "";
-          if (formatted) props.onChange(formatted);
-        });
-
-        acRef.current = ac;
-      })
-      .catch(() => {
-        // Silent fallback: user can still type full address.
-      });
-
+    function onDocClick(e: MouseEvent) {
+      const el = wrapRef.current;
+      if (!el) return;
+      if (el.contains(e.target as Node)) return;
+      setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
     return () => {
-      alive = false;
-      // Google Autocomplete doesn't have a clean destroy API; leaving it is fine.
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  React.useEffect(() => {
+    const q = (props.value || "").trim();
+    if (!q || q.length < 3) {
+      setPreds([]);
+      setOpen(false);
+      return;
+    }
+
+    let cancelled = false;
+    const t = window.setTimeout(async () => {
+      setLoading(true);
+      try {
+        const r = await fetch(`/api/google/places-autocomplete?country=${encodeURIComponent(props.country || "us")}&input=${encodeURIComponent(q)}`);
+        const j = (await r.json()) as { ok?: boolean; predictions?: Prediction[] };
+        if (cancelled) return;
+        const next = (j.ok && Array.isArray(j.predictions) ? j.predictions : []).slice(0, 6);
+        setPreds(next);
+        setOpen(next.length > 0);
+      } catch {
+        if (cancelled) return;
+        setPreds([]);
+        setOpen(false);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, 180);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+  }, [props.value, props.country]);
+
   return (
-    <Input
-      ref={inputRef}
-      value={props.value}
-      onChange={(e) => props.onChange(e.target.value)}
-      placeholder={props.placeholder}
-      className={props.className}
-      disabled={props.disabled}
-      autoComplete="street-address"
-    />
+    <div ref={wrapRef} className="relative">
+      <Input
+        value={props.value}
+        onChange={(e) => props.onChange(e.target.value)}
+        placeholder={props.placeholder}
+        className={props.className}
+        disabled={props.disabled}
+        autoComplete="street-address"
+        onFocus={() => {
+          if (preds.length) setOpen(true);
+        }}
+      />
+
+      {open ? (
+        <div className="absolute z-[60] mt-2 w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]">
+          {loading ? <div className="px-3 py-2 text-xs text-[var(--hw-muted)]">Searching…</div> : null}
+          {preds.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => {
+                props.onChange(p.label);
+                setOpen(false);
+              }}
+              className={cn("w-full px-3 py-2 text-left text-sm text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }

@@ -289,12 +289,16 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
     photo: newPhotoDataUrl.trim(),
   };
 
+  const normalizeAddr = (s: string) => (s || "").replace(/\s+/g, " ").trim().toLowerCase();
+  const addrNorm = normalizeAddr(req.address);
+  const dupAddr = !!addrNorm && items.some((p) => normalizeAddr(p.address) === addrNorm);
+
   const missing = {
     clientFirst: addMode === "client" && !req.clientFirst,
     clientLast: addMode === "client" && !req.clientLast,
     clientEmail: addMode === "client" && !req.clientEmail,
     clientPhone: addMode === "client" && !req.clientPhone,
-    address: !req.address,
+    address: !req.address || dupAddr,
     type: !req.type,
     // Photo is optional.
     photo: false,
@@ -574,6 +578,9 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
 
             <div className="grid gap-2">
               <Label className="text-xs">Address</Label>
+              {addTouched && dupAddr ? (
+                <div className="text-xs font-semibold text-[var(--hw-red)]">This property already exists in your account.</div>
+              ) : null}
               <AddressAutocomplete
                 value={newAddress}
                 onChange={setNewAddress}
