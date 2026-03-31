@@ -32,12 +32,16 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
   const [nickname, setNickname] = React.useState(props.property.nickname || "");
   const [photoUrl, setPhotoUrl] = React.useState("");
 
+  const [googleOpen, setGoogleOpen] = React.useState(false);
+  const [googleLoading, setGoogleLoading] = React.useState(false);
+  const [googleErr, setGoogleErr] = React.useState("");
+  const [googlePhotos, setGooglePhotos] = React.useState<Array<{ ref: string; width: number; height: number }>>([]);
+
   React.useLayoutEffect(() => {
     try {
       const v = window.localStorage.getItem(`hw_prop_photo_v1:${props.property.id}`) || "";
       setPhotoUrl(v);
     } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.property.id]);
 
   // Apply local override (UI-only) without flashing.
@@ -49,8 +53,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
         setNickname(override);
       }
     } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item.id]);
+  }, [item.id, item.nickname]);
 
   return (
     <div className="grid gap-6">
@@ -183,6 +186,80 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
         </div>
       </Card>
 
+      {/* Google photo picker */}
+      <Modal
+        open={googleOpen}
+        onClose={() => {
+          setGoogleOpen(false);
+          setGoogleErr("");
+          setGooglePhotos([]);
+        }}
+        title="Select property photo"
+        mobilePlacement="center"
+      >
+        <div className="grid gap-4">
+          {googleErr ? <div className="rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-3 text-sm text-[var(--hw-ink)]">{googleErr}</div> : null}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={!item.address}
+              onClick={() => {
+                const src = `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=0`;
+                setPhotoUrl(src);
+                setGoogleOpen(false);
+              }}
+            >
+              Use Street View
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={!item.address}
+              onClick={() => {
+                const src = `/api/google/staticmap?address=${encodeURIComponent(item.address)}&size=1200x540&scale=2&zoom=16`;
+                setPhotoUrl(src);
+                setGoogleOpen(false);
+              }}
+            >
+              Use Map
+            </Button>
+          </div>
+
+          {googleLoading ? (
+            <div className="text-sm text-[var(--hw-muted)]">Loading Google photos…</div>
+          ) : googlePhotos.length ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {googlePhotos.map((p) => {
+                const thumb = `/api/google/place-photo?ref=${encodeURIComponent(p.ref)}&maxwidth=600`;
+                const full = `/api/google/place-photo?ref=${encodeURIComponent(p.ref)}&maxwidth=1200`;
+                return (
+                  <button
+                    key={p.ref}
+                    type="button"
+                    className="group relative overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] text-left transition hover:shadow-[0_10px_24px_rgba(17,24,39,.10)]"
+                    onClick={() => {
+                      setPhotoUrl(full);
+                      setGoogleOpen(false);
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={thumb} alt="" className="h-[110px] w-full object-cover sm:h-[120px]" />
+                    <div className="absolute inset-0 opacity-0 transition group-hover:opacity-100 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,.28))]" />
+                    <div className="absolute bottom-2 right-2 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-[var(--hw-ink)] opacity-0 transition group-hover:opacity-100">
+                      Select
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-sm text-[var(--hw-muted)]">No Google photo gallery found for this address. You can still use Street View.</div>
+          )}
+        </div>
+      </Modal>
+
       {/* Edit modal */}
       <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit property">
         <div className="grid gap-4">
@@ -218,8 +295,28 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                   Upload photo
                 </Button>
               </label>
-              <Button size="sm" variant="ghost" disabled>
-                Choose from Google (soon)
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={async () => {
+                  setGoogleOpen(true);
+                  setGoogleErr("");
+                  setGoogleLoading(true);
+                  try {
+                    const address = item.address;
+                    const r = await fetch(`/api/google/places-photos?address=${encodeURIComponent(address)}&limit=6`);
+                    const j = (await r.json()) as { ok?: boolean; photos?: Array<{ ref: string; width: number; height: number }>; error?: string };
+                    if (!r.ok || !j?.ok) throw new Error(j?.error || "failed");
+                    setGooglePhotos(Array.isArray(j.photos) ? j.photos : []);
+                  } catch {
+                    setGoogleErr("Couldn’t load Google photos for this address.");
+                    setGooglePhotos([]);
+                  } finally {
+                    setGoogleLoading(false);
+                  }
+                }}
+              >
+                Choose from Google
               </Button>
               {photoUrl ? (
                 <Button size="sm" variant="ghost" onClick={() => setPhotoUrl("")}
