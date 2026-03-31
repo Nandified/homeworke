@@ -142,7 +142,8 @@ export function ProPropertiesClient(props: {
   const [newNickname, setNewNickname] = React.useState("");
   const [newPropertyType, setNewPropertyType] = React.useState<"Condo" | "House" | "Multi-Units" | "Town house" | "Commercial" | "">("");
 
-  const [newClientName, setNewClientName] = React.useState("");
+  const [newClientFirstName, setNewClientFirstName] = React.useState("");
+const [newClientLastName, setNewClientLastName] = React.useState("");
   const [newClientEmail, setNewClientEmail] = React.useState("");
   const [newClientPhone, setNewClientPhone] = React.useState("");
 
@@ -497,30 +498,31 @@ export function ProPropertiesClient(props: {
           </div>
 
           {/* Keep desktop height stable; on mobile avoid giant empty gaps. */}
-          <div className="grid gap-4 sm:min-h-[420px]">
+          <div className="grid gap-4">
             {addMode === "client" ? (
-              <Card className="p-4">
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">Client details</div>
-                <div className="mt-2 grid gap-3 sm:grid-cols-2">
+              <>
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div className="grid gap-2">
-                    <Label className="text-xs">Client name</Label>
-                    <Input value={newClientName} onChange={(e) => setNewClientName(e.target.value)} placeholder="Jane Client" />
+                    <Label className="text-xs">Client first name</Label>
+                    <Input value={newClientFirstName} onChange={(e) => setNewClientFirstName(e.target.value)} placeholder="Jane" />
                   </div>
                   <div className="grid gap-2">
-                    <Label className="text-xs">Phone (optional)</Label>
-                    <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="(312) 555-0123" />
-                  </div>
-                  <div className="grid gap-2 sm:col-span-2">
-                    <Label className="text-xs">Email (optional)</Label>
-                    <Input value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} placeholder="jane@email.com" />
-                    <div className="text-xs text-[var(--hw-muted)]">We’ll send an invite later.</div>
+                    <Label className="text-xs">Client last name</Label>
+                    <Input value={newClientLastName} onChange={(e) => setNewClientLastName(e.target.value)} placeholder="Client" />
                   </div>
                 </div>
-              </Card>
-            ) : (
-              // Spacer only on desktop to prevent the "jump" effect.
-              <div className="hidden h-[162px] sm:block" />
-            )}
+
+                <div className="grid gap-2">
+                  <Label className="text-xs">Email</Label>
+                  <Input value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} placeholder="jane@email.com" inputMode="email" />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label className="text-xs">Phone</Label>
+                  <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="(312) 555-0123" inputMode="tel" />
+                </div>
+              </>
+            ) : null}
 
             <div className="grid gap-2">
               <Label className="text-xs">Address</Label>
@@ -597,7 +599,7 @@ export function ProPropertiesClient(props: {
                 }
 
                 if (addMode === "client") {
-                  const clientName = newClientName.trim();
+                  const clientName = `${newClientFirstName} ${newClientLastName}`.trim();
                   if (!clientName) return;
 
                   const nextStored: StoredClientProperty[] = [
@@ -632,7 +634,8 @@ export function ProPropertiesClient(props: {
                   setItems((prev) => (prev ? [next, ...prev] : [next]));
                   if (newPhotoDataUrl) setPhotos((prev) => ({ ...prev, [id]: newPhotoDataUrl }));
 
-                  setNewClientName("");
+                  setNewClientFirstName("");
+                  setNewClientLastName("");
                   setNewClientEmail("");
                   setNewClientPhone("");
                 } else {
