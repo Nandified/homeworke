@@ -31,12 +31,7 @@ function normalizeAddressKey(s: string) {
   return (s || "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
-function shortPersonName(fullName: string) {
-  const parts = (fullName || "").trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "";
-  if (parts.length === 1) return parts[0];
-  return `${parts[0]} ${parts[parts.length - 1]?.[0] || ""}.`;
-}
+// (intentionally blank)
 
 export function ProPropertyDetailClient(props: { property: ProPropertyDetail; openEdit?: boolean }) {
   const [item, setItem] = React.useState<ProPropertyDetail>(props.property);
@@ -48,7 +43,6 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
   const [requestOpen, setRequestOpen] = React.useState(false);
 
   const [googleOpen, setGoogleOpen] = React.useState(false);
-  const [peekName, setPeekName] = React.useState<string>("");
   const [googleLoading, setGoogleLoading] = React.useState(false);
   const [googleErr, setGoogleErr] = React.useState("");
   const [googlePhotos, setGooglePhotos] = React.useState<Array<{ ref: string; width: number; height: number }>>([]);
@@ -104,11 +98,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
     return [{ name: profile.fullName || "You", photoUrl: profile.photoDataUrl || "" }];
   }, [item.id, profile.fullName, profile.photoDataUrl]);
 
-  React.useEffect(() => {
-    if (!peekName) return;
-    const t = window.setTimeout(() => setPeekName(""), 2200);
-    return () => window.clearTimeout(t);
-  }, [peekName]);
+//
 
   return (
     <div className="grid gap-6">
@@ -171,26 +161,29 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
             </div>
             <div className="flex items-center gap-3">
               {sharedPros.map((p) => {
-                const label = shortPersonName(p.name) || p.name;
                 return (
-                  <button
-                    key={p.name}
-                    type="button"
-                    className="flex flex-col items-center gap-1 text-left"
-                    title={p.name}
-                    onClick={() => setPeekName(p.name)}
-                  >
+                  <div key={p.name} className="group relative flex flex-col items-center gap-1">
                     <UserAvatar fullName={p.name} photoUrl={p.photoUrl || undefined} size={30} />
-                    <div className="hidden max-w-[92px] truncate text-[11px] font-semibold text-[var(--hw-muted)] sm:block">{label}</div>
-                  </button>
+
+                    {/* Desktop label: initials (e.g. FRJ) */}
+                    <div className="hidden max-w-[92px] truncate text-[11px] font-extrabold tracking-tight text-[var(--hw-muted)] sm:block">
+                      {(p.name || "").
+                        trim()
+                        .split(/\s+/)
+                        .filter(Boolean)
+                        .slice(0, 3)
+                        .map((x) => x[0] || "")
+                        .join("")
+                        .toUpperCase() || ""}
+                    </div>
+
+                    {/* Gentle hover tooltip (desktop) */}
+                    <div className="pointer-events-none absolute -top-10 hidden whitespace-nowrap rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 text-xs font-semibold text-[var(--hw-ink)] shadow-sm group-hover:block">
+                      {p.name}
+                    </div>
+                  </div>
                 );
               })}
-
-              {peekName ? (
-                <div className="ml-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 text-xs font-semibold text-[var(--hw-ink)] shadow-sm">
-                  {peekName}
-                </div>
-              ) : null}
             </div>
           </div>
         </div>
