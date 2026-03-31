@@ -238,24 +238,25 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
             ) : null}
           
 
-            <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">For Real Estate Pros</div>
-              <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">Want this Instant Estimate for your clients?</div>
-              <div className="mt-1 text-xs text-[var(--hw-muted)]">Create a free account and share branded estimates like this in minutes.</div>
-              <div className="mt-3">
-                <Link
-                  href="/p/frj"
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] px-4 py-2 text-sm font-semibold !text-white shadow-[0_4px_14px_rgba(229,57,53,.3)] hover:brightness-[1.05] hover:!text-white"
-                >
-                  Get my Pro link
-                </Link>
-              </div>
-            </div>
           </Card>
         </div>
 
         <div className="mt-8" id="book-repairs">
           <SharedExpressEstimateReportClient token={token} payload={payload} />
+        </div>
+
+        <div className="mt-10 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">For Real Estate Pros</div>
+          <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">Offer Instant Estimates like this to your clients.</div>
+          <div className="mt-1 text-xs text-[var(--hw-muted)]">Create your Pro profile and get a shareable link in minutes.</div>
+          <div className="mt-3">
+            <Link
+              href="/p/frj"
+              className="inline-flex items-center justify-center rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 py-2 text-sm font-semibold text-[var(--hw-ink)] hover:bg-white"
+            >
+              Get started
+            </Link>
+          </div>
         </div>
       </Container>
     </div>
