@@ -160,6 +160,7 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addOpen]);
   const [newPhotoDataUrl, setNewPhotoDataUrl] = React.useState<string>("");
+  const [addTouched, setAddTouched] = React.useState(false);
 
   const [photos, setPhotos] = React.useState<Record<string, string>>({});
 
@@ -276,6 +277,29 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
     clients: items.filter((p) => !!p.clientProperty).length,
     shared: items.filter((p) => !!p.sharedWithMe).length,
   };
+
+  const req = {
+    clientFirst: addMode === "client" ? newClientFirstName.trim() : "ok",
+    clientLast: addMode === "client" ? newClientLastName.trim() : "ok",
+    clientEmail: addMode === "client" ? newClientEmail.trim() : "ok",
+    clientPhone: addMode === "client" ? newClientPhone.trim() : "ok",
+    address: newAddress.trim(),
+    type: newPropertyType,
+    photo: newPhotoDataUrl.trim(),
+  };
+
+  const missing = {
+    clientFirst: addMode === "client" && !req.clientFirst,
+    clientLast: addMode === "client" && !req.clientLast,
+    clientEmail: addMode === "client" && !req.clientEmail,
+    clientPhone: addMode === "client" && !req.clientPhone,
+    address: !req.address,
+    type: !req.type,
+    photo: !req.photo,
+  };
+
+  const canSubmit = !Object.values(missing).some(Boolean);
+  const errRing = "border-[var(--hw-red)] ring-4 ring-[rgba(229,57,53,.10)]";
 
   function CountBadge({ n }: { n: number }) {
     return (
@@ -504,29 +528,56 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label className="text-xs">Client first name</Label>
-                    <Input value={newClientFirstName} onChange={(e) => setNewClientFirstName(e.target.value)} placeholder="Jane" />
+                    <Input
+                      value={newClientFirstName}
+                      onChange={(e) => setNewClientFirstName(e.target.value)}
+                      placeholder="Jane"
+                      className={addTouched && missing.clientFirst ? errRing : ""}
+                    />
                   </div>
                   <div className="grid gap-2">
                     <Label className="text-xs">Client last name</Label>
-                    <Input value={newClientLastName} onChange={(e) => setNewClientLastName(e.target.value)} placeholder="Client" />
+                    <Input
+                      value={newClientLastName}
+                      onChange={(e) => setNewClientLastName(e.target.value)}
+                      placeholder="Client"
+                      className={addTouched && missing.clientLast ? errRing : ""}
+                    />
                   </div>
                 </div>
 
                 <div className="grid gap-2">
                   <Label className="text-xs">Email</Label>
-                  <Input value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} placeholder="jane@email.com" inputMode="email" />
+                  <Input
+                    value={newClientEmail}
+                    onChange={(e) => setNewClientEmail(e.target.value)}
+                    placeholder="jane@email.com"
+                    inputMode="email"
+                    className={addTouched && missing.clientEmail ? errRing : ""}
+                  />
                 </div>
 
                 <div className="grid gap-2">
                   <Label className="text-xs">Phone</Label>
-                  <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="(312) 555-0123" inputMode="tel" />
+                  <Input
+                    value={newClientPhone}
+                    onChange={(e) => setNewClientPhone(e.target.value)}
+                    placeholder="(312) 555-0123"
+                    inputMode="tel"
+                    className={addTouched && missing.clientPhone ? errRing : ""}
+                  />
                 </div>
               </>
             ) : null}
 
             <div className="grid gap-2">
               <Label className="text-xs">Address</Label>
-              <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St, Chicago, IL 606.." />
+              <Input
+                value={newAddress}
+                onChange={(e) => setNewAddress(e.target.value)}
+                placeholder="123 Main St, Chicago, IL 606.."
+                className={addTouched && missing.address ? errRing : ""}
+              />
               <div className="text-xs text-[var(--hw-muted)]">We’ll wire Google Places autocomplete next. For now, type the full address.</div>
             </div>
 
@@ -538,7 +589,7 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
             <div className="grid gap-2">
               <Label className="text-xs">Type of property</Label>
               <select
-                className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-gradient-to-b from-white to-[var(--hw-soft)] px-3 text-sm text-[var(--hw-ink)] shadow-[0_10px_22px_rgba(17,24,39,.06)] outline-none transition hover:shadow-[0_12px_26px_rgba(17,24,39,.08)] focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                className={`h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-gradient-to-b from-white to-[var(--hw-soft)] px-3 text-sm text-[var(--hw-ink)] shadow-[0_10px_22px_rgba(17,24,39,.06)] outline-none transition hover:shadow-[0_12px_26px_rgba(17,24,39,.08)] focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)] ${addTouched && missing.type ? errRing : ""}`}
                 value={newPropertyType}
                 onChange={(e) => setNewPropertyType(e.target.value as typeof newPropertyType)}
               >
@@ -552,7 +603,8 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-xs">Photo (optional)</Label>
+              <Label className="text-xs">Photo</Label>
+              <div className={`rounded-[var(--hw-radius-sm)] ${addTouched && missing.photo ? errRing : ""}`}>
               <input
                 type="file"
                 accept="image/*"
@@ -567,7 +619,8 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
                     // ignore
                   }
                 }}
-              />
+                />
+              </div>
               {newPhotoDataUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={newPhotoDataUrl} alt="" className="mt-2 h-28 w-full rounded-[var(--hw-radius-sm)] object-cover" />
@@ -585,7 +638,10 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
               Cancel
             </Button>
             <Button
+              disabled={!canSubmit}
               onClick={() => {
+                setAddTouched(true);
+                if (!canSubmit) return;
                 const address = newAddress.trim();
                 if (!address) return;
 
