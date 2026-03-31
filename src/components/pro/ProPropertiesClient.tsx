@@ -344,13 +344,20 @@ export function ProPropertiesClient(props: {
                 const chosen = photos[p.id] || (p.id === "prop_demo_6" ? "/demo_prop_demo_6.jpg" : "");
                 const auto = !chosen && p.address ? `/api/google/streetview?address=${encodeURIComponent(p.address)}&size=800x450&fov=80&pitch=10` : "";
                 const photo = chosen || auto;
-                return photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                ) : null;
+                const hasPhoto = !!photo;
+                return (
+                  <>
+                    {hasPhoto ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                    ) : null}
+                    {/* Brand tint overlay only when we don't have an image */}
+                    {!hasPhoto ? (
+                      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(229,57,53,.18),rgba(229,57,53,.05),rgba(255,255,255,.0))]" />
+                    ) : null}
+                  </>
+                );
               })()}
-              {/* Brand tint overlay (keep red-led, avoid muddy brown) */}
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(229,57,53,.18),rgba(229,57,53,.05),rgba(255,255,255,.0))]" />
 
               <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-1.5">
                 <Chip className="px-2.5 py-1 text-[11px]">{propertyBadge(p)}</Chip>

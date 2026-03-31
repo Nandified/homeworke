@@ -55,30 +55,25 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
     } catch {}
   }, [item.id, item.nickname]);
 
+  const chosenPhoto = (photoUrl || (item.id === "prop_demo_6" ? "/demo_prop_demo_6.jpg" : "")).trim();
+  const autoPhoto = !chosenPhoto && item.address ? `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=10` : "";
+  const heroPhoto = chosenPhoto || autoPhoto;
+
   return (
     <div className="grid gap-6">
       {/* Hero */}
       <Card className="overflow-hidden">
         <div className="relative h-[340px] overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
-          {/* Photo (UI-only via localStorage until Google Places is wired) */}
-          {(() => {
-            let chosen = "";
-            try {
-              chosen = window.localStorage.getItem(`hw_prop_photo_v1:${item.id}`) || "";
-            } catch {}
-            if (!chosen && item.id === "prop_demo_6") chosen = "/demo_prop_demo_6.jpg";
+          {/* Photo */}
+          {heroPhoto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={heroPhoto} alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_40%]" />
+          ) : null}
 
-            const auto = !chosen && item.address ? `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=10` : "";
-            const photo = chosen || auto;
-
-            return photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_40%]" />
-            ) : null;
-          })()}
-
-          {/* Brand tint overlay (keep red-led, avoid muddy brown) */}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(229,57,53,.14),rgba(229,57,53,.04),rgba(0,0,0,0))]" />
+          {/* Brand tint overlay only when we don't have an image */}
+          {!heroPhoto ? (
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(229,57,53,.14),rgba(229,57,53,.04),rgba(0,0,0,0))]" />
+          ) : null}
 
           {/* Top pills */}
           <div className="absolute left-5 top-5 flex flex-wrap items-center gap-2">
