@@ -59,5 +59,6 @@ export async function GET(req: Request) {
     }))
     .filter((p) => !!p.ref);
 
-  return json({ ok: true, placeId, photos: out });
+  // This only returns photo references; safe to cache a bit to reduce API calls.
+  return NextResponse.json({ ok: true, placeId, photos: out }, { headers: { "cache-control": "public, max-age=2592000, s-maxage=2592000" } });
 }

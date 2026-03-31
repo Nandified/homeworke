@@ -29,6 +29,7 @@ export async function GET(req: Request) {
   if (!r.ok) return NextResponse.json({ ok: false, error: "streetview_failed" }, { status: 502 });
 
   const ct = r.headers.get("content-type") || "image/jpeg";
-  const cache = "public, max-age=86400, s-maxage=86400";
+  // Google Maps Platform content caching: keep modest + within policy; 30 days is a common upper bound.
+  const cache = "public, max-age=2592000, s-maxage=2592000";
   return new NextResponse(r.body, { status: 200, headers: { "content-type": ct, "cache-control": cache } });
 }
