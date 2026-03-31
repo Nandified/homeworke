@@ -69,6 +69,7 @@ const STORAGE_KEYS = {
   customProps: "hw_props_custom_v1",
   clientProps: "hw_props_client_v1",
   photoPrefix: "hw_prop_photo_v1:",
+  addrPhotoPrefix: "hw_addr_photo_v1:",
 } as const;
 
 function readCustomProperties(): StoredProperty[] {
@@ -218,7 +219,14 @@ export function ProPropertiesClient(props: {
         merged.forEach((p) => {
           try {
             const v = window.localStorage.getItem(`${STORAGE_KEYS.photoPrefix}${p.id}`) || "";
-            if (v) nextPhotos[p.id] = v;
+            if (v) {
+              nextPhotos[p.id] = v;
+              return;
+            }
+
+            const addrKey = `${STORAGE_KEYS.addrPhotoPrefix}${normalizeAddress(p.address).toLowerCase()}`;
+            const byAddr = window.localStorage.getItem(addrKey) || "";
+            if (byAddr) nextPhotos[p.id] = byAddr;
           } catch {}
         });
         setPhotos(nextPhotos);
@@ -343,7 +351,10 @@ export function ProPropertiesClient(props: {
               {(() => {
                 const chosen = photos[p.id] || (p.id === "prop_demo_6" ? "/demo_prop_demo_6.jpg" : "");
                 const auto = !chosen && p.address ? `/api/google/streetview?address=${encodeURIComponent(p.address)}&size=800x450&fov=80&pitch=10` : "";
-                const photo = chosen || auto;
+                const photoRaw = chosen || auto;
+                const photo = photoRaw.startsWith("google_place:")
+                  ? `/api/google/place-photo?ref=${encodeURIComponent(photoRaw.replace(/^google_place:/, ""))}&maxwidth=900`
+                  : photoRaw;
                 const hasPhoto = !!photo;
                 return (
                   <>

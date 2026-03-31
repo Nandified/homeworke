@@ -26,6 +26,10 @@ function subAddress(p: ProPropertyDetail) {
   return (p.address || "").trim();
 }
 
+function normalizeAddressKey(s: string) {
+  return (s || "").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
 export function ProPropertyDetailClient(props: { property: ProPropertyDetail; openEdit?: boolean }) {
   const [item, setItem] = React.useState<ProPropertyDetail>(props.property);
   const [editOpen, setEditOpen] = React.useState(!!props.openEdit);
@@ -56,8 +60,23 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
   }, [item.id, item.nickname]);
 
   const chosenPhoto = (photoUrl || (item.id === "prop_demo_6" ? "/demo_prop_demo_6.jpg" : "")).trim();
-  const autoPhoto = !chosenPhoto && item.address ? `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=10` : "";
-  const heroPhoto = chosenPhoto || autoPhoto;
+
+  const addrKey = item.address ? `hw_addr_photo_v1:${normalizeAddressKey(item.address)}` : "";
+  const cachedByAddr = (() => {
+    if (!addrKey) return "";
+    try {
+      return window.localStorage.getItem(addrKey) || "";
+    } catch {
+      return "";
+    }
+  })();
+
+  const autoPhoto = !chosenPhoto && !cachedByAddr && item.address ? `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=10` : "";
+  const heroPhoto = chosenPhoto || cachedByAddr || autoPhoto;
+
+  const heroPhotoResolved = heroPhoto.startsWith("google_place:")
+    ? `/api/google/place-photo?ref=${encodeURIComponent(heroPhoto.replace(/^google_place:/, ""))}&maxwidth=1600`
+    : heroPhoto;
 
   return (
     <div className="grid gap-6">
@@ -65,13 +84,13 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
       <Card className="overflow-hidden">
         <div className="relative h-[340px] overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
           {/* Photo */}
-          {heroPhoto ? (
+          {heroPhotoResolved ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={heroPhoto} alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_40%]" />
+            <img src={heroPhotoResolved} alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_40%]" />
           ) : null}
 
           {/* Brand tint overlay only when we don't have an image */}
-          {!heroPhoto ? (
+          {!heroPhotoResolved ? (
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(229,57,53,.14),rgba(229,57,53,.04),rgba(0,0,0,0))]" />
           ) : null}
 
@@ -205,7 +224,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
               variant="secondary"
               disabled={!item.address}
               onClick={() => {
-                const src = `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=0`;
+                const src = `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=10`;
                 setPhotoUrl(src);
                 setGoogleOpen(false);
               }}
@@ -232,14 +251,13 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {googlePhotos.map((p) => {
                 const thumb = `/api/google/place-photo?ref=${encodeURIComponent(p.ref)}&maxwidth=600`;
-                const full = `/api/google/place-photo?ref=${encodeURIComponent(p.ref)}&maxwidth=1200`;
                 return (
                   <button
                     key={p.ref}
                     type="button"
                     className="group relative overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] text-left transition hover:shadow-[0_10px_24px_rgba(17,24,39,.10)]"
                     onClick={() => {
-                      setPhotoUrl(full);
+                      setPhotoUrl(`google_place:${p.ref}`);
                       setGoogleOpen(false);
                     }}
                   >
@@ -318,7 +336,17 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                 Choose from Google
               </Button>
               {photoUrl ? (
-                <Button size="sm" variant="ghost" onClick={() => setPhotoUrl("")}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setPhotoUrl("");
+                    if (addrKey) {
+                      try {
+                        window.localStorage.removeItem(addrKey);
+                      } catch {}
+                    }
+                  }}
                 >
                   Remove
                 </Button>
@@ -345,6 +373,14 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                   if (photoUrl) window.localStorage.setItem(`hw_prop_photo_v1:${item.id}`, photoUrl);
                   else window.localStorage.removeItem(`hw_prop_photo_v1:${item.id}`);
                 } catch {}
+
+                // Also cache by normalized address (fast repeat loads across the portal).
+                if (addrKey) {
+                  try {
+                    if (photoUrl) window.localStorage.setItem(addrKey, photoUrl);
+                    else window.localStorage.removeItem(addrKey);
+                  } catch {}
+                }
 
                 setEditOpen(false);
               }}
