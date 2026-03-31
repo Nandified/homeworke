@@ -573,7 +573,7 @@ export function ProPropertiesClient(props: {
             </div>
           </div>
 
-          <div className="sticky bottom-0 -mx-4 mt-2 flex items-center justify-end gap-2 border-t border-[var(--hw-line)] bg-white px-4 py-3 sm:static sm:mx-0 sm:mt-0 sm:border-0 sm:px-0 sm:py-0">
+          <div className="mt-2 flex items-center justify-end gap-2">
             <Button
               variant="secondary"
               onClick={() => {
