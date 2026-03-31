@@ -216,7 +216,8 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
       <Card className="p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant estimate</div>
+            <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">
               {props.payload.client?.name ? `${props.payload.client.name} — ` : ""}
               {props.payload.address || "Shared Express Estimate"}
             </div>

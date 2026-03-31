@@ -105,6 +105,43 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
 
   // Prefer a fully-qualified address from the report snapshot, then fall back.
   const fullAddress = (payload.address || "").trim() || "—";
+
+  function parseMoneyToNumber(raw: string): number | null {
+    const s = (raw || "").toLowerCase().replace(/\s+/g, " ").trim();
+    if (!s) return null;
+    const m = s.match(/\$?([0-9]+(?:\.[0-9]+)?)(k|m)?/i);
+    if (!m) return null;
+    const n = Number(m[1]);
+    if (!Number.isFinite(n)) return null;
+    const suf = (m[2] || "").toLowerCase();
+    const mult = suf === "k" ? 1000 : suf === "m" ? 1_000_000 : 1;
+    return n * mult;
+  }
+
+  function estimateItemValue(item: { range?: string; price?: number }): number | null {
+    if (typeof item.price === "number" && Number.isFinite(item.price)) return item.price;
+    const r = (item.range || "").replace(/–/g, "-");
+    const parts = r.split("-").map((p) => p.trim());
+    if (parts.length >= 2) {
+      const a = parseMoneyToNumber(parts[0]);
+      const b = parseMoneyToNumber(parts[1]);
+      if (a !== null && b !== null) return (a + b) / 2;
+      return a ?? b;
+    }
+    return parseMoneyToNumber(r);
+  }
+
+  function formatUSD(n: number): string {
+    return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  }
+
+  const lanes = Array.isArray(payload.lanes) ? payload.lanes : [];
+  const allItems = lanes.flatMap((l) => (Array.isArray(l.items) ? l.items : []));
+  const itemCount = allItems.length;
+  const total = allItems
+    .map((it) => estimateItemValue(it))
+    .filter((v): v is number => typeof v === "number" && Number.isFinite(v))
+    .reduce((a, b) => a + b, 0);
   const proName = enrichedPro?.display_name || payload.pro?.name || "Real Estate Pro";
   const proBrokerage = enrichedPro?.brokerage_name || payload.pro?.brokerageName || "";
   const proLicense = enrichedPro?.license_state && enrichedPro?.license_number ? `${enrichedPro.license_state} ${enrichedPro.license_number}` : "";
@@ -137,26 +174,31 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
             <div className="text-xl font-semibold tracking-tight text-[var(--hw-ink)]">
               Hi {payload.recipient?.name?.split(" ")[0] || "there"}, here is your Instant Estimate.
             </div>
-            <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Property</div>
+            <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Property address</div>
             <div className="mt-1 text-lg font-medium tracking-tight text-[var(--hw-ink)] md:text-xl">{fullAddress}</div>
 
-            <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Next steps</div>
-              <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">Download your report or book repairs</div>
-              <div className="mt-1 text-xs text-[var(--hw-muted)]">No login needed. Your details will be collected during the PDF download flow.</div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Instant estimate</div>
+                <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(total)}</div>
+              </div>
+              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Line items</div>
+                <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{itemCount}</div>
+              </div>
             </div>
 
-            <div className="mt-4 text-xs text-[var(--hw-muted)]">You can view and download the report below.</div>
+            <div className="mt-4 text-xs text-[var(--hw-muted)]">Scroll down to view and download the report.</div>
           </Card>
 
           <Card className="p-6">
             <div className="flex items-start gap-4">
               {proHeadshot ? (
-                <div className="relative h-14 w-14 overflow-hidden rounded-full border border-[var(--hw-line)] bg-white">
-                  <Image src={proHeadshot} alt={proName} fill sizes="56px" className="object-cover" />
+                <div className="relative h-24 w-20 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
+                  <Image src={proHeadshot} alt={proName} fill sizes="80px" className="object-cover" />
                 </div>
               ) : (
-                <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--hw-soft)] text-sm font-extrabold text-[var(--hw-red)]">
+                <div className="grid h-24 w-20 place-items-center rounded-[var(--hw-radius-lg)] bg-[var(--hw-soft)] text-base font-extrabold text-[var(--hw-red)]">
                   {proName
                     .split(" ")
                     .filter(Boolean)
