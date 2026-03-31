@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { useRouter } from "next/navigation";
 
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { Button, Card, Chip, Divider, EmptyState, Input, Label, Modal } from "@/components/ui";
 import { isDemoMode, withDemo } from "@/lib/demo";
 
@@ -573,11 +574,12 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
 
             <div className="grid gap-2">
               <Label className="text-xs">Address</Label>
-              <Input
+              <AddressAutocomplete
                 value={newAddress}
-                onChange={(e) => setNewAddress(e.target.value)}
+                onChange={setNewAddress}
                 placeholder="123 Main St, Chicago, IL 606.."
                 className={addTouched && missing.address ? errRing : ""}
+                country="us"
               />
             </div>
 

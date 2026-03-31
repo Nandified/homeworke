@@ -211,9 +211,10 @@ export function Picker(props: {
 }
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
-export function Input({ className, ...props }: InputProps) {
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input({ className, ...props }, ref) {
   return (
     <input
+      ref={ref}
       {...props}
       className={cn(
         "h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm outline-none transition-all duration-150 placeholder:text-[var(--hw-muted)] hover:border-[color-mix(in_srgb,var(--hw-line)_60%,var(--hw-ink))] focus:border-[rgba(229,57,53,.5)] focus:ring-2 focus:ring-[rgba(229,57,53,.12)] focus:shadow-[0_0_0_4px_rgba(229,57,53,.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(229,57,53,.12)]",
@@ -221,7 +222,7 @@ export function Input({ className, ...props }: InputProps) {
       )}
     />
   );
-}
+});
 
 type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 export function Textarea({ className, ...props }: TextareaProps) {
@@ -238,7 +239,8 @@ export function Textarea({ className, ...props }: TextareaProps) {
 
 type CheckboxProps = React.InputHTMLAttributes<HTMLInputElement> & { label?: string };
 export function Checkbox({ className, label, ...props }: CheckboxProps) {
-  const id = props.id || React.useId();
+  const autoId = React.useId();
+  const id = props.id || autoId;
   return (
     <div className="flex items-start gap-2.5">
       <input
