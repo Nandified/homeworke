@@ -43,8 +43,16 @@ export function useStoredProfile() {
       // default so the portal doesn't fall back to placeholder initials.
       if (!fullName) {
         const partner = loadPartner();
-        const seededName = partner?.partnerName || "";
-        const seededPhoto = demoPhotoForPartner(partner?.partnerId) || "";
+        let seededName = partner?.partnerName || "";
+        let seededPhoto = demoPhotoForPartner(partner?.partnerId) || "";
+
+        // Until auth/user profiles are wired, the PRO portal uses a demo context.
+        // If no partner context exists (common on mobile), seed FRJ defaults.
+        if (!seededName && typeof window !== "undefined" && window.location.pathname.startsWith("/pro")) {
+          seededName = "Fernando Rocha Jr";
+          seededPhoto = "/partners/frj-headshot.jpg";
+        }
+
         if (seededName) window.localStorage.setItem(PROFILE_STORAGE_KEYS.fullName, seededName);
         if (seededPhoto) window.localStorage.setItem(PROFILE_STORAGE_KEYS.photoDataUrl, seededPhoto);
         if (seededName || seededPhoto) {
