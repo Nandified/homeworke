@@ -103,7 +103,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
   return (
     <div className="grid gap-6">
       {/* Hero */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-visible">
         <div className="relative h-[340px] overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
           {/* Photo */}
           {heroPhotoResolved ? (
@@ -178,7 +178,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                     </div>
 
                     {/* Gentle hover tooltip (desktop) */}
-                    <div className="pointer-events-none absolute -top-10 hidden whitespace-nowrap rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 text-xs font-semibold text-[var(--hw-ink)] shadow-sm group-hover:block">
+                    <div className="pointer-events-none absolute -top-10 z-50 hidden whitespace-nowrap rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 text-xs font-semibold text-[var(--hw-ink)] shadow-sm group-hover:block">
                       {p.name}
                     </div>
                   </div>
