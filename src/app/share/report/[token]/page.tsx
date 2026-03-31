@@ -129,14 +129,14 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
     if (!googleMapsKey) return "";
     const addr = (fullAddress || "").trim();
     if (!addr || addr === "—") return "";
-    return `/api/google/staticmap?address=${encodeURIComponent(addr)}&size=800x360&scale=2&zoom=16`;
+    return `/api/google/staticmap?address=${encodeURIComponent(addr)}&size=1200x675&scale=2&zoom=16`;
   })();
 
   const streetViewSrc = (() => {
     if (!googleMapsKey) return "";
     const addr = (fullAddress || "").trim();
     if (!addr || addr === "—") return "";
-    return `/api/google/streetview?address=${encodeURIComponent(addr)}&size=800x450&fov=80&pitch=0`;
+    return `/api/google/streetview?address=${encodeURIComponent(addr)}&size=1200x675&fov=80&pitch=0`;
   })();
   const proBrokerage = enrichedPro?.brokerage_name || payload.pro?.brokerageName || "";
   const proLicense = enrichedPro?.license_state && enrichedPro?.license_number ? `${enrichedPro.license_state} ${enrichedPro.license_number}` : "";
@@ -174,14 +174,14 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
 
 
             {streetViewSrc ? (
-              <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
+              <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white aspect-[16/9] w-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={streetViewSrc} alt={`Street view of ${fullAddress}`} className="h-[240px] w-full object-cover" />
+                <img src={streetViewSrc} alt={`Street view of ${fullAddress}`} className="h-full w-full object-cover object-center" />
               </div>
             ) : mapSrc ? (
-              <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
+              <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white aspect-[16/9] w-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={mapSrc} alt={`Map of ${fullAddress}`} className="h-[240px] w-full object-cover" />
+                <img src={mapSrc} alt={`Map of ${fullAddress}`} className="h-full w-full object-cover object-center" />
               </div>
             ) : null}
 
