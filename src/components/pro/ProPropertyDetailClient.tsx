@@ -104,11 +104,11 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
     <div className="grid gap-6">
       {/* Hero */}
       <Card className="overflow-visible">
-        <div className="relative h-[340px] overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
+        <div className="relative h-[340px] overflow-hidden rounded-t-[var(--hw-radius-lg)] bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
           {/* Photo */}
           {heroPhotoResolved ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={heroPhotoResolved} alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_40%]" />
+            <img src={heroPhotoResolved} alt="" className="absolute inset-0 h-full w-full rounded-t-[var(--hw-radius-lg)] object-cover object-[50%_40%]" />
           ) : null}
 
           {/* Brand tint overlay only when we don't have an image */}
