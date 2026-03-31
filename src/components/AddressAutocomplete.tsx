@@ -5,7 +5,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui";
 
-type Prediction = { id: string; label: string };
+type Prediction = { id: string; label: string; rawLabel: string };
 
 export function AddressAutocomplete(props: {
   value: string;
@@ -46,7 +46,7 @@ export function AddressAutocomplete(props: {
 
   // Load cached location bias (best effort). Falls back to Chicago if none.
   React.useEffect(() => {
-    const CHI = { lat: 41.8781, lon: -87.6298, radius: 60000 };
+    const CHI = { lat: 41.8781, lon: -87.6298, radius: 35000 };
 
     async function run() {
       try {
@@ -56,7 +56,7 @@ export function AddressAutocomplete(props: {
           const lat = Number(j?.lat);
           const lon = Number(j?.lon);
           if (Number.isFinite(lat) && Number.isFinite(lon)) {
-            setBias({ lat, lon, radius: 50000 });
+            setBias({ lat, lon, radius: 35000 });
             return;
           }
 
@@ -67,7 +67,7 @@ export function AddressAutocomplete(props: {
             const lat2 = Number(jj?.lat);
             const lon2 = Number(jj?.lon);
             if (jj?.ok && Number.isFinite(lat2) && Number.isFinite(lon2)) {
-              setBias({ lat: lat2, lon: lon2, radius: 50000 });
+              setBias({ lat: lat2, lon: lon2, radius: 35000 });
               try {
                 window.localStorage.setItem("hw_location_v1", JSON.stringify({ ...j, lat: lat2, lon: lon2 }));
               } catch {}
@@ -108,7 +108,11 @@ export function AddressAutocomplete(props: {
         const r = await fetch(`/api/google/places-autocomplete?${params.toString()}`);
         const j = (await r.json()) as { ok?: boolean; predictions?: Prediction[] };
         if (cancelled) return;
-        const next = (j.ok && Array.isArray(j.predictions) ? j.predictions : []).slice(0, 6);
+        const next = (j.ok && Array.isArray(j.predictions) ? j.predictions : []).slice(0, 6).map((p) => {
+          const raw = p.label;
+          const cleaned = raw.replace(/,\s*USA\s*$/i, "");
+          return { ...p, rawLabel: raw, label: cleaned };
+        });
         setPreds(next);
         setOpen(next.length > 0);
       } catch {
@@ -147,8 +151,18 @@ export function AddressAutocomplete(props: {
             <button
               key={p.id}
               type="button"
-              onClick={() => {
-                props.onChange(p.label);
+              onClick={async () => {
+                // Fetch details so we can include ZIP and drop country.
+                try {
+                  const params = new URLSearchParams();
+                  params.set("placeId", p.id);
+                  params.set("sessiontoken", sessionTokenRef.current);
+                  const r = await fetch(`/api/google/place-details?${params.toString()}`);
+                  const j = (await r.json()) as { ok?: boolean; formatted?: string };
+                  props.onChange((j.ok && j.formatted) ? j.formatted : p.label);
+                } catch {
+                  props.onChange(p.label);
+                }
                 setOpen(false);
               }}
               className={cn("w-full px-3 py-2 text-left text-sm text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")}
