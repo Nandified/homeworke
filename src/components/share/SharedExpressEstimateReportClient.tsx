@@ -161,7 +161,11 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
                 { id: "Homeowner", label: "Homeowner" },
                 { id: "Homebuyer", label: "Homebuyer" },
                 { id: "Seller", label: "Seller" },
-                { id: "Real Estate Pro", label: "Real Estate Pro" },
+                { id: "Listing Agent", label: "Listing Agent" },
+                { id: "Buyer's Agent", label: "Buyer's Agent" },
+                { id: "Assistant", label: "Assistant" },
+                { id: "Buyer's Closing Coordinator", label: "Buyer's Closing Coordinator" },
+                { id: "Seller's Closing Coordinator", label: "Seller's Closing Coordinator" },
                 { id: "Contractor / Vendor", label: "Contractor / Vendor" },
                 { id: "Other", label: "Other" },
               ]}
