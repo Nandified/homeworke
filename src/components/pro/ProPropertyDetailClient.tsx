@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 
-import { UserAvatar } from "@/components/user-avatar";
+import { UserAvatar, useStoredProfile } from "@/components/user-avatar";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 import { Button, Card, Chip, Divider, EmptyState, Input, Label, Modal } from "@/components/ui";
 import { withDemo } from "@/lib/demo";
@@ -33,6 +33,7 @@ function normalizeAddressKey(s: string) {
 
 export function ProPropertyDetailClient(props: { property: ProPropertyDetail; openEdit?: boolean }) {
   const [item, setItem] = React.useState<ProPropertyDetail>(props.property);
+  const profile = useStoredProfile();
   const [editOpen, setEditOpen] = React.useState(!!props.openEdit);
   const [nickname, setNickname] = React.useState(props.property.nickname || "");
   const [photoUrl, setPhotoUrl] = React.useState("");
@@ -151,7 +152,10 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                   <UserAvatar fullName="Mike Moulis" size={30} />
                 </>
               ) : (
-                <div className="text-sm text-[var(--hw-muted)]">—</div>
+                <>
+                  <UserAvatar fullName={profile.fullName || "You"} photoUrl={profile.photoDataUrl || undefined} size={30} />
+                  {item.ownerName && item.ownerName !== profile.fullName ? <UserAvatar fullName={item.ownerName} size={30} /> : null}
+                </>
               )}
             </div>
           </div>
