@@ -136,7 +136,8 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
 
       <Modal
         open={leadOpen}
-        title="Download report"
+        title="View report"
+        mobilePlacement="center"
         onClose={() => {
           if (leadBusy) return;
           setLeadOpen(false);
@@ -144,9 +145,7 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
         }}
       >
         <div className="grid gap-4">
-          <div className="text-sm text-[var(--hw-muted)]">
-            Enter your email and role to receive this report. We’ll still open the PDF in your browser.
-          </div>
+          <div className="text-sm text-[var(--hw-muted)]">Enter your email to view this report with more details.</div>
 
           <div className="grid gap-2">
             <div className="text-sm font-semibold text-[var(--hw-ink)]">Email</div>
@@ -154,10 +153,10 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
           </div>
 
           <div className="grid gap-2">
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">Role</div>
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">I am a…</div>
             <Picker
               value={leadRole}
-              placeholder="Select a role"
+              placeholder="Select one"
               options={[
                 { id: "Homeowner", label: "Homeowner" },
                 { id: "Homebuyer", label: "Homebuyer" },
@@ -172,6 +171,8 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
 
           <div className="flex flex-wrap items-center gap-3">
             <Button
+              variant="secondary"
+              className="min-w-[160px]"
               disabled={!leadEmail || !leadEmail.includes("@") || leadBusy || !pendingMode}
               onClick={async () => {
                 if (!pendingMode) return;
@@ -203,10 +204,10 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
                 }
               }}
             >
-              {leadBusy ? "Continuing…" : "Continue to download"}
+              {leadBusy ? "Opening…" : "View report"}
             </Button>
             <Button
-              variant="secondary"
+              variant="ghost"
               disabled={leadBusy}
               onClick={() => {
                 setLeadOpen(false);
