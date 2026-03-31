@@ -32,12 +32,25 @@ export function useStoredProfile() {
     photoDataUrl: "",
   }));
 
+  const isProPortal = typeof window !== "undefined" && window.location.pathname.startsWith("/pro");
+
   // Use layout effect so nav/refresh doesn't paint placeholder initials before we hydrate from storage.
   useIsoLayoutEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const fullName = window.localStorage.getItem(PROFILE_STORAGE_KEYS.fullName) || "";
-      const photoDataUrl = window.localStorage.getItem(PROFILE_STORAGE_KEYS.photoDataUrl) || "";
+      let fullName = window.localStorage.getItem(PROFILE_STORAGE_KEYS.fullName) || "";
+      let photoDataUrl = window.localStorage.getItem(PROFILE_STORAGE_KEYS.photoDataUrl) || "";
+
+      // If we previously seeded placeholder initials (e.g. YRE), replace them with a better default for the PRO portal.
+      const isPlaceholder = (s: string) => (s || "").trim().toUpperCase() === "YRE";
+      if (isProPortal && isPlaceholder(fullName)) {
+        fullName = "";
+        photoDataUrl = "";
+        try {
+          window.localStorage.removeItem(PROFILE_STORAGE_KEYS.fullName);
+          window.localStorage.removeItem(PROFILE_STORAGE_KEYS.photoDataUrl);
+        } catch {}
+      }
 
       // localStorage doesn't sync across devices. If we have a partner context, seed a sensible
       // default so the portal doesn't fall back to placeholder initials.
