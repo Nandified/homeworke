@@ -59,7 +59,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
     <div className="grid gap-6">
       {/* Hero */}
       <Card className="overflow-hidden">
-        <div className="relative h-[260px] overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
+        <div className="relative h-[340px] overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
           {/* Photo (UI-only via localStorage until Google Places is wired) */}
           {(() => {
             let photo = "";
