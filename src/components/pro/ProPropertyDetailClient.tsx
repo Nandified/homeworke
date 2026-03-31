@@ -138,9 +138,9 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
 
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Shared with</div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Shared with pros</div>
               <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                {item.id.startsWith("prop_demo_") ? "People who can see project activity for this property (demo)." : "People who can see activity for this property."}
+                {item.id.startsWith("prop_demo_") ? "Real estate pros connected to this homeowner (demo)." : "Real estate pros connected to this homeowner."}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -154,7 +154,6 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
               ) : (
                 <>
                   <UserAvatar fullName={profile.fullName || "You"} photoUrl={profile.photoDataUrl || undefined} size={30} />
-                  {item.ownerName && item.ownerName !== profile.fullName ? <UserAvatar fullName={item.ownerName} size={30} /> : null}
                 </>
               )}
             </div>
