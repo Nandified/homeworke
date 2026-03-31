@@ -175,14 +175,18 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
 
 
             {streetViewSrc ? (
-              <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white aspect-[16/9] w-full">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={streetViewSrc} alt={`Street view of ${fullAddress}`} className="h-full w-full object-cover object-[50%_35%]" />
+              <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white w-full">
+                <div className="relative w-full bg-[var(--hw-soft)]" style={{ aspectRatio: "16 / 9" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={streetViewSrc} alt={`Street view of ${fullAddress}`} className="absolute inset-0 h-full w-full object-contain" />
+                </div>
               </div>
             ) : mapSrc ? (
-              <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white aspect-[16/9] w-full">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={mapSrc} alt={`Map of ${fullAddress}`} className="h-full w-full object-cover object-center" />
+              <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white w-full">
+                <div className="relative w-full bg-[var(--hw-soft)]" style={{ aspectRatio: "16 / 9" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={mapSrc} alt={`Map of ${fullAddress}`} className="absolute inset-0 h-full w-full object-contain" />
+                </div>
               </div>
             ) : null}
 
