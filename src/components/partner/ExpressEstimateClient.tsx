@@ -82,6 +82,8 @@ type Report = {
 };
 
 export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const preselectPropertyId = searchParams?.get("property") || "";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>("");
@@ -180,12 +182,12 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     fetch(url)
       .then((r) => r.json())
       .then((j) => {
-        const base = (j.properties || []) as Array<any>;
+        const base = (j.properties || []) as Array<{ id?: string; nickname?: string; address?: string; clientProperty?: boolean }>;
         const fromApi = base
           .filter((p) => p && typeof p.id === "string")
           .map((p) => ({
             id: String(p.id),
-            label: normalizeAddress(p.nickname || p.address),
+            label: normalizeAddress(p.nickname || p.address || ""),
             address: normalizeAddress(p.address || ""),
             kind: p.clientProperty ? ("client" as const) : ("my" as const),
           }))
@@ -225,10 +227,20 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   }, []);
 
   useEffect(() => {
-    // Intentionally do NOT auto-select a property.
-    // We want the user to explicitly confirm the property to avoid accidental submissions.
+    // When launched from a property detail page, we can preselect that property.
+    // This keeps the user focused on the remaining required info.
     if (!properties.length) return;
-  }, [properties]);
+    if (!preselectPropertyId) return;
+    if (selectedPropertyId) return;
+
+    const hit = properties.find((p) => p.id === preselectPropertyId) || null;
+    if (!hit) return;
+
+    setSelectedPropertyId(hit.id);
+    setPropertyOwner(hit.kind);
+    setPropertyMode("existing");
+    setStep(3);
+  }, [properties, preselectPropertyId, selectedPropertyId]);
 
   return (
     <PortalShell

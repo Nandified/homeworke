@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 
 import { UserAvatar } from "@/components/user-avatar";
+import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 import { Button, Card, Chip, Divider, EmptyState, Input, Label, Modal } from "@/components/ui";
 import { withDemo } from "@/lib/demo";
 
@@ -35,6 +36,8 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
   const [editOpen, setEditOpen] = React.useState(!!props.openEdit);
   const [nickname, setNickname] = React.useState(props.property.nickname || "");
   const [photoUrl, setPhotoUrl] = React.useState("");
+
+  const [requestOpen, setRequestOpen] = React.useState(false);
 
   const [googleOpen, setGoogleOpen] = React.useState(false);
   const [googleLoading, setGoogleLoading] = React.useState(false);
@@ -122,10 +125,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
             <div className="shrink-0">
               <div className="flex flex-wrap items-center gap-2">
                 <Link href={withDemo(`/pro/express-estimate?property=${encodeURIComponent(item.id)}`)}>
-                  <Button>Start Express Estimate</Button>
-                </Link>
-                <Link href={withDemo(`/pro/jobs?property=${encodeURIComponent(item.id)}`)}>
-                  <Button variant="secondary">View jobs</Button>
+                  <Button>Start Instant Estimate</Button>
                 </Link>
               </div>
             </div>
@@ -163,7 +163,9 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
             <div className="text-sm font-semibold text-[var(--hw-ink)]">Active services</div>
             <div className="mt-1 text-sm text-[var(--hw-muted)]">Current work in progress for this address.</div>
           </div>
-          <Button variant="secondary">Request service</Button>
+          <Button variant="secondary" onClick={() => setRequestOpen(true)}>
+            Request service
+          </Button>
         </div>
         <Divider className="my-5" />
         <EmptyState title="No active services" text="When you start a job, it will appear here with status and next steps." />
@@ -215,6 +217,16 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
           <EmptyState title="No service history yet" text="Once you request or complete services for this property, they’ll show up here." />
         )}
       </Card>
+
+      {/* Request service modal */}
+      <Modal open={requestOpen} onClose={() => setRequestOpen(false)} title="Request service" mobilePlacement="center">
+        <AIWorkOrderIntakeCard
+          eyebrow="Work order"
+          title="What do you need help with?"
+          prefillIssue={`Property: ${item.address}\n\n`}
+          showServicingPill={true}
+        />
+      </Modal>
 
       {/* Google photo picker */}
       <Modal

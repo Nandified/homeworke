@@ -35,12 +35,14 @@ export function AIWorkOrderIntakeCard(props: {
   title?: string;
   primaryCta?: string;
   secondaryCta?: string;
+  /** Prefill the issue box (e.g., when launched from a specific property). */
+  prefillIssue?: string;
   /** Show the “Now servicing …” pill in the header (defaults true). */
   showServicingPill?: boolean;
 }) {
   const services = servicesData.services.slice(0, 6);
 
-  const [issue, setIssue] = useState("");
+  const [issue, setIssue] = useState(props.prefillIssue || "");
   const [zip, setZip] = useState<string>("");
   const [city, setCity] = useState<string>("");
   const [state, setState] = useState<string>("");
