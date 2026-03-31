@@ -46,7 +46,7 @@ export function ExpressEstimateReportClient(props: {
     return [
       {
         id: "rpt_4240_mozart",
-        address: "4240 S Mozart St, Chicago, IL",
+        address: "4240 S Mozart St, Chicago, IL 60632",
         type: "Inspection",
         createdAt: new Date(now - 1000 * 60 * 60 * 24 * 2).toISOString(),
         status: "Ready",

@@ -103,6 +103,9 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
 
     return null;
   })();
+
+  // Prefer a fully-qualified address from the report snapshot, then fall back.
+  const fullAddress = (payload.address || "").trim() || "—";
   const proName = enrichedPro?.display_name || payload.pro?.name || "Real Estate Pro";
   const proBrokerage = enrichedPro?.brokerage_name || payload.pro?.brokerageName || "";
   const proLicense = enrichedPro?.license_state && enrichedPro?.license_number ? `${enrichedPro.license_state} ${enrichedPro.license_number}` : "";
@@ -130,18 +133,13 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
       </header>
 
       <Container className="py-8 md:py-12">
-        <div className="flex flex-wrap items-center gap-2">
-          <Pill>Instant Estimate</Pill>
-          <Pill>{payload.mode === "selected" ? "Shared selection" : "Shared full report"}</Pill>
-        </div>
-
-        <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_420px]">
+        <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_420px]">
           <Card className="p-6">
             <div className="text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">
               Hi {payload.recipient?.name?.split(" ")[0] || "there"}, here is your Instant Estimate.
             </div>
-            <div className="mt-2 text-sm text-[var(--hw-muted)]">Property</div>
-            <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{payload.address || "—"}</div>
+            <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Property</div>
+            <div className="mt-1 text-lg font-extrabold tracking-tight text-[var(--hw-ink)] md:text-xl">{fullAddress}</div>
 
             <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
               <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Next steps</div>
