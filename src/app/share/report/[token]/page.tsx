@@ -136,7 +136,8 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
     if (!googleMapsKey) return "";
     const addr = (fullAddress || "").trim();
     if (!addr || addr === "—") return "";
-    return `/api/google/streetview?address=${encodeURIComponent(addr)}&size=1200x675&fov=80&pitch=0`;
+    // Tune framing a bit upward + wider FOV so roofs/signage don’t feel cropped.
+    return `/api/google/streetview?address=${encodeURIComponent(addr)}&size=1200x675&fov=92&pitch=12`;
   })();
   const proBrokerage = enrichedPro?.brokerage_name || payload.pro?.brokerageName || "";
   const proLicense = enrichedPro?.license_state && enrichedPro?.license_number ? `${enrichedPro.license_state} ${enrichedPro.license_number}` : "";
@@ -176,7 +177,7 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
             {streetViewSrc ? (
               <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white aspect-[16/9] w-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={streetViewSrc} alt={`Street view of ${fullAddress}`} className="h-full w-full object-cover object-center" />
+                <img src={streetViewSrc} alt={`Street view of ${fullAddress}`} className="h-full w-full object-cover object-[50%_35%]" />
               </div>
             ) : mapSrc ? (
               <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white aspect-[16/9] w-full">
