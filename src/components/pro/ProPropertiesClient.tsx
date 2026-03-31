@@ -131,7 +131,7 @@ export function ProPropertiesClient(props: {
   const { partnerId } = usePartnerContext();
   const router = useRouter();
   const [items, setItems] = React.useState<ApiProperty[] | null>(null);
-  const [tab, setTab] = React.useState<"my" | "shared" | "clients">("my");
+  const [tab, setTab] = React.useState<"all" | "my" | "shared" | "clients">("all");
   const [q, setQ] = React.useState("");
 
   const [addOpenInternal, setAddOpenInternal] = React.useState(false);
@@ -153,6 +153,7 @@ export function ProPropertiesClient(props: {
     if (!addOpen) return;
     if (tab === "clients") setAddMode("client");
     if (tab === "my") setAddMode("property");
+    if (tab === "all") setAddMode("property");
     // If we're on "shared", default to "client" since this page is PRO-centric.
     if (tab === "shared") setAddMode("client");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -255,6 +256,7 @@ export function ProPropertiesClient(props: {
 
   const filtered = items
     .filter((p) => {
+      if (tab === "all") return true;
       if (tab === "shared") return !!p.sharedWithMe;
       if (tab === "clients") return !!p.clientProperty;
       // "my" tab
@@ -268,6 +270,7 @@ export function ProPropertiesClient(props: {
     });
 
   const counts = {
+    all: items.length,
     my: items.filter((p) => !p.sharedWithMe && !p.clientProperty).length,
     clients: items.filter((p) => !!p.clientProperty).length,
     shared: items.filter((p) => !!p.sharedWithMe).length,
@@ -284,50 +287,65 @@ export function ProPropertiesClient(props: {
   return (
     <div>
       {/* Toolbar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap">
-          <button
-            type="button"
-            onClick={() => setTab("my")}
-            className={
-              "rounded-full px-4 py-2 text-xs font-semibold transition " +
-              (tab === "my"
-                ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-            }
->
-            My properties <CountBadge n={counts.my} />
-          </button>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap">
+            <button
+              type="button"
+              onClick={() => setTab("all")}
+              className={
+                "rounded-full px-4 py-2 text-xs font-semibold transition " +
+                (tab === "all"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              All <CountBadge n={counts.all} />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setTab("clients")}
-            className={
-              "rounded-full px-4 py-2 text-xs font-semibold transition " +
-              (tab === "clients"
-                ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-            }
->
-            Client properties <CountBadge n={counts.clients} />
-          </button>
+            <button
+              type="button"
+              onClick={() => setTab("my")}
+              className={
+                "rounded-full px-4 py-2 text-xs font-semibold transition " +
+                (tab === "my"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              My properties <CountBadge n={counts.my} />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setTab("shared")}
-            className={
-              "rounded-full px-4 py-2 text-xs font-semibold transition " +
-              (tab === "shared"
-                ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-            }
->
-            Shared with me <CountBadge n={counts.shared} />
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => setTab("clients")}
+              className={
+                "rounded-full px-4 py-2 text-xs font-semibold transition " +
+                (tab === "clients"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              Client properties <CountBadge n={counts.clients} />
+            </button>
 
-        <div className="w-full sm:w-[320px]">
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or address…" />
+            <button
+              type="button"
+              onClick={() => setTab("shared")}
+              className={
+                "rounded-full px-4 py-2 text-xs font-semibold transition " +
+                (tab === "shared"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              Shared with me <CountBadge n={counts.shared} />
+            </button>
+          </div>
+
+          <div className="w-full sm:w-[380px]">
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or address…" />
+          </div>
         </div>
       </div>
 
