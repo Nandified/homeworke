@@ -31,6 +31,13 @@ function normalizeAddressKey(s: string) {
   return (s || "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
+function shortPersonName(fullName: string) {
+  const parts = (fullName || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "";
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[parts.length - 1]?.[0] || ""}.`;
+}
+
 export function ProPropertyDetailClient(props: { property: ProPropertyDetail; openEdit?: boolean }) {
   const [item, setItem] = React.useState<ProPropertyDetail>(props.property);
   const profile = useStoredProfile();
@@ -41,6 +48,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
   const [requestOpen, setRequestOpen] = React.useState(false);
 
   const [googleOpen, setGoogleOpen] = React.useState(false);
+  const [peekName, setPeekName] = React.useState<string>("");
   const [googleLoading, setGoogleLoading] = React.useState(false);
   const [googleErr, setGoogleErr] = React.useState("");
   const [googlePhotos, setGooglePhotos] = React.useState<Array<{ ref: string; width: number; height: number }>>([]);
@@ -83,6 +91,24 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
   const heroPhotoResolved = heroPhoto.startsWith("google_place:")
     ? `/api/google/place-photo?ref=${encodeURIComponent(heroPhoto.replace(/^google_place:/, ""))}&maxwidth=1600`
     : heroPhoto;
+
+  const sharedPros = React.useMemo<Array<{ name: string; photoUrl?: string }>>(() => {
+    if (item.id.startsWith("prop_demo_")) {
+      return [
+        { name: "Fernando Rocha Jr" },
+        { name: "Oscar Toledo" },
+        { name: "Jennifer Correa" },
+        { name: "Mike Moulis" },
+      ];
+    }
+    return [{ name: profile.fullName || "You", photoUrl: profile.photoDataUrl || "" }];
+  }, [item.id, profile.fullName, profile.photoDataUrl]);
+
+  React.useEffect(() => {
+    if (!peekName) return;
+    const t = window.setTimeout(() => setPeekName(""), 2200);
+    return () => window.clearTimeout(t);
+  }, [peekName]);
 
   return (
     <div className="grid gap-6">
@@ -143,19 +169,28 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                 {item.id.startsWith("prop_demo_") ? "Real estate pros connected to this homeowner (demo)." : "Real estate pros connected to this homeowner."}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {item.id.startsWith("prop_demo_") ? (
-                <>
-                  <UserAvatar fullName="Fernando Rocha Jr" size={30} />
-                  <UserAvatar fullName="Oscar Toledo" size={30} />
-                  <UserAvatar fullName="Jennifer Correa" size={30} />
-                  <UserAvatar fullName="Mike Moulis" size={30} />
-                </>
-              ) : (
-                <>
-                  <UserAvatar fullName={profile.fullName || "You"} photoUrl={profile.photoDataUrl || undefined} size={30} />
-                </>
-              )}
+            <div className="flex items-center gap-3">
+              {sharedPros.map((p) => {
+                const label = shortPersonName(p.name) || p.name;
+                return (
+                  <button
+                    key={p.name}
+                    type="button"
+                    className="flex flex-col items-center gap-1 text-left"
+                    title={p.name}
+                    onClick={() => setPeekName(p.name)}
+                  >
+                    <UserAvatar fullName={p.name} photoUrl={p.photoUrl || undefined} size={30} />
+                    <div className="hidden max-w-[92px] truncate text-[11px] font-semibold text-[var(--hw-muted)] sm:block">{label}</div>
+                  </button>
+                );
+              })}
+
+              {peekName ? (
+                <div className="ml-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 text-xs font-semibold text-[var(--hw-ink)] shadow-sm">
+                  {peekName}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
