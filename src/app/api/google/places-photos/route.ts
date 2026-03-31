@@ -37,7 +37,8 @@ export async function GET(req: Request) {
   // 2) Get photos from place details
   const detailsUrl = new URL("https://maps.googleapis.com/maps/api/place/details/json");
   detailsUrl.searchParams.set("place_id", placeId);
-  detailsUrl.searchParams.set("fields", "photo");
+  // Place Details fields must be `photos` (not `photo`).
+  detailsUrl.searchParams.set("fields", "photos");
   detailsUrl.searchParams.set("key", key);
 
   const detRes = await fetch(detailsUrl.toString());

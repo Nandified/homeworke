@@ -235,6 +235,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
           setGoogleOpen(false);
           setGoogleErr("");
           setGooglePhotos([]);
+          setEditOpen(true);
         }}
         title="Select property photo"
         mobilePlacement="center"
@@ -251,6 +252,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                 const src = `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=10`;
                 setPhotoUrl(src);
                 setGoogleOpen(false);
+                setEditOpen(true);
               }}
             >
               Use Street View
@@ -263,6 +265,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                 const src = `/api/google/staticmap?address=${encodeURIComponent(item.address)}&size=1200x540&scale=2&zoom=16`;
                 setPhotoUrl(src);
                 setGoogleOpen(false);
+                setEditOpen(true);
               }}
             >
               Use Map
@@ -283,6 +286,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                     onClick={() => {
                       setPhotoUrl(`google_place:${p.ref}`);
                       setGoogleOpen(false);
+                      setEditOpen(true);
                     }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -340,7 +344,11 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                 size="sm"
                 variant="ghost"
                 onClick={async () => {
-                  setGoogleOpen(true);
+                  // Close the edit modal first; otherwise both modals share z-index and the photo picker appears "behind" it.
+                  setEditOpen(false);
+                  // Next tick so the close animation commits before opening the picker.
+                  window.setTimeout(() => setGoogleOpen(true), 20);
+
                   setGoogleErr("");
                   setGoogleLoading(true);
                   try {
