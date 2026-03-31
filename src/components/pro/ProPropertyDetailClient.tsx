@@ -136,13 +136,21 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Shared with</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">People who can see project activity for this property (demo).</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                {item.id.startsWith("prop_demo_") ? "People who can see project activity for this property (demo)." : "People who can see activity for this property."}
+              </div>
             </div>
             <div className="flex items-center gap-2">
-              <UserAvatar fullName="Fernando Rocha Jr" size={30} />
-              <UserAvatar fullName="Oscar Toledo" size={30} />
-              <UserAvatar fullName="Jennifer Correa" size={30} />
-              <UserAvatar fullName="Mike Moulis" size={30} />
+              {item.id.startsWith("prop_demo_") ? (
+                <>
+                  <UserAvatar fullName="Fernando Rocha Jr" size={30} />
+                  <UserAvatar fullName="Oscar Toledo" size={30} />
+                  <UserAvatar fullName="Jennifer Correa" size={30} />
+                  <UserAvatar fullName="Mike Moulis" size={30} />
+                </>
+              ) : (
+                <div className="text-sm text-[var(--hw-muted)]">—</div>
+              )}
             </div>
           </div>
         </div>
@@ -172,36 +180,40 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
 
         <Divider className="my-5" />
 
-        <div className="grid gap-4">
-          <Card className="p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">House Repairs</div>
-                <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                  Status: <span className="font-semibold text-[var(--hw-red)]">Completed</span>
+        {item.id.startsWith("prop_demo_") ? (
+          <div className="grid gap-4">
+            <Card className="p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">House Repairs</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                    Status: <span className="font-semibold text-[var(--hw-red)]">Completed</span>
+                  </div>
+                </div>
+                <Chip>Apr 30, 2024</Chip>
+              </div>
+
+              <Divider className="my-4" />
+
+              <div className="grid gap-2 text-sm">
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <span className="text-[var(--hw-muted)]">Home Guide:</span>
+                  <span className="font-semibold text-[var(--hw-ink)]">Fernando Rocha Jr</span>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <span className="text-[var(--hw-muted)]">Project Manager:</span>
+                  <span className="font-semibold text-[var(--hw-ink)]">Frank Rocha</span>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <span className="text-[var(--hw-muted)]">Service Item:</span>
+                  <span className="font-semibold text-[var(--hw-ink)]">Restoration</span>
                 </div>
               </div>
-              <Chip>Apr 30, 2024</Chip>
-            </div>
-
-            <Divider className="my-4" />
-
-            <div className="grid gap-2 text-sm">
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                <span className="text-[var(--hw-muted)]">Home Guide:</span>
-                <span className="font-semibold text-[var(--hw-ink)]">Fernando Rocha Jr</span>
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                <span className="text-[var(--hw-muted)]">Project Manager:</span>
-                <span className="font-semibold text-[var(--hw-ink)]">Frank Rocha</span>
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                <span className="text-[var(--hw-muted)]">Service Item:</span>
-                <span className="font-semibold text-[var(--hw-ink)]">Restoration</span>
-              </div>
-            </div>
-          </Card>
-        </div>
+            </Card>
+          </div>
+        ) : (
+          <EmptyState title="No service history yet" text="Once you request or complete services for this property, they’ll show up here." />
+        )}
       </Card>
 
       {/* Google photo picker */}
