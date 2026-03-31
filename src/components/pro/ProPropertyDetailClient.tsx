@@ -76,6 +76,8 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
 
   const autoPhoto = !chosenPhoto && !cachedByAddr && item.address ? `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=10` : "";
   const heroPhoto = chosenPhoto || cachedByAddr || autoPhoto;
+  const isUsingStreetView = heroPhoto.startsWith("/api/google/streetview");
+  const isUsingMap = heroPhoto.startsWith("/api/google/staticmap");
 
   const heroPhotoResolved = heroPhoto.startsWith("google_place:")
     ? `/api/google/place-photo?ref=${encodeURIComponent(heroPhoto.replace(/^google_place:/, ""))}&maxwidth=1600`
@@ -246,8 +248,8 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="sm"
-              variant="secondary"
-              disabled={!item.address}
+              variant={isUsingStreetView ? "ghost" : "secondary"}
+              disabled={!item.address || isUsingStreetView}
               onClick={() => {
                 const src = `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=10`;
                 setPhotoUrl(src);
@@ -255,12 +257,12 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                 setEditOpen(true);
               }}
             >
-              Use Street View
+              {isUsingStreetView ? "Using Street View" : "Use Street View"}
             </Button>
             <Button
               size="sm"
-              variant="ghost"
-              disabled={!item.address}
+              variant={isUsingMap ? "ghost" : "ghost"}
+              disabled={!item.address || isUsingMap}
               onClick={() => {
                 const src = `/api/google/staticmap?address=${encodeURIComponent(item.address)}&size=1200x540&scale=2&zoom=16`;
                 setPhotoUrl(src);
@@ -268,7 +270,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                 setEditOpen(true);
               }}
             >
-              Use Map
+              {isUsingMap ? "Using Map" : "Use Map"}
             </Button>
           </div>
 
@@ -299,9 +301,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
                 );
               })}
             </div>
-          ) : (
-            <div className="text-sm text-[var(--hw-muted)]">No Google photo gallery found for this address. You can still use Street View.</div>
-          )}
+          ) : null}
         </div>
       </Modal>
 
