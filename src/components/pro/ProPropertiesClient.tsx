@@ -295,7 +295,8 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
     clientPhone: addMode === "client" && !req.clientPhone,
     address: !req.address,
     type: !req.type,
-    photo: !req.photo,
+    // Photo is optional.
+    photo: false,
   };
 
   const canSubmit = !Object.values(missing).some(Boolean);
@@ -602,8 +603,7 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-xs">Photo</Label>
-              <div className={`rounded-[var(--hw-radius-sm)] ${addTouched && missing.photo ? errRing : ""}`}>
+              <Label className="text-xs">Photo (optional)</Label>
               <input
                 type="file"
                 accept="image/*"
@@ -619,7 +619,6 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
                   }
                 }}
                 />
-              </div>
               {newPhotoDataUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={newPhotoDataUrl} alt="" className="mt-2 h-28 w-full rounded-[var(--hw-radius-sm)] object-cover" />
@@ -637,7 +636,6 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
               Cancel
             </Button>
             <Button
-              disabled={!canSubmit}
               onClick={() => {
                 setAddTouched(true);
                 if (!canSubmit) return;
