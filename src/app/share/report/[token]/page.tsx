@@ -143,6 +143,16 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
     .filter((v): v is number => typeof v === "number" && Number.isFinite(v))
     .reduce((a, b) => a + b, 0);
   const proName = enrichedPro?.display_name || payload.pro?.name || "Real Estate Pro";
+
+  const googleMapsKey = process.env.GOOGLE_MAPS_API_KEY || "";
+  const mapSrc = (() => {
+    if (!googleMapsKey) return "";
+    const addr = (fullAddress || "").trim();
+    if (!addr || addr === "—") return "";
+    const q = encodeURIComponent(addr);
+    // Note: size is in px; Google may return a higher-res image automatically.
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${q}&zoom=16&size=800x360&scale=2&maptype=roadmap&markers=color:red%7C${q}&key=${googleMapsKey}`;
+  })();
   const proBrokerage = enrichedPro?.brokerage_name || payload.pro?.brokerageName || "";
   const proLicense = enrichedPro?.license_state && enrichedPro?.license_number ? `${enrichedPro.license_state} ${enrichedPro.license_number}` : "";
   const proHeadshot = enrichedPro?.headshot_url || null;
@@ -187,6 +197,12 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
                 <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{itemCount}</div>
               </div>
             </div>
+
+            {mapSrc ? (
+              <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
+                <img src={mapSrc} alt={`Map of ${fullAddress}`} className="h-[180px] w-full object-cover" />
+              </div>
+            ) : null}
 
             <div className="mt-4 text-xs text-[var(--hw-muted)]">Scroll down to view and download the report.</div>
           </Card>
