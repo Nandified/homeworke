@@ -85,19 +85,35 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
 
   const payload = v.payload;
 
-  const enrichedPro = (() => {
-    if (payload.pro?.code) return resolvePartner(payload.pro.code) as any;
+  type PartnerRow = {
+    email?: string;
+    pro_code?: string;
+    display_name?: string;
+    brokerage_name?: string;
+    license_state?: string;
+    license_number?: string;
+    phone?: string;
+    website_url?: string;
+    headshot_url?: string;
+    bio?: string;
+    socials?: Record<string, string>;
+  };
+
+  const partnerRows = partners as unknown as PartnerRow[];
+
+  const enrichedPro: PartnerRow | null = (() => {
+    if (payload.pro?.code) return resolvePartner(payload.pro.code) as unknown as PartnerRow;
 
     const email = (payload.pro?.email || "").trim().toLowerCase();
     if (email) {
-      const m = (partners as any[]).find((p) => String(p?.email || "").trim().toLowerCase() === email);
-      if (m) return m as any;
+      const m = partnerRows.find((p) => String(p?.email || "").trim().toLowerCase() === email) || null;
+      if (m) return m;
     }
 
     const name = (payload.pro?.name || "").trim().toLowerCase();
     if (name) {
-      const m = (partners as any[]).find((p) => String(p?.display_name || "").trim().toLowerCase() === name);
-      if (m) return m as any;
+      const m = partnerRows.find((p) => String(p?.display_name || "").trim().toLowerCase() === name) || null;
+      if (m) return m;
     }
 
     return null;
@@ -106,42 +122,6 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
   // Prefer a fully-qualified address from the report snapshot, then fall back.
   const fullAddress = (payload.address || "").trim() || "—";
 
-  function parseMoneyToNumber(raw: string): number | null {
-    const s = (raw || "").toLowerCase().replace(/\s+/g, " ").trim();
-    if (!s) return null;
-    const m = s.match(/\$?([0-9]+(?:\.[0-9]+)?)(k|m)?/i);
-    if (!m) return null;
-    const n = Number(m[1]);
-    if (!Number.isFinite(n)) return null;
-    const suf = (m[2] || "").toLowerCase();
-    const mult = suf === "k" ? 1000 : suf === "m" ? 1_000_000 : 1;
-    return n * mult;
-  }
-
-  function estimateItemValue(item: { range?: string; price?: number }): number | null {
-    if (typeof item.price === "number" && Number.isFinite(item.price)) return item.price;
-    const r = (item.range || "").replace(/–/g, "-");
-    const parts = r.split("-").map((p) => p.trim());
-    if (parts.length >= 2) {
-      const a = parseMoneyToNumber(parts[0]);
-      const b = parseMoneyToNumber(parts[1]);
-      if (a !== null && b !== null) return (a + b) / 2;
-      return a ?? b;
-    }
-    return parseMoneyToNumber(r);
-  }
-
-  function formatUSD(n: number): string {
-    return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-  }
-
-  const lanes = Array.isArray(payload.lanes) ? payload.lanes : [];
-  const allItems = lanes.flatMap((l) => (Array.isArray(l.items) ? l.items : []));
-  const itemCount = allItems.length;
-  const total = allItems
-    .map((it) => estimateItemValue(it))
-    .filter((v): v is number => typeof v === "number" && Number.isFinite(v))
-    .reduce((a, b) => a + b, 0);
   const proName = enrichedPro?.display_name || payload.pro?.name || "Real Estate Pro";
 
   const googleMapsKey = process.env.GOOGLE_PROPERTY_PHOTOS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || "";
@@ -192,24 +172,16 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
             <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Property address</div>
             <div className="mt-1 text-lg font-medium tracking-tight text-[var(--hw-ink)] md:text-xl">{fullAddress}</div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Instant estimate</div>
-                <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(total)}</div>
-              </div>
-              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Line items</div>
-                <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{itemCount}</div>
-              </div>
-            </div>
 
             {streetViewSrc ? (
               <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
-                <img src={streetViewSrc} alt={`Street view of ${fullAddress}`} className="h-[180px] w-full object-cover" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={streetViewSrc} alt={`Street view of ${fullAddress}`} className="h-[240px] w-full object-cover" />
               </div>
             ) : mapSrc ? (
               <div className="mt-3 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
-                <img src={mapSrc} alt={`Map of ${fullAddress}`} className="h-[180px] w-full object-cover" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={mapSrc} alt={`Map of ${fullAddress}`} className="h-[240px] w-full object-cover" />
               </div>
             ) : null}
 
