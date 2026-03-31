@@ -536,7 +536,7 @@ export function ProPropertiesClient(props: {
             <div className="grid gap-2">
               <Label className="text-xs">Type of property</Label>
               <select
-                className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3 text-sm text-[var(--hw-ink)]"
+                className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-gradient-to-b from-white to-[var(--hw-soft)] px-3 text-sm text-[var(--hw-ink)] shadow-[0_10px_22px_rgba(17,24,39,.06)] outline-none transition hover:shadow-[0_12px_26px_rgba(17,24,39,.08)] focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
                 value={newPropertyType}
                 onChange={(e) => setNewPropertyType(e.target.value as typeof newPropertyType)}
               >
