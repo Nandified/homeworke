@@ -136,7 +136,7 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
 
       <Modal
         open={leadOpen}
-        title="View report"
+        title="Download report"
         mobilePlacement="center"
         onClose={() => {
           if (leadBusy) return;
@@ -204,17 +204,7 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
                 }
               }}
             >
-              {leadBusy ? "Opening…" : "View report"}
-            </Button>
-            <Button
-              variant="ghost"
-              disabled={leadBusy}
-              onClick={() => {
-                setLeadOpen(false);
-                setPendingMode(null);
-              }}
-            >
-              Cancel
+              {leadBusy ? "Downloading…" : "Download report"}
             </Button>
           </div>
         </div>

@@ -74,6 +74,8 @@ export function Picker(props: {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const wrapRef = React.useRef<HTMLDivElement | null>(null);
+  const buttonRef = React.useRef<HTMLButtonElement | null>(null);
+  const [menuPos, setMenuPos] = React.useState<{ top: number; left: number; width: number } | null>(null);
 
   const active = props.options.find((o) => o.id === props.value) || null;
 
@@ -105,11 +107,35 @@ export function Picker(props: {
     };
   }, []);
 
+  React.useEffect(() => {
+    if (!open) {
+      setMenuPos(null);
+      return;
+    }
+
+    function compute() {
+      const btn = buttonRef.current;
+      if (!btn) return;
+      const r = btn.getBoundingClientRect();
+      setMenuPos({ top: r.bottom + 8, left: r.left, width: r.width });
+    }
+
+    compute();
+    window.addEventListener("resize", compute);
+    // capture scroll from any scroll container (including modal body)
+    window.addEventListener("scroll", compute, true);
+    return () => {
+      window.removeEventListener("resize", compute);
+      window.removeEventListener("scroll", compute, true);
+    };
+  }, [open]);
+
   return (
     <div ref={wrapRef} className="grid gap-2">
       {props.label ? <Label className="text-xs">{props.label}</Label> : null}
       <div className="relative">
         <button
+          ref={buttonRef}
           type="button"
           onClick={() => {
             setOpen((v) => {
@@ -130,10 +156,11 @@ export function Picker(props: {
           </span>
         </button>
 
-        {open ? (
+        {open && menuPos ? (
           <div
             role="listbox"
-            className="absolute z-20 mt-2 w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]"
+            className="fixed z-[80] overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]"
+            style={{ top: menuPos.top, left: menuPos.left, width: menuPos.width }}
           >
             <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[var(--hw-red)]/10 blur-[40px]" />
 
