@@ -578,7 +578,6 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
                 placeholder="123 Main St, Chicago, IL 606.."
                 className={addTouched && missing.address ? errRing : ""}
               />
-              <div className="text-xs text-[var(--hw-muted)]">We’ll wire Google Places autocomplete next. For now, type the full address.</div>
             </div>
 
             <div className="grid gap-2">
