@@ -62,14 +62,18 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
         <div className="relative h-[340px] overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.18),rgba(17,24,39,.05))]">
           {/* Photo (UI-only via localStorage until Google Places is wired) */}
           {(() => {
-            let photo = "";
+            let chosen = "";
             try {
-              photo = window.localStorage.getItem(`hw_prop_photo_v1:${item.id}`) || "";
+              chosen = window.localStorage.getItem(`hw_prop_photo_v1:${item.id}`) || "";
             } catch {}
-            if (!photo && item.id === "prop_demo_6") photo = "/demo_prop_demo_6.jpg";
+            if (!chosen && item.id === "prop_demo_6") chosen = "/demo_prop_demo_6.jpg";
+
+            const auto = !chosen && item.address ? `/api/google/streetview?address=${encodeURIComponent(item.address)}&size=1200x675&fov=80&pitch=10` : "";
+            const photo = chosen || auto;
+
             return photo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_40%]" />
             ) : null;
           })()}
 

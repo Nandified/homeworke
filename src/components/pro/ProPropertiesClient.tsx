@@ -2,7 +2,6 @@
 
 import * as React from "react";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Button, Card, Chip, Divider, EmptyState, Input, Label, Modal } from "@/components/ui";
@@ -342,7 +341,9 @@ export function ProPropertiesClient(props: {
           >
             <div className="relative h-36 overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.14),rgba(17,24,39,.04))]">
               {(() => {
-                const photo = photos[p.id] || (p.id === "prop_demo_6" ? "/demo_prop_demo_6.jpg" : "");
+                const chosen = photos[p.id] || (p.id === "prop_demo_6" ? "/demo_prop_demo_6.jpg" : "");
+                const auto = !chosen && p.address ? `/api/google/streetview?address=${encodeURIComponent(p.address)}&size=800x450&fov=80&pitch=10` : "";
+                const photo = chosen || auto;
                 return photo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
