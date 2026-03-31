@@ -144,7 +144,7 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
     .reduce((a, b) => a + b, 0);
   const proName = enrichedPro?.display_name || payload.pro?.name || "Real Estate Pro";
 
-  const googleMapsKey = process.env.GOOGLE_MAPS_API_KEY || "";
+  const googleMapsKey = process.env.GOOGLE_PROPERTY_PHOTOS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || "";
   const mapSrc = (() => {
     if (!googleMapsKey) return "";
     const addr = (fullAddress || "").trim();
