@@ -415,9 +415,56 @@ export function ProPropertiesClient(props: {
 
       {!filtered.length ? (
         <div className="mt-5">
-          <Card className="p-5">
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">No matches</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">Try a different search, or switch tabs.</div>
+          <Card className="p-6">
+            {(() => {
+              const isEmptyTab =
+                (tab === "clients" && counts.clients === 0) ||
+                (tab === "shared" && counts.shared === 0) ||
+                (tab === "my" && counts.my === 0) ||
+                (tab === "all" && counts.all === 0);
+
+              if (isEmptyTab && (q || "").trim() === "") {
+                const title =
+                  tab === "clients"
+                    ? "No client properties yet"
+                    : tab === "shared"
+                      ? "No shared properties yet"
+                      : tab === "my"
+                        ? "No properties yet"
+                        : "No properties yet";
+
+                const text =
+                  tab === "clients"
+                    ? "Add your first client property to start tracking projects, estimates, and shared work—making homeownership easier for your clients."
+                    : tab === "shared"
+                      ? "When a client shares a report with you, it will show up here."
+                      : "Add a property to start running instant estimates and organizing projects in one place.";
+
+                return (
+                  <div className="grid gap-4">
+                    <div>
+                      <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">{title}</div>
+                      <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">{text}</div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button size="sm" onClick={() => setAddOpen(true)}>
+                        Add property
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => setTab("all")}>
+                        View all
+                      </Button>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">No matches</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Try a different search, or switch tabs.</div>
+                </>
+              );
+            })()}
           </Card>
         </div>
       ) : null}
