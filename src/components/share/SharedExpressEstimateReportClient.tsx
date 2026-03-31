@@ -2,12 +2,29 @@
 
 import { useMemo, useState } from "react";
 
-import { Button, Card, Chip, EmptyState } from "@/components/ui";
+import { Button, Card, Chip, EmptyState, Input, Modal, Picker } from "@/components/ui";
 import type { ReportShareLaneV1, ReportSharePayloadV1 } from "@/lib/share-token";
+import { Download } from "lucide-react";
 
 export function SharedExpressEstimateReportClient(props: { token: string; payload: ReportSharePayloadV1 }) {
   const [downloading, setDownloading] = useState<"" | "full" | "selected">("");
   const [toast, setToast] = useState<string>("");
+
+  const [leadOpen, setLeadOpen] = useState(false);
+  const [leadEmail, setLeadEmail] = useState("");
+  const [leadRole, setLeadRole] = useState("");
+  const [leadBusy, setLeadBusy] = useState(false);
+  const [pendingMode, setPendingMode] = useState<null | "full" | "selected">(null);
+
+  const leadStorageKey = `hw_share_lead_v1:${props.payload.reportId}`;
+  const leadCaptured = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem(leadStorageKey) === "1";
+    } catch {
+      return false;
+    }
+  }, [leadStorageKey]);
 
   function parseMoneyToNumber(raw: string): number | null {
     const s = (raw || "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -61,9 +78,16 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
   }, [lanes]);
 
   async function download(mode: "full" | "selected") {
+    // Lead capture gate: ask for email + role on first download.
+    if (!leadCaptured) {
+      setPendingMode(mode);
+      setLeadOpen(true);
+      return;
+    }
+
     try {
       setDownloading(mode);
-      setToast(mode === "full" ? "Preparing full report…" : "Preparing selected report…");
+      setToast(mode === "full" ? "Preparing report…" : "Preparing selected report…");
 
       const r = await fetch("/api/express-estimate/download", {
         method: "POST",
@@ -110,6 +134,91 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
         </div>
       ) : null}
 
+      <Modal
+        open={leadOpen}
+        title="Download report"
+        onClose={() => {
+          if (leadBusy) return;
+          setLeadOpen(false);
+          setPendingMode(null);
+        }}
+      >
+        <div className="grid gap-4">
+          <div className="text-sm text-[var(--hw-muted)]">
+            Enter your email and role to receive this report. We’ll still open the PDF in your browser.
+          </div>
+
+          <div className="grid gap-2">
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Email</div>
+            <Input value={leadEmail} onChange={(e) => setLeadEmail(e.target.value)} placeholder="you@email.com" inputMode="email" autoComplete="email" />
+          </div>
+
+          <div className="grid gap-2">
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Role</div>
+            <Picker
+              value={leadRole}
+              placeholder="Select a role"
+              options={[
+                { id: "Homeowner", label: "Homeowner" },
+                { id: "Homebuyer", label: "Homebuyer" },
+                { id: "Seller", label: "Seller" },
+                { id: "Real Estate Pro", label: "Real Estate Pro" },
+                { id: "Contractor / Vendor", label: "Contractor / Vendor" },
+                { id: "Other", label: "Other" },
+              ]}
+              onChange={setLeadRole}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              disabled={!leadEmail || !leadEmail.includes("@") || leadBusy || !pendingMode}
+              onClick={async () => {
+                if (!pendingMode) return;
+                setLeadBusy(true);
+                try {
+                  await fetch("/api/express-estimate/share/lead", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                      token: props.token,
+                      reportId: props.payload.reportId,
+                      email: leadEmail,
+                      role: leadRole,
+                      source: "download",
+                    }),
+                  }).catch(() => null);
+
+                  try {
+                    window.localStorage.setItem(leadStorageKey, "1");
+                  } catch {}
+
+                  setLeadOpen(false);
+                  const m = pendingMode;
+                  setPendingMode(null);
+                  // Proceed to download
+                  void download(m);
+                } finally {
+                  setLeadBusy(false);
+                }
+              }}
+            >
+              {leadBusy ? "Continuing…" : "Continue to download"}
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={leadBusy}
+              onClick={() => {
+                setLeadOpen(false);
+                setPendingMode(null);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       <Card className="p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -131,12 +240,15 @@ export function SharedExpressEstimateReportClient(props: { token: string; payloa
                 variant="secondary"
                 disabled={(props.payload.selectedIds || []).length === 0 || downloading !== ""}
                 onClick={() => download("selected")}
+                className="gap-2"
               >
-                {downloading === "selected" ? "Preparing…" : "Download selected"}
+                <Download className="h-4 w-4" />
+                {downloading === "selected" ? "Preparing…" : "Download report"}
               </Button>
             ) : (
-              <Button size="sm" disabled={downloading !== ""} onClick={() => download("full")}>
-                {downloading === "full" ? "Preparing…" : "Download full"}
+              <Button size="sm" disabled={downloading !== ""} onClick={() => download("full")} className="gap-2">
+                <Download className="h-4 w-4" />
+                {downloading === "full" ? "Preparing…" : "Download report"}
               </Button>
             )}
           </div>
