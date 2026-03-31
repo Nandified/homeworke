@@ -2,7 +2,6 @@
 
 import * as React from "react";
 
-import { isDemoMode } from "@/lib/demo";
 import { loadPartner } from "@/lib/partner-context";
 
 function initials(name: string) {
@@ -40,16 +39,18 @@ export function useStoredProfile() {
       const fullName = window.localStorage.getItem(PROFILE_STORAGE_KEYS.fullName) || "";
       const photoDataUrl = window.localStorage.getItem(PROFILE_STORAGE_KEYS.photoDataUrl) || "";
 
-      // Cross-device note: localStorage doesn't sync. In demo mode, seed a sensible default
-      // from the partner context so mobile doesn't fall back to "Your Real Estate Pro".
-      if (!fullName && isDemoMode()) {
+      // localStorage doesn't sync across devices. If we have a partner context, seed a sensible
+      // default so the portal doesn't fall back to placeholder initials.
+      if (!fullName) {
         const partner = loadPartner();
         const seededName = partner?.partnerName || "";
         const seededPhoto = demoPhotoForPartner(partner?.partnerId) || "";
         if (seededName) window.localStorage.setItem(PROFILE_STORAGE_KEYS.fullName, seededName);
         if (seededPhoto) window.localStorage.setItem(PROFILE_STORAGE_KEYS.photoDataUrl, seededPhoto);
-        setProfile({ fullName: seededName, photoDataUrl: seededPhoto });
-        return;
+        if (seededName || seededPhoto) {
+          setProfile({ fullName: seededName, photoDataUrl: seededPhoto });
+          return;
+        }
       }
 
       setProfile({ fullName, photoDataUrl });
