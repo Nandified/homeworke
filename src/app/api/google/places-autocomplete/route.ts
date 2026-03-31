@@ -18,6 +18,10 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const input = (url.searchParams.get("input") || "").trim();
   const country = (url.searchParams.get("country") || "us").trim().toLowerCase();
+  const sessiontoken = (url.searchParams.get("sessiontoken") || "").trim();
+  const lat = (url.searchParams.get("lat") || "").trim();
+  const lon = (url.searchParams.get("lon") || "").trim();
+  const radius = (url.searchParams.get("radius") || "").trim();
 
   if (!input) return json({ ok: true, predictions: [] }, { headers: { "cache-control": "no-store" } });
 
@@ -25,6 +29,12 @@ export async function GET(req: Request) {
   apiUrl.searchParams.set("input", input);
   apiUrl.searchParams.set("types", "address");
   if (country) apiUrl.searchParams.set("components", `country:${country}`);
+  if (sessiontoken) apiUrl.searchParams.set("sessiontoken", sessiontoken);
+  // Location bias: prefer results near the user (or our default market).
+  if (lat && lon) {
+    apiUrl.searchParams.set("location", `${lat},${lon}`);
+    if (radius) apiUrl.searchParams.set("radius", radius);
+  }
   apiUrl.searchParams.set("key", key);
 
   const r = await fetch(apiUrl.toString());

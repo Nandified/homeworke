@@ -40,9 +40,52 @@ export function AddressAutocomplete(props: {
     };
   }, []);
 
+  const sessionTokenRef = React.useRef<string>(typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now()));
+
+  const [bias, setBias] = React.useState<{ lat: number; lon: number; radius: number } | null>(null);
+
+  // Load cached location bias (best effort). Falls back to Chicago if none.
+  React.useEffect(() => {
+    const CHI = { lat: 41.8781, lon: -87.6298, radius: 60000 };
+
+    async function run() {
+      try {
+        const raw = window.localStorage.getItem("hw_location_v1") || "";
+        if (raw) {
+          const j = JSON.parse(raw) as { zip?: string; lat?: number | string; lon?: number | string };
+          const lat = Number(j?.lat);
+          const lon = Number(j?.lon);
+          if (Number.isFinite(lat) && Number.isFinite(lon)) {
+            setBias({ lat, lon, radius: 50000 });
+            return;
+          }
+
+          const zip = String(j?.zip || "").slice(0, 5);
+          if (/^\d{5}$/.test(zip)) {
+            const r = await fetch(`/api/geo/zip?zip=${encodeURIComponent(zip)}`);
+            const jj = (await r.json()) as { ok?: boolean; lat?: string | number; lon?: string | number };
+            const lat2 = Number(jj?.lat);
+            const lon2 = Number(jj?.lon);
+            if (jj?.ok && Number.isFinite(lat2) && Number.isFinite(lon2)) {
+              setBias({ lat: lat2, lon: lon2, radius: 50000 });
+              try {
+                window.localStorage.setItem("hw_location_v1", JSON.stringify({ ...j, lat: lat2, lon: lon2 }));
+              } catch {}
+              return;
+            }
+          }
+        }
+      } catch {}
+
+      setBias(CHI);
+    }
+
+    run();
+  }, []);
+
   React.useEffect(() => {
     const q = (props.value || "").trim();
-    if (!q || q.length < 3) {
+    if (!q || q.length < 2) {
       setPreds([]);
       setOpen(false);
       return;
@@ -52,7 +95,17 @@ export function AddressAutocomplete(props: {
     const t = window.setTimeout(async () => {
       setLoading(true);
       try {
-        const r = await fetch(`/api/google/places-autocomplete?country=${encodeURIComponent(props.country || "us")}&input=${encodeURIComponent(q)}`);
+        const params = new URLSearchParams();
+        params.set("country", props.country || "us");
+        params.set("input", q);
+        params.set("sessiontoken", sessionTokenRef.current);
+        if (bias) {
+          params.set("lat", String(bias.lat));
+          params.set("lon", String(bias.lon));
+          params.set("radius", String(bias.radius));
+        }
+
+        const r = await fetch(`/api/google/places-autocomplete?${params.toString()}`);
         const j = (await r.json()) as { ok?: boolean; predictions?: Prediction[] };
         if (cancelled) return;
         const next = (j.ok && Array.isArray(j.predictions) ? j.predictions : []).slice(0, 6);
@@ -65,13 +118,13 @@ export function AddressAutocomplete(props: {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    }, 180);
+    }, 90);
 
     return () => {
       cancelled = true;
       window.clearTimeout(t);
     };
-  }, [props.value, props.country]);
+  }, [props.value, props.country, bias]);
 
   return (
     <div ref={wrapRef} className="relative">
