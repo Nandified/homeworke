@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 
 import { Container, Card, Pill } from "@/components/ui";
-import { ShareLoginCta } from "@/components/share/ShareLoginCta";
 import { SharedExpressEstimateReportClient } from "@/components/share/SharedExpressEstimateReportClient";
 import { resolvePartner } from "@/lib/partners";
 import { verifyShareToken } from "@/lib/share-token";
@@ -135,22 +134,19 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
       <Container className="py-8 md:py-12">
         <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_420px]">
           <Card className="p-6">
-            <div className="text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">
+            <div className="text-xl font-semibold tracking-tight text-[var(--hw-ink)]">
               Hi {payload.recipient?.name?.split(" ")[0] || "there"}, here is your Instant Estimate.
             </div>
             <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Property</div>
-            <div className="mt-1 text-lg font-extrabold tracking-tight text-[var(--hw-ink)] md:text-xl">{fullAddress}</div>
+            <div className="mt-1 text-lg font-medium tracking-tight text-[var(--hw-ink)] md:text-xl">{fullAddress}</div>
 
             <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
               <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Next steps</div>
-              <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">Book repairs and see more details</div>
-              <div className="mt-1 text-xs text-[var(--hw-muted)]">We’ll email you a one-time login link to continue.</div>
-              <div className="mt-3">
-                <ShareLoginCta email={payload.recipient?.email} next={`/share/report/${encodeURIComponent(token)}`} />
-              </div>
+              <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">Download your report or book repairs</div>
+              <div className="mt-1 text-xs text-[var(--hw-muted)]">No login needed. Your details will be collected during the PDF download flow.</div>
             </div>
 
-            <div className="mt-4 text-xs text-[var(--hw-muted)]">You can view and download the report below without logging in.</div>
+            <div className="mt-4 text-xs text-[var(--hw-muted)]">You can view and download the report below.</div>
           </Card>
 
           <Card className="p-6">
@@ -240,6 +236,21 @@ export default async function ShareReportPage(props: { params: Promise<{ token: 
                 {payload.recipient?.phone ? <div className="mt-1 text-sm text-[var(--hw-muted)]">{payload.recipient.phone}</div> : null}
               </div>
             ) : null}
+          
+
+            <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
+              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">For Real Estate Pros</div>
+              <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">Want this Instant Estimate for your clients?</div>
+              <div className="mt-1 text-xs text-[var(--hw-muted)]">Create a free account and share branded estimates like this in minutes.</div>
+              <div className="mt-3">
+                <Link
+                  href="/p/frj"
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--hw-red)] px-4 py-2 text-sm font-semibold !text-white shadow-[0_4px_14px_rgba(229,57,53,.3)] hover:brightness-[1.05] hover:!text-white"
+                >
+                  Get my Pro link
+                </Link>
+              </div>
+            </div>
           </Card>
         </div>
 
