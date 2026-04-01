@@ -313,10 +313,10 @@ export function ExpressEstimateReportClient(props: {
   return (
     <PortalShell
       role={props.role}
-      title="Express Estimate"
+      title="Instant Estimate"
       portalTitle={props.role === "PRO" ? "Real Estate Pro" : undefined}
       nav={nav}
-      description="Analyze a report and download an estimate."
+      description="Download the full report or select the items you want included. You can also book repairs from here."
       primaryAction={
         <Link href={`${props.basePath}/express-estimate`}>
           <Button variant="secondary">Back to reports</Button>
@@ -334,16 +334,7 @@ export function ExpressEstimateReportClient(props: {
             <div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">{report ? report.address : "Report"}</div>
               <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                {report ? (
-                  <>
-                    <span className="font-semibold text-[var(--hw-ink)]">Download the full report</span>
-                    {" or "}
-                    <span className="font-semibold text-[var(--hw-ink)]">select</span>
-                    {" the items you want included. You can also book repairs from here."}
-                  </>
-                ) : (
-                  "This report does not exist in demo data."
-                )}
+                {report ? `${report.type} • ${report.status}` : "This report does not exist in demo data."}
               </div>
               {analysisError ? <div className="mt-2 text-xs font-semibold text-[var(--hw-red)]">{analysisError}</div> : null}
               {analysisSummary ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
