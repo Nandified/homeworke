@@ -93,6 +93,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [stagedId, setStagedId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
+  const [toast, setToast] = useState<string>("");
   const [notes, setNotes] = useState("");
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -121,7 +122,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
   const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
 
-  const reports = useMemo<Report[]>(() => {
+  const [reports, setReports] = useState<Report[]>(() => {
     const now = Date.now();
     return [
       {
@@ -139,7 +140,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         status: "Draft",
       },
     ];
-  }, []);
+  });
 
   const filteredReports = useMemo(() => {
     const q = normalizeAddress(reportQuery).toLowerCase();
@@ -275,6 +276,11 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       }
     >
       <div className="grid gap-6">
+        {toast ? (
+          <div className="fixed bottom-5 left-1/2 z-[70] w-[min(520px,calc(100vw-32px))] -translate-x-1/2 rounded-full border border-[rgba(229,57,53,.18)] bg-white px-4 py-2.5 text-center text-sm font-semibold text-[var(--hw-ink)] shadow-[0_16px_40px_rgba(17,24,39,.16)]">
+            {toast}
+          </div>
+        ) : null}
         {/* Upload */}
         <Card className="p-6">
           <div>
@@ -738,8 +744,37 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
                   void (async () => {
                     try {
+                      // Notes are optional; persist whatever we have.
+                      try {
+                        window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
+                      } catch {}
+
                       const id = await stageFile(file);
                       setStagedId(id);
+
+                      const selectedProp = properties.find((p) => p.id === selectedPropertyId) || null;
+                      const address = selectedProp?.address || "";
+
+                      // Demo behavior: immediately create a ready report row in the list so the user can open it.
+                      const reportId = `rpt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+                      setReports((prev) => [
+                        {
+                          id: reportId,
+                          address: address || "New report",
+                          type: "Inspection",
+                          createdAt: new Date().toISOString(),
+                          status: "Ready",
+                        },
+                        ...prev,
+                      ]);
+
+                      setToast("Submitted ✓ Scroll down and click ‘Open report’.");
+                      window.setTimeout(() => setToast(""), 2600);
+
+                      // Nudge the user to the report list.
+                      try {
+                        document.getElementById("hw_reports")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      } catch {}
                     } catch {
                       setSubmitError("Submit failed. Please try again.");
                     } finally {
@@ -757,7 +792,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         </Card>
 
         {/* Reports list */}
-        <Card className="p-6">
+        <Card className="p-6" id="hw_reports">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Reports</div>
