@@ -9,6 +9,7 @@ import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { stageFile } from "@/lib/staged-files";
+import { formatPhoneUS } from "@/lib/phone";
 
 const STORAGE_KEYS = {
   customProps: "hw_props_custom_v1",
@@ -570,7 +571,12 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           </div>
                           <div className="grid gap-2 sm:col-span-2">
                             <div className="text-xs font-semibold text-[var(--hw-muted)]">Phone</div>
-                            <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="(312) 555-0123" />
+                            <Input
+                              value={newClientPhone}
+                              onChange={(e) => setNewClientPhone(formatPhoneUS(e.target.value))}
+                              placeholder="(312) 555-0123"
+                              inputMode="tel"
+                            />
                           </div>
                         </div>
                       ) : (

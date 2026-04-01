@@ -5,6 +5,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
+import { formatPhoneUS } from "@/lib/phone";
 import { Button, Card, Chip, Divider, EmptyState, Input, Label, Modal } from "@/components/ui";
 import { isDemoMode, withDemo } from "@/lib/demo";
 
@@ -567,7 +568,7 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
                   <Label className="text-xs">Phone</Label>
                   <Input
                     value={newClientPhone}
-                    onChange={(e) => setNewClientPhone(e.target.value)}
+                    onChange={(e) => setNewClientPhone(formatPhoneUS(e.target.value))}
                     placeholder="(312) 555-0123"
                     inputMode="tel"
                     className={addTouched && missing.clientPhone ? errRing : ""}
