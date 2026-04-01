@@ -461,16 +461,16 @@ export function ExpressEstimateReportClient(props: {
 
                               <div className="w-full sm:w-auto sm:shrink-0">
                                 <div className="grid gap-2 sm:flex sm:items-start sm:gap-3">
-                                  {/* Row 1: Price (right-aligned) */}
-                                  <div className="flex items-start justify-end">
-                                    <div className="w-[110px] shrink-0 text-right tabular-nums">
+                                  {/* Row 1: Price (on mobile, keep it nearer the content block) */}
+                                  <div className="flex items-start justify-start sm:justify-end">
+                                    <div className="w-[110px] shrink-0 text-left tabular-nums sm:text-right">
                                       <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
                                       <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
                                     </div>
                                   </div>
 
-                                  {/* Row 2: Details + Actions (all aligned on one row) */}
-                                  <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:justify-end">
+                                  {/* Row 2: Details + Actions (all aligned as one button group) */}
+                                  <div className="flex flex-wrap items-center justify-end gap-2 sm:flex-nowrap">
                                     <div
                                       className={
                                         "inline-flex w-[98px] items-center justify-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold " +
