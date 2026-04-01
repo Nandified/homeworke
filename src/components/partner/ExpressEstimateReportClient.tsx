@@ -339,8 +339,12 @@ export function ExpressEstimateReportClient(props: {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant Estimates</div>
-              <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">Property Address</div>
-              <div className="mt-1 truncate text-sm font-semibold text-[var(--hw-ink)]">{report ? report.address : "Report"}</div>
+              <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
+                Prepared For: <span className="font-semibold text-[var(--hw-ink)]">Owner Name</span>
+              </div>
+              <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
+                Property Address: <span className="font-semibold text-[var(--hw-ink)]">{report ? report.address : "Report"}</span>
+              </div>
               {report ? null : (
                 <div className="mt-1 text-sm text-[var(--hw-muted)]">This report does not exist in demo data.</div>
               )}
