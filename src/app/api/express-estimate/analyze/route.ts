@@ -163,6 +163,12 @@ async function callOpenAIJsonSchema(args: {
   const temperature = typeof args.temperature === "number" ? args.temperature : 0;
   const seed = typeof args.seed === "number" ? args.seed : 42;
 
+  // Some model endpoints (and some org configurations) reject `response_format`.
+  // We enforce JSON-only via prompt + post-parse instead.
+  const system =
+    args.system +
+    "\n\nOutput rules: Return ONLY valid JSON. No markdown, no explanations, no trailing text.";
+
   const res = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
@@ -174,17 +180,9 @@ async function callOpenAIJsonSchema(args: {
       temperature,
       seed,
       input: [
-        { role: "system", content: args.system },
+        { role: "system", content: system },
         { role: "user", content: args.user },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: args.schemaName,
-          schema: args.schema,
-          strict: true,
-        },
-      },
     }),
   });
 
@@ -205,7 +203,17 @@ async function callOpenAIJsonSchema(args: {
   try {
     json = JSON.parse(outputText);
   } catch {
-    return { ok: false as const, status: 500, detail: outputText.slice(0, 2000) };
+    // Try to salvage the first JSON object/array if the model leaked extra text.
+    const m = outputText.match(/\{[\s\S]*\}$/) || outputText.match(/\[[\s\S]*\]$/);
+    if (m) {
+      try {
+        json = JSON.parse(m[0]);
+      } catch {
+        return { ok: false as const, status: 500, detail: outputText.slice(0, 2000) };
+      }
+    } else {
+      return { ok: false as const, status: 500, detail: outputText.slice(0, 2000) };
+    }
   }
 
   // Estimated usage (we don't rely on exact token counts; we compute for admin dashboards).
