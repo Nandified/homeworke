@@ -228,6 +228,8 @@ export async function POST(req: Request) {
   try {
     const form = await req.formData();
     const file = form.get("file");
+    const textOverride = String(form.get("text") || "");
+    const hashOverride = String(form.get("hash") || "").trim();
     const notes = String(form.get("notes") || "");
     const location = String(form.get("location") || "");
 
@@ -236,28 +238,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, ...demoResult(location), used: "demo" });
     }
 
-    if (!file || !(file instanceof File)) {
-      return NextResponse.json({ ok: false, error: "missing_file" }, { status: 400 });
+    let extractedText = "";
+    let hash = "";
+    let pdfBytes = 0;
+
+    if (textOverride.trim()) {
+      extractedText = textOverride.trim();
+      hash = hashOverride || crypto.createHash("sha256").update(extractedText).digest("hex");
+      pdfBytes = 0;
+    } else {
+      if (!file || !(file instanceof File)) {
+        return NextResponse.json({ ok: false, error: "missing_file" }, { status: 400 });
+      }
+
+      // ---- PDF text extraction (server-side) ----
+      const buf = Buffer.from(await file.arrayBuffer());
+      pdfBytes = buf.length;
+      hash = crypto.createHash("sha256").update(buf).digest("hex");
+      const parsedPdf = await pdf(buf);
+      extractedText = String(parsedPdf?.text || "").replace(/\u0000/g, "").trim();
+
+      if (!extractedText) {
+        return NextResponse.json(
+          { ok: false, error: "pdf_no_text", detail: "Could not extract text from PDF (may be scanned)." },
+          { status: 422 }
+        );
+      }
     }
 
-    // ---- PDF text extraction (server-side) ----
-    const buf = Buffer.from(await file.arrayBuffer());
-    const hash = crypto.createHash("sha256").update(buf).digest("hex");
-
-    // Cache by exact PDF bytes (strong consistency for repeated uploads)
+    // Cache by hash (PDF bytes hash if provided, else text hash)
     const cached = await readCache(hash);
     if (cached) {
       return NextResponse.json({ ...cached, cached: true });
-    }
-
-    const parsedPdf = await pdf(buf);
-    const extractedText = String(parsedPdf?.text || "").replace(/\u0000/g, "").trim();
-
-    if (!extractedText) {
-      return NextResponse.json(
-        { ok: false, error: "pdf_no_text", detail: "Could not extract text from PDF (may be scanned)." },
-        { status: 422 }
-      );
     }
 
     // ---- Chunking pass: extract issue candidates from chunks ----
@@ -433,7 +445,7 @@ export async function POST(req: Request) {
     const cleaned = dedupeLanes(lanes);
 
     const usage: AnalyzeUsage = {
-      pdfBytes: buf.length,
+      pdfBytes,
       extractedTextChars: extractedText.length,
       hash,
       calls: usageCalls,

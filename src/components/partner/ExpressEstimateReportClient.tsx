@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+
 import { Button, Card, Chip, EmptyState, Input, Picker } from "@/components/ui";
 import { Camera, ChevronDown, Copy, Download, Hammer, Share2 } from "lucide-react";
 import { PortalShell } from "@/components/portal-shell";
@@ -37,6 +39,36 @@ export function ExpressEstimateReportClient(props: {
   ownerName?: string;
   address?: string;
 }) {
+  // PDF.js worker config (required for client-side text extraction)
+  try {
+    GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+  } catch {
+    // ignore
+  }
+
+  async function extractPdfTextAndHash(file: File): Promise<{ text: string; hash: string }> {
+    const ab = await file.arrayBuffer();
+
+    // Hash PDF bytes for caching consistency server-side
+    const digest = await crypto.subtle.digest("SHA-256", ab);
+    const hash = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+
+    const pdf = await getDocument({ data: ab }).promise;
+    const maxPages = Math.min(pdf.numPages || 0, 120);
+
+    let out = "";
+    for (let i = 1; i <= maxPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const strings = (content.items || [])
+        .map((it: any) => (typeof it?.str === "string" ? it.str : ""))
+        .filter(Boolean);
+      if (strings.length) out += `\n\n[PAGE ${i}]\n` + strings.join(" ");
+    }
+
+    const text = out.replace(/\s+/g, " ").trim();
+    return { text, hash };
+  }
   function svgThumb(label: string, bg = "#fdecec", fg = "#b91c1c") {
     const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">\n  <rect x="0" y="0" width="96" height="96" rx="18" fill="${bg}"/>\n  <text x="48" y="52" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Arial" font-size="12" font-weight="700" fill="${fg}">${label}</text>\n</svg>`;
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
@@ -282,12 +314,14 @@ export function ExpressEstimateReportClient(props: {
 
     setAnalyzing(true);
     setAnalysisError("");
-    setToast("Analyzing with AI…");
 
     void (async () => {
       try {
         const fd = new FormData();
-        fd.set("file", file);
+        // Avoid Vercel 413 body limits by extracting text client-side and sending text (not the full PDF).
+        const { text, hash } = await extractPdfTextAndHash(file);
+        fd.set("text", text);
+        fd.set("hash", hash);
         fd.set("notes", notes || "");
         fd.set("location", effectiveAddress || "");
 
