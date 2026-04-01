@@ -20,7 +20,7 @@ export function PortalShell(props: {
   /** Optional eyebrow label (defaults to "Portal") */
   eyebrow?: string;
   /** Optional description under the page title */
-  description?: string;
+  description?: React.ReactNode;
   /** Optional single primary action for the page */
   primaryAction?: React.ReactNode;
   /** Hide the page heading block (Portal/Title/Description). Useful for dashboard-first mobile. */

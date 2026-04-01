@@ -316,7 +316,13 @@ export function ExpressEstimateReportClient(props: {
       title="Instant Estimate"
       portalTitle={props.role === "PRO" ? "Real Estate Pro" : undefined}
       nav={nav}
-      description="Download the full report or select the items you want included. You can also book repairs from here."
+      description={
+        <>
+          Download the <span className="font-semibold text-[var(--hw-ink)]">full report</span> or{" "}
+          <span className="font-semibold text-[var(--hw-ink)]">select</span> the items you want included. You can also book{" "}
+          <span className="font-semibold text-[var(--hw-ink)]">repairs</span> from here.
+        </>
+      }
       primaryAction={
         <Link href={`${props.basePath}/express-estimate`}>
           <Button variant="secondary">Back to reports</Button>
@@ -331,11 +337,11 @@ export function ExpressEstimateReportClient(props: {
         ) : null}
         <Card className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">{report ? report.address : "Report"}</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                {report ? `${report.type} • ${report.status}` : "This report does not exist in demo data."}
-              </div>
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{report ? report.address : "Report"}</div>
+              {report ? null : (
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">This report does not exist in demo data.</div>
+              )}
               {analysisError ? <div className="mt-2 text-xs font-semibold text-[var(--hw-red)]">{analysisError}</div> : null}
               {analysisSummary ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
             </div>
@@ -345,7 +351,7 @@ export function ExpressEstimateReportClient(props: {
                 size="sm"
                 disabled={!report || extracted.length === 0 || downloading !== ""}
                 onClick={() => setDownloadOpen(true)}
-                className="gap-2"
+                className="gap-2 whitespace-nowrap px-3"
               >
                 <Download className="h-4 w-4" />
                 {downloading ? "Preparing…" : "Download report"}
@@ -359,7 +365,7 @@ export function ExpressEstimateReportClient(props: {
                   setShareUrl("");
                   setShareOpen(true);
                 }}
-                className="gap-2"
+                className="gap-2 whitespace-nowrap px-3"
               >
                 <Share2 className="h-4 w-4" />
                 Share
@@ -369,7 +375,7 @@ export function ExpressEstimateReportClient(props: {
                 variant="secondary"
                 disabled={repairs.length === 0}
                 onClick={() => setRepairsOpen(true)}
-                className="gap-2"
+                className="gap-2 whitespace-nowrap px-3"
               >
                 <Hammer className="h-4 w-4" />
                 Repair Cart
