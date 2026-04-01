@@ -53,11 +53,14 @@ export function ExpressEstimateReportClient(props: {
     const digest = await crypto.subtle.digest("SHA-256", ab);
     const hash = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
 
+    setAnalysisStage("Extracting text from PDF");
+
     const pdf = await getDocument({ data: ab }).promise;
     const maxPages = Math.min(pdf.numPages || 0, 120);
 
     let out = "";
     for (let i = 1; i <= maxPages; i++) {
+      setAnalysisProgress({ current: i, total: maxPages });
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
       const strings = (content.items || [])
@@ -104,6 +107,8 @@ export function ExpressEstimateReportClient(props: {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string>("");
   const [analysisSummary, setAnalysisSummary] = useState<string>("");
+  const [analysisStage, setAnalysisStage] = useState<string>("");
+  const [analysisProgress, setAnalysisProgress] = useState<{ current: number; total: number } | null>(null);
 
   const [downloading, setDownloading] = useState<"" | "full" | "selected">("");
   const [toast, setToast] = useState<string>("");
@@ -314,12 +319,23 @@ export function ExpressEstimateReportClient(props: {
 
     setAnalyzing(true);
     setAnalysisError("");
+    setAnalysisStage("Preparing…");
+    setAnalysisProgress(null);
 
     void (async () => {
       try {
         const fd = new FormData();
         // Avoid Vercel 413 body limits by extracting text client-side and sending text (not the full PDF).
         const { text, hash } = await extractPdfTextAndHash(file);
+        if (!text) {
+          setAnalysisError("Analyze failed: Could not extract text from PDF (may be scanned).");
+          setExtracted([]);
+          return;
+        }
+
+        setAnalysisStage("Generating estimate with AI");
+        setAnalysisProgress(null);
+
         fd.set("text", text);
         fd.set("hash", hash);
         fd.set("notes", notes || "");
@@ -398,6 +414,8 @@ export function ExpressEstimateReportClient(props: {
         setExtracted([]);
       } finally {
         setAnalyzing(false);
+        setAnalysisStage("");
+        setAnalysisProgress(null);
         setToast("");
       }
     })();
@@ -485,7 +503,16 @@ export function ExpressEstimateReportClient(props: {
             <div className="w-full max-w-sm rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white p-5 text-center shadow-[0_20px_60px_rgba(0,0,0,.25)]">
               <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-2 border-[rgba(229,57,53,.20)] border-t-[var(--hw-red)]" />
               <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">Analyzing inspection report…</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">Extracting text, reading summary, building estimate.</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                {analysisStage || "Working…"}
+                {analysisProgress ? ` (${analysisProgress.current}/${analysisProgress.total})` : ""}
+              </div>
+              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
+                <div
+                  className="h-full bg-[rgba(229,57,53,.55)] transition-[width] duration-300"
+                  style={{ width: `${analysisProgress ? Math.max(6, Math.min(100, Math.round((analysisProgress.current / Math.max(1, analysisProgress.total)) * 100))) : 20}%` }}
+                />
+              </div>
             </div>
           </div>
         ) : null}
