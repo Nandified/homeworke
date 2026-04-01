@@ -292,10 +292,38 @@ export function ExpressEstimateReportClient(props: {
         fd.set("location", effectiveAddress || "");
 
         const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
-        const j = (await r.json().catch(() => null)) as unknown;
 
-        if (!r.ok || !j || typeof j !== "object") {
-          setAnalysisError("Analyze failed. Please try again.");
+        // Try JSON first; if the platform returns HTML/text on error, fall back to text so we can show *some* reason.
+        let j: unknown = null;
+        try {
+          j = await r.json();
+        } catch {
+          j = null;
+        }
+
+        if (!r.ok) {
+          let extra = "";
+          if (j && typeof j === "object") {
+            const rec = j as Record<string, unknown>;
+            const detail = typeof rec.detail === "string" ? rec.detail : "";
+            const err = typeof rec.error === "string" ? rec.error : "";
+            extra = detail || err;
+          } else {
+            try {
+              const t = await r.text();
+              extra = (t || "").trim().slice(0, 280);
+            } catch {
+              extra = "";
+            }
+          }
+
+          setAnalysisError(extra ? `Analyze failed (${r.status}): ${extra}` : `Analyze failed (${r.status}).`);
+          setExtracted([]);
+          return;
+        }
+
+        if (!j || typeof j !== "object") {
+          setAnalysisError("Analyze failed: invalid server response.");
           setExtracted([]);
           return;
         }
