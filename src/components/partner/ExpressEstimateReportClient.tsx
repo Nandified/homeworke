@@ -338,7 +338,9 @@ export function ExpressEstimateReportClient(props: {
         <Card className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{report ? report.address : "Report"}</div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant Estimates</div>
+              <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">Property Address</div>
+              <div className="mt-1 truncate text-sm font-semibold text-[var(--hw-ink)]">{report ? report.address : "Report"}</div>
               {report ? null : (
                 <div className="mt-1 text-sm text-[var(--hw-muted)]">This report does not exist in demo data.</div>
               )}
@@ -346,7 +348,7 @@ export function ExpressEstimateReportClient(props: {
               {analysisSummary ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+            <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-6 sm:flex-nowrap">
               <Button
                 size="sm"
                 disabled={!report || extracted.length === 0 || downloading !== ""}
