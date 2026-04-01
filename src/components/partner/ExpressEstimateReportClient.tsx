@@ -143,7 +143,7 @@ export function ExpressEstimateReportClient(props: {
     ];
   }, []);
 
-  const [extracted, setExtracted] = useState<ExtractedLane[]>(demoExtracted);
+  const [extracted, setExtracted] = useState<ExtractedLane[]>(() => (props.stagedId ? [] : demoExtracted));
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [repairIds, setRepairIds] = useState<Set<string>>(new Set());
@@ -296,6 +296,7 @@ export function ExpressEstimateReportClient(props: {
 
         if (!r.ok || !j || typeof j !== "object") {
           setAnalysisError("Analyze failed. Please try again.");
+          setExtracted([]);
           return;
         }
 
@@ -304,6 +305,7 @@ export function ExpressEstimateReportClient(props: {
           const detail = typeof rec.detail === "string" ? rec.detail : "";
           const err = typeof rec.error === "string" ? rec.error : "Analyze failed.";
           setAnalysisError(detail ? `${err}: ${detail}` : err);
+          setExtracted([]);
           return;
         }
 
@@ -331,6 +333,7 @@ export function ExpressEstimateReportClient(props: {
         setAnalysisSummary(typeof rec.summary === "string" ? rec.summary : "");
       } catch (e) {
         setAnalysisError("Analyze failed. Please try again.");
+        setExtracted([]);
       } finally {
         setAnalyzing(false);
         setToast("");
@@ -412,6 +415,16 @@ export function ExpressEstimateReportClient(props: {
         {toast ? (
           <div className="fixed bottom-5 left-1/2 z-[70] w-[min(520px,calc(100vw-32px))] -translate-x-1/2 rounded-full border border-[rgba(229,57,53,.18)] bg-white px-4 py-2.5 text-center text-sm font-semibold text-[var(--hw-ink)] shadow-[0_16px_40px_rgba(17,24,39,.16)]">
             {toast}
+          </div>
+        ) : null}
+
+        {analyzing ? (
+          <div className="fixed inset-0 z-[65] flex items-center justify-center bg-black/30 p-6 backdrop-blur-[2px]">
+            <div className="w-full max-w-sm rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white p-5 text-center shadow-[0_20px_60px_rgba(0,0,0,.25)]">
+              <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-2 border-[rgba(229,57,53,.20)] border-t-[var(--hw-red)]" />
+              <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">Analyzing inspection report…</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">Extracting text, reading summary, building estimate.</div>
+            </div>
           </div>
         ) : null}
         <Card className="p-6">
