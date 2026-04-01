@@ -399,7 +399,10 @@ export function ExpressEstimateReportClient(props: {
                 className="gap-2 whitespace-nowrap px-3 sm:hidden"
               >
                 <Hammer className="h-4 w-4" />
-                Add repair
+                Repair Cart
+                <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-1 text-[11px] font-semibold text-[var(--hw-ink)]">
+                  {repairs.length}
+                </span>
               </Button>
             </div>
           </div>
@@ -456,13 +459,9 @@ export function ExpressEstimateReportClient(props: {
                               </div>
 
                               <div className="w-full sm:w-auto sm:shrink-0">
-                                <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:items-start sm:justify-start sm:gap-3">
-                                  <div className="w-[110px] shrink-0 text-right tabular-nums">
-                                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
-                                    <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
-                                  </div>
-
-                                  <div className="flex flex-wrap items-center justify-end gap-2 sm:flex-nowrap">
+                                <div className="grid gap-2 sm:flex sm:items-start sm:gap-3">
+                                  {/* Row 1: Details + Price (price stays right-aligned on mobile) */}
+                                  <div className="flex items-center justify-between gap-2 sm:justify-start">
                                     <div
                                       className={
                                         "inline-flex w-[98px] items-center justify-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold " +
@@ -474,9 +473,22 @@ export function ExpressEstimateReportClient(props: {
                                     >
                                       <Camera className={"h-3.5 w-3.5 " + (hasEvidence ? "opacity-100" : "opacity-0")} />
                                       <span>Details</span>
-                                      <ChevronDown className={"h-3.5 w-3.5 transition " + (open ? "rotate-180" : "") } />
+                                      <ChevronDown className={"h-3.5 w-3.5 transition " + (open ? "rotate-180" : "")} />
                                     </div>
 
+                                    <div className="w-[110px] shrink-0 text-right tabular-nums sm:hidden">
+                                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
+                                      <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
+                                    </div>
+
+                                    <div className="hidden w-[110px] shrink-0 text-right tabular-nums sm:block">
+                                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
+                                      <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
+                                    </div>
+                                  </div>
+
+                                  {/* Row 2: Actions */}
+                                  <div className="flex flex-wrap items-center justify-end gap-2 sm:flex-nowrap">
                                     <Button
                                       size="sm"
                                       variant={on ? "secondary" : "primary"}
