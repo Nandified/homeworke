@@ -422,8 +422,13 @@ export function ExpressEstimateReportClient(props: {
                               aria-expanded={open}
                             >
                               <div className="min-w-0">
-                                <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{item.label}</div>
-                                {item.note ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
+                                <div className="text-sm font-semibold text-[var(--hw-ink)]">{item.label}</div>
+                                {/* Keep the row clean; show the full narrative inside the accordion */}
+                                {item.note ? (
+                                  <div className="mt-0.5 text-xs text-[var(--hw-muted)] whitespace-normal break-words line-clamp-2">
+                                    {item.note}
+                                  </div>
+                                ) : null}
                               </div>
 
                               <div className="shrink-0">
@@ -465,6 +470,24 @@ export function ExpressEstimateReportClient(props: {
                                     >
                                       {on ? "Selected" : "Select"}
                                     </Button>
+
+                                    <Button
+                                      size="sm"
+                                      variant={repairIds.has(item.id) ? "secondary" : "ghost"}
+                                      className="rounded-full px-3"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setRepairIds((prev) => {
+                                          const next = new Set(prev);
+                                          if (next.has(item.id)) next.delete(item.id);
+                                          else next.add(item.id);
+                                          return next;
+                                        });
+                                      }}
+                                    >
+                                      {repairIds.has(item.id) ? "Repair ✓" : "Book repair"}
+                                    </Button>
                                   </div>
                                 </div>
                               </div>
@@ -472,6 +495,12 @@ export function ExpressEstimateReportClient(props: {
 
                             {open ? (
                               <div className="border-t border-[rgba(17,24,39,.08)] bg-white px-3 pb-3 pt-3">
+                                {item.note ? (
+                                  <div className="mb-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--hw-ink)]/80">
+                                    {item.note}
+                                  </div>
+                                ) : null}
+
                                 {hasEvidence ? (
                                   <div className="grid gap-2 sm:grid-cols-3">
                                     {item.evidence!.slice(0, 6).map((ev) => (
@@ -489,23 +518,6 @@ export function ExpressEstimateReportClient(props: {
                                 ) : (
                                   <div className="text-xs text-[var(--hw-muted)]">No evidence photos available for this item.</div>
                                 )}
-
-                                <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant={repairIds.has(item.id) ? "secondary" : "ghost"}
-                                    onClick={() => {
-                                      setRepairIds((prev) => {
-                                        const next = new Set(prev);
-                                        if (next.has(item.id)) next.delete(item.id);
-                                        else next.add(item.id);
-                                        return next;
-                                      });
-                                    }}
-                                  >
-                                    {repairIds.has(item.id) ? "Repair ✓" : "Book repair"}
-                                  </Button>
-                                </div>
                               </div>
                             ) : null}
                           </div>
