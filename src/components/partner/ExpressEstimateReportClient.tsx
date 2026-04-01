@@ -334,13 +334,22 @@ export function ExpressEstimateReportClient(props: {
             <div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">{report ? report.address : "Report"}</div>
               <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                {report ? `${report.type} • ${report.status}` : "This report does not exist in demo data."}
+                {report ? (
+                  <>
+                    <span className="font-semibold text-[var(--hw-ink)]">Download the full report</span>
+                    {" or "}
+                    <span className="font-semibold text-[var(--hw-ink)]">select</span>
+                    {" the items you want included. You can also book repairs from here."}
+                  </>
+                ) : (
+                  "This report does not exist in demo data."
+                )}
               </div>
               {analysisError ? <div className="mt-2 text-xs font-semibold text-[var(--hw-red)]">{analysisError}</div> : null}
               {analysisSummary ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
               <Button
                 size="sm"
                 disabled={!report || extracted.length === 0 || downloading !== ""}
@@ -441,14 +450,14 @@ export function ExpressEstimateReportClient(props: {
                                   <div className="flex items-center gap-2">
                                     <div
                                       className={
-                                        "inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold " +
+                                        "inline-flex w-[98px] items-center justify-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold " +
                                         (open
                                           ? "border-[rgba(229,57,53,.22)] bg-white text-[var(--hw-red)]"
                                           : "border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-muted)]")
                                       }
                                       title="Expand to view details"
                                     >
-                                      {hasEvidence ? <Camera className="h-3.5 w-3.5" /> : null}
+                                      <Camera className={"h-3.5 w-3.5 " + (hasEvidence ? "opacity-100" : "opacity-0")} />
                                       <span>Details</span>
                                       <ChevronDown className={"h-3.5 w-3.5 transition " + (open ? "rotate-180" : "") } />
                                     </div>
