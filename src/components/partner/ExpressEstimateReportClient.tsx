@@ -395,6 +395,7 @@ export function ExpressEstimateReportClient(props: {
               <Button
                 size="sm"
                 variant="secondary"
+                disabled={repairs.length === 0}
                 onClick={() => setRepairsOpen(true)}
                 className="gap-2 whitespace-nowrap px-3 sm:hidden"
               >
@@ -460,8 +461,16 @@ export function ExpressEstimateReportClient(props: {
 
                               <div className="w-full sm:w-auto sm:shrink-0">
                                 <div className="grid gap-2 sm:flex sm:items-start sm:gap-3">
-                                  {/* Row 1: Details + Price (price stays right-aligned on mobile) */}
-                                  <div className="flex items-center justify-between gap-2 sm:justify-start">
+                                  {/* Row 1: Price (right-aligned) */}
+                                  <div className="flex items-start justify-end">
+                                    <div className="w-[110px] shrink-0 text-right tabular-nums">
+                                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
+                                      <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
+                                    </div>
+                                  </div>
+
+                                  {/* Row 2: Details + Actions (all aligned on one row) */}
+                                  <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:justify-end">
                                     <div
                                       className={
                                         "inline-flex w-[98px] items-center justify-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold " +
@@ -476,36 +485,24 @@ export function ExpressEstimateReportClient(props: {
                                       <ChevronDown className={"h-3.5 w-3.5 transition " + (open ? "rotate-180" : "")} />
                                     </div>
 
-                                    <div className="w-[110px] shrink-0 text-right tabular-nums sm:hidden">
-                                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
-                                      <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
-                                    </div>
-
-                                    <div className="hidden w-[110px] shrink-0 text-right tabular-nums sm:block">
-                                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
-                                      <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
-                                    </div>
-                                  </div>
-
-                                  {/* Row 2: Actions */}
-                                  <div className="flex flex-wrap items-center justify-end gap-2 sm:flex-nowrap">
-                                    <Button
-                                      size="sm"
-                                      variant={on ? "secondary" : "primary"}
-                                      className="rounded-full px-3"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setSelectedIds((prev) => {
-                                          const next = new Set(prev);
-                                          if (next.has(item.id)) next.delete(item.id);
-                                          else next.add(item.id);
-                                          return next;
-                                        });
-                                      }}
-                                    >
-                                      {on ? "Selected" : "Select"}
-                                    </Button>
+                                    <div className="flex flex-wrap items-center justify-end gap-2 sm:flex-nowrap">
+                                      <Button
+                                        size="sm"
+                                        variant={on ? "secondary" : "primary"}
+                                        className="rounded-full px-3"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          setSelectedIds((prev) => {
+                                            const next = new Set(prev);
+                                            if (next.has(item.id)) next.delete(item.id);
+                                            else next.add(item.id);
+                                            return next;
+                                          });
+                                        }}
+                                      >
+                                        {on ? "Selected" : "Select"}
+                                      </Button>
 
                                     <Button
                                       size="sm"
@@ -526,6 +523,7 @@ export function ExpressEstimateReportClient(props: {
                                     </Button>
                                   </div>
                                 </div>
+                              </div>
                               </div>
                             </button>
 
