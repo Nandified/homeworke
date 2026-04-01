@@ -354,6 +354,7 @@ export function ExpressEstimateReportClient(props: {
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-6 sm:flex-nowrap">
+              {/* Mobile: show Repairs CTA even if Repair Cart count is 0 */}
               <Button
                 size="sm"
                 disabled={!report || extracted.length === 0 || downloading !== ""}
@@ -382,13 +383,23 @@ export function ExpressEstimateReportClient(props: {
                 variant="secondary"
                 disabled={repairs.length === 0}
                 onClick={() => setRepairsOpen(true)}
-                className="gap-2 whitespace-nowrap px-3"
+                className="hidden gap-2 whitespace-nowrap px-3 sm:inline-flex"
               >
                 <Hammer className="h-4 w-4" />
                 Repair Cart
                 <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-1 text-[11px] font-semibold text-[var(--hw-ink)]">
                   {repairs.length}
                 </span>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setRepairsOpen(true)}
+                className="gap-2 whitespace-nowrap px-3 sm:hidden"
+              >
+                <Hammer className="h-4 w-4" />
+                Add repair
               </Button>
             </div>
           </div>
@@ -427,7 +438,7 @@ export function ExpressEstimateReportClient(props: {
                             <button
                               type="button"
                               className={
-                                "flex w-full items-start justify-between gap-3 px-3 py-3 text-left transition hover:bg-[var(--hw-soft)]"
+                                "flex w-full flex-col gap-3 px-3 py-3 text-left transition hover:bg-[var(--hw-soft)] sm:flex-row sm:items-start sm:justify-between"
                               }
                               onClick={() => {
                                 setOpenItemId((prev) => (prev === item.id ? "" : item.id));
@@ -444,14 +455,14 @@ export function ExpressEstimateReportClient(props: {
                                 ) : null}
                               </div>
 
-                              <div className="shrink-0">
-                                <div className="flex items-start gap-3">
-                                  <div className="w-[110px] text-right tabular-nums">
+                              <div className="w-full sm:w-auto sm:shrink-0">
+                                <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:items-start sm:justify-start sm:gap-3">
+                                  <div className="w-[110px] shrink-0 text-right tabular-nums">
                                     <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
                                     <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
                                   </div>
 
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex flex-wrap items-center justify-end gap-2 sm:flex-nowrap">
                                     <div
                                       className={
                                         "inline-flex w-[98px] items-center justify-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold " +
@@ -515,19 +526,38 @@ export function ExpressEstimateReportClient(props: {
                                 ) : null}
 
                                 {hasEvidence ? (
-                                  <div className="grid gap-2 sm:grid-cols-3">
-                                    {item.evidence!.slice(0, 6).map((ev) => (
-                                      <button
-                                        key={ev.src}
-                                        type="button"
-                                        className="aspect-square w-full overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)]"
-                                        onClick={() => setLightboxSrc(ev.src)}
-                                        title={ev.caption || "Evidence"}
-                                      >
-                                        <img src={ev.src} alt={ev.caption || "Evidence"} className="h-full w-full object-cover" />
-                                      </button>
-                                    ))}
-                                  </div>
+                                  <>
+                                    {/* Mobile: horizontal scroll strip (small thumbs). Desktop: grid. */}
+                                    <div className="-mx-3 overflow-x-auto px-3 pb-1 sm:hidden">
+                                      <div className="flex w-max gap-2">
+                                        {item.evidence!.slice(0, 12).map((ev) => (
+                                          <button
+                                            key={ev.src}
+                                            type="button"
+                                            className="h-20 w-20 shrink-0 overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)]"
+                                            onClick={() => setLightboxSrc(ev.src)}
+                                            title={ev.caption || "Evidence"}
+                                          >
+                                            <img src={ev.src} alt={ev.caption || "Evidence"} className="h-full w-full object-cover" />
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    <div className="hidden grid gap-2 sm:grid-cols-3 sm:grid">
+                                      {item.evidence!.slice(0, 6).map((ev) => (
+                                        <button
+                                          key={ev.src}
+                                          type="button"
+                                          className="aspect-square w-full overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)]"
+                                          onClick={() => setLightboxSrc(ev.src)}
+                                          title={ev.caption || "Evidence"}
+                                        >
+                                          <img src={ev.src} alt={ev.caption || "Evidence"} className="h-full w-full object-cover" />
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </>
                                 ) : (
                                   <div className="text-xs text-[var(--hw-muted)]">No evidence photos available for this item.</div>
                                 )}
