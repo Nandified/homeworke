@@ -180,9 +180,10 @@ export function ExpressEstimateReportClient(props: {
       const out: Array<{ id: string; name: string; email?: string; phone?: string }> = [];
       const seen = new Set<string>();
       for (const p of Array.isArray(arr) ? arr : []) {
-        const name = typeof p?.clientName === "string" ? p.clientName.trim() : "";
-        const email = typeof p?.clientEmail === "string" ? p.clientEmail.trim() : "";
-        const phone = typeof p?.clientPhone === "string" ? p.clientPhone.trim() : "";
+        const rec = p && typeof p === "object" ? (p as Record<string, unknown>) : null;
+        const name = typeof rec?.clientName === "string" ? rec.clientName.trim() : "";
+        const email = typeof rec?.clientEmail === "string" ? rec.clientEmail.trim() : "";
+        const phone = typeof rec?.clientPhone === "string" ? rec.clientPhone.trim() : "";
         const key = (email || phone || name).toLowerCase();
         if (!key || seen.has(key)) continue;
         seen.add(key);
