@@ -387,7 +387,7 @@ export function ExpressEstimateReportClient(props: {
           ) : (
             <div className="mt-5 grid gap-6">
               {/* Lanes */}
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid gap-4">
                 {extracted.map((lane) => (
                   <div key={lane.title} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
                     <div className="flex items-center justify-between gap-3 border-b border-[var(--hw-line)] px-4 py-3">
