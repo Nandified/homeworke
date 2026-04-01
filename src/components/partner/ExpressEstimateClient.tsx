@@ -4,9 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 
-import { Button, Card, Chip, Picker, Textarea } from "@/components/ui";
+import { Button, Card, Chip, Input, Picker, Textarea } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { stageFile } from "@/lib/staged-files";
 
 const STORAGE_KEYS = {
@@ -14,7 +15,7 @@ const STORAGE_KEYS = {
   clientProps: "hw_props_client_v1",
 } as const;
 
-type StoredProperty = { id: string; address: string; nickname?: string; ownerName?: string; createdAt: string };
+type StoredProperty = { id: string; address: string; nickname?: string; ownerName?: string; propertyType?: string; createdAt: string };
 
 type StoredClientProperty = {
   id: string;
@@ -102,15 +103,20 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [propertyOwner, setPropertyOwner] = useState<"my" | "client">("my");
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
   const [properties, setProperties] = useState<
-    Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string }>
+    Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string; propertyType?: string }>
   >([]);
 
   const [newPropertyAddress, setNewPropertyAddress] = useState<string>("");
   const [newPropertyNickname, setNewPropertyNickname] = useState<string>("");
+  const [newPropertyType, setNewPropertyType] = useState<string>("");
   const [newOwnerName, setNewOwnerName] = useState<string>("");
-  const [newClientName, setNewClientName] = useState<string>("");
+
+  const [newClientFirstName, setNewClientFirstName] = useState<string>("");
+  const [newClientLastName, setNewClientLastName] = useState<string>("");
   const [newClientEmail, setNewClientEmail] = useState<string>("");
   const [newClientPhone, setNewClientPhone] = useState<string>("");
+
+  const newClientName = useMemo(() => `${newClientFirstName} ${newClientLastName}`.trim(), [newClientFirstName, newClientLastName]);
 
   const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
 
@@ -160,6 +166,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       label: normalizeAddress(p.nickname || p.address),
       address: normalizeAddress(p.address),
       ownerName: typeof p.ownerName === "string" ? normalizeAddress(p.ownerName) : undefined,
+      propertyType: typeof p.propertyType === "string" ? p.propertyType : undefined,
       kind: "my" as const,
     }));
     const localClient = readClientProperties().map((p) => ({
@@ -167,16 +174,17 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       label: normalizeAddress(p.nickname || p.address),
       address: normalizeAddress(p.address),
       ownerName: typeof p.ownerName === "string" ? normalizeAddress(p.ownerName) : (typeof p.clientName === "string" ? normalizeAddress(p.clientName) : undefined),
+      propertyType: typeof p.propertyType === "string" ? p.propertyType : undefined,
       kind: "client" as const,
     }));
 
     setProperties((prev) => {
-      const merged: Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string }> = [
+      const merged: Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string; propertyType?: string }> = [
         ...localMy,
         ...localClient,
       ];
       const seen = new Set<string>();
-      const out: Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string }> = [];
+      const out: Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string; propertyType?: string }> = [];
       [...merged, ...prev].forEach((x) => {
         if (seen.has(x.id)) return;
         seen.add(x.id);
@@ -536,27 +544,64 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         </button>
                       </div>
 
-                      <input
-                        className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                        value={newPropertyAddress}
-                        onChange={(e) => setNewPropertyAddress(e.target.value)}
-                        placeholder="Property address (required)"
-                      />
-
-                      <input
-                        className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                        value={newOwnerName}
-                        onChange={(e) => setNewOwnerName(e.target.value)}
-                        placeholder="Owner name (optional)"
-                      />
-
-                      <div className="flex items-center justify-between gap-3">
-                        <input
-                          className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                          value={newPropertyNickname}
-                          onChange={(e) => setNewPropertyNickname(e.target.value)}
-                          placeholder="Nickname (optional)"
+                      <div className="grid gap-2">
+                        <div className="text-xs font-semibold text-[var(--hw-muted)]">Address</div>
+                        <AddressAutocomplete
+                          value={newPropertyAddress}
+                          onChange={setNewPropertyAddress}
+                          placeholder="123 Main St, Chicago, IL 606.."
+                          country="us"
                         />
+                      </div>
+
+                      {propertyOwner === "client" ? (
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="grid gap-2">
+                            <div className="text-xs font-semibold text-[var(--hw-muted)]">Client first name</div>
+                            <Input value={newClientFirstName} onChange={(e) => setNewClientFirstName(e.target.value)} placeholder="Jane" />
+                          </div>
+                          <div className="grid gap-2">
+                            <div className="text-xs font-semibold text-[var(--hw-muted)]">Client last name</div>
+                            <Input value={newClientLastName} onChange={(e) => setNewClientLastName(e.target.value)} placeholder="Client" />
+                          </div>
+                          <div className="grid gap-2 sm:col-span-2">
+                            <div className="text-xs font-semibold text-[var(--hw-muted)]">Email</div>
+                            <Input value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} placeholder="jane@email.com" />
+                          </div>
+                          <div className="grid gap-2 sm:col-span-2">
+                            <div className="text-xs font-semibold text-[var(--hw-muted)]">Phone</div>
+                            <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="(312) 555-0123" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid gap-2">
+                          <div className="text-xs font-semibold text-[var(--hw-muted)]">Owner name (optional)</div>
+                          <Input value={newOwnerName} onChange={(e) => setNewOwnerName(e.target.value)} placeholder="Owner name" />
+                        </div>
+                      )}
+
+                      <div className="grid gap-2">
+                        <div className="text-xs font-semibold text-[var(--hw-muted)]">Nickname (optional)</div>
+                        <Input value={newPropertyNickname} onChange={(e) => setNewPropertyNickname(e.target.value)} placeholder="Home, Lake Condo…" />
+                      </div>
+
+                      <div className="grid gap-2">
+                        <div className="text-xs font-semibold text-[var(--hw-muted)]">Type of property</div>
+                        <select
+                          className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-gradient-to-b from-white to-[var(--hw-soft)] px-3 text-sm text-[var(--hw-ink)] shadow-[0_10px_22px_rgba(17,24,39,.06)] outline-none transition hover:shadow-[0_12px_26px_rgba(17,24,39,.08)] focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                          value={newPropertyType}
+                          onChange={(e) => setNewPropertyType(e.target.value)}
+                        >
+                          <option value="">Type of Property</option>
+                          <option value="Condo">Condo</option>
+                          <option value="House">House</option>
+                          <option value="Multi-Units">Multi-Units</option>
+                          <option value="Town house">Town house</option>
+                          <option value="Commercial">Commercial</option>
+                        </select>
+                      </div>
+
+                      <div className="flex items-center justify-end">
                         <Button
                           size="sm"
                           onClick={() => {
@@ -573,6 +618,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                                 address: addr,
                                 nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
                                 ownerName: normalizeAddress(newOwnerName || newClientName || "") || undefined,
+                                propertyType: newPropertyType || undefined,
                                 clientName: newClientName || undefined,
                                 clientEmail: newClientEmail || undefined,
                                 clientPhone: newClientPhone || undefined,
@@ -585,6 +631,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                                 address: addr,
                                 nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
                                 ownerName: normalizeAddress(newOwnerName) || undefined,
+                                propertyType: newPropertyType || undefined,
                               };
                               writeCustomProperties([next, ...readCustomProperties()]);
                             }
@@ -595,6 +642,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                               address: addr,
                               ownerName: normalizeAddress(newOwnerName || newClientName || "") || undefined,
                               kind: propertyOwner,
+                              propertyType: newPropertyType || undefined,
                             } as const;
                             setProperties((prev) => [p, ...prev]);
                             setSelectedPropertyId(id);
@@ -603,40 +651,18 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                             setNewPropertyAddress("");
                             setNewPropertyNickname("");
                             setNewOwnerName("");
-                            setNewClientName("");
+                            setNewClientFirstName("");
+                            setNewClientLastName("");
                             setNewClientEmail("");
                             setNewClientPhone("");
+                            setNewPropertyType("");
                           }}
                         >
                           Create
                         </Button>
                       </div>
 
-                      {propertyOwner === "client" ? (
-                        <div className="grid gap-2">
-                          <div className="text-xs font-semibold text-[var(--hw-muted)]">Client (optional)</div>
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            <input
-                              className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                              value={newClientName}
-                              onChange={(e) => setNewClientName(e.target.value)}
-                              placeholder="Name"
-                            />
-                            <input
-                              className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
-                              value={newClientPhone}
-                              onChange={(e) => setNewClientPhone(e.target.value)}
-                              placeholder="Phone"
-                            />
-                            <input
-                              className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm sm:col-span-2"
-                              value={newClientEmail}
-                              onChange={(e) => setNewClientEmail(e.target.value)}
-                              placeholder="Email"
-                            />
-                          </div>
-                        </div>
-                      ) : null}
+                      {null}
                     </div>
                   )}
 
