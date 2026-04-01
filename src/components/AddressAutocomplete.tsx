@@ -41,6 +41,7 @@ export function AddressAutocomplete(props: {
   }, []);
 
   const sessionTokenRef = React.useRef<string>(typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now()));
+  const lastSelectedRef = React.useRef<string>("");
 
   const [bias, setBias] = React.useState<{ lat: number; lon: number; radius: number } | null>(null);
 
@@ -86,6 +87,13 @@ export function AddressAutocomplete(props: {
   React.useEffect(() => {
     const q = (props.value || "").trim();
     if (!q || q.length < 2) {
+      setPreds([]);
+      setOpen(false);
+      return;
+    }
+
+    // If the user just selected an address, don't immediately re-open the dropdown.
+    if (q && q === lastSelectedRef.current) {
       setPreds([]);
       setOpen(false);
       return;
@@ -152,6 +160,7 @@ export function AddressAutocomplete(props: {
               key={p.id}
               type="button"
               onClick={async () => {
+                let selected = p.label;
                 // Fetch details so we can include ZIP and drop country.
                 try {
                   const params = new URLSearchParams();
@@ -159,10 +168,14 @@ export function AddressAutocomplete(props: {
                   params.set("sessiontoken", sessionTokenRef.current);
                   const r = await fetch(`/api/google/place-details?${params.toString()}`);
                   const j = (await r.json()) as { ok?: boolean; formatted?: string };
-                  props.onChange((j.ok && j.formatted) ? j.formatted : p.label);
+                  selected = (j.ok && j.formatted) ? j.formatted : p.label;
                 } catch {
-                  props.onChange(p.label);
+                  selected = p.label;
                 }
+
+                lastSelectedRef.current = (selected || "").trim();
+                props.onChange(selected);
+                setPreds([]);
                 setOpen(false);
               }}
               className={cn("w-full px-3 py-2 text-left text-sm text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")}
