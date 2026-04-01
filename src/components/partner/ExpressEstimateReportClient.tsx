@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
 import { Button, Card, Chip, EmptyState, Input, Picker } from "@/components/ui";
-import { Copy, Download, Hammer, Share2 } from "lucide-react";
+import { Camera, ChevronDown, Copy, Download, Hammer, Share2 } from "lucide-react";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
@@ -144,6 +144,7 @@ export function ExpressEstimateReportClient(props: {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [repairIds, setRepairIds] = useState<Set<string>>(new Set());
+  const [openItemId, setOpenItemId] = useState<string>("");
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [repairsOpen, setRepairsOpen] = useState(false);
@@ -175,7 +176,7 @@ export function ExpressEstimateReportClient(props: {
     if (typeof window === "undefined") return [] as Array<{ id: string; name: string; email?: string; phone?: string }>;
     try {
       const raw = window.localStorage.getItem("hw_props_client_v1") || "[]";
-      const arr = JSON.parse(raw) as Array<any>;
+      const arr = JSON.parse(raw) as unknown[];
       const out: Array<{ id: string; name: string; email?: string; phone?: string }> = [];
       const seen = new Set<string>();
       for (const p of Array.isArray(arr) ? arr : []) {
@@ -395,36 +396,88 @@ export function ExpressEstimateReportClient(props: {
                     <div className="grid gap-1 p-2">
                       {lane.items.map((item) => {
                         const on = selectedIds.has(item.id);
+                        const open = openItemId === item.id;
+                        const hasEvidence = !!item.evidence?.length;
                         return (
                           <div
                             key={item.id}
                             className={
-                              "w-full rounded-[calc(var(--hw-radius-lg)-8px)] border px-3 py-2 text-left transition " +
-                              (on
-                                ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.06)]"
-                                : "border-transparent hover:border-[var(--hw-line)] hover:bg-white")
+                              "overflow-hidden rounded-[calc(var(--hw-radius-lg)-8px)] border transition " +
+                              (open
+                                ? "border-[rgba(229,57,53,.20)] bg-[rgba(229,57,53,.04)]"
+                                : on
+                                  ? "border-[rgba(229,57,53,.18)] bg-white"
+                                  : "border-[var(--hw-line)] bg-white")
                             }
                           >
-                            <div className="flex flex-col gap-3">
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                  <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{item.label}</div>
-                                  {item.note ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
-                                </div>
-                                <div className="shrink-0 text-right">
-                                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
-                                  <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
-                                </div>
+                            <button
+                              type="button"
+                              className={
+                                "flex w-full items-start justify-between gap-3 px-3 py-3 text-left transition hover:bg-[var(--hw-soft)]"
+                              }
+                              onClick={() => {
+                                setOpenItemId((prev) => (prev === item.id ? "" : item.id));
+                              }}
+                              aria-expanded={open}
+                            >
+                              <div className="min-w-0">
+                                <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{item.label}</div>
+                                {item.note ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
                               </div>
 
-                              {item.evidence?.length ? (
-                                <div className="-mx-1 overflow-x-auto">
-                                  <div className="flex w-max gap-2 px-1 pb-1">
-                                    {item.evidence.map((ev) => (
+                              <div className="shrink-0">
+                                <div className="flex items-start gap-3">
+                                  <div className="text-right">
+                                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
+                                    <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className={
+                                        "inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold " +
+                                        (open
+                                          ? "border-[rgba(229,57,53,.22)] bg-white text-[var(--hw-red)]"
+                                          : "border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-muted)]")
+                                      }
+                                      title={hasEvidence ? "Expand to view evidence" : "Expand to view details"}
+                                    >
+                                      {hasEvidence ? <Camera className="h-3.5 w-3.5" /> : null}
+                                      <span>{hasEvidence ? "Evidence" : "Details"}</span>
+                                      <ChevronDown className={"h-3.5 w-3.5 transition " + (open ? "rotate-180" : "") } />
+                                    </div>
+
+                                    <Button
+                                      size="sm"
+                                      variant={on ? "secondary" : "primary"}
+                                      className="rounded-full px-3"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setSelectedIds((prev) => {
+                                          const next = new Set(prev);
+                                          if (next.has(item.id)) next.delete(item.id);
+                                          else next.add(item.id);
+                                          return next;
+                                        });
+                                      }}
+                                    >
+                                      {on ? "Selected" : "Select"}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+
+                            {open ? (
+                              <div className="border-t border-[rgba(17,24,39,.08)] bg-white px-3 pb-3 pt-3">
+                                {hasEvidence ? (
+                                  <div className="grid gap-2 sm:grid-cols-3">
+                                    {item.evidence!.slice(0, 6).map((ev) => (
                                       <button
                                         key={ev.src}
                                         type="button"
-                                        className="h-16 w-16 shrink-0 overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)]"
+                                        className="aspect-square w-full overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)]"
                                         onClick={() => setLightboxSrc(ev.src)}
                                         title={ev.caption || "Evidence"}
                                       >
@@ -432,40 +485,28 @@ export function ExpressEstimateReportClient(props: {
                                       </button>
                                     ))}
                                   </div>
-                                </div>
-                              ) : null}
+                                ) : (
+                                  <div className="text-xs text-[var(--hw-muted)]">No evidence photos available for this item.</div>
+                                )}
 
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Button
-                                  size="sm"
-                                  variant={on ? "secondary" : "primary"}
-                                  onClick={() => {
-                                    setSelectedIds((prev) => {
-                                      const next = new Set(prev);
-                                      if (next.has(item.id)) next.delete(item.id);
-                                      else next.add(item.id);
-                                      return next;
-                                    });
-                                  }}
-                                >
-                                  {on ? "Selected ✓" : "Select item"}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant={repairIds.has(item.id) ? "secondary" : "ghost"}
-                                  onClick={() => {
-                                    setRepairIds((prev) => {
-                                      const next = new Set(prev);
-                                      if (next.has(item.id)) next.delete(item.id);
-                                      else next.add(item.id);
-                                      return next;
-                                    });
-                                  }}
-                                >
-                                  {repairIds.has(item.id) ? "Repair ✓" : "Book repair"}
-                                </Button>
+                                <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant={repairIds.has(item.id) ? "secondary" : "ghost"}
+                                    onClick={() => {
+                                      setRepairIds((prev) => {
+                                        const next = new Set(prev);
+                                        if (next.has(item.id)) next.delete(item.id);
+                                        else next.add(item.id);
+                                        return next;
+                                      });
+                                    }}
+                                  >
+                                    {repairIds.has(item.id) ? "Repair ✓" : "Book repair"}
+                                  </Button>
+                                </div>
                               </div>
-                            </div>
+                            ) : null}
                           </div>
                         );
                       })}
@@ -677,8 +718,9 @@ export function ExpressEstimateReportClient(props: {
                                 },
                               }),
                             });
-                            const j = (await r.json().catch(() => null)) as any;
-                            if (!j?.ok) {
+                            const j = (await r.json().catch(() => null)) as unknown;
+                            const ok = !!(j && typeof j === "object" && (j as Record<string, unknown>).ok === true);
+                            if (!ok) {
                               setToast("Send failed.");
                               window.setTimeout(() => setToast(""), 2000);
                               return;
@@ -686,7 +728,7 @@ export function ExpressEstimateReportClient(props: {
                             // Also add to saved contacts store (local for now)
                             try {
                               const raw = window.localStorage.getItem("hw_props_client_v1") || "[]";
-                              const arr = (JSON.parse(raw) as any[]) || [];
+                              const arr = (JSON.parse(raw) as unknown[]) || [];
                               arr.unshift({
                                 clientName: name,
                                 clientEmail: shareEmail,
@@ -764,8 +806,9 @@ export function ExpressEstimateReportClient(props: {
                                 },
                               }),
                             });
-                            const j = (await r.json().catch(() => null)) as any;
-                            if (!j?.ok) {
+                            const j = (await r.json().catch(() => null)) as unknown;
+                            const ok = !!(j && typeof j === "object" && (j as Record<string, unknown>).ok === true);
+                            if (!ok) {
                               setToast("Send failed.");
                               window.setTimeout(() => setToast(""), 2000);
                               return;
@@ -817,13 +860,16 @@ export function ExpressEstimateReportClient(props: {
                                 recipient: {},
                               }),
                             });
-                            const j = (await r.json().catch(() => null)) as any;
-                            if (!j?.ok || !j?.url) {
+                            const j = (await r.json().catch(() => null)) as unknown;
+                            const rec = j && typeof j === "object" ? (j as Record<string, unknown>) : null;
+                            const ok = !!(rec && rec.ok === true);
+                            const nextUrl = rec && typeof rec.url === "string" ? rec.url : "";
+                            if (!ok || !nextUrl) {
                               setToast("Share link failed.");
                               window.setTimeout(() => setToast(""), 2200);
                               return;
                             }
-                            url = String(j.url);
+                            url = nextUrl;
                             setShareUrl(url);
                           }
                           await navigator.clipboard.writeText(url);
