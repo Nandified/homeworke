@@ -469,8 +469,8 @@ export function ExpressEstimateReportClient(props: {
                                     </div>
                                   </div>
 
-                                  {/* Row 2: Details + Actions (all aligned as one button group) */}
-                                  <div className="flex flex-wrap items-center justify-end gap-2 sm:flex-nowrap">
+                                  {/* Row 2: Details under the price (left), actions on the right */}
+                                  <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:justify-end">
                                     <div
                                       className={
                                         "inline-flex w-[98px] items-center justify-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold " +
