@@ -433,7 +433,7 @@ export function ExpressEstimateReportClient(props: {
 
                               <div className="shrink-0">
                                 <div className="flex items-start gap-3">
-                                  <div className="text-right">
+                                  <div className="w-[110px] text-right tabular-nums">
                                     <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
                                     <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
                                   </div>
@@ -446,10 +446,10 @@ export function ExpressEstimateReportClient(props: {
                                           ? "border-[rgba(229,57,53,.22)] bg-white text-[var(--hw-red)]"
                                           : "border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-muted)]")
                                       }
-                                      title={hasEvidence ? "Expand to view evidence" : "Expand to view details"}
+                                      title="Expand to view details"
                                     >
                                       {hasEvidence ? <Camera className="h-3.5 w-3.5" /> : null}
-                                      <span>{hasEvidence ? "Evidence" : "Details"}</span>
+                                      <span>Details</span>
                                       <ChevronDown className={"h-3.5 w-3.5 transition " + (open ? "rotate-180" : "") } />
                                     </div>
 
