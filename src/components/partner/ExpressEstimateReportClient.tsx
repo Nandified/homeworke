@@ -34,6 +34,7 @@ export function ExpressEstimateReportClient(props: {
   role: "PARTNER" | "PRO";
   reportId: string;
   stagedId?: string;
+  ownerName?: string;
 }) {
   function svgThumb(label: string, bg = "#fdecec", fg = "#b91c1c") {
     const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">\n  <rect x="0" y="0" width="96" height="96" rx="18" fill="${bg}"/>\n  <text x="48" y="52" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Arial" font-size="12" font-weight="700" fill="${fg}">${label}</text>\n</svg>`;
@@ -340,7 +341,7 @@ export function ExpressEstimateReportClient(props: {
             <div className="min-w-0">
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant Estimates</div>
               <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
-                Prepared For: <span className="font-semibold text-[var(--hw-ink)]">Owner Name</span>
+                Prepared For: <span className="font-semibold text-[var(--hw-ink)]">{props.ownerName || "—"}</span>
               </div>
               <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
                 Property Address: <span className="font-semibold text-[var(--hw-ink)]">{report ? report.address : "Report"}</span>

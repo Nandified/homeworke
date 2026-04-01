@@ -7,6 +7,7 @@ export default async function PartnerExpressEstimateReportPage(props: {
   const { id } = await props.params;
   const sp = (await props.searchParams) ?? {};
   const staged = typeof sp.staged === "string" ? sp.staged : undefined;
+  const ownerName = typeof sp.owner === "string" ? sp.owner : undefined;
 
-  return <ExpressEstimateReportClient basePath="/partner" role="PARTNER" reportId={id} stagedId={staged} />;
+  return <ExpressEstimateReportClient basePath="/partner" role="PARTNER" reportId={id} stagedId={staged} ownerName={ownerName} />;
 }

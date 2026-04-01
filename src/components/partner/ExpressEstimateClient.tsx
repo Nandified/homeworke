@@ -14,13 +14,14 @@ const STORAGE_KEYS = {
   clientProps: "hw_props_client_v1",
 } as const;
 
-type StoredProperty = { id: string; address: string; nickname?: string; createdAt: string };
+type StoredProperty = { id: string; address: string; nickname?: string; ownerName?: string; createdAt: string };
 
 type StoredClientProperty = {
   id: string;
   createdAt: string;
   address: string;
   nickname?: string;
+  ownerName?: string;
   propertyType?: string;
   clientName?: string;
   clientEmail?: string;
@@ -100,10 +101,13 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [propertyMode, setPropertyMode] = useState<"existing" | "new">("existing");
   const [propertyOwner, setPropertyOwner] = useState<"my" | "client">("my");
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
-  const [properties, setProperties] = useState<Array<{ id: string; label: string; address: string; kind: "my" | "client" }>>([]);
+  const [properties, setProperties] = useState<
+    Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string }>
+  >([]);
 
   const [newPropertyAddress, setNewPropertyAddress] = useState<string>("");
   const [newPropertyNickname, setNewPropertyNickname] = useState<string>("");
+  const [newOwnerName, setNewOwnerName] = useState<string>("");
   const [newClientName, setNewClientName] = useState<string>("");
   const [newClientEmail, setNewClientEmail] = useState<string>("");
   const [newClientPhone, setNewClientPhone] = useState<string>("");
@@ -155,19 +159,24 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       id: p.id,
       label: normalizeAddress(p.nickname || p.address),
       address: normalizeAddress(p.address),
+      ownerName: typeof p.ownerName === "string" ? normalizeAddress(p.ownerName) : undefined,
       kind: "my" as const,
     }));
     const localClient = readClientProperties().map((p) => ({
       id: p.id,
       label: normalizeAddress(p.nickname || p.address),
       address: normalizeAddress(p.address),
+      ownerName: typeof p.ownerName === "string" ? normalizeAddress(p.ownerName) : (typeof p.clientName === "string" ? normalizeAddress(p.clientName) : undefined),
       kind: "client" as const,
     }));
 
     setProperties((prev) => {
-      const merged = [...localMy, ...localClient];
+      const merged: Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string }> = [
+        ...localMy,
+        ...localClient,
+      ];
       const seen = new Set<string>();
-      const out: typeof merged = [];
+      const out: Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string }> = [];
       [...merged, ...prev].forEach((x) => {
         if (seen.has(x.id)) return;
         seen.add(x.id);
@@ -182,13 +191,14 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     fetch(url)
       .then((r) => r.json())
       .then((j) => {
-        const base = (j.properties || []) as Array<{ id?: string; nickname?: string; address?: string; clientProperty?: boolean }>;
+        const base = (j.properties || []) as Array<{ id?: string; nickname?: string; address?: string; clientProperty?: boolean; ownerName?: string; clientName?: string }>;
         const fromApi = base
           .filter((p) => p && typeof p.id === "string")
           .map((p) => ({
             id: String(p.id),
             label: normalizeAddress(p.nickname || p.address || ""),
             address: normalizeAddress(p.address || ""),
+            ownerName: normalizeAddress(p.ownerName || p.clientName || "") || undefined,
             kind: p.clientProperty ? ("client" as const) : ("my" as const),
           }))
           .filter((p) => p.address);
@@ -533,6 +543,13 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         placeholder="Property address (required)"
                       />
 
+                      <input
+                        className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
+                        value={newOwnerName}
+                        onChange={(e) => setNewOwnerName(e.target.value)}
+                        placeholder="Owner name (optional)"
+                      />
+
                       <div className="flex items-center justify-between gap-3">
                         <input
                           className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm"
@@ -555,6 +572,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                                 createdAt,
                                 address: addr,
                                 nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
+                                ownerName: normalizeAddress(newOwnerName || newClientName || "") || undefined,
                                 clientName: newClientName || undefined,
                                 clientEmail: newClientEmail || undefined,
                                 clientPhone: newClientPhone || undefined,
@@ -566,17 +584,25 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                                 createdAt,
                                 address: addr,
                                 nickname: newPropertyNickname ? normalizeAddress(newPropertyNickname) : undefined,
+                                ownerName: normalizeAddress(newOwnerName) || undefined,
                               };
                               writeCustomProperties([next, ...readCustomProperties()]);
                             }
 
-                            const p = { id, label: normalizeAddress(newPropertyNickname || addr), address: addr, kind: propertyOwner } as const;
+                            const p = {
+                              id,
+                              label: normalizeAddress(newPropertyNickname || addr),
+                              address: addr,
+                              ownerName: normalizeAddress(newOwnerName || newClientName || "") || undefined,
+                              kind: propertyOwner,
+                            } as const;
                             setProperties((prev) => [p, ...prev]);
                             setSelectedPropertyId(id);
                             setPropertyMode("existing");
 
                             setNewPropertyAddress("");
                             setNewPropertyNickname("");
+                            setNewOwnerName("");
                             setNewClientName("");
                             setNewClientEmail("");
                             setNewClientPhone("");
@@ -732,9 +758,11 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             {filteredReports.slice(0, 10).map((r) => {
               const selectedProp = properties.find((p) => p.id === selectedPropertyId) || null;
               const address = selectedProp?.address || r.address;
+              const ownerName = selectedProp?.ownerName || "";
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
               if (address) q.set("address", address);
+              if (ownerName) q.set("owner", ownerName);
               const href = `${props.basePath}/express-estimate/${encodeURIComponent(r.id)}${q.toString() ? `?${q.toString()}` : ""}`;
               return (
                 <div
