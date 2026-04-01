@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button, Card, Chip, Input, Picker, Textarea } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
@@ -121,6 +122,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const newClientName = useMemo(() => `${newClientFirstName} ${newClientLastName}`.trim(), [newClientFirstName, newClientLastName]);
 
   const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
+  const router = useRouter();
 
   const [reports, setReports] = useState<Report[]>(() => {
     const now = Date.now();
@@ -755,26 +757,17 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       const selectedProp = properties.find((p) => p.id === selectedPropertyId) || null;
                       const address = selectedProp?.address || "";
 
-                      // Demo behavior: immediately create a ready report row in the list so the user can open it.
+                      // Immediately take the user to the report results page (better UX + avoids confusion with demo rows).
                       const reportId = `rpt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-                      setReports((prev) => [
-                        {
-                          id: reportId,
-                          address: address || "New report",
-                          type: "Inspection",
-                          createdAt: new Date().toISOString(),
-                          status: "Ready",
-                        },
-                        ...prev,
-                      ]);
+                      const ownerName = selectedProp?.ownerName || "";
 
-                      setToast("Submitted ✓ Scroll down and click ‘Open report’.");
-                      window.setTimeout(() => setToast(""), 2600);
+                      const q = new URLSearchParams();
+                      q.set("staged", id);
+                      if (address) q.set("address", address);
+                      if (ownerName) q.set("owner", ownerName);
 
-                      // Nudge the user to the report list.
-                      try {
-                        document.getElementById("hw_reports")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      } catch {}
+                      setToast("Submitted ✓ Generating estimate…");
+                      router.push(`${props.basePath}/express-estimate/${encodeURIComponent(reportId)}?${q.toString()}`);
                     } catch {
                       setSubmitError("Submit failed. Please try again.");
                     } finally {

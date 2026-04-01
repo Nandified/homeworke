@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 import crypto from "node:crypto";
 
 import pdf from "pdf-parse";

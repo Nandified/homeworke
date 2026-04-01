@@ -8,6 +8,16 @@ export default async function ProExpressEstimateReportPage(props: {
   const sp = (await props.searchParams) ?? {};
   const staged = typeof sp.staged === "string" ? sp.staged : undefined;
   const ownerName = typeof sp.owner === "string" ? sp.owner : undefined;
+  const address = typeof sp.address === "string" ? sp.address : undefined;
 
-  return <ExpressEstimateReportClient basePath="/pro" role="PRO" reportId={id} stagedId={staged} ownerName={ownerName} />;
+  return (
+    <ExpressEstimateReportClient
+      basePath="/pro"
+      role="PRO"
+      reportId={id}
+      stagedId={staged}
+      ownerName={ownerName}
+      address={address}
+    />
+  );
 }

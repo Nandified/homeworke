@@ -35,6 +35,7 @@ export function ExpressEstimateReportClient(props: {
   reportId: string;
   stagedId?: string;
   ownerName?: string;
+  address?: string;
 }) {
   function svgThumb(label: string, bg = "#fdecec", fg = "#b91c1c") {
     const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">\n  <rect x="0" y="0" width="96" height="96" rx="18" fill="${bg}"/>\n  <text x="48" y="52" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Arial" font-size="12" font-weight="700" fill="${fg}">${label}</text>\n</svg>`;
@@ -63,6 +64,7 @@ export function ExpressEstimateReportClient(props: {
   }, []);
 
   const report = useMemo(() => demoReports.find((r) => r.id === props.reportId) || null, [demoReports, props.reportId]);
+  const effectiveAddress = report?.address || props.address || "";
 
   const [file, setFile] = useState<File | null>(null);
   const [notes, setNotes] = useState<string>("");
@@ -280,13 +282,14 @@ export function ExpressEstimateReportClient(props: {
 
     setAnalyzing(true);
     setAnalysisError("");
+    setToast("Analyzing with AI…");
 
     void (async () => {
       try {
         const fd = new FormData();
         fd.set("file", file);
         fd.set("notes", notes || "");
-        fd.set("location", report?.address || "");
+        fd.set("location", effectiveAddress || "");
 
         const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
         const j = (await r.json().catch(() => null)) as unknown;
@@ -298,7 +301,9 @@ export function ExpressEstimateReportClient(props: {
 
         const rec = j as Record<string, unknown>;
         if (rec.ok !== true) {
-          setAnalysisError(typeof rec.error === "string" ? rec.error : "Analyze failed.");
+          const detail = typeof rec.detail === "string" ? rec.detail : "";
+          const err = typeof rec.error === "string" ? rec.error : "Analyze failed.";
+          setAnalysisError(detail ? `${err}: ${detail}` : err);
           return;
         }
 
@@ -328,6 +333,7 @@ export function ExpressEstimateReportClient(props: {
         setAnalysisError("Analyze failed. Please try again.");
       } finally {
         setAnalyzing(false);
+        setToast("");
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -416,7 +422,7 @@ export function ExpressEstimateReportClient(props: {
                 Prepared For: <span className="font-semibold text-[var(--hw-ink)]">{props.ownerName || "—"}</span>
               </div>
               <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
-                Property Address: <span className="font-semibold text-[var(--hw-ink)]">{report ? report.address : "Report"}</span>
+                Property Address: <span className="font-semibold text-[var(--hw-ink)]">{effectiveAddress || "—"}</span>
               </div>
               {report ? null : (
                 <div className="mt-1 text-sm text-[var(--hw-muted)]">This report does not exist in demo data.</div>
