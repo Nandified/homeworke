@@ -273,6 +273,66 @@ export function ExpressEstimateReportClient(props: {
     return () => window.clearTimeout(t);
   }, []);
 
+  // When we have a staged PDF, analyze it and replace demo data.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!file) return;
+
+    setAnalyzing(true);
+    setAnalysisError("");
+
+    void (async () => {
+      try {
+        const fd = new FormData();
+        fd.set("file", file);
+        fd.set("notes", notes || "");
+        fd.set("location", report?.address || "");
+
+        const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
+        const j = (await r.json().catch(() => null)) as unknown;
+
+        if (!r.ok || !j || typeof j !== "object") {
+          setAnalysisError("Analyze failed. Please try again.");
+          return;
+        }
+
+        const rec = j as Record<string, unknown>;
+        if (rec.ok !== true) {
+          setAnalysisError(typeof rec.error === "string" ? rec.error : "Analyze failed.");
+          return;
+        }
+
+        const lanes = Array.isArray(rec.lanes) ? (rec.lanes as any[]) : [];
+        const normalized: ExtractedLane[] = lanes
+          .filter((l) => l && typeof l.title === "string" && Array.isArray(l.items))
+          .map((l) => ({
+            title: String(l.title),
+            items: (l.items as any[])
+              .filter((it) => it && typeof it.label === "string")
+              .map((it) => ({
+                id: typeof it.id === "string" ? it.id : `item_${Math.random().toString(36).slice(2, 10)}`,
+                label: String(it.label),
+                note: typeof it.note === "string" ? it.note : undefined,
+                range: typeof it.range === "string" ? it.range : undefined,
+                evidence: Array.isArray(it.evidence)
+                  ? it.evidence
+                      .filter((ev: any) => ev && typeof ev.src === "string")
+                      .map((ev: any) => ({ src: String(ev.src), caption: typeof ev.caption === "string" ? ev.caption : undefined }))
+                  : undefined,
+              })),
+          }));
+
+        if (normalized.length) setExtracted(normalized);
+        setAnalysisSummary(typeof rec.summary === "string" ? rec.summary : "");
+      } catch (e) {
+        setAnalysisError("Analyze failed. Please try again.");
+      } finally {
+        setAnalyzing(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file]);
+
   // Analysis is triggered during the upload/submit step (list page).
   // This page focuses on viewing results and downloading.
 
