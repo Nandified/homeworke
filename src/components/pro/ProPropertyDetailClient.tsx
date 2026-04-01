@@ -356,8 +356,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
           <div className="rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] p-4 text-sm text-[var(--hw-ink)]">
             <div className="font-extrabold text-[var(--hw-red)]">Warning: This can’t be undone.</div>
             <div className="mt-2 text-[var(--hw-muted)]">
-              You’re about to delete <span className="font-semibold text-[var(--hw-ink)]">{shortTitle(item)}</span> from your properties list.
-              This removes it from this device and will hide it from your portal.
+              You’re about to permanently delete <span className="font-semibold text-[var(--hw-ink)]">{shortTitle(item)}</span> from your account.
             </div>
           </div>
 
