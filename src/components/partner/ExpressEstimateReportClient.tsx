@@ -146,6 +146,7 @@ export function ExpressEstimateReportClient(props: {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [repairIds, setRepairIds] = useState<Set<string>>(new Set());
   const [openItemId, setOpenItemId] = useState<string>("");
+  const [totalsCollapsed, setTotalsCollapsed] = useState(false);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [repairsOpen, setRepairsOpen] = useState(false);
@@ -260,6 +261,17 @@ export function ExpressEstimateReportClient(props: {
       }
     })();
   }, [props.stagedId]);
+
+  // Collapse the totals bar on mobile after a short moment (shows full card on arrival, then gets out of the way).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isMobile = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+    if (!isMobile) return;
+
+    setTotalsCollapsed(false);
+    const t = window.setTimeout(() => setTotalsCollapsed(true), 2500);
+    return () => window.clearTimeout(t);
+  }, []);
 
   // Analysis is triggered during the upload/submit step (list page).
   // This page focuses on viewing results and downloading.
@@ -464,8 +476,8 @@ export function ExpressEstimateReportClient(props: {
                                   {/* Row 1: Price (on mobile, keep it nearer the content block) */}
                                   <div className="flex items-start justify-start sm:justify-end">
                                     <div className="w-[110px] shrink-0 text-left tabular-nums sm:text-right">
-                                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
-                                      <div className="text-[11px] text-[var(--hw-muted)]">{item.range || "—"}</div>
+                                      <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
+                                      <div className="text-xs font-semibold text-[var(--hw-muted)]">{item.range || "—"}</div>
                                     </div>
                                   </div>
 
@@ -603,46 +615,61 @@ export function ExpressEstimateReportClient(props: {
               {/* Sticky bottom Instant Estimate bar (content width) */}
               <div className="sticky bottom-4 mt-2">
                 <div className="rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white/95 p-4 shadow-[0_18px_48px_rgba(17,24,39,.14)] backdrop-blur">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <button
+                    type="button"
+                    className="flex w-full items-start justify-between gap-3 text-left"
+                    onClick={() => setTotalsCollapsed((v) => !v)}
+                    aria-expanded={!totalsCollapsed}
+                  >
                     <div className="min-w-0">
                       <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Instant Estimate Total</div>
                       <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">
                         {formatUSD(selected.length ? totals.selected : totals.full)}
                       </div>
-                      <div className="mt-1 text-xs text-[var(--hw-muted)]">
-                        {selected.length
-                          ? `Selected ${selected.length} item${selected.length === 1 ? "" : "s"}`
-                          : `All items (${allItems.length})`}
+                      {totalsCollapsed ? null : (
+                        <div className="mt-1 text-xs text-[var(--hw-muted)]">
+                          {selected.length
+                            ? `Selected ${selected.length} item${selected.length === 1 ? "" : "s"}`
+                            : `All items (${allItems.length})`}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="shrink-0 pt-1 text-[var(--hw-muted)]">
+                      <ChevronDown className={"h-5 w-5 transition " + (totalsCollapsed ? "" : "rotate-180")} />
+                    </div>
+                  </button>
+
+                  {totalsCollapsed ? null : (
+                    <>
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <Button size="sm" variant="secondary" disabled={selected.length === 0} onClick={() => setDrawerOpen(true)}>
+                          Selected ({selected.length})
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={selected.length === 0}
+                          onClick={() => setSelectedIds(new Set())}
+                        >
+                          Clear
+                        </Button>
+                        <Button
+                          size="sm"
+                          disabled={!report || extracted.length === 0 || downloading !== ""}
+                          onClick={() => setDownloadOpen(true)}
+                          className="gap-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          {downloading ? "Preparing…" : "Download report"}
+                        </Button>
                       </div>
-                    </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button size="sm" variant="secondary" disabled={selected.length === 0} onClick={() => setDrawerOpen(true)}>
-                        Selected ({selected.length})
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        disabled={selected.length === 0}
-                        onClick={() => setSelectedIds(new Set())}
-                      >
-                        Clear
-                      </Button>
-                      <Button
-                        size="sm"
-                        disabled={!report || extracted.length === 0 || downloading !== ""}
-                        onClick={() => setDownloadOpen(true)}
-                        className="gap-2"
-                      >
-                        <Download className="h-4 w-4" />
-                        {downloading ? "Preparing…" : "Download report"}
-                      </Button>
-                    </div>
-                  </div>
-
-                  {selected.length === 0 ? (
-                    <div className="mt-3 text-xs text-[var(--hw-muted)]">Tip: Select items to download a shorter report for clients.</div>
-                  ) : null}
+                      {selected.length === 0 ? (
+                        <div className="mt-3 text-xs text-[var(--hw-muted)]">Tip: Select items to download a shorter report for clients.</div>
+                      ) : null}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
