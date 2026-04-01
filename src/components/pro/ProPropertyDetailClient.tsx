@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { UserAvatar, useStoredProfile } from "@/components/user-avatar";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
@@ -34,6 +35,7 @@ function normalizeAddressKey(s: string) {
 // (intentionally blank)
 
 export function ProPropertyDetailClient(props: { property: ProPropertyDetail; openEdit?: boolean }) {
+  const router = useRouter();
   const [item, setItem] = React.useState<ProPropertyDetail>(props.property);
   const profile = useStoredProfile();
   const [editOpen, setEditOpen] = React.useState(!!props.openEdit);
@@ -44,6 +46,10 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
 
   const [googleOpen, setGoogleOpen] = React.useState(false);
   const [googleLoading, setGoogleLoading] = React.useState(false);
+
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [deleteText, setDeleteText] = React.useState("");
+  const deleteArmed = deleteText.trim().toUpperCase() === "DELETE";
   const [googleErr, setGoogleErr] = React.useState("");
   const [googlePhotos, setGooglePhotos] = React.useState<Array<{ ref: string; width: number; height: number }>>([]);
 
@@ -336,6 +342,71 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
         </div>
       </Modal>
 
+      {/* Delete confirm modal */}
+      <Modal
+        open={deleteOpen}
+        onClose={() => {
+          setDeleteOpen(false);
+          setDeleteText("");
+        }}
+        title="Delete property"
+        mobilePlacement="center"
+      >
+        <div className="grid gap-4">
+          <div className="rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] p-4 text-sm text-[var(--hw-ink)]">
+            <div className="font-extrabold text-[var(--hw-red)]">Warning: This can’t be undone.</div>
+            <div className="mt-2 text-[var(--hw-muted)]">
+              You’re about to delete <span className="font-semibold text-[var(--hw-ink)]">{shortTitle(item)}</span> from your properties list.
+              This removes it from this device and will hide it from your portal.
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Type DELETE to confirm</Label>
+            <Input value={deleteText} onChange={(e) => setDeleteText(e.target.value)} placeholder="DELETE" />
+            <div className="text-xs text-[var(--hw-muted)]">Second warning: deleting a property may remove its service history from your view.</div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="secondary" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!deleteArmed}
+              onClick={() => {
+                try {
+                  // Remove from stored property lists
+                  const removeFromList = (key: string) => {
+                    try {
+                      const raw = window.localStorage.getItem(key) || "[]";
+                      const arr = JSON.parse(raw) as Array<{ id?: string }>;
+                      const next = Array.isArray(arr) ? arr.filter((p) => String(p?.id || "") !== String(item.id)) : [];
+                      window.localStorage.setItem(key, JSON.stringify(next));
+                    } catch {}
+                  };
+
+                  removeFromList("hw_props_custom_v1");
+                  removeFromList("hw_props_client_v1");
+
+                  // Remove per-property overrides
+                  window.localStorage.removeItem(`hw_prop_nickname_v1:${item.id}`);
+                  window.localStorage.removeItem(`hw_prop_photo_v1:${item.id}`);
+
+                  // Remove address cache
+                  if (addrKey) window.localStorage.removeItem(addrKey);
+                } catch {}
+
+                setDeleteOpen(false);
+                router.push(withDemo("/pro/properties"));
+              }}
+            >
+              Permanently delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       {/* Edit modal */}
       <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit property">
         <div className="grid gap-4">
@@ -421,35 +492,49 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2">
-            <Button variant="secondary" onClick={() => setEditOpen(false)}>
-              Cancel
-            </Button>
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <Button
+              variant="ghost"
+              className="text-[var(--hw-red)]"
               onClick={() => {
-                try {
-                  window.localStorage.setItem(`hw_prop_nickname_v1:${item.id}`, nickname);
-                } catch {}
-                setItem((p) => ({ ...p, nickname }));
-
-                try {
-                  if (photoUrl) window.localStorage.setItem(`hw_prop_photo_v1:${item.id}`, photoUrl);
-                  else window.localStorage.removeItem(`hw_prop_photo_v1:${item.id}`);
-                } catch {}
-
-                // Also cache by normalized address (fast repeat loads across the portal).
-                if (addrKey) {
-                  try {
-                    if (photoUrl) window.localStorage.setItem(addrKey, photoUrl);
-                    else window.localStorage.removeItem(addrKey);
-                  } catch {}
-                }
-
                 setEditOpen(false);
+                setDeleteText("");
+                window.setTimeout(() => setDeleteOpen(true), 20);
               }}
             >
-              Save
+              Delete property
             </Button>
+
+            <div className="flex items-center justify-end gap-2">
+              <Button variant="secondary" onClick={() => setEditOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  try {
+                    window.localStorage.setItem(`hw_prop_nickname_v1:${item.id}`, nickname);
+                  } catch {}
+                  setItem((p) => ({ ...p, nickname }));
+
+                  try {
+                    if (photoUrl) window.localStorage.setItem(`hw_prop_photo_v1:${item.id}`, photoUrl);
+                    else window.localStorage.removeItem(`hw_prop_photo_v1:${item.id}`);
+                  } catch {}
+
+                  // Also cache by normalized address (fast repeat loads across the portal).
+                  if (addrKey) {
+                    try {
+                      if (photoUrl) window.localStorage.setItem(addrKey, photoUrl);
+                      else window.localStorage.removeItem(addrKey);
+                    } catch {}
+                  }
+
+                  setEditOpen(false);
+                }}
+              >
+                Save
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>
