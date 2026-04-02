@@ -129,7 +129,7 @@ export function ExpressEstimateReportClient(props: {
     }
   });
 
-  const isUploadedReport = !!props.stagedId || !!file || wasUploaded;
+  const isUploadedReport = !!props.stagedId || files.length > 0 || wasUploaded;
 
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string>("");

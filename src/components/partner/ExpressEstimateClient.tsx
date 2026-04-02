@@ -198,7 +198,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   }, [notes]);
 
   const step2Completed = !!selectedPropertyId && step !== 2;
-  const notesCompletedVisual = notesCompleted && !!file && !!selectedPropertyId;
+  const notesCompletedVisual = notesCompleted && files.length > 0 && !!selectedPropertyId;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -393,7 +393,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               </button>
 
               {step === 1 ? (
-                <div className={"px-4 pb-4 " + (file ? "bg-[rgba(229,57,53,.05)]" : "") }>
+                <div className={"px-4 pb-4 " + (files.length ? "bg-[rgba(229,57,53,.05)]" : "") }>
                   <label
                     className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] p-4 hover:bg-white"
                     onDragEnter={(e) => {
@@ -477,11 +477,11 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 type="button"
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
-                  (!file ? "opacity-60 " : "") +
+                  (!files.length ? "opacity-60 " : "") +
                   (step2Completed ? "bg-[rgba(229,57,53,.05)]" : "")
                 }
                 onClick={() => {
-                  if (!file) return;
+                  if (!files.length) return;
                   setStep(2);
                 }}
               >
@@ -494,7 +494,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                     {selectedPropertyId ? <div className="text-xs font-semibold text-emerald-700">✓</div> : null}
                   </div>
                   <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                    {selectedProperty ? selectedProperty.address : file ? "Choose the property context for this report." : "Upload a PDF first."}
+                    {selectedProperty ? selectedProperty.address : files.length ? "Choose the property context for this report." : "Upload file(s) first."}
                   </div>
                 </div>
 
@@ -507,7 +507,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        if (!file) return;
+                        if (!files.length) return;
                         setPropertyMode("existing");
                         setStep(2);
                       }}
@@ -738,7 +738,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 type="button"
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
-                  (!file || !selectedPropertyId ? "opacity-60 " : "")
+                  (!files.length || !selectedPropertyId ? "opacity-60 " : "")
                 }
                 onClick={() => {
                   // Notes are optional. Start collapsed; user can expand if needed.
