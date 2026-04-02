@@ -1048,7 +1048,7 @@ export function ExpressEstimateReportClient(props: {
                         <Button
                           size="sm"
                           variant="secondary"
-                          className="rounded-full px-3"
+                          className="rounded-full px-3 min-w-[92px]"
                           onClick={() => {
                             const ids = lane.items.map((it) => it.id);
                             const allOn = ids.length > 0 && ids.every((id) => selectedIds.has(id));
@@ -1068,7 +1068,7 @@ export function ExpressEstimateReportClient(props: {
                         <Button
                           size="sm"
                           variant="secondary"
-                          className="rounded-full px-3"
+                          className="rounded-full px-3 min-w-[120px]"
                           onClick={() => {
                             const ids = lane.items.filter((it) => it.pricingMode !== "Quote-only").map((it) => it.id);
                             if (!ids.length) return;
