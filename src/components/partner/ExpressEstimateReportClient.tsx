@@ -640,6 +640,11 @@ export function ExpressEstimateReportClient(props: {
                   </div>
                 </div>
               ) : null}
+              {expiresAt && new Date(expiresAt).getTime() < Date.now() ? (
+                <div className="mt-2 text-xs font-semibold text-[var(--hw-red)]">
+                  This Instant Estimate has expired. Re-run to refresh pricing.
+                </div>
+              ) : null}
               {analysisSummary ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
             </div>
 
