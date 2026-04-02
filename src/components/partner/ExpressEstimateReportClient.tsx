@@ -1043,6 +1043,8 @@ export function ExpressEstimateReportClient(props: {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2">
+                        {/* Spacer so header actions line up with per-item action columns (Details pill width) */}
+                        <div className="hidden sm:block w-[98px]" aria-hidden="true" />
                         <Button
                           size="sm"
                           variant="secondary"
