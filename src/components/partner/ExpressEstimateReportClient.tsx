@@ -115,6 +115,7 @@ export function ExpressEstimateReportClient(props: {
   const effectiveOwnerName = props.ownerName || "";
 
   const [file, setFile] = useState<File | null>(null);
+  const [forceNextRun, setForceNextRun] = useState(false);
   const [notes, setNotes] = useState<string>("");
 
   // Once the staged file is consumed we delete it, so on refresh `props.stagedId` is gone.
@@ -482,6 +483,9 @@ export function ExpressEstimateReportClient(props: {
           if (sp.get("force") === "1") fd.set("force", "1");
         } catch {}
 
+        // Force this run when triggered by the Re-run button.
+        if (forceNextRun) fd.set("force", "1");
+
         const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
 
         // Try JSON first; if the platform returns HTML/text on error, fall back to text so we can show *some* reason.
@@ -607,6 +611,7 @@ export function ExpressEstimateReportClient(props: {
         setAnalysisStage("");
         setAnalysisProgress(null);
         setToast("");
+        setForceNextRun(false);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -785,58 +790,19 @@ export function ExpressEstimateReportClient(props: {
                     if (!window.confirm("Re-run this estimate and refresh pricing?")) return;
                     if (!window.confirm("Confirm re-run: this will overwrite the saved pricing for this report.")) return;
 
-                    setAnalyzing(true);
-                    setAnalysisError("");
-                    setAnalysisStage("Re-running estimate…");
-                    setAnalysisProgress(null);
-
-                    void (async () => {
-                      try {
-                        const fd = new FormData();
-                        fd.set("cacheKey", cacheKey);
-                        fd.set("force", "1");
-                        const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
-                        const j = await r.json().catch(() => null);
-                        if (!r.ok || !j || typeof j !== "object") {
-                          const detail = (j as any)?.detail || (j as any)?.error || "";
-                          setAnalysisError(detail ? `Analyze failed (${r.status}): ${detail}` : `Analyze failed (${r.status}).`);
-                          setExtracted([]);
-                          return;
-                        }
-                        const rec = j as any;
-                        if (rec.ok !== true) {
-                          const detail = typeof rec.detail === "string" ? rec.detail : "";
-                          const err = typeof rec.error === "string" ? rec.error : "Analyze failed.";
-                          setAnalysisError(detail ? `${err}: ${detail}` : err);
-                          setExtracted([]);
-                          return;
-                        }
-                        const lanes = Array.isArray(rec.lanes) ? rec.lanes : [];
-                        const normalized: ExtractedLane[] = lanes
-                          .filter((l: any) => l && typeof l.title === "string" && Array.isArray(l.items))
-                          .map((l: any) => ({
-                            title: String(l.title),
-                            items: (l.items as any[])
-                              .filter((it) => it && typeof it.label === "string")
-                              .map((it) => ({
-                                id: typeof it.id === "string" ? it.id : `item_${Math.random().toString(36).slice(2, 10)}`,
-                                label: String(it.label),
-                                note: typeof it.note === "string" ? it.note : undefined,
-                                range: typeof it.range === "string" ? it.range : undefined,
-                                price: typeof it.price === "number" ? it.price : undefined,
-                              })),
-                          }));
-                        if (normalized.length) setExtracted(normalized);
-                        setAnalysisSummary(typeof rec.summary === "string" ? rec.summary : "");
-                      } catch {
-                        setAnalysisError("Analyze failed. Please try again.");
-                        setExtracted([]);
-                      } finally {
-                        setAnalyzing(false);
-                        setAnalysisStage("");
-                        setAnalysisProgress(null);
-                      }
-                    })();
+                    // The server-side cache rerun requires DB persistence; in this pilot
+                    // environment it's not always available. So we force a rerun by asking
+                    // for the PDF again and re-extracting text client-side.
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = "application/pdf";
+                    input.onchange = () => {
+                      const f = input.files?.[0] || null;
+                      if (!f) return;
+                      setForceNextRun(true);
+                      setFile(f);
+                    };
+                    input.click();
                   }}
                   className="gap-2 whitespace-nowrap px-3"
                 >
