@@ -1,36 +1,619 @@
 {
   "version": "2026-04-02",
   "currency": "USD",
-  "region": { "country": "US", "state": "IL", "metro": "Chicago-Naperville-Elgin" },
+  "region": {
+    "country": "US",
+    "state": "IL",
+    "metro": "Chicago-Naperville-Elgin"
+  },
   "defaultGuardrails": {
     "minTripCharge": 250,
     "minBillableHours": 1,
-    "hourlyRate": { "min": 95, "max": 185 }
+    "hourlyRate": {
+      "min": 95,
+      "max": 185
+    }
   },
   "trades": [
-    { "tradeId": "handyman", "name": "Handyman / General Repairs", "guardrails": { "minTripCharge": 200, "minBillableHours": 1, "hourlyRate": { "min": 85, "max": 140 }, "smallJobCeiling": 400 } },
-    { "tradeId": "electrical", "name": "Electrical", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 110, "max": 225 }, "smallJobCeiling": 500 } },
-    { "tradeId": "plumbing", "name": "Plumbing", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 120, "max": 250 }, "smallJobCeiling": 600 } },
-    { "tradeId": "hvac", "name": "HVAC", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 120, "max": 250 }, "smallJobCeiling": 650 } },
-    { "tradeId": "roofing", "name": "Roofing", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 110, "max": 225 }, "smallJobCeiling": 700 } },
-    { "tradeId": "masonry", "name": "Masonry / Tuckpointing", "guardrails": { "minTripCharge": 300, "minBillableHours": 2, "hourlyRate": { "min": 120, "max": 260 }, "smallJobCeiling": 900 } },
-    { "tradeId": "painting", "name": "Painting", "guardrails": { "minTripCharge": 200, "minBillableHours": 2, "hourlyRate": { "min": 75, "max": 150 }, "smallJobCeiling": 500 } },
-    { "tradeId": "drywall", "name": "Drywall", "guardrails": { "minTripCharge": 200, "minBillableHours": 2, "hourlyRate": { "min": 80, "max": 160 }, "smallJobCeiling": 550 } },
-    { "tradeId": "tile", "name": "Tile", "guardrails": { "minTripCharge": 250, "minBillableHours": 2, "hourlyRate": { "min": 90, "max": 180 }, "smallJobCeiling": 900 } },
-    { "tradeId": "flooring", "name": "Flooring", "guardrails": { "minTripCharge": 250, "minBillableHours": 2, "hourlyRate": { "min": 85, "max": 175 }, "smallJobCeiling": 700 } },
-    { "tradeId": "windows_doors", "name": "Windows / Doors", "guardrails": { "minTripCharge": 250, "minBillableHours": 2, "hourlyRate": { "min": 95, "max": 190 }, "smallJobCeiling": 800 } },
-    { "tradeId": "gutters", "name": "Gutters / Downspouts", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 95, "max": 175 }, "smallJobCeiling": 650 } },
-    { "tradeId": "gutters_cleaning", "name": "Gutter Cleaning", "guardrails": { "minTripCharge": 200, "minBillableHours": 1, "hourlyRate": { "min": 85, "max": 160 }, "smallJobCeiling": 350 } },
-    { "tradeId": "landscaping", "name": "Landscaping / Yard", "guardrails": { "minTripCharge": 200, "minBillableHours": 2, "hourlyRate": { "min": 75, "max": 150 }, "smallJobCeiling": 600 } },
-    { "tradeId": "fencing", "name": "Fencing", "guardrails": { "minTripCharge": 250, "minBillableHours": 2, "hourlyRate": { "min": 85, "max": 175 }, "smallJobCeiling": 900 } },
-    { "tradeId": "garage_door", "name": "Garage Door", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 110, "max": 225 }, "smallJobCeiling": 900 } },
-    { "tradeId": "locksmith", "name": "Locksmith", "guardrails": { "minTripCharge": 200, "minBillableHours": 1, "hourlyRate": { "min": 95, "max": 190 }, "smallJobCeiling": 500 } },
-    { "tradeId": "pest_control", "name": "Pest Control", "guardrails": { "minTripCharge": 200, "minBillableHours": 1, "hourlyRate": { "min": 90, "max": 175 }, "smallJobCeiling": 500 } },
-    { "tradeId": "power_washing", "name": "Power Washing", "guardrails": { "minTripCharge": 200, "minBillableHours": 1, "hourlyRate": { "min": 75, "max": 150 }, "smallJobCeiling": 450 } },
-    { "tradeId": "concrete", "name": "Concrete", "guardrails": { "minTripCharge": 350, "minBillableHours": 2, "hourlyRate": { "min": 120, "max": 240 }, "smallJobCeiling": 1200 } },
-    { "tradeId": "grading", "name": "Grading / Drainage", "guardrails": { "minTripCharge": 300, "minBillableHours": 2, "hourlyRate": { "min": 110, "max": 225 }, "smallJobCeiling": 1100 } },
-    { "tradeId": "tree_service", "name": "Tree Service", "guardrails": { "minTripCharge": 300, "minBillableHours": 2, "hourlyRate": { "min": 120, "max": 240 }, "smallJobCeiling": 1500 } },
-    { "tradeId": "mold_remediation", "name": "Mold Remediation", "guardrails": { "minTripCharge": 500, "minBillableHours": 2, "hourlyRate": { "min": 150, "max": 325 }, "smallJobCeiling": 2500 } },
-    { "tradeId": "admin_compliance", "name": "Admin / Compliance (No pricing)", "guardrails": { "minTripCharge": 0, "minBillableHours": 0, "hourlyRate": { "min": 0, "max": 0 }, "smallJobCeiling": 0, "noPrice": true } }
+    {
+      "tradeId": "handyman",
+      "name": "Handyman / General Repairs",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 85,
+          "max": 140
+        },
+        "smallJobCeiling": 400
+      }
+    },
+    {
+      "tradeId": "electrical",
+      "name": "Electrical",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 110,
+          "max": 225
+        },
+        "smallJobCeiling": 500
+      }
+    },
+    {
+      "tradeId": "plumbing",
+      "name": "Plumbing",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 120,
+          "max": 250
+        },
+        "smallJobCeiling": 600
+      }
+    },
+    {
+      "tradeId": "hvac",
+      "name": "HVAC",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 120,
+          "max": 250
+        },
+        "smallJobCeiling": 650
+      }
+    },
+    {
+      "tradeId": "roofing",
+      "name": "Roofing",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 110,
+          "max": 225
+        },
+        "smallJobCeiling": 700
+      }
+    },
+    {
+      "tradeId": "masonry",
+      "name": "Masonry / Tuckpointing",
+      "guardrails": {
+        "minTripCharge": 300,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 120,
+          "max": 260
+        },
+        "smallJobCeiling": 900
+      }
+    },
+    {
+      "tradeId": "painting",
+      "name": "Painting",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 75,
+          "max": 150
+        },
+        "smallJobCeiling": 500
+      }
+    },
+    {
+      "tradeId": "flooring",
+      "name": "Flooring",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 85,
+          "max": 175
+        },
+        "smallJobCeiling": 700
+      }
+    },
+    {
+      "tradeId": "windows_doors",
+      "name": "Windows / Doors",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 95,
+          "max": 190
+        },
+        "smallJobCeiling": 800
+      }
+    },
+    {
+      "tradeId": "gutters",
+      "name": "Gutters / Downspouts",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 95,
+          "max": 175
+        },
+        "smallJobCeiling": 650
+      }
+    },
+    {
+      "tradeId": "admin_compliance",
+      "name": "Admin / Compliance (No pricing)",
+      "guardrails": {
+        "minTripCharge": 0,
+        "minBillableHours": 0,
+        "hourlyRate": {
+          "min": 0,
+          "max": 0
+        },
+        "smallJobCeiling": 0,
+        "noPrice": true
+      }
+    },
+    {
+      "tradeId": "appliance_repair",
+      "name": "Appliance Repair",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 110,
+          "max": 220
+        },
+        "smallJobCeiling": 650
+      }
+    },
+    {
+      "tradeId": "carpentry",
+      "name": "Carpentry",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 90,
+          "max": 180
+        },
+        "smallJobCeiling": 700
+      }
+    },
+    {
+      "tradeId": "concrete",
+      "name": "Concrete",
+      "guardrails": {
+        "minTripCharge": 350,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 120,
+          "max": 240
+        },
+        "smallJobCeiling": 1200
+      }
+    },
+    {
+      "tradeId": "decking",
+      "name": "Deck / Exterior Carpentry",
+      "guardrails": {
+        "minTripCharge": 300,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 95,
+          "max": 190
+        },
+        "smallJobCeiling": 900
+      }
+    },
+    {
+      "tradeId": "demolition",
+      "name": "Demolition / Haul-away",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 90,
+          "max": 175
+        },
+        "smallJobCeiling": 900
+      }
+    },
+    {
+      "tradeId": "drywall",
+      "name": "Drywall",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 80,
+          "max": 160
+        },
+        "smallJobCeiling": 550
+      }
+    },
+    {
+      "tradeId": "electrical_low_voltage",
+      "name": "Low Voltage / AV",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 90,
+          "max": 175
+        },
+        "smallJobCeiling": 500
+      }
+    },
+    {
+      "tradeId": "electrical_generator",
+      "name": "Generator (Electrical)",
+      "guardrails": {
+        "minTripCharge": 350,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 125,
+          "max": 260
+        },
+        "smallJobCeiling": 1200
+      }
+    },
+    {
+      "tradeId": "fencing",
+      "name": "Fencing",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 85,
+          "max": 175
+        },
+        "smallJobCeiling": 900
+      }
+    },
+    {
+      "tradeId": "fireplace",
+      "name": "Fireplace / Chimney Service",
+      "guardrails": {
+        "minTripCharge": 300,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 120,
+          "max": 240
+        },
+        "smallJobCeiling": 900
+      }
+    },
+    {
+      "tradeId": "garage_door",
+      "name": "Garage Door",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 110,
+          "max": 225
+        },
+        "smallJobCeiling": 900
+      }
+    },
+    {
+      "tradeId": "gas_fitter",
+      "name": "Gas Line / Gas Fitting",
+      "guardrails": {
+        "minTripCharge": 300,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 130,
+          "max": 275
+        },
+        "smallJobCeiling": 1200
+      }
+    },
+    {
+      "tradeId": "general_contracting",
+      "name": "General Contractor",
+      "guardrails": {
+        "minTripCharge": 300,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 110,
+          "max": 225
+        },
+        "smallJobCeiling": 1200
+      }
+    },
+    {
+      "tradeId": "grading",
+      "name": "Grading / Drainage",
+      "guardrails": {
+        "minTripCharge": 300,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 110,
+          "max": 225
+        },
+        "smallJobCeiling": 1100
+      }
+    },
+    {
+      "tradeId": "gutters_cleaning",
+      "name": "Gutter Cleaning",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 85,
+          "max": 160
+        },
+        "smallJobCeiling": 350
+      }
+    },
+    {
+      "tradeId": "insulation",
+      "name": "Insulation",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 90,
+          "max": 180
+        },
+        "smallJobCeiling": 900
+      }
+    },
+    {
+      "tradeId": "landscaping",
+      "name": "Landscaping / Yard",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 75,
+          "max": 150
+        },
+        "smallJobCeiling": 600
+      }
+    },
+    {
+      "tradeId": "locksmith",
+      "name": "Locksmith",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 95,
+          "max": 190
+        },
+        "smallJobCeiling": 500
+      }
+    },
+    {
+      "tradeId": "mold_remediation",
+      "name": "Mold Remediation",
+      "guardrails": {
+        "minTripCharge": 500,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 150,
+          "max": 325
+        },
+        "smallJobCeiling": 2500
+      }
+    },
+    {
+      "tradeId": "moving_storage",
+      "name": "Moving / Storage",
+      "guardrails": {
+        "minTripCharge": 0,
+        "minBillableHours": 0,
+        "hourlyRate": {
+          "min": 0,
+          "max": 0
+        },
+        "smallJobCeiling": 0,
+        "noPrice": true
+      }
+    },
+    {
+      "tradeId": "pest_control",
+      "name": "Pest Control",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 90,
+          "max": 175
+        },
+        "smallJobCeiling": 500
+      }
+    },
+    {
+      "tradeId": "plumbing_drain",
+      "name": "Drain / Sewer (Plumbing)",
+      "guardrails": {
+        "minTripCharge": 300,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 140,
+          "max": 300
+        },
+        "smallJobCeiling": 1200
+      }
+    },
+    {
+      "tradeId": "plumbing_waterproofing",
+      "name": "Basement Waterproofing",
+      "guardrails": {
+        "minTripCharge": 500,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 150,
+          "max": 325
+        },
+        "smallJobCeiling": 3500
+      }
+    },
+    {
+      "tradeId": "power_washing",
+      "name": "Power Washing",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 75,
+          "max": 150
+        },
+        "smallJobCeiling": 450
+      }
+    },
+    {
+      "tradeId": "remodel_bath",
+      "name": "Bathroom Remodel",
+      "guardrails": {
+        "minTripCharge": 500,
+        "minBillableHours": 4,
+        "hourlyRate": {
+          "min": 125,
+          "max": 260
+        },
+        "smallJobCeiling": 5000
+      }
+    },
+    {
+      "tradeId": "remodel_kitchen",
+      "name": "Kitchen Remodel",
+      "guardrails": {
+        "minTripCharge": 750,
+        "minBillableHours": 4,
+        "hourlyRate": {
+          "min": 125,
+          "max": 260
+        },
+        "smallJobCeiling": 8000
+      }
+    },
+    {
+      "tradeId": "roofing_flat",
+      "name": "Flat Roof",
+      "guardrails": {
+        "minTripCharge": 350,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 120,
+          "max": 240
+        },
+        "smallJobCeiling": 1500
+      }
+    },
+    {
+      "tradeId": "security",
+      "name": "Security Systems",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 90,
+          "max": 175
+        },
+        "smallJobCeiling": 650
+      }
+    },
+    {
+      "tradeId": "siding",
+      "name": "Siding",
+      "guardrails": {
+        "minTripCharge": 300,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 110,
+          "max": 225
+        },
+        "smallJobCeiling": 1200
+      }
+    },
+    {
+      "tradeId": "snow_removal",
+      "name": "Snow Removal",
+      "guardrails": {
+        "minTripCharge": 200,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 75,
+          "max": 150
+        },
+        "smallJobCeiling": 500
+      }
+    },
+    {
+      "tradeId": "solar",
+      "name": "Solar",
+      "guardrails": {
+        "minTripCharge": 500,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 150,
+          "max": 325
+        },
+        "smallJobCeiling": 2500
+      }
+    },
+    {
+      "tradeId": "structural_engineer",
+      "name": "Structural Engineer (Inspection)",
+      "guardrails": {
+        "minTripCharge": 350,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 175,
+          "max": 350
+        },
+        "smallJobCeiling": 0
+      }
+    },
+    {
+      "tradeId": "tile",
+      "name": "Tile",
+      "guardrails": {
+        "minTripCharge": 250,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 90,
+          "max": 180
+        },
+        "smallJobCeiling": 900
+      }
+    },
+    {
+      "tradeId": "tree_service",
+      "name": "Tree Service",
+      "guardrails": {
+        "minTripCharge": 300,
+        "minBillableHours": 2,
+        "hourlyRate": {
+          "min": 120,
+          "max": 240
+        },
+        "smallJobCeiling": 1500
+      }
+    },
+    {
+      "tradeId": "water_heater",
+      "name": "Water Heater",
+      "guardrails": {
+        "minTripCharge": 300,
+        "minBillableHours": 1,
+        "hourlyRate": {
+          "min": 130,
+          "max": 275
+        },
+        "smallJobCeiling": 1500
+      }
+    }
   ]
 }

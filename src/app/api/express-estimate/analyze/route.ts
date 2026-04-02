@@ -161,36 +161,94 @@ function midpointFromRange(range: string): number | null {
   return parseMoney(r);
 }
 
-function fillMissingRange(label: string, location: string): string {
-  const l = normalizeLabel(label);
-  // Lightweight fallback ranges to avoid $0 totals when the model omits pricing.
-  // These are intentionally broad.
-  const rules: Array<{ re: RegExp; range: string }> = [
-    // Roof / chimney (split into more specific buckets to avoid identical pricing everywhere)
-    { re: /chimney\s+cap|install\s+cap|missing\s+cap/, range: "$180–$750" },
-    { re: /chimney\s+cricket|install\s+cricket/, range: "$600–$2,400" },
-    { re: /chimney\s+flashing|counter\s+flashing|step\s+flashing/, range: "$350–$1,800" },
-    { re: /roof\s+flashing|flashing\s+install|flashing\s+repair/, range: "$250–$1,500" },
-    { re: /replace\s+missing\s+shingles|missing\s+shingles|shingle\s+repair/, range: "$200–$1,200" },
-    { re: /roof\s+sheathing|sheathing\s+repair|decking/, range: "$900–$4,500" },
-    { re: /roof\b|roofing|shingles|soffit|fascia/, range: "$450–$3,200" },
+type TradeGuardrail = {
+  tradeId: string;
+  name?: string;
+  guardrails: {
+    minTripCharge: number;
+    minBillableHours: number;
+    hourlyRate: { min: number; max: number };
+    smallJobCeiling?: number;
+    noPrice?: boolean;
+  };
+};
 
-    { re: /foundation|masonry|parging|brick|tuckpoint/, range: "$600–$4,500" },
-    { re: /gutter|downspout/, range: "$250–$1,600" },
-    { re: /hvac|furnace|ac|air conditioner|heat pump/, range: "$180–$2,200" },
-    { re: /plumb|leak|water heater|sump/, range: "$200–$2,800" },
-    { re: /electrical|panel|outlet|gfci|breaker/, range: "$180–$1,800" },
-    { re: /window|door|screen/, range: "$150–$1,500" },
-    { re: /paint|drywall|trim|baseboard/, range: "$200–$2,500" },
-    { re: /floor|tile|carpet/, range: "$250–$3,500" },
-    { re: /grading|drainage/, range: "$400–$3,000" },
-    { re: /garage/, range: "$250–$3,500" },
+type TradeGuardrailsConfig = {
+  version: string;
+  currency: string;
+  region?: { country?: string; state?: string; metro?: string };
+  defaultGuardrails: { minTripCharge: number; minBillableHours: number; hourlyRate: { min: number; max: number } };
+  trades: TradeGuardrail[];
+};
+
+// Keep this as a direct import so Vercel bundles it and we don't rely on FS paths at runtime.
+// (This is our hard-coded pricing seed that we tune over time.)
+import guardrailsChicagoland from "@/lib/trade-guardrails.chicagoland.json";
+
+const CHICAGOLAND_GUARDRAILS = guardrailsChicagoland as unknown as TradeGuardrailsConfig;
+const TRADE_GUARDRAILS_BY_ID = new Map(
+  (CHICAGOLAND_GUARDRAILS?.trades || []).map((t) => [String(t.tradeId || "").toLowerCase(), t.guardrails])
+);
+
+function formatUsd(n: number) {
+  const v = Math.round(Number(n) || 0);
+  return "$" + v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function rangeFromTradeGuardrails(tradeId: string): string {
+  const g = TRADE_GUARDRAILS_BY_ID.get(String(tradeId || "").toLowerCase());
+  const fallback = CHICAGOLAND_GUARDRAILS?.defaultGuardrails;
+
+  const minTrip = (g?.minTripCharge ?? fallback?.minTripCharge ?? 250) || 0;
+  const minHours = (g?.minBillableHours ?? fallback?.minBillableHours ?? 1) || 0;
+  const hourlyMax = (g?.hourlyRate?.max ?? fallback?.hourlyRate?.max ?? 185) || 0;
+
+  // If we have a small-job ceiling, use it as a soft high end.
+  // Otherwise, approximate a small job as minTrip + up to ~4 hours at max rate.
+  const hi =
+    typeof g?.smallJobCeiling === "number" && Number.isFinite(g.smallJobCeiling) && g.smallJobCeiling > 0
+      ? g.smallJobCeiling
+      : Math.max(minTrip * 2, minTrip + hourlyMax * Math.max(1, minHours) * 4);
+
+  const lo = Math.max(0, minTrip);
+  const high = Math.max(lo, Math.round(hi));
+  return `${formatUsd(lo)}–${formatUsd(high)}`;
+}
+
+function fillMissingRange(label: string, _location: string): string {
+  const l = normalizeLabel(label);
+
+  // Route common inspection-item language into a trade bucket,
+  // then derive a fallback range from our Chicagoland guardrails.
+  const rules: Array<{ re: RegExp; tradeId: string }> = [
+    // Roof/chimney
+    { re: /chimney|flashing|shingle|soffit|fascia|roof\b|roofing/, tradeId: "roofing" },
+
+    { re: /foundation|masonry|parging|brick|tuckpoint/, tradeId: "masonry" },
+    { re: /gutter|downspout/, tradeId: "gutters" },
+    { re: /hvac|furnace|air conditioner|ac\b|heat pump|thermostat/, tradeId: "hvac" },
+    { re: /plumb|leak|water heater|sump|drain|sewer/, tradeId: "plumbing" },
+    { re: /electrical|panel|outlet|gfci|breaker|ceiling fan|fixture/, tradeId: "electrical" },
+    { re: /window|door|screen/, tradeId: "windows_doors" },
+    { re: /drywall|patch|texture/, tradeId: "drywall" },
+    { re: /paint|painting/, tradeId: "painting" },
+    { re: /tile\b/, tradeId: "tile" },
+    { re: /floor|hardwood|laminate|lvp|carpet/, tradeId: "flooring" },
+    { re: /grading|drainage/, tradeId: "grading" },
+    { re: /garage door|garage\b/, tradeId: "garage_door" },
+    { re: /fence|fencing/, tradeId: "fencing" },
+    { re: /landscap|yard|sod|mulch/, tradeId: "landscaping" },
+    { re: /lock|deadbolt|rekey|locksmith/, tradeId: "locksmith" },
+    { re: /pest|termite|rodent/, tradeId: "pest_control" },
+    { re: /power wash|pressure wash/, tradeId: "power_washing" },
+    { re: /concrete|slab|driveway|walkway/, tradeId: "concrete" },
+    { re: /tree|branch|stump/, tradeId: "tree_service" },
+    { re: /mold|remediation/, tradeId: "mold_remediation" },
   ];
-  for (const r of rules) {
-    if (r.re.test(l)) return r.range;
-  }
-  // Default broad handyman range
-  return "$250–$1,500";
+
+  const hit = rules.find((r) => r.re.test(l));
+  const tradeId = hit?.tradeId || "handyman";
+  return rangeFromTradeGuardrails(tradeId);
 }
 
 function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1): ExtractedLane[] {
