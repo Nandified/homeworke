@@ -490,6 +490,7 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({
               model: "gpt-5.4-mini",
+              max_output_tokens: 1800,
               input: [
                 { role: "system", content: sys },
                 {
@@ -506,8 +507,21 @@ export async function POST(req: Request) {
           const t = await res.text().catch(() => "");
           if (!res.ok) throw new Error(`openai_ocr_failed_${res.status}: ${(t || "").slice(0, 400)}`);
           const j = JSON.parse(t);
-          const out = j?.output_text;
-          return typeof out === "string" ? out.trim() : "";
+
+          // Prefer the convenience field when present, but also support the standard Responses shape.
+          const direct = j?.output_text;
+          if (typeof direct === "string" && direct.trim()) return direct.trim();
+
+          const parts: string[] = [];
+          const out = Array.isArray(j?.output) ? j.output : [];
+          for (const item of out) {
+            const content = Array.isArray(item?.content) ? item.content : [];
+            for (const c of content) {
+              const txt = (c && typeof c.text === "string" ? c.text : "").trim();
+              if (txt) parts.push(txt);
+            }
+          }
+          return parts.join("\n").trim();
         }
 
         const texts: string[] = [];
