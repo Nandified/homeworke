@@ -197,7 +197,23 @@ async function callOpenAIJsonSchema(args: {
     return { ok: false as const, status: 500, detail: text.slice(0, 2000) };
   }
 
-  const outputText = String(parsedRes?.output_text || "");
+  // Responses API can return `output_text`, but some variants return structured `output` blocks.
+  const outputText = (() => {
+    const ot = typeof parsedRes?.output_text === "string" ? parsedRes.output_text : "";
+    if (ot && ot.trim()) return ot;
+
+    const out = Array.isArray(parsedRes?.output) ? parsedRes.output : [];
+    for (const item of out) {
+      if (!item || typeof item !== "object") continue;
+      const content = Array.isArray((item as any).content) ? (item as any).content : [];
+      for (const c of content) {
+        const t = typeof c?.text === "string" ? c.text : "";
+        if (t && t.trim()) return t;
+      }
+    }
+    return "";
+  })();
+
   let json: any = null;
   try {
     json = JSON.parse(outputText);
@@ -208,10 +224,14 @@ async function callOpenAIJsonSchema(args: {
       try {
         json = JSON.parse(m[0]);
       } catch {
-        return { ok: false as const, status: 500, detail: outputText.slice(0, 2000) };
+        return { ok: false as const, status: 500, detail: `non_json_output: ${outputText.slice(0, 2000)}` };
       }
     } else {
-      return { ok: false as const, status: 500, detail: outputText.slice(0, 2000) };
+      return {
+        ok: false as const,
+        status: 500,
+        detail: `missing_or_non_json_output: ${outputText ? outputText.slice(0, 500) : "(no text output)"} | raw: ${text.slice(0, 1500)}`,
+      };
     }
   }
 
