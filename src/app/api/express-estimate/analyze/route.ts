@@ -432,6 +432,7 @@ export async function POST(req: Request) {
   try {
     const form = await req.formData();
     const file = form.get("file");
+    const files = form.getAll("file").filter((f) => f instanceof File) as File[];
     const textOverride = String(form.get("text") || "");
     const hashOverride = String(form.get("hash") || "").trim();
     const cacheKeyOverride = String(form.get("cacheKey") || "").trim();
@@ -470,69 +471,74 @@ export async function POST(req: Request) {
         hash = hashOverride || crypto.createHash("sha256").update(extractedText).digest("hex");
         pdfBytes = 0;
       } else {
-        if (!file || !(file instanceof File)) {
+        const inputFiles = files.length ? files : file instanceof File ? [file] : [];
+        if (!inputFiles.length) {
           return NextResponse.json({ ok: false, error: "missing_file" }, { status: 400 });
         }
 
-        const buf = Buffer.from(await file.arrayBuffer());
-        pdfBytes = buf.length;
-        hash = crypto.createHash("sha256").update(buf).digest("hex");
-
-        // ---- File text extraction (server-side) ----
-        // PDFs: pdf-parse
-        // Images: OpenAI vision OCR
-        const mime = String((file as any).type || "");
-        if (mime.startsWith("image/")) {
+        async function ocrImageToText(buf: Buffer, mime: string): Promise<string> {
           const b64 = buf.toString("base64");
+          const sys =
+            "You are performing OCR. Extract ALL readable text from the image. " +
+            "Preserve order as best as possible. Return plain text only.";
 
-          async function ocrImageToText(): Promise<string> {
-            const sys =
-              "You are performing OCR. Extract ALL readable text from the image. " +
-              "Preserve order as best as possible. Return plain text only.";
+          const res = await fetch("https://api.openai.com/v1/responses", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "gpt-5.4-mini",
+              input: [
+                { role: "system", content: sys },
+                {
+                  role: "user",
+                  content: [
+                    { type: "input_text", text: "OCR this image." },
+                    { type: "input_image", image_url: `data:${mime};base64,${b64}` },
+                  ],
+                },
+              ],
+            }),
+          });
 
-            const res = await fetch("https://api.openai.com/v1/responses", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${apiKey}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                model: "gpt-5.4-mini",
-                input: [
-                  { role: "system", content: sys },
-                  {
-                    role: "user",
-                    content: [
-                      { type: "input_text", text: "OCR this image." },
-                      { type: "input_image", image_url: `data:${mime};base64,${b64}` },
-                    ],
-                  },
-                ],
-              }),
-            });
+          const t = await res.text().catch(() => "");
+          if (!res.ok) throw new Error(`openai_ocr_failed_${res.status}: ${(t || "").slice(0, 400)}`);
+          const j = JSON.parse(t);
+          const out = j?.output_text;
+          return typeof out === "string" ? out.trim() : "";
+        }
 
-            const t = await res.text().catch(() => "");
-            if (!res.ok) throw new Error(`openai_ocr_failed_${res.status}: ${(t || "").slice(0, 400)}`);
-            const j = JSON.parse(t);
-            const out = j?.output_text;
-            return typeof out === "string" ? out.trim() : "";
+        const texts: string[] = [];
+        const hashes: string[] = [];
+
+        for (const f of inputFiles) {
+          const mime = String((f as any).type || "");
+          const buf = Buffer.from(await f.arrayBuffer());
+          hashes.push(crypto.createHash("sha256").update(buf).digest("hex"));
+
+          if (mime.startsWith("image/")) {
+            const t = await ocrImageToText(buf, mime);
+            if (t) texts.push(t);
+            continue;
           }
 
-          extractedText = await ocrImageToText();
-          if (!extractedText) {
-            return NextResponse.json({ ok: false, error: "image_no_text", detail: "No readable text found in image." }, { status: 422 });
-          }
-        } else {
           // Assume PDF
+          pdfBytes += buf.length;
           const parsedPdf = await pdf(buf);
-          extractedText = String(parsedPdf?.text || "").replace(/\u0000/g, "").trim();
+          const t = String(parsedPdf?.text || "").replace(/\u0000/g, "").trim();
+          if (t) texts.push(t);
+        }
 
-          if (!extractedText) {
-            return NextResponse.json(
-              { ok: false, error: "pdf_no_text", detail: "Could not extract text from PDF (may be scanned)." },
-              { status: 422 }
-            );
-          }
+        extractedText = texts.join("\n\n---\n\n").trim();
+        hash = hashOverride || crypto.createHash("sha256").update(hashes.join("|")).digest("hex");
+
+        if (!extractedText) {
+          return NextResponse.json(
+            { ok: false, error: "no_text_extracted", detail: "Could not extract readable text from the uploaded files." },
+            { status: 422 }
+          );
         }
       }
     }
