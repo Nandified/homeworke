@@ -471,6 +471,12 @@ export function ExpressEstimateReportClient(props: {
         fd.set("notes", notes || "");
         fd.set("location", effectiveAddress || "");
 
+        // Allow forcing a re-run via ?force=1 (useful for internal testing / recalibration)
+        try {
+          const sp = new URLSearchParams(window.location.search);
+          if (sp.get("force") === "1") fd.set("force", "1");
+        } catch {}
+
         const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
 
         // Try JSON first; if the platform returns HTML/text on error, fall back to text so we can show *some* reason.
@@ -763,12 +769,17 @@ export function ExpressEstimateReportClient(props: {
                 {downloading ? "Preparing…" : "Download report"}
               </Button>
 
-              {cacheKey && expiresAt && new Date(expiresAt).getTime() < Date.now() ? (
+              {cacheKey ? (
                 <Button
                   size="sm"
                   variant="secondary"
                   disabled={analyzing}
                   onClick={() => {
+                    // Internal: allow recalibration without waiting 30 days.
+                    // Double-confirm so we don't accidentally burn tokens / overwrite cached pricing.
+                    if (!window.confirm("Re-run this estimate and refresh pricing?")) return;
+                    if (!window.confirm("Confirm re-run: this will overwrite the saved pricing for this report.")) return;
+
                     setAnalyzing(true);
                     setAnalysisError("");
                     setAnalysisStage("Re-running estimate…");
