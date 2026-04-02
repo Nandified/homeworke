@@ -75,9 +75,21 @@ const styles = StyleSheet.create({
 
   item: { marginBottom: 8, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: "#e5e7eb" },
   itemRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  itemLabel: { fontSize: 11, fontWeight: 600 },
-  itemRange: { fontSize: 10, color: "#6b7280" },
+  itemLabel: { fontSize: 11, fontWeight: 600, flexGrow: 1 },
+  itemPrice: { fontSize: 11, fontWeight: 700 },
+  itemRange: { fontSize: 10, color: "#6b7280", marginTop: 2 },
   itemNote: { marginTop: 2, fontSize: 10, color: "#6b7280" },
+
+  disclaimer: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 12,
+    padding: 10,
+    backgroundColor: "#f9fafb",
+  },
+  disclaimerTitle: { fontSize: 10, fontWeight: 700, marginBottom: 2, color: "#111827" },
+  disclaimerText: { fontSize: 9, color: "#374151", lineHeight: 1.35 },
 });
 
 function ReportPdf(props: { body: Body; filtered: Lane[] }) {
@@ -105,22 +117,34 @@ function ReportPdf(props: { body: Body; filtered: Lane[] }) {
           <View style={styles.totalCard}>
             <Text style={styles.totalLabel}>Total</Text>
             <Text style={styles.totalValue}>{formatUSD(total)}</Text>
-            <Text style={styles.totalNote}>Based on avg of provided ranges (demo).</Text>
+            <Text style={styles.totalNote}>Total is a best-effort projection based on detected scope.</Text>
+          </View>
+
+          <View style={styles.disclaimer}>
+            <Text style={styles.disclaimerTitle}>Important disclaimer</Text>
+            <Text style={styles.disclaimerText}>
+              This document is NOT a final estimate, proposal, or contract price. Final scope and pricing must be confirmed by a Project Manager on-site (or after additional
+              photo/video documentation is provided). Costs can change based on access, code requirements, hidden conditions, permits, and material selections.
+            </Text>
           </View>
         </View>
 
         {filtered.map((lane) => (
           <View key={lane.title}>
             <Text style={styles.laneTitle}>{lane.title}</Text>
-            {lane.items.map((it) => (
-              <View key={it.id} style={styles.item}>
-                <View style={styles.itemRow}>
-                  <Text style={styles.itemLabel}>{it.label}</Text>
-                  <Text style={styles.itemRange}>{it.range || "—"}</Text>
+            {lane.items.map((it) => {
+              const v = estimateItemValue(it);
+              return (
+                <View key={it.id} style={styles.item}>
+                  <View style={styles.itemRow}>
+                    <Text style={styles.itemLabel}>{it.label}</Text>
+                    <Text style={styles.itemPrice}>{typeof v === "number" ? formatUSD(v) : "—"}</Text>
+                  </View>
+                  {it.range ? <Text style={styles.itemRange}>Range: {it.range}</Text> : null}
+                  {it.note ? <Text style={styles.itemNote}>{it.note}</Text> : null}
                 </View>
-                {it.note ? <Text style={styles.itemNote}>{it.note}</Text> : null}
-              </View>
-            ))}
+              );
+            })}
           </View>
         ))}
       </Page>
