@@ -9,7 +9,7 @@ import { Button, Card, Chip, Input, Picker, Textarea } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
-import { stageFile, stageFiles } from "@/lib/staged-files";
+import { getStagedFiles, stageFile, stageFiles } from "@/lib/staged-files";
 import { formatPhoneUS } from "@/lib/phone";
 
 const STORAGE_KEYS = {
@@ -114,6 +114,7 @@ type Report = {
 export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const preselectPropertyId = searchParams?.get("property") || "";
+  const preStaged = searchParams?.get("staged") || "";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [fileName, setFileName] = useState<string>("");
@@ -286,6 +287,34 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       if (saved) setNotes(saved);
     } catch {}
   }, []);
+
+  // If we navigated here from the dashboard card with a staged file id,
+  // auto-load it into Step 1 so the user doesn't have to reselect it.
+  useEffect(() => {
+    if (!preStaged) return;
+    if (files.length) return;
+
+    const ids = preStaged
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!ids.length) return;
+
+    void (async () => {
+      try {
+        const stagedFiles = await getStagedFiles(ids);
+        if (!stagedFiles.length) return;
+
+        setFiles(stagedFiles);
+        setFileName(stagedFiles.length === 1 ? stagedFiles[0].name : `${stagedFiles.length} files selected`);
+        setStagedId(preStaged);
+        setStep(selectedPropertyId ? 3 : 2);
+      } catch {
+        // ignore
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preStaged]);
 
   useEffect(() => {
     // When launched from a property detail page, we can preselect that property.
