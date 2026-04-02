@@ -14,6 +14,10 @@ const STORE = "files";
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
+    if (typeof indexedDB === "undefined") {
+      reject(new Error("Storage unavailable (IndexedDB missing). Try a normal browser window (not private/incognito) or a different browser."));
+      return;
+    }
     const req = indexedDB.open(DB_NAME, 1);
     req.onupgradeneeded = () => {
       const db = req.result;

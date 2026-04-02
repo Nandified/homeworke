@@ -844,8 +844,9 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
                       setToast("Submitted ✓ Generating estimate…");
                       router.push(`${props.basePath}/express-estimate/${encodeURIComponent(reportId)}?${q.toString()}`);
-                    } catch {
-                      setSubmitError("Submit failed. Please try again.");
+                    } catch (e) {
+                      const msg = e && typeof e === "object" && "message" in e ? String((e as any).message) : "";
+                      setSubmitError(msg ? `Submit failed: ${msg}` : "Submit failed. Please try again.");
                     } finally {
                       setSubmitting(false);
                     }
