@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
-import { Button, Card, Chip, Input, Picker } from "@/components/ui";
+import { Button, Card, Chip, Input, Modal, Picker } from "@/components/ui";
 import { withDemo } from "@/lib/demo";
 
 type StoredClientProperty = {
@@ -80,9 +81,12 @@ type ClientRow = {
 };
 
 export default function Page() {
+  const router = useRouter();
   const [q, setQ] = useState("");
   const [clientProps, setClientProps] = useState<StoredClientProperty[]>([]);
   const [invitedClients, setInvitedClients] = useState<StoredInvitedClient[]>([]);
+
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   const [inviteFirst, setInviteFirst] = useState("");
   const [inviteLast, setInviteLast] = useState("");
@@ -97,6 +101,14 @@ export default function Page() {
     // This page derives a client list from those entries so the flows feel connected.
     setClientProps(readClientProps());
     setInvitedClients(readInvitedClients());
+
+    // Open modal via URL flag (Invite client button)
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("invite") === "1") setInviteOpen(true);
+    } catch {
+      // ignore
+    }
 
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY_CLIENT_PROPS) setClientProps(readClientProps());
@@ -203,84 +215,116 @@ export default function Page() {
           </div>
         </Card>
 
-        <Card className="p-6" id="invite">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Invite a client</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                Add a client to your workspace. (Email delivery will be wired next — for now this creates an “Invited” client.)
+        <Modal
+          open={inviteOpen}
+          onClose={() => {
+            setInviteOpen(false);
+            // Clear invite=1 so refresh doesn't reopen
+            try {
+              const url = new URL(window.location.href);
+              url.searchParams.delete("invite");
+              router.replace(url.pathname + (url.search ? url.search : ""));
+            } catch {}
+          }}
+          title="Invite a client"
+          mobilePlacement="center"
+          scrollKey="invite"
+        >
+          <div className="grid gap-4">
+            <div className="text-sm text-[var(--hw-muted)]">
+              Add a client to your workspace. (Email delivery will be wired next — for now this creates an “Invited” client.)
+            </div>
+
+            {inviteToast ? <div className="text-xs font-semibold text-[var(--hw-red)]">{inviteToast}</div> : null}
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input value={inviteFirst} onChange={(e) => setInviteFirst(e.target.value)} placeholder="First name" />
+              <Input value={inviteLast} onChange={(e) => setInviteLast(e.target.value)} placeholder="Last name" />
+
+              <div className="sm:col-span-2">
+                <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="Email" />
+              </div>
+
+              <div className="sm:col-span-2">
+                <Input value={invitePhone} onChange={(e) => setInvitePhone(e.target.value)} placeholder="Phone" />
+              </div>
+
+              <div className="sm:col-span-2">
+                <Picker
+                  value={inviteRole}
+                  placeholder="Role"
+                  options={[
+                    { id: "Homeowner", label: "Homeowner" },
+                    { id: "Homebuyer", label: "Homebuyer" },
+                  ]}
+                  onChange={(id) => setInviteRole((id as any) || "")}
+                />
+              </div>
+
+              <div className="sm:col-span-2 flex items-center justify-end gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    setInviteOpen(false);
+                    try {
+                      const url = new URL(window.location.href);
+                      url.searchParams.delete("invite");
+                      router.replace(url.pathname + (url.search ? url.search : ""));
+                    } catch {}
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={inviteBusy || !(inviteEmail || "").trim()}
+                  onClick={() => {
+                    const email = inviteEmail.trim().toLowerCase();
+                    if (!email) return;
+                    setInviteBusy(true);
+                    try {
+                      const prev = readInvitedClients();
+                      const id = "cli_" + Math.random().toString(16).slice(2);
+                      const row: StoredInvitedClient = {
+                        id,
+                        createdAt: new Date().toISOString(),
+                        firstName: inviteFirst.trim() || undefined,
+                        lastName: inviteLast.trim() || undefined,
+                        email,
+                        phone: invitePhone.trim() || undefined,
+                        role: (inviteRole as any) || undefined,
+                        inviteSentAt: new Date().toISOString(),
+                      };
+                      const out = [row, ...prev.filter((c) => (c.email || "").trim().toLowerCase() !== email)];
+                      writeInvitedClients(out);
+                      setInvitedClients(out);
+
+                      setInviteToast("Client invited.");
+                      window.setTimeout(() => setInviteToast(""), 1600);
+
+                      setInviteFirst("");
+                      setInviteLast("");
+                      setInviteEmail("");
+                      setInvitePhone("");
+                      setInviteRole("");
+                      setInviteOpen(false);
+                      try {
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete("invite");
+                        router.replace(url.pathname + (url.search ? url.search : ""));
+                      } catch {}
+                    } finally {
+                      setInviteBusy(false);
+                    }
+                  }}
+                >
+                  {inviteBusy ? "Inviting…" : "Invite client"}
+                </Button>
               </div>
             </div>
-            {inviteToast ? <div className="text-xs font-semibold text-[var(--hw-red)]">{inviteToast}</div> : null}
           </div>
-
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Input value={inviteFirst} onChange={(e) => setInviteFirst(e.target.value)} placeholder="First name" />
-            <Input value={inviteLast} onChange={(e) => setInviteLast(e.target.value)} placeholder="Last name" />
-
-            <div className="sm:col-span-2">
-              <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="Email" />
-            </div>
-
-            <div className="sm:col-span-2">
-              <Input value={invitePhone} onChange={(e) => setInvitePhone(e.target.value)} placeholder="Phone" />
-            </div>
-
-            <div className="sm:col-span-2">
-              <Picker
-                value={inviteRole}
-                placeholder="Role"
-                options={[
-                  { id: "Homeowner", label: "Homeowner" },
-                  { id: "Homebuyer", label: "Homebuyer" },
-                ]}
-                onChange={(id) => setInviteRole((id as any) || "")}
-              />
-            </div>
-
-            <div className="sm:col-span-2 flex items-center justify-end gap-2">
-              <Button
-                size="sm"
-                disabled={inviteBusy || !(inviteEmail || "").trim()}
-                onClick={() => {
-                  const email = inviteEmail.trim().toLowerCase();
-                  if (!email) return;
-                  setInviteBusy(true);
-                  try {
-                    const prev = readInvitedClients();
-                    const id = "cli_" + Math.random().toString(16).slice(2);
-                    const row: StoredInvitedClient = {
-                      id,
-                      createdAt: new Date().toISOString(),
-                      firstName: inviteFirst.trim() || undefined,
-                      lastName: inviteLast.trim() || undefined,
-                      email,
-                      phone: invitePhone.trim() || undefined,
-                      role: (inviteRole as any) || undefined,
-                      inviteSentAt: new Date().toISOString(),
-                    };
-                    const out = [row, ...prev.filter((c) => (c.email || "").trim().toLowerCase() !== email)];
-                    writeInvitedClients(out);
-                    setInvitedClients(out);
-
-                    setInviteToast("Client invited.");
-                    window.setTimeout(() => setInviteToast(""), 1600);
-
-                    setInviteFirst("");
-                    setInviteLast("");
-                    setInviteEmail("");
-                    setInvitePhone("");
-                    setInviteRole("");
-                  } finally {
-                    setInviteBusy(false);
-                  }
-                }}
-              >
-                {inviteBusy ? "Inviting…" : "Invite client"}
-              </Button>
-            </div>
-          </div>
-        </Card>
+        </Modal>
       </div>
     </PortalShell>
   );
