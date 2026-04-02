@@ -529,7 +529,31 @@ export function ExpressEstimateReportClient(props: {
               {report ? null : (
                 <div className="mt-1 text-sm text-[var(--hw-muted)]">This report does not exist in demo data.</div>
               )}
-              {analysisError ? <div className="mt-2 text-xs font-semibold text-[var(--hw-red)]">{analysisError}</div> : null}
+              {analysisError ? (
+                <div className="mt-2 rounded-[14px] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-xs font-extrabold text-[var(--hw-red)]">Analyze failed</div>
+                      <div className="mt-1 whitespace-pre-wrap break-words text-xs font-semibold text-[var(--hw-ink)]/80">
+                        {analysisError}
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(analysisError);
+                          setToast("Error copied.");
+                          window.setTimeout(() => setToast(""), 1600);
+                        } catch {}
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
               {analysisSummary ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
             </div>
 
