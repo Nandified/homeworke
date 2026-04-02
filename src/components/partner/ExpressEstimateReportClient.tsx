@@ -356,7 +356,7 @@ export function ExpressEstimateReportClient(props: {
           return;
         }
 
-        setAnalysisStage("Generating estimate with AI");
+        setAnalysisStage("Generating with Homeworke AI (pricing + repair playbook)…");
         setAnalysisProgress(null);
 
         fd.set("text", text);
@@ -452,7 +452,9 @@ export function ExpressEstimateReportClient(props: {
   // This page focuses on viewing results and downloading.
 
   async function download(mode: "full" | "selected") {
-    if (!report) return;
+    // Allow downloads for uploaded reports too (not just demo reports).
+    const reportId = report?.id || props.reportId;
+    const reportType = report?.type || "Inspection";
 
     try {
       setDownloading(mode);
@@ -464,9 +466,9 @@ export function ExpressEstimateReportClient(props: {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          reportId: report.id,
-          address: report.address,
-          reportType: report.type,
+          reportId,
+          address: effectiveAddress,
+          reportType,
           mode,
           selectedIds: ids,
           lanes: extracted,
@@ -485,7 +487,10 @@ export function ExpressEstimateReportClient(props: {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${report.address.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase()}-${mode}.pdf`;
+      a.download = `${(effectiveAddress || "report")
+        .replace(/[^a-z0-9]+/gi, "-")
+        .replace(/^-|-$/g, "")
+        .toLowerCase()}-${mode}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -585,7 +590,7 @@ export function ExpressEstimateReportClient(props: {
               {/* Mobile: show Repairs CTA even if Repair Cart count is 0 */}
               <Button
                 size="sm"
-                disabled={!report || extracted.length === 0 || downloading !== ""}
+                disabled={extracted.length === 0 || downloading !== ""}
                 onClick={() => setDownloadOpen(true)}
                 className="gap-2 whitespace-nowrap px-3"
               >
@@ -879,7 +884,7 @@ export function ExpressEstimateReportClient(props: {
                         </Button>
                         <Button
                           size="sm"
-                          disabled={!report || extracted.length === 0 || downloading !== ""}
+                          disabled={extracted.length === 0 || downloading !== ""}
                           onClick={() => setDownloadOpen(true)}
                           className="gap-2"
                         >
@@ -915,7 +920,7 @@ export function ExpressEstimateReportClient(props: {
                   <Button
                     size="sm"
                     variant="secondary"
-                    disabled={!report || selected.length === 0 || downloading !== ""}
+                    disabled={selected.length === 0 || downloading !== ""}
                     onClick={() => {
                       setDownloadOpen(false);
                       void download("selected");
@@ -925,7 +930,7 @@ export function ExpressEstimateReportClient(props: {
                   </Button>
                   <Button
                     size="sm"
-                    disabled={!report || extracted.length === 0 || downloading !== ""}
+                    disabled={extracted.length === 0 || downloading !== ""}
                     onClick={() => {
                       setDownloadOpen(false);
                       void download("full");
