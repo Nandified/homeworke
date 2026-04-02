@@ -87,6 +87,7 @@ export default function Page() {
   const [invitedClients, setInvitedClients] = useState<StoredInvitedClient[]>([]);
 
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteLinkToast, setInviteLinkToast] = useState("");
 
   const [inviteFirst, setInviteFirst] = useState("");
   const [inviteLast, setInviteLast] = useState("");
@@ -158,6 +159,23 @@ export default function Page() {
     return out;
   }, [clientProps, invitedClients, q]);
 
+  const visibleClients = useMemo(() => {
+    // Keep the list from growing endlessly; make it scrollable instead.
+    // If user is searching, show all matches.
+    const hasSearch = !!(q || "").trim();
+    return hasSearch ? derivedClients : derivedClients.slice(0, 8);
+  }, [derivedClients, q]);
+
+  const partnerInviteLink = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    // Mirror dashboard behavior: use the partner code in the URL if present.
+    // Fallback to frj in demo.
+    const path = window.location.pathname || "";
+    const m = path.match(/^\/p\/([^/]+)/);
+    const code = (m?.[1] || "frj").trim();
+    return `${window.location.origin}/p/${code}`;
+  }, []);
+
   return (
     <PortalShell
       role="PRO"
@@ -186,24 +204,26 @@ export default function Page() {
           </div>
 
           <div className="mt-5 grid gap-3">
-            {derivedClients.length ? (
-              derivedClients.map((c) => (
-                <div
-                  key={c.key}
-                  className="flex flex-col gap-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{c.name}</div>
-                    <div className="truncate text-sm text-[var(--hw-muted)]">{c.email}</div>
+            {visibleClients.length ? (
+              <div className={"grid gap-3 " + ((q || "").trim() ? "" : "max-h-[420px] overflow-auto pr-1") }>
+                {visibleClients.map((c) => (
+                  <div
+                    key={c.key}
+                    className="flex flex-col gap-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{c.name}</div>
+                      <div className="truncate text-sm text-[var(--hw-muted)]">{c.email}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Chip>{c.status}</Chip>
+                      <Link href={withDemo("/pro/messages")}>
+                        <Button variant="secondary">View messages</Button>
+                      </Link>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Chip>{c.status}</Chip>
-                    <Link href={withDemo("/pro/messages")}>
-                      <Button variant="secondary">View messages</Button>
-                    </Link>
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
               <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">No clients yet</div>
@@ -212,6 +232,50 @@ export default function Page() {
                 </div>
               </div>
             )}
+          </div>
+
+          {(q || "").trim() === "" && derivedClients.length > visibleClients.length ? (
+            <div className="mt-3 text-xs text-[var(--hw-muted)]">
+              Showing {visibleClients.length} of {derivedClients.length}. Search to find a specific client.
+            </div>
+          ) : null}
+
+          <div className="mt-6 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                  Share this with clients so they can connect to your workspace.
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 relative rounded-[var(--hw-radius-lg)] border-2 border-[var(--hw-line)] bg-white px-3 py-3 overflow-hidden">
+              <div className="pr-[96px]">
+                <div className="text-xs font-semibold text-[var(--hw-ink)] whitespace-nowrap overflow-x-auto">{partnerInviteLink}</div>
+              </div>
+              <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(partnerInviteLink);
+                      setInviteLinkToast("Copied");
+                      window.setTimeout(() => setInviteLinkToast(""), 1200);
+                    } catch {
+                      setInviteLinkToast("Copy failed");
+                      window.setTimeout(() => setInviteLinkToast(""), 1200);
+                    }
+                  }}
+                  disabled={!partnerInviteLink}
+                >
+                  Copy
+                </Button>
+              </div>
+            </div>
+
+            {inviteLinkToast ? <div className="mt-2 text-xs font-semibold text-[var(--hw-muted)]">{inviteLinkToast}</div> : null}
           </div>
         </Card>
 
