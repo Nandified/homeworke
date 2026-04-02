@@ -599,13 +599,46 @@ export function ExpressEstimateReportClient(props: {
             const { text, hash } = await extractPdfTextAndHash(f);
             if (hash) hashes.push(hash);
 
-            // If we couldn't extract any readable text client-side (scanned/image-only PDFs),
-            // upload the PDF so the server can attempt extraction/OCR.
             if (text) {
               pieces.push(text);
-            } else {
-              fd.append("file", f, f.name);
+              continue;
             }
+
+            // Scanned/image-only PDFs: Vercel will often 413 if we upload the whole PDF.
+            // Instead, rasterize pages client-side and OCR page-images via a lightweight endpoint.
+            setAnalysisStage("This PDF looks scanned — running OCR…");
+
+            const ab = await f.arrayBuffer();
+            const pdf = await getDocument({ data: ab }).promise;
+            const maxPages = Math.min(pdf.numPages || 0, 18);
+            const ocrParts: string[] = [];
+
+            for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+              setAnalysisProgress({ current: pageNum, total: maxPages });
+              const page = await pdf.getPage(pageNum);
+              const viewport = page.getViewport({ scale: 1.35 });
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
+              if (!ctx) continue;
+              canvas.width = Math.max(1, Math.floor(viewport.width));
+              canvas.height = Math.max(1, Math.floor(viewport.height));
+              await page.render({ canvasContext: ctx as any, viewport }).promise;
+
+              const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.7));
+              if (!blob) continue;
+              const imgFile = new File([blob], `${f.name.replace(/\.pdf$/i, "").slice(0, 48)}-p${pageNum}.jpg`, { type: "image/jpeg" });
+
+              const ocrFd = new FormData();
+              ocrFd.set("file", imgFile, imgFile.name);
+              const r = await fetch("/api/express-estimate/ocr", { method: "POST", body: ocrFd });
+              const j = (await r.json().catch(() => null)) as any;
+              if (r.ok && j?.ok === true && typeof j.text === "string" && j.text.trim()) {
+                ocrParts.push(j.text.trim());
+              }
+            }
+
+            const ocrText = ocrParts.join("\n\n---\n\n").trim();
+            if (ocrText) pieces.push(ocrText);
             continue;
           }
 
