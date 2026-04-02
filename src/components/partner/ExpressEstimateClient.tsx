@@ -335,7 +335,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               ref={fileInputRef}
               className="hidden"
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,image/png,image/jpeg"
               onChange={(e) => {
                 const next = e.target.files?.[0] ?? null;
                 if (!next) return;

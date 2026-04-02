@@ -474,18 +474,65 @@ export async function POST(req: Request) {
           return NextResponse.json({ ok: false, error: "missing_file" }, { status: 400 });
         }
 
-        // ---- PDF text extraction (server-side) ----
         const buf = Buffer.from(await file.arrayBuffer());
         pdfBytes = buf.length;
         hash = crypto.createHash("sha256").update(buf).digest("hex");
-        const parsedPdf = await pdf(buf);
-        extractedText = String(parsedPdf?.text || "").replace(/\u0000/g, "").trim();
 
-        if (!extractedText) {
-          return NextResponse.json(
-            { ok: false, error: "pdf_no_text", detail: "Could not extract text from PDF (may be scanned)." },
-            { status: 422 }
-          );
+        // ---- File text extraction (server-side) ----
+        // PDFs: pdf-parse
+        // Images: OpenAI vision OCR
+        const mime = String((file as any).type || "");
+        if (mime.startsWith("image/")) {
+          const b64 = buf.toString("base64");
+
+          async function ocrImageToText(): Promise<string> {
+            const sys =
+              "You are performing OCR. Extract ALL readable text from the image. " +
+              "Preserve order as best as possible. Return plain text only.";
+
+            const res = await fetch("https://api.openai.com/v1/responses", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${apiKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "gpt-5.4-mini",
+                input: [
+                  { role: "system", content: sys },
+                  {
+                    role: "user",
+                    content: [
+                      { type: "input_text", text: "OCR this image." },
+                      { type: "input_image", image_url: `data:${mime};base64,${b64}` },
+                    ],
+                  },
+                ],
+              }),
+            });
+
+            const t = await res.text().catch(() => "");
+            if (!res.ok) throw new Error(`openai_ocr_failed_${res.status}: ${(t || "").slice(0, 400)}`);
+            const j = JSON.parse(t);
+            const out = j?.output_text;
+            return typeof out === "string" ? out.trim() : "";
+          }
+
+          extractedText = await ocrImageToText();
+          if (!extractedText) {
+            return NextResponse.json({ ok: false, error: "image_no_text", detail: "No readable text found in image." }, { status: 422 });
+          }
+        } else {
+          // Assume PDF
+          const parsedPdf = await pdf(buf);
+          extractedText = String(parsedPdf?.text || "").replace(/\u0000/g, "").trim();
+
+          if (!extractedText) {
+            return NextResponse.json(
+              { ok: false, error: "pdf_no_text", detail: "Could not extract text from PDF (may be scanned)." },
+              { status: 422 }
+            );
+          }
         }
       }
     }

@@ -795,7 +795,7 @@ export function ExpressEstimateReportClient(props: {
                     // for the PDF again and re-extracting text client-side.
                     const input = document.createElement("input");
                     input.type = "file";
-                    input.accept = "application/pdf";
+                    input.accept = "application/pdf,image/png,image/jpeg";
                     input.onchange = () => {
                       const f = input.files?.[0] || null;
                       if (!f) return;

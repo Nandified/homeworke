@@ -55,6 +55,15 @@ export async function stageFile(file: File): Promise<string> {
   return id;
 }
 
+export async function stageFiles(files: File[]): Promise<string[]> {
+  const out: string[] = [];
+  for (const f of files || []) {
+    if (!(f instanceof File)) continue;
+    out.push(await stageFile(f));
+  }
+  return out;
+}
+
 export async function getStagedFile(id: string): Promise<File | null> {
   const db = await openDb();
   const row = await new Promise<StagedFileRow | undefined>((resolve, reject) => {
@@ -66,6 +75,15 @@ export async function getStagedFile(id: string): Promise<File | null> {
   });
   if (!row) return null;
   return new File([row.blob], row.name, { type: row.type });
+}
+
+export async function getStagedFiles(ids: string[]): Promise<File[]> {
+  const out: File[] = [];
+  for (const id of ids || []) {
+    const f = await getStagedFile(id);
+    if (f) out.push(f);
+  }
+  return out;
 }
 
 export async function deleteStagedFile(id: string): Promise<void> {
