@@ -410,6 +410,20 @@ export async function POST(req: Request) {
       return true;
     });
 
+    if (dedupedIssues.length === 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "no_issues_extracted",
+          detail:
+            "We could not find any actionable issues in the extracted text. " +
+            "This often happens when the PDF is scanned/image-only (no selectable text) or the text extraction failed. " +
+            `Extracted text length: ${extractedText.length} chars.`,
+        },
+        { status: 422 }
+      );
+    }
+
     // ---- Final pass: build lanes + price ranges ----
     const finalSchema = {
       type: "object",
@@ -512,6 +526,19 @@ export async function POST(req: Request) {
       });
 
     const cleaned = dedupeLanes(lanes);
+
+    if (cleaned.length === 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "no_items_generated",
+          detail:
+            "AI returned no estimate items. This is usually caused by poor/empty extracted text (scanned PDF) or an upstream model error. " +
+            `Extracted text length: ${extractedText.length} chars; issues extracted: ${dedupedIssues.length}.`,
+        },
+        { status: 422 }
+      );
+    }
 
     const usage: AnalyzeUsage = {
       pdfBytes,
