@@ -758,59 +758,62 @@ export function ExpressEstimateReportClient(props: {
           </div>
         ) : null}
         <Card className="p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="w-full min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant Estimate</div>
-              <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
-                Prepared For: <span className="font-semibold text-[var(--hw-ink)]">{effectiveOwnerName || "—"}</span>
-              </div>
-              <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
-                Property Address: <span className="font-semibold text-[var(--hw-ink)]">{effectiveAddress || "—"}</span>
-              </div>
-              {null}
-              {analysisError ? (
-                <div className="mt-3 w-full rounded-[14px] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] p-3">
-                  <div className="flex w-full items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="text-xs font-extrabold text-[var(--hw-red)]">Analyze failed</div>
-                      <div className="mt-1 whitespace-pre-wrap break-words text-xs font-semibold text-[var(--hw-ink)]/80">
-                        {analysisError}
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(analysisError);
-                          setToast("Error copied.");
-                          window.setTimeout(() => setToast(""), 1600);
-                        } catch {}
-                      }}
-                    >
-                      Copy
-                    </Button>
+          <div className="w-full min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant Estimate</div>
+            <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
+              Prepared For: <span className="font-semibold text-[var(--hw-ink)]">{effectiveOwnerName || "—"}</span>
+            </div>
+            <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
+              Property Address: <span className="font-semibold text-[var(--hw-ink)]">{effectiveAddress || "—"}</span>
+            </div>
+            {null}
+            {analysisError ? (
+              <div className="mt-3 w-full rounded-[14px] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] p-3">
+                <div className="flex w-full items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-xs font-extrabold text-[var(--hw-red)]">Analyze failed</div>
+                    <div className="mt-1 whitespace-pre-wrap break-words text-xs font-semibold text-[var(--hw-ink)]/80">{analysisError}</div>
                   </div>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(analysisError);
+                        setToast("Error copied.");
+                        window.setTimeout(() => setToast(""), 1600);
+                      } catch {}
+                    }}
+                  >
+                    Copy
+                  </Button>
                 </div>
-              ) : null}
-              {expiresAt ? (() => {
-                const ms = new Date(expiresAt).getTime() - Date.now();
-                const days = Math.max(0, Math.ceil(ms / (24 * 60 * 60 * 1000)));
-                const expired = ms < 0;
-                return (
-                  <div className={"mt-2 text-xs font-semibold " + (expired ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]") }>
-                    {expired
-                      ? "This Instant Estimate has expired. Re-run to refresh pricing."
-                      : `Instant Estimate expires in ${days} day${days === 1 ? "" : "s"}.`}
-                  </div>
-                );
-              })() : null}
-              {analysisSummary && !/fallback grouping\/pricing/i.test(analysisSummary) ? (
-                <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div>
-              ) : null}
+              </div>
+            ) : null}
+            {analysisSummary && !/fallback grouping\/pricing/i.test(analysisSummary) ? (
+              <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div>
+            ) : null}
+          </div>
+
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-xs font-semibold text-[var(--hw-muted)]">
+              {expiresAt
+                ? (() => {
+                    const ms = new Date(expiresAt).getTime() - Date.now();
+                    const days = Math.max(0, Math.ceil(ms / (24 * 60 * 60 * 1000)));
+                    const expired = ms < 0;
+                    return (
+                      <span className={expired ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]"}>
+                        {expired
+                          ? "This Instant Estimate has expired. Re-run to refresh pricing."
+                          : `Instant Estimate expires in ${days} day${days === 1 ? "" : "s"}.`}
+                      </span>
+                    );
+                  })()
+                : null}
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-6 sm:flex-nowrap">
+            <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
               {/* Mobile: show Repairs CTA even if Repair Cart count is 0 */}
               <Button
                 size="sm"
@@ -853,6 +856,7 @@ export function ExpressEstimateReportClient(props: {
                   Re-run estimate
                 </Button>
               ) : null}
+
               <Button
                 size="sm"
                 variant="secondary"
@@ -867,6 +871,7 @@ export function ExpressEstimateReportClient(props: {
                 <Share2 className="h-4 w-4" />
                 Share
               </Button>
+
               <Button
                 size="sm"
                 variant="secondary"
