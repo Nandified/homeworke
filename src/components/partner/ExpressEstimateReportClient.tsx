@@ -424,6 +424,7 @@ export function ExpressEstimateReportClient(props: {
                 label: String(it.label),
                 note: typeof it.note === "string" ? it.note : undefined,
                 range: typeof it.range === "string" ? it.range : undefined,
+                price: typeof it.price === "number" ? it.price : undefined,
                 evidence: Array.isArray(it.evidence)
                   ? it.evidence
                       .filter((ev: any) => ev && typeof ev.src === "string")

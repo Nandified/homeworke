@@ -15,6 +15,7 @@ type LaneItem = {
   label: string;
   note?: string;
   range?: string;
+  price?: number;
   evidence?: EvidenceThumb[];
 };
 
@@ -102,6 +103,29 @@ function normalizeLaneTitle(title: string): ExtractedLane["title"] {
   return "Other";
 }
 
+function parseMoney(s: string): number | null {
+  const t = (s || "").replace(/,/g, "").trim();
+  const m = t.match(/\$?\s*([0-9]+(?:\.[0-9]+)?)(k|m)?/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  if (!Number.isFinite(n)) return null;
+  const suf = (m[2] || "").toLowerCase();
+  const mult = suf === "k" ? 1000 : suf === "m" ? 1_000_000 : 1;
+  return n * mult;
+}
+
+function midpointFromRange(range: string): number | null {
+  const r = (range || "").replace(/–/g, "-");
+  const parts = r.split("-").map((p) => p.trim());
+  if (parts.length >= 2) {
+    const a = parseMoney(parts[0]);
+    const b = parseMoney(parts[1]);
+    if (a !== null && b !== null) return Math.round((a + b) / 2);
+    return a ?? b;
+  }
+  return parseMoney(r);
+}
+
 function fillMissingRange(label: string, location: string): string {
   const l = normalizeLabel(label);
   // Lightweight fallback ranges to avoid $0 totals when the model omits pricing.
@@ -123,7 +147,7 @@ function fillMissingRange(label: string, location: string): string {
     if (r.re.test(l)) return r.range;
   }
   // Default broad handyman range
-  return location ? "$250–$1,500" : "$250–$1,500";
+  return "$250–$1,500";
 }
 
 function dedupeLanes(lanes: ExtractedLane[], location: string): ExtractedLane[] {
@@ -133,7 +157,8 @@ function dedupeLanes(lanes: ExtractedLane[], location: string): ExtractedLane[] 
       const items = lane.items
         .map((it) => {
           const range = it.range && it.range.trim() ? it.range : fillMissingRange(it.label, location);
-          return { ...it, range };
+          const price = typeof it.price === "number" && Number.isFinite(it.price) ? it.price : midpointFromRange(range) ?? undefined;
+          return { ...it, range, price };
         })
         .filter((it) => {
           const key = normalizeLabel(it.label);
@@ -487,6 +512,7 @@ export async function POST(req: Request) {
                     label: { type: "string" },
                     note: { type: "string" },
                     range: { type: "string" },
+                    price: { type: "number" },
                   },
                   required: ["label", "range"],
                 },
@@ -558,8 +584,9 @@ export async function POST(req: Request) {
             const label = typeof ir.label === "string" ? ir.label : "";
             const note = typeof ir.note === "string" ? ir.note : undefined;
             const range = typeof ir.range === "string" ? ir.range : undefined;
+            const price = typeof ir.price === "number" && Number.isFinite(ir.price) ? ir.price : undefined;
             const id = typeof ir.id === "string" && ir.id ? ir.id : stableIdFor(label);
-            return { id, label, note, range };
+            return { id, label, note, range, price };
           })
           .filter((it) => it.label)
           .slice(0, 60);
