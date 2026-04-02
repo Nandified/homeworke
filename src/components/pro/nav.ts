@@ -2,7 +2,7 @@ import type { PortalNavItem } from "@/components/portal-shell";
 
 export const PRO_NAV: PortalNavItem[] = [
   { href: "/pro/dashboard", label: "Dashboard" },
-  { href: "/pro/express-estimate", label: "Express Estimate" },
+  { href: "/pro/express-estimate", label: "Instant Estimate" },
   { href: "/pro/jobs", label: "Jobs" },
   { href: "/pro/clients", label: "My Clients" },
   { href: "/pro/properties", label: "Properties" },
