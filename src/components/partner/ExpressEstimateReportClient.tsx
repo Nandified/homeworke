@@ -20,7 +20,13 @@ type ExtractedLane = {
 };
 
 type AnalyzeResponse =
-  | { ok: true; summary?: string; lanes: ExtractedLane[]; used?: "openai" | "demo" | string }
+  | {
+      ok: true;
+      summary?: string;
+      lanes: ExtractedLane[];
+      used?: "openai" | "demo" | string;
+      cache?: { cacheKey?: string; pdfHash?: string; locationKey?: string; expiresAt?: string };
+    }
   | { ok: false; error: string; detail?: string };
 
 type Report = {
@@ -127,6 +133,8 @@ export function ExpressEstimateReportClient(props: {
   const [analysisSummary, setAnalysisSummary] = useState<string>("");
   const [analysisStage, setAnalysisStage] = useState<string>("");
   const [analysisProgress, setAnalysisProgress] = useState<{ current: number; total: number } | null>(null);
+  const [cacheKey, setCacheKey] = useState<string>("");
+  const [expiresAt, setExpiresAt] = useState<string>("");
 
   const [downloading, setDownloading] = useState<"" | "full" | "selected">("");
   const [toast, setToast] = useState<string>("");
@@ -226,6 +234,17 @@ export function ExpressEstimateReportClient(props: {
     setShareUrl("");
   }
   const [lightboxSrc, setLightboxSrc] = useState<string>("");
+
+  // Load cached rerun metadata on refresh.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const ck = window.localStorage.getItem(`hw.expressEstimate.cacheKey.${props.reportId}`) || "";
+      const exp = window.localStorage.getItem(`hw.expressEstimate.expiresAt.${props.reportId}`) || "";
+      if (ck) setCacheKey(ck);
+      if (exp) setExpiresAt(exp);
+    } catch {}
+  }, [props.reportId]);
 
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
   const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
@@ -413,6 +432,28 @@ export function ExpressEstimateReportClient(props: {
         }
 
         const lanes = Array.isArray(rec.lanes) ? (rec.lanes as any[]) : [];
+
+        // Cache metadata for reruns after expiry.
+        try {
+          const c = (rec as any).cache;
+          if (c && typeof c === "object") {
+            const ck = typeof c.cacheKey === "string" ? c.cacheKey : "";
+            const exp = typeof c.expiresAt === "string" ? c.expiresAt : "";
+            if (ck) {
+              setCacheKey(ck);
+              try {
+                window.localStorage.setItem(`hw.expressEstimate.cacheKey.${props.reportId}`, ck);
+              } catch {}
+            }
+            if (exp) {
+              setExpiresAt(exp);
+              try {
+                window.localStorage.setItem(`hw.expressEstimate.expiresAt.${props.reportId}`, exp);
+              } catch {}
+            }
+          }
+        } catch {}
+
         const normalized: ExtractedLane[] = lanes
           .filter((l) => l && typeof l.title === "string" && Array.isArray(l.items))
           .map((l) => ({
@@ -613,6 +654,71 @@ export function ExpressEstimateReportClient(props: {
                 <Download className="h-4 w-4" />
                 {downloading ? "Preparing…" : "Download report"}
               </Button>
+
+              {cacheKey && expiresAt && new Date(expiresAt).getTime() < Date.now() ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={analyzing}
+                  onClick={() => {
+                    setAnalyzing(true);
+                    setAnalysisError("");
+                    setAnalysisStage("Re-running estimate…");
+                    setAnalysisProgress(null);
+
+                    void (async () => {
+                      try {
+                        const fd = new FormData();
+                        fd.set("cacheKey", cacheKey);
+                        fd.set("force", "1");
+                        const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
+                        const j = await r.json().catch(() => null);
+                        if (!r.ok || !j || typeof j !== "object") {
+                          const detail = (j as any)?.detail || (j as any)?.error || "";
+                          setAnalysisError(detail ? `Analyze failed (${r.status}): ${detail}` : `Analyze failed (${r.status}).`);
+                          setExtracted([]);
+                          return;
+                        }
+                        const rec = j as any;
+                        if (rec.ok !== true) {
+                          const detail = typeof rec.detail === "string" ? rec.detail : "";
+                          const err = typeof rec.error === "string" ? rec.error : "Analyze failed.";
+                          setAnalysisError(detail ? `${err}: ${detail}` : err);
+                          setExtracted([]);
+                          return;
+                        }
+                        const lanes = Array.isArray(rec.lanes) ? rec.lanes : [];
+                        const normalized: ExtractedLane[] = lanes
+                          .filter((l: any) => l && typeof l.title === "string" && Array.isArray(l.items))
+                          .map((l: any) => ({
+                            title: String(l.title),
+                            items: (l.items as any[])
+                              .filter((it) => it && typeof it.label === "string")
+                              .map((it) => ({
+                                id: typeof it.id === "string" ? it.id : `item_${Math.random().toString(36).slice(2, 10)}`,
+                                label: String(it.label),
+                                note: typeof it.note === "string" ? it.note : undefined,
+                                range: typeof it.range === "string" ? it.range : undefined,
+                                price: typeof it.price === "number" ? it.price : undefined,
+                              })),
+                          }));
+                        if (normalized.length) setExtracted(normalized);
+                        setAnalysisSummary(typeof rec.summary === "string" ? rec.summary : "");
+                      } catch {
+                        setAnalysisError("Analyze failed. Please try again.");
+                        setExtracted([]);
+                      } finally {
+                        setAnalyzing(false);
+                        setAnalysisStage("");
+                        setAnalysisProgress(null);
+                      }
+                    })();
+                  }}
+                  className="gap-2 whitespace-nowrap px-3"
+                >
+                  Re-run estimate
+                </Button>
+              ) : null}
               <Button
                 size="sm"
                 variant="secondary"

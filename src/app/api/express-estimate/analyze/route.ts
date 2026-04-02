@@ -33,6 +33,14 @@ type UsageCost = {
   estCostUsd: number;
 };
 
+type AnalyzeCacheMeta = {
+  cacheKey: string;
+  pdfHash: string;
+  locationKey: string;
+  expiresAt?: string;
+  cached?: boolean;
+};
+
 type AnalyzeUsage = {
   pdfBytes: number;
   extractedTextChars: number;
@@ -286,10 +294,21 @@ async function writeCache(cacheKey: string, payload: unknown, pdfHash: string, l
     try {
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      // Include expiresAt inside payload for UI.
+      const withMeta = (() => {
+        if (payload && typeof payload === "object") {
+          const p = payload as any;
+          p.cache = p.cache || { cacheKey, pdfHash, locationKey: normalizeLocationKey(location) };
+          p.cache.expiresAt = expiresAt.toISOString();
+          return p;
+        }
+        return payload as any;
+      })();
+
       await db().expressEstimateCache.upsert({
         where: { cacheKey },
-        create: { cacheKey, pdfHash, location: normalizeLocationKey(location), payload: payload as any, expiresAt },
-        update: { payload: payload as any, expiresAt },
+        create: { cacheKey, pdfHash, location: normalizeLocationKey(location), payload: withMeta as any, expiresAt },
+        update: { payload: withMeta as any, expiresAt },
       });
       return;
     } catch {
@@ -414,6 +433,8 @@ export async function POST(req: Request) {
     const file = form.get("file");
     const textOverride = String(form.get("text") || "");
     const hashOverride = String(form.get("hash") || "").trim();
+    const cacheKeyOverride = String(form.get("cacheKey") || "").trim();
+    const force = String(form.get("force") || "").trim() === "1";
     const notes = String(form.get("notes") || "");
     const location = String(form.get("location") || "");
 
@@ -426,35 +447,57 @@ export async function POST(req: Request) {
     let hash = "";
     let pdfBytes = 0;
 
-    if (textOverride.trim()) {
-      extractedText = textOverride.trim();
-      hash = hashOverride || crypto.createHash("sha256").update(extractedText).digest("hex");
-      pdfBytes = 0;
-    } else {
-      if (!file || !(file instanceof File)) {
-        return NextResponse.json({ ok: false, error: "missing_file" }, { status: 400 });
+    // Optionally rerun using a previous cached entry (even if expired) without requiring the PDF upload again.
+    if (!textOverride.trim() && !file && cacheKeyOverride && dbEnabled()) {
+      const row = await db().expressEstimateCache.findUnique({ where: { cacheKey: cacheKeyOverride } });
+      const src = (row?.payload as any)?.source?.extractedText;
+      const loc = (row?.payload as any)?.source?.location;
+      if (row && typeof src === "string" && src.trim()) {
+        extractedText = src.trim();
+        hash = row.pdfHash;
+        pdfBytes = 0;
+        // Override location with whatever the cached run used (so pricing market stays consistent).
+        (form as any).set?.("location", loc || row.location || "");
+      } else {
+        return NextResponse.json({ ok: false, error: "cache_missing_source", detail: "Could not rerun: missing cached source text." }, { status: 400 });
       }
+    }
 
-      // ---- PDF text extraction (server-side) ----
-      const buf = Buffer.from(await file.arrayBuffer());
-      pdfBytes = buf.length;
-      hash = crypto.createHash("sha256").update(buf).digest("hex");
-      const parsedPdf = await pdf(buf);
-      extractedText = String(parsedPdf?.text || "").replace(/\u0000/g, "").trim();
+    if (!extractedText) {
+      if (textOverride.trim()) {
+        extractedText = textOverride.trim();
+        hash = hashOverride || crypto.createHash("sha256").update(extractedText).digest("hex");
+        pdfBytes = 0;
+      } else {
+        if (!file || !(file instanceof File)) {
+          return NextResponse.json({ ok: false, error: "missing_file" }, { status: 400 });
+        }
 
-      if (!extractedText) {
-        return NextResponse.json(
-          { ok: false, error: "pdf_no_text", detail: "Could not extract text from PDF (may be scanned)." },
-          { status: 422 }
-        );
+        // ---- PDF text extraction (server-side) ----
+        const buf = Buffer.from(await file.arrayBuffer());
+        pdfBytes = buf.length;
+        hash = crypto.createHash("sha256").update(buf).digest("hex");
+        const parsedPdf = await pdf(buf);
+        extractedText = String(parsedPdf?.text || "").replace(/\u0000/g, "").trim();
+
+        if (!extractedText) {
+          return NextResponse.json(
+            { ok: false, error: "pdf_no_text", detail: "Could not extract text from PDF (may be scanned)." },
+            { status: 422 }
+          );
+        }
       }
     }
 
     // Cache by (pdfHash + location) so the same PDF priced in different markets can differ.
-    const cacheKey = computeCacheKey(hash, location);
-    const cached = await readCache(cacheKey);
-    if (cached) {
-      return NextResponse.json({ ...cached, cached: true });
+    const cacheKey = cacheKeyOverride || computeCacheKey(hash, location);
+    const locationKey = normalizeLocationKey(location);
+
+    if (!force) {
+      const cached = await readCache(cacheKey);
+      if (cached) {
+        return NextResponse.json({ ...cached, cached: true });
+      }
     }
 
     // ---- Chunking pass: extract issue candidates from chunks ----
@@ -705,6 +748,16 @@ export async function POST(req: Request) {
         lanes: dedupeLanes(fallbackLanes, location),
         used: "fallback",
         usage,
+        cache: {
+          cacheKey,
+          pdfHash: hash,
+          locationKey,
+        } satisfies AnalyzeCacheMeta,
+        source: {
+          extractedText,
+          location,
+          notes,
+        },
       };
 
       await writeCache(cacheKey, payload, hash, location);
@@ -725,6 +778,17 @@ export async function POST(req: Request) {
       lanes: cleaned,
       used: "openai",
       usage,
+      cache: {
+        cacheKey,
+        pdfHash: hash,
+        locationKey,
+      } satisfies AnalyzeCacheMeta,
+      // Stored so we can rerun without requiring the PDF again.
+      source: {
+        extractedText,
+        location,
+        notes,
+      },
     };
 
     await writeCache(cacheKey, payload, hash, location);
