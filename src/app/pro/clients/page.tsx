@@ -163,7 +163,7 @@ export default function Page() {
     // Keep the list from growing endlessly; make it scrollable instead.
     // If user is searching, show all matches.
     const hasSearch = !!(q || "").trim();
-    return hasSearch ? derivedClients : derivedClients.slice(0, 8);
+    return hasSearch ? derivedClients : derivedClients.slice(0, 6);
   }, [derivedClients, q]);
 
   const partnerInviteLink = useMemo(() => {
@@ -205,7 +205,7 @@ export default function Page() {
 
           <div className="mt-5 grid gap-3">
             {visibleClients.length ? (
-              <div className={"grid gap-3 " + ((q || "").trim() ? "" : "max-h-[420px] overflow-auto pr-1") }>
+              <div className={"grid gap-3 " + ((q || "").trim() ? "" : "max-h-[320px] overflow-auto pr-1") }>
                 {visibleClients.map((c) => (
                   <div
                     key={c.key}
