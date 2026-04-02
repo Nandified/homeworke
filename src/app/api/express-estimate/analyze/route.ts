@@ -116,6 +116,31 @@ function parseMoney(s: string): number | null {
   return n * mult;
 }
 
+function formatUsdCompact(n: number) {
+  const rounded = Math.round(n);
+  return `$${rounded.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+}
+
+function scaleRange(range: string, factor: number): string {
+  const r = (range || "").replace(/–/g, "-");
+  const parts = r.split("-").map((p) => p.trim());
+  if (parts.length >= 2) {
+    const a = parseMoney(parts[0]);
+    const b = parseMoney(parts[1]);
+    if (a !== null && b !== null) {
+      const lo = a * factor;
+      const hi = b * factor;
+      return `${formatUsdCompact(lo)}–${formatUsdCompact(hi)}`;
+    }
+    const one = (a ?? b);
+    if (one !== null) return formatUsdCompact(one * factor);
+    return range;
+  }
+  const one = parseMoney(r);
+  if (one !== null) return formatUsdCompact(one * factor);
+  return range;
+}
+
 function midpointFromRange(range: string): number | null {
   const r = (range || "").replace(/–/g, "-");
   const parts = r.split("-").map((p) => p.trim());
@@ -154,12 +179,19 @@ function fillMissingRange(label: string, location: string): string {
 
 function dedupeLanes(lanes: ExtractedLane[], location: string): ExtractedLane[] {
   const seen = new Set<string>();
+  const homeownerFactor = 1.25; // Homeworke keeps 20% of final price => contractor gets 80%
+
   return lanes
     .map((lane) => {
       const items = lane.items
         .map((it) => {
-          const range = it.range && it.range.trim() ? it.range : fillMissingRange(it.label, location);
-          const price = typeof it.price === "number" && Number.isFinite(it.price) ? it.price : midpointFromRange(range) ?? undefined;
+          const baseRange = it.range && it.range.trim() ? it.range : fillMissingRange(it.label, location);
+          const range = scaleRange(baseRange, homeownerFactor);
+
+          // If model provided a price, assume it's base contractor cost and scale it.
+          const basePrice = typeof it.price === "number" && Number.isFinite(it.price) ? it.price : midpointFromRange(baseRange) ?? undefined;
+          const price = typeof basePrice === "number" ? Math.round(basePrice * homeownerFactor) : undefined;
+
           return { ...it, range, price };
         })
         .filter((it) => {
@@ -573,8 +605,9 @@ export async function POST(req: Request) {
       "Rules: (1) Do not duplicate items. (2) Do not hallucinate defects not in the issues list. " +
       "(3) Every item MUST include a pricing range string in USD like '$450–$1,200' (never omit range). " +
       "(4) Use location-based pricing when possible; otherwise use typical US pricing. " +
-      "(5) Keep labels short; put narrative in note. " +
-      "(6) Group items into lanes titled exactly one of: Exterior, Interior, Systems, Safety, Need more info, Other. " +
+      "(5) IMPORTANT: Ranges should reflect the homeowner price. Homeworke keeps 20% of the final price (contractor receives 80%), so homeowner price ~= contractor cost / 0.80. " +
+      "(6) Keep labels short; put narrative in note. " +
+      "(7) Group items into lanes titled exactly one of: Exterior, Interior, Systems, Safety, Need more info, Other. " +
       "Avoid dumping everything into Other—only use Other if you truly cannot classify.";
 
     const finalUser =
