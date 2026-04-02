@@ -185,20 +185,21 @@ function fillMissingRange(label: string, location: string): string {
   return "$250–$1,500";
 }
 
-function dedupeLanes(lanes: ExtractedLane[], location: string): ExtractedLane[] {
+function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1): ExtractedLane[] {
   const seen = new Set<string>();
   const homeownerFactor = 1.25; // Homeworke keeps 20% of final price => contractor gets 80%
+  const totalFactor = homeownerFactor * (Number.isFinite(marketFactor) && marketFactor > 0 ? marketFactor : 1);
 
   return lanes
     .map((lane) => {
       const items = lane.items
         .map((it) => {
           const baseRange = it.range && it.range.trim() ? it.range : fillMissingRange(it.label, location);
-          const range = scaleRange(baseRange, homeownerFactor);
+          const range = scaleRange(baseRange, totalFactor);
 
           // If model provided a price, assume it's base contractor cost and scale it.
           const basePrice = typeof it.price === "number" && Number.isFinite(it.price) ? it.price : midpointFromRange(baseRange) ?? undefined;
-          const price = typeof basePrice === "number" ? Math.round(basePrice * homeownerFactor) : undefined;
+          const price = typeof basePrice === "number" ? Math.round(basePrice * totalFactor) : undefined;
 
           return { ...it, range, price };
         })
@@ -493,6 +494,112 @@ export async function POST(req: Request) {
     const cacheKey = cacheKeyOverride || computeCacheKey(hash, location);
     const locationKey = normalizeLocationKey(location);
 
+    // ---- Market adjustment (ZIP-based; ACS median household income proxy) ----
+    const market = (() => {
+      const zip = (location.match(/\b(\d{5})\b/) || [])[1] || "";
+      const st = (location.match(/,\s*([A-Z]{2})\s*\d{5}\b/) || [])[1] || "";
+      return { zip, state: st };
+    })();
+
+    const STATE_FIPS: Record<string, string> = {
+      AL: "01",
+      AK: "02",
+      AZ: "04",
+      AR: "05",
+      CA: "06",
+      CO: "08",
+      CT: "09",
+      DE: "10",
+      DC: "11",
+      FL: "12",
+      GA: "13",
+      HI: "15",
+      ID: "16",
+      IL: "17",
+      IN: "18",
+      IA: "19",
+      KS: "20",
+      KY: "21",
+      LA: "22",
+      ME: "23",
+      MD: "24",
+      MA: "25",
+      MI: "26",
+      MN: "27",
+      MS: "28",
+      MO: "29",
+      MT: "30",
+      NE: "31",
+      NV: "32",
+      NH: "33",
+      NJ: "34",
+      NM: "35",
+      NY: "36",
+      NC: "37",
+      ND: "38",
+      OH: "39",
+      OK: "40",
+      OR: "41",
+      PA: "42",
+      RI: "44",
+      SC: "45",
+      SD: "46",
+      TN: "47",
+      TX: "48",
+      UT: "49",
+      VT: "50",
+      VA: "51",
+      WA: "53",
+      WV: "54",
+      WI: "55",
+      WY: "56",
+    };
+
+    async function fetchAcsMedianHouseholdIncomeForZip(zip: string): Promise<number | null> {
+      if (!zip || !/^\d{5}$/.test(zip)) return null;
+      const url = `https://api.census.gov/data/2023/acs/acs5?get=B19013_001E&for=zip%20code%20tabulation%20area:${zip}`;
+      const r = await fetch(url, { cache: "no-store" }).catch(() => null);
+      if (!r || !r.ok) return null;
+      const j = (await r.json().catch(() => null)) as any;
+      const v = Array.isArray(j) && Array.isArray(j[1]) ? Number(j[1][0]) : NaN;
+      return Number.isFinite(v) ? v : null;
+    }
+
+    async function fetchAcsMedianHouseholdIncomeForState(stateFips: string): Promise<number | null> {
+      if (!stateFips || !/^\d{2}$/.test(stateFips)) return null;
+      const url = `https://api.census.gov/data/2023/acs/acs5?get=B19013_001E&for=state:${stateFips}`;
+      const r = await fetch(url, { cache: "no-store" }).catch(() => null);
+      if (!r || !r.ok) return null;
+      const j = (await r.json().catch(() => null)) as any;
+      const v = Array.isArray(j) && Array.isArray(j[1]) ? Number(j[1][0]) : NaN;
+      return Number.isFinite(v) ? v : null;
+    }
+
+    let marketFactor = 1;
+    let marketMeta: { zip?: string; state?: string; medianIncomeZip?: number | null; medianIncomeState?: number | null; multiplier?: number } = {
+      zip: market.zip || undefined,
+      state: market.state || undefined,
+    };
+    try {
+      const fips = STATE_FIPS[market.state] || "";
+      if (market.zip && fips) {
+        const [mZip, mState] = await Promise.all([
+          fetchAcsMedianHouseholdIncomeForZip(market.zip),
+          fetchAcsMedianHouseholdIncomeForState(fips),
+        ]);
+        marketMeta.medianIncomeZip = mZip;
+        marketMeta.medianIncomeState = mState;
+        if (mZip && mState) {
+          const raw = mZip / mState;
+          // Clamp to keep early pricing stable and avoid weird outliers.
+          marketFactor = Math.max(0.75, Math.min(1.5, raw));
+          marketMeta.multiplier = marketFactor;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
     if (!force) {
       const cached = await readCache(cacheKey);
       if (cached) {
@@ -712,7 +819,7 @@ export async function POST(req: Request) {
         return { title, items };
       });
 
-    const cleaned = dedupeLanes(lanes, location);
+    const cleaned = dedupeLanes(lanes, location, marketFactor);
 
     if (cleaned.length === 0) {
       // Fallback: build lanes directly from extracted issues so we still return something usable.
@@ -746,9 +853,10 @@ export async function POST(req: Request) {
         ok: true,
         summary:
           "Estimate generated using fallback grouping/pricing because the final formatting step returned no items.",
-        lanes: dedupeLanes(fallbackLanes, location),
+        lanes: dedupeLanes(fallbackLanes, location, marketFactor),
         used: "fallback",
         usage,
+        market: marketMeta,
         cache: {
           cacheKey,
           pdfHash: hash,
@@ -781,6 +889,7 @@ export async function POST(req: Request) {
       lanes: cleaned,
       used: "openai",
       usage,
+      market: marketMeta,
       cache: {
         cacheKey,
         pdfHash: hash,
