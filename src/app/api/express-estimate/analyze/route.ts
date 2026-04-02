@@ -597,16 +597,43 @@ export async function POST(req: Request) {
     const cleaned = dedupeLanes(lanes, location);
 
     if (cleaned.length === 0) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "no_items_generated",
-          detail:
-            "AI returned no estimate items. This is usually caused by poor/empty extracted text (scanned PDF) or an upstream model error. " +
-            `Extracted text length: ${extractedText.length} chars; issues extracted: ${dedupedIssues.length}.`,
-        },
-        { status: 422 }
-      );
+      // Fallback: build lanes directly from extracted issues so we still return something usable.
+      const laneOrder = ["Exterior", "Interior", "Systems", "Safety", "Need more info", "Other"] as const;
+      const buckets = new Map<string, LaneItem[]>();
+      for (const t of laneOrder) buckets.set(t, []);
+
+      for (const it of dedupedIssues) {
+        const lane = normalizeLaneTitle(it.lane || "Other");
+        const label = it.label;
+        const note = it.note;
+        const range = fillMissingRange(label, location);
+        const price = midpointFromRange(range) ?? undefined;
+        buckets.get(lane)!.push({ id: stableIdFor(label), label, note, range, price });
+      }
+
+      const fallbackLanes: ExtractedLane[] = laneOrder
+        .map((t) => ({ title: t, items: buckets.get(t)! }))
+        .filter((l) => l.items.length > 0);
+
+      const usage: AnalyzeUsage = {
+        pdfBytes,
+        extractedTextChars: extractedText.length,
+        hash,
+        calls: usageCalls,
+        estTotalCostUsd: usageCalls.reduce((a, b) => a + (b.estCostUsd || 0), 0),
+      };
+
+      const payload = {
+        ok: true,
+        summary:
+          "Estimate generated using fallback grouping/pricing because the final formatting step returned no items.",
+        lanes: dedupeLanes(fallbackLanes, location),
+        used: "fallback",
+        usage,
+      };
+
+      await writeCache(hash, payload);
+      return NextResponse.json(payload);
     }
 
     const usage: AnalyzeUsage = {
