@@ -112,6 +112,7 @@ export function ExpressEstimateReportClient(props: {
 
   const report = useMemo(() => demoReports.find((r) => r.id === props.reportId) || null, [demoReports, props.reportId]);
   const effectiveAddress = report?.address || props.address || "";
+  const effectiveOwnerName = props.ownerName || "";
 
   const [file, setFile] = useState<File | null>(null);
   const [notes, setNotes] = useState<string>("");
@@ -695,9 +696,9 @@ export function ExpressEstimateReportClient(props: {
         <Card className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="w-full min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant Estimates</div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant Estimate</div>
               <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
-                Prepared For: <span className="font-semibold text-[var(--hw-ink)]">{props.ownerName || "—"}</span>
+                Prepared For: <span className="font-semibold text-[var(--hw-ink)]">{effectiveOwnerName || "—"}</span>
               </div>
               <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
                 Property Address: <span className="font-semibold text-[var(--hw-ink)]">{effectiveAddress || "—"}</span>

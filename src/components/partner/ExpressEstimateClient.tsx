@@ -898,6 +898,9 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               if (stagedId) q.set("staged", stagedId);
               if (address) q.set("address", address);
               if (ownerName) q.set("owner", ownerName);
+              // Preserve cacheKey if present so refresh can reload estimate.
+              const ck = (r.id.startsWith("rpt_") ? r.id.slice(4) : "");
+              if (ck) q.set("cacheKey", ck);
               const href = `${props.basePath}/express-estimate/${encodeURIComponent(r.id)}${q.toString() ? `?${q.toString()}` : ""}`;
               return (
                 <div
