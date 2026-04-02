@@ -446,7 +446,7 @@ export function ExpressEstimateReportClient(props: {
             address: effectiveAddress || "(unknown address)",
             type: "Inspection",
             createdAt: new Date().toISOString(),
-            status: "Ready",
+            status: "Ready", // internal only (hidden from UI)
           };
           const out = [next, ...arr.filter((r) => r && r.id !== props.reportId)].slice(0, 200);
           window.localStorage.setItem(key, JSON.stringify(out));

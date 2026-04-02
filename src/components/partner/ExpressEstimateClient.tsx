@@ -811,7 +811,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           address: address || "(unknown address)",
                           type: "Inspection",
                           createdAt: new Date().toISOString(),
-                          status: "Draft",
+                          status: "Draft", // internal only (hidden from UI)
                         };
                         const persisted = upsertReport(next);
                         // Merge with existing demo rows
@@ -899,9 +899,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--hw-muted)]">
                         <span>{r.type}</span>
                         <span>•</span>
-                        <span>{new Date(r.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
-                        <span>•</span>
-                        <span>{r.status}</span>
+                        <span>{new Date(r.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
                       </div>
                     </div>
                     <div className="shrink-0">
