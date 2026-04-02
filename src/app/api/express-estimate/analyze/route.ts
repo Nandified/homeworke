@@ -108,22 +108,42 @@ function dedupeLanes(lanes: ExtractedLane[]): ExtractedLane[] {
 }
 
 function chunkText(text: string, maxChars = 45_000) {
-  // Split on page-ish / paragraph-ish boundaries when possible.
-  const lines = text.split(/\n{2,}/g);
+  // If the client included page sentinels, split on them.
+  const hasPages = /\[PAGE\s+\d+\]/.test(text);
+  const blocks = hasPages
+    ? text
+        .split(/(?=\[PAGE\s+\d+\])/g)
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : text
+        .split(/\n{2,}/g)
+        .map((s) => s.trim())
+        .filter(Boolean);
+
   const chunks: string[] = [];
   let cur = "";
-  for (const block of lines) {
-    const b = (block || "").trim();
+  for (const b of blocks) {
     if (!b) continue;
+    // If a single block exceeds maxChars, hard-slice it so we don't exceed context.
+    if (!cur && b.length > maxChars) {
+      for (let i = 0; i < b.length; i += maxChars) {
+        chunks.push(b.slice(i, i + maxChars));
+        if (chunks.length >= 24) return chunks;
+      }
+      continue;
+    }
+
     if ((cur + "\n\n" + b).length > maxChars && cur) {
       chunks.push(cur);
       cur = b;
     } else {
       cur = cur ? cur + "\n\n" + b : b;
     }
+
+    if (chunks.length >= 24) break;
   }
-  if (cur) chunks.push(cur);
-  return chunks.slice(0, 24); // safety cap
+  if (cur && chunks.length < 24) chunks.push(cur);
+  return chunks;
 }
 
 async function readCache(cacheKey: string) {

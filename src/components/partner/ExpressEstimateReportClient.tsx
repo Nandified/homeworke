@@ -69,7 +69,12 @@ export function ExpressEstimateReportClient(props: {
       if (strings.length) out += `\n\n[PAGE ${i}]\n` + strings.join(" ");
     }
 
-    const text = out.replace(/\s+/g, " ").trim();
+    // Keep page boundaries/newlines so the server can chunk reliably.
+    const text = out
+      .replace(/\r/g, "")
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
     return { text, hash };
   }
   function svgThumb(label: string, bg = "#fdecec", fg = "#b91c1c") {
