@@ -184,9 +184,10 @@ async function callOpenAIJsonSchema(args: {
     }),
   });
 
-  const text = await res.text();
+  const text = await res.text().catch(() => "");
   if (!res.ok) {
-    return { ok: false as const, status: res.status, detail: text.slice(0, 2000) };
+    const detail = (text || "(empty error body from OpenAI)").slice(0, 2000);
+    return { ok: false as const, status: res.status, detail };
   }
 
   let parsedRes: any = null;
@@ -319,18 +320,29 @@ export async function POST(req: Request) {
         `Chunk ${i + 1}/${chunks.length}:\n\n` +
         chunks[i];
 
-      const r = await callOpenAIJsonSchema({
-        apiKey,
-        model: "gpt-5.4-mini",
-        schemaName: "instant_estimate_chunk_issues",
-        schema: chunkSchema,
-        system: chunkSystem,
-        user: userMsg,
-      });
+      let r:
+        | Awaited<ReturnType<typeof callOpenAIJsonSchema>>
+        | { ok: false; status: number; detail: string };
+      try {
+        r = await callOpenAIJsonSchema({
+          apiKey,
+          model: "gpt-5.4-mini",
+          schemaName: "instant_estimate_chunk_issues",
+          schema: chunkSchema,
+          system: chunkSystem,
+          user: userMsg,
+        });
+      } catch (e: unknown) {
+        const msg = e && typeof e === "object" && "message" in e ? String((e as any).message) : String(e || "unknown");
+        return NextResponse.json(
+          { ok: false, error: "openai_fetch_failed", detail: `chunk_${i + 1}: ${msg}` },
+          { status: 500 }
+        );
+      }
 
       if (!r.ok) {
         return NextResponse.json(
-          { ok: false, error: "openai_error", detail: `chunk_${i + 1}: ${r.detail}` },
+          { ok: false, error: "openai_error", detail: `chunk_${i + 1}: ${r.detail || "(no detail)"}` },
           { status: 500 }
         );
       }
@@ -408,17 +420,28 @@ export async function POST(req: Request) {
       "Issues extracted (JSON):\n" +
       JSON.stringify(dedupedIssues.slice(0, 140), null, 2);
 
-    const final = await callOpenAIJsonSchema({
-      apiKey,
-      model: "gpt-5.4",
-      schemaName: "instant_estimate_final",
-      schema: finalSchema,
-      system: finalSystem,
-      user: finalUser,
-    });
+    let final:
+      | Awaited<ReturnType<typeof callOpenAIJsonSchema>>
+      | { ok: false; status: number; detail: string };
+    try {
+      final = await callOpenAIJsonSchema({
+        apiKey,
+        model: "gpt-5.4",
+        schemaName: "instant_estimate_final",
+        schema: finalSchema,
+        system: finalSystem,
+        user: finalUser,
+      });
+    } catch (e: unknown) {
+      const msg = e && typeof e === "object" && "message" in e ? String((e as any).message) : String(e || "unknown");
+      return NextResponse.json({ ok: false, error: "openai_fetch_failed", detail: `final: ${msg}` }, { status: 500 });
+    }
 
     if (!final.ok) {
-      return NextResponse.json({ ok: false, error: "openai_error", detail: final.detail }, { status: 500 });
+      return NextResponse.json(
+        { ok: false, error: "openai_error", detail: final.detail || "(no detail)" },
+        { status: 500 }
+      );
     }
 
     usageCalls.push(final.usage);

@@ -367,7 +367,9 @@ export function ExpressEstimateReportClient(props: {
             }
           }
 
-          setAnalysisError(extra ? `Analyze failed (${r.status}): ${extra}` : `Analyze failed (${r.status}).`);
+          setAnalysisError(
+            extra ? `Analyze failed (${r.status}): ${extra}` : `Analyze failed (${r.status}): (no error body returned)`
+          );
           setExtracted([]);
           return;
         }
