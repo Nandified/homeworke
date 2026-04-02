@@ -1,0 +1,36 @@
+{
+  "version": "2026-04-02",
+  "currency": "USD",
+  "region": { "country": "US", "state": "IL", "metro": "Chicago-Naperville-Elgin" },
+  "defaultGuardrails": {
+    "minTripCharge": 250,
+    "minBillableHours": 1,
+    "hourlyRate": { "min": 95, "max": 185 }
+  },
+  "trades": [
+    { "tradeId": "handyman", "name": "Handyman / General Repairs", "guardrails": { "minTripCharge": 200, "minBillableHours": 1, "hourlyRate": { "min": 85, "max": 140 }, "smallJobCeiling": 400 } },
+    { "tradeId": "electrical", "name": "Electrical", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 110, "max": 225 }, "smallJobCeiling": 500 } },
+    { "tradeId": "plumbing", "name": "Plumbing", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 120, "max": 250 }, "smallJobCeiling": 600 } },
+    { "tradeId": "hvac", "name": "HVAC", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 120, "max": 250 }, "smallJobCeiling": 650 } },
+    { "tradeId": "roofing", "name": "Roofing", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 110, "max": 225 }, "smallJobCeiling": 700 } },
+    { "tradeId": "masonry", "name": "Masonry / Tuckpointing", "guardrails": { "minTripCharge": 300, "minBillableHours": 2, "hourlyRate": { "min": 120, "max": 260 }, "smallJobCeiling": 900 } },
+    { "tradeId": "painting", "name": "Painting", "guardrails": { "minTripCharge": 200, "minBillableHours": 2, "hourlyRate": { "min": 75, "max": 150 }, "smallJobCeiling": 500 } },
+    { "tradeId": "drywall", "name": "Drywall", "guardrails": { "minTripCharge": 200, "minBillableHours": 2, "hourlyRate": { "min": 80, "max": 160 }, "smallJobCeiling": 550 } },
+    { "tradeId": "tile", "name": "Tile", "guardrails": { "minTripCharge": 250, "minBillableHours": 2, "hourlyRate": { "min": 90, "max": 180 }, "smallJobCeiling": 900 } },
+    { "tradeId": "flooring", "name": "Flooring", "guardrails": { "minTripCharge": 250, "minBillableHours": 2, "hourlyRate": { "min": 85, "max": 175 }, "smallJobCeiling": 700 } },
+    { "tradeId": "windows_doors", "name": "Windows / Doors", "guardrails": { "minTripCharge": 250, "minBillableHours": 2, "hourlyRate": { "min": 95, "max": 190 }, "smallJobCeiling": 800 } },
+    { "tradeId": "gutters", "name": "Gutters / Downspouts", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 95, "max": 175 }, "smallJobCeiling": 650 } },
+    { "tradeId": "gutters_cleaning", "name": "Gutter Cleaning", "guardrails": { "minTripCharge": 200, "minBillableHours": 1, "hourlyRate": { "min": 85, "max": 160 }, "smallJobCeiling": 350 } },
+    { "tradeId": "landscaping", "name": "Landscaping / Yard", "guardrails": { "minTripCharge": 200, "minBillableHours": 2, "hourlyRate": { "min": 75, "max": 150 }, "smallJobCeiling": 600 } },
+    { "tradeId": "fencing", "name": "Fencing", "guardrails": { "minTripCharge": 250, "minBillableHours": 2, "hourlyRate": { "min": 85, "max": 175 }, "smallJobCeiling": 900 } },
+    { "tradeId": "garage_door", "name": "Garage Door", "guardrails": { "minTripCharge": 250, "minBillableHours": 1, "hourlyRate": { "min": 110, "max": 225 }, "smallJobCeiling": 900 } },
+    { "tradeId": "locksmith", "name": "Locksmith", "guardrails": { "minTripCharge": 200, "minBillableHours": 1, "hourlyRate": { "min": 95, "max": 190 }, "smallJobCeiling": 500 } },
+    { "tradeId": "pest_control", "name": "Pest Control", "guardrails": { "minTripCharge": 200, "minBillableHours": 1, "hourlyRate": { "min": 90, "max": 175 }, "smallJobCeiling": 500 } },
+    { "tradeId": "power_washing", "name": "Power Washing", "guardrails": { "minTripCharge": 200, "minBillableHours": 1, "hourlyRate": { "min": 75, "max": 150 }, "smallJobCeiling": 450 } },
+    { "tradeId": "concrete", "name": "Concrete", "guardrails": { "minTripCharge": 350, "minBillableHours": 2, "hourlyRate": { "min": 120, "max": 240 }, "smallJobCeiling": 1200 } },
+    { "tradeId": "grading", "name": "Grading / Drainage", "guardrails": { "minTripCharge": 300, "minBillableHours": 2, "hourlyRate": { "min": 110, "max": 225 }, "smallJobCeiling": 1100 } },
+    { "tradeId": "tree_service", "name": "Tree Service", "guardrails": { "minTripCharge": 300, "minBillableHours": 2, "hourlyRate": { "min": 120, "max": 240 }, "smallJobCeiling": 1500 } },
+    { "tradeId": "mold_remediation", "name": "Mold Remediation", "guardrails": { "minTripCharge": 500, "minBillableHours": 2, "hourlyRate": { "min": 150, "max": 325 }, "smallJobCeiling": 2500 } },
+    { "tradeId": "admin_compliance", "name": "Admin / Compliance (No pricing)", "guardrails": { "minTripCharge": 0, "minBillableHours": 0, "hourlyRate": { "min": 0, "max": 0 }, "smallJobCeiling": 0, "noPrice": true } }
+  ]
+}
