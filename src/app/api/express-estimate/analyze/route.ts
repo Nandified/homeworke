@@ -555,7 +555,8 @@ export async function POST(req: Request) {
           error: "no_issues_extracted",
           detail:
             "We could not find any actionable issues in the extracted text. " +
-            "This often happens when the PDF is scanned/image-only (no selectable text) or the text extraction failed. " +
+            "If this is a real inspection report, this usually means the extracted text is mostly boilerplate, headers, or formatting artifacts (even if it isn't scanned). " +
+            "Try a different export, or we can add an OCR/image fallback for this report type. " +
             `Extracted text length: ${extractedText.length} chars.`,
         },
         { status: 422 }

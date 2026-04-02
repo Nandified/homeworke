@@ -565,7 +565,7 @@ export function ExpressEstimateReportClient(props: {
         ) : null}
         <Card className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
+            <div className="w-full min-w-0">
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Instant Estimates</div>
               <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
                 Prepared For: <span className="font-semibold text-[var(--hw-ink)]">{props.ownerName || "—"}</span>
