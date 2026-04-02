@@ -19,6 +19,12 @@ type LaneItem = {
   range?: string;
   price?: number;
   evidence?: EvidenceThumb[];
+
+  // Scope-aware pricing + booking eligibility
+  pricingMode?: "Guardrails" | "Quote-only";
+  confidence?: number; // 0..1
+  quantityHint?: string; // e.g. "2 windows" | "multiple"
+  scopeMultiplier?: number; // applied to guardrail-derived ranges/prices
 };
 
 type ExtractedLane = {
@@ -215,15 +221,10 @@ function rangeFromTradeGuardrails(tradeId: string): string {
   return `${formatUsd(lo)}–${formatUsd(high)}`;
 }
 
-function fillMissingRange(label: string, _location: string): string {
+function inferTradeId(label: string): string {
   const l = normalizeLabel(label);
-
-  // Route common inspection-item language into a trade bucket,
-  // then derive a fallback range from our Chicagoland guardrails.
   const rules: Array<{ re: RegExp; tradeId: string }> = [
-    // Roof/chimney
     { re: /chimney|flashing|shingle|soffit|fascia|roof\b|roofing/, tradeId: "roofing" },
-
     { re: /foundation|masonry|parging|brick|tuckpoint/, tradeId: "masonry" },
     { re: /gutter|downspout/, tradeId: "gutters" },
     { re: /hvac|furnace|air conditioner|ac\b|heat pump|thermostat/, tradeId: "hvac" },
@@ -245,9 +246,38 @@ function fillMissingRange(label: string, _location: string): string {
     { re: /tree|branch|stump/, tradeId: "tree_service" },
     { re: /mold|remediation/, tradeId: "mold_remediation" },
   ];
-
   const hit = rules.find((r) => r.re.test(l));
-  const tradeId = hit?.tradeId || "handyman";
+  return hit?.tradeId || "handyman";
+}
+
+function inferScope(label: string, note?: string): { scopeMultiplier: number; quantityHint: string; confidence: number } {
+  const text = `${label || ""} ${note || ""}`.trim();
+  const t = normalizeLabel(text);
+
+  // Explicit counts: "(2)" or "2" or "two" etc.
+  const digit = t.match(/\b(\d{1,2})\b/);
+  if (digit) {
+    const n = Math.max(1, Math.min(25, Number(digit[1]) || 1));
+    return { scopeMultiplier: Math.max(1, Math.min(6, 0.8 + n * 0.6)), quantityHint: `${n}`, confidence: 0.82 };
+  }
+
+  const hasPluralSignals = /\b(windows|doors|screens|gutters|downspouts|outlets|switches|fixtures)\b/.test(t);
+  const hasMultiWords = /\b(multiple|several|various|throughout|all|many)\b/.test(t);
+  const hasTwoAreas = /\b(front and rear|both sides|left and right|upstairs and downstairs)\b/.test(t);
+
+  if (hasMultiWords) return { scopeMultiplier: 2.6, quantityHint: "multiple", confidence: 0.55 };
+  if (hasTwoAreas) return { scopeMultiplier: 1.9, quantityHint: "two areas", confidence: 0.58 };
+  if (hasPluralSignals) return { scopeMultiplier: 1.7, quantityHint: "plural", confidence: 0.52 };
+
+  return { scopeMultiplier: 1.0, quantityHint: "single", confidence: 0.62 };
+}
+
+function needsScopeForBooking(tradeId: string): boolean {
+  return ["windows_doors", "gutters", "flooring", "painting", "roofing"].includes(String(tradeId || "").toLowerCase());
+}
+
+function fillMissingRange(label: string, _location: string): string {
+  const tradeId = inferTradeId(label);
   return rangeFromTradeGuardrails(tradeId);
 }
 
@@ -281,7 +311,15 @@ function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1)
       const items = lane.items
         .map((it) => {
           const hadRange = !!(it.range && it.range.trim());
-          const baseRange = hadRange ? it.range! : fillMissingRange(it.label, location);
+          const tradeId = inferTradeId(it.label);
+
+          // If we don't have an explicit quantity, infer scope from wording.
+          const inferred = inferScope(it.label, it.note);
+          const scopeMultiplier = Math.max(1, Number.isFinite(inferred.scopeMultiplier) ? inferred.scopeMultiplier : 1);
+
+          // Only apply scope multiplier when we are synthesizing the guardrail range.
+          const baseRangeRaw = hadRange ? it.range! : fillMissingRange(it.label, location);
+          const baseRange = !hadRange ? scaleRange(baseRangeRaw, scopeMultiplier) : baseRangeRaw;
           const range = scaleRange(baseRange, totalFactor);
 
           // If model provided a price, assume it's base contractor cost and scale it.
@@ -294,7 +332,20 @@ function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1)
                 : (priceFromRangeByLabel(baseRange, it.label) ?? undefined);
           const price = typeof basePrice === "number" ? Math.round(basePrice * totalFactor) : undefined;
 
-          return { ...it, range, price };
+          // Booking eligibility: if scope is needed but confidence is low, force quote-only.
+          const scopeNeeded = needsScopeForBooking(tradeId);
+          const confidence = typeof it.confidence === "number" ? it.confidence : inferred.confidence;
+          const pricingMode: LaneItem["pricingMode"] = scopeNeeded && confidence < 0.65 ? "Quote-only" : (it.pricingMode || "Guardrails");
+
+          return {
+            ...it,
+            range,
+            price,
+            scopeMultiplier,
+            quantityHint: it.quantityHint || inferred.quantityHint,
+            confidence,
+            pricingMode,
+          };
         })
         .filter((it) => {
           const key = normalizeLabel(it.label);

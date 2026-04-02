@@ -16,7 +16,18 @@ type EvidenceThumb = { src: string; caption?: string };
 
 type ExtractedLane = {
   title: string;
-  items: Array<{ id: string; label: string; note?: string; range?: string; price?: number; evidence?: EvidenceThumb[] }>;
+  items: Array<{
+    id: string;
+    label: string;
+    note?: string;
+    range?: string;
+    price?: number;
+    evidence?: EvidenceThumb[];
+    pricingMode?: "Guardrails" | "Quote-only";
+    confidence?: number;
+    quantityHint?: string;
+    scopeMultiplier?: number;
+  }>;
 };
 
 type AnalyzeResponse =
@@ -1071,8 +1082,10 @@ export function ExpressEstimateReportClient(props: {
                                   {/* Row 1: Price (on mobile, keep it nearer the content block) */}
                                   <div className="flex items-start justify-start sm:justify-end">
                                     <div className="w-[110px] shrink-0 text-left tabular-nums sm:text-right">
-                                      <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(estimateItemValue(item) || 0)}</div>
-                                      <div className="text-xs font-semibold text-[var(--hw-muted)]">{item.range || "—"}</div>
+                                      <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">
+                                        {item.pricingMode === "Quote-only" ? "Quote" : formatUSD(estimateItemValue(item) || 0)}
+                                      </div>
+                                      <div className="text-xs font-semibold text-[var(--hw-muted)]">{item.pricingMode === "Quote-only" ? "Needs onsite" : item.range || "—"}</div>
                                     </div>
                                   </div>
 
@@ -1115,9 +1128,16 @@ export function ExpressEstimateReportClient(props: {
                                       size="sm"
                                       variant={repairIds.has(item.id) ? "secondary" : "ghost"}
                                       className="rounded-full px-3"
+                                      disabled={item.pricingMode === "Quote-only"}
+                                      title={
+                                        item.pricingMode === "Quote-only"
+                                          ? "Needs scope confirmation (quote-only)."
+                                          : ""
+                                      }
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
+                                        if (item.pricingMode === "Quote-only") return;
                                         setRepairIds((prev) => {
                                           const next = new Set(prev);
                                           if (next.has(item.id)) next.delete(item.id);
@@ -1126,7 +1146,7 @@ export function ExpressEstimateReportClient(props: {
                                         });
                                       }}
                                     >
-                                      {repairIds.has(item.id) ? "Repair ✓" : "Book repair"}
+                                      {item.pricingMode === "Quote-only" ? "Request quote" : repairIds.has(item.id) ? "Repair ✓" : "Book repair"}
                                     </Button>
                                   </div>
                                 </div>
@@ -1137,8 +1157,12 @@ export function ExpressEstimateReportClient(props: {
                             {open ? (
                               <div className="border-t border-[rgba(17,24,39,.08)] bg-white px-3 pb-3 pt-3">
                                 {item.note ? (
-                                  <div className="mb-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--hw-ink)]/80">
-                                    {item.note}
+                                  <div className="mb-3 whitespace-pre-wrap text-sm leading-relaxed text-[var(--hw-ink)]/80">{item.note}</div>
+                                ) : null}
+
+                                {item.pricingMode === "Quote-only" ? (
+                                  <div className="mb-3 rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] px-3 py-2 text-xs font-semibold text-[var(--hw-ink)]/80">
+                                    Quote-only until scope is confirmed{item.quantityHint ? ` (hint: ${item.quantityHint})` : ""}.
                                   </div>
                                 ) : null}
 
