@@ -255,14 +255,15 @@ export function ExpressEstimateReportClient(props: {
         const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
         const j = await r.json().catch(() => null);
         if (!r.ok || !j || typeof j !== "object") {
-          setAnalysisError(`Analyze failed (${r.status}).`);
+          // If we already have results (from localStorage), don't show a stale error banner.
+          if (extracted.length === 0) setAnalysisError(`Analyze failed (${r.status}).`);
           return;
         }
         const rec = j as any;
         if (rec.ok !== true) {
           const detail = typeof rec.detail === "string" ? rec.detail : "";
           const err = typeof rec.error === "string" ? rec.error : "Analyze failed.";
-          setAnalysisError(detail ? `${err}: ${detail}` : err);
+          if (extracted.length === 0) setAnalysisError(detail ? `${err}: ${detail}` : err);
           return;
         }
         const lanes = Array.isArray(rec.lanes) ? rec.lanes : [];
@@ -290,7 +291,7 @@ export function ExpressEstimateReportClient(props: {
           );
         } catch {}
       } catch {
-        setAnalysisError("Analyze failed. Please try again.");
+        if (extracted.length === 0) setAnalysisError("Analyze failed. Please try again.");
       } finally {
         setAnalyzing(false);
         setAnalysisStage("");
@@ -300,8 +301,8 @@ export function ExpressEstimateReportClient(props: {
   }, [cacheKey, extracted.length, props.reportId, props.stagedId]);
   // If we have results, don't show stale error banners from background cache reload attempts.
   useEffect(() => {
-    if (extracted.length > 0) setAnalysisError("");
-  }, [extracted.length]);
+    if (extracted.length > 0 && analysisError) setAnalysisError("");
+  }, [analysisError, extracted.length]);
 
   const [repairIds, setRepairIds] = useState<Set<string>>(new Set());
   const [openItemId, setOpenItemId] = useState<string>("");
