@@ -111,8 +111,43 @@ export function ExpressEstimateReportClient(props: {
   }, []);
 
   const report = useMemo(() => demoReports.find((r) => r.id === props.reportId) || null, [demoReports, props.reportId]);
-  const effectiveAddress = report?.address || props.address || "";
-  const effectiveOwnerName = props.ownerName || "";
+
+  // Persist owner/address so the header doesn't go blank when navigating without query params.
+  const [persistedOwnerName, setPersistedOwnerName] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    try {
+      return window.localStorage.getItem(`hw.expressEstimate.owner.${props.reportId}`) || "";
+    } catch {
+      return "";
+    }
+  });
+  const [persistedAddress, setPersistedAddress] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    try {
+      return window.localStorage.getItem(`hw.expressEstimate.address.${props.reportId}`) || "";
+    } catch {
+      return "";
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (props.ownerName && props.ownerName.trim()) {
+        window.localStorage.setItem(`hw.expressEstimate.owner.${props.reportId}`, props.ownerName.trim());
+        setPersistedOwnerName(props.ownerName.trim());
+      }
+      if (props.address && props.address.trim()) {
+        window.localStorage.setItem(`hw.expressEstimate.address.${props.reportId}`, props.address.trim());
+        setPersistedAddress(props.address.trim());
+      }
+    } catch {
+      // ignore
+    }
+  }, [props.reportId, props.ownerName, props.address]);
+
+  const effectiveAddress = report?.address || props.address || persistedAddress || "";
+  const effectiveOwnerName = props.ownerName || persistedOwnerName || "";
 
   const [files, setFiles] = useState<File[]>([]);
   const [forceNextRun, setForceNextRun] = useState(false);
