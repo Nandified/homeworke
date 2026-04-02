@@ -918,13 +918,35 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         <span>{new Date(r.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
                       </div>
                     </div>
-                    <div className="shrink-0">
+                    <div className="shrink-0 flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (!window.confirm("Delete this report from your list?")) return;
+                          if (!window.confirm("Confirm delete: this cannot be undone.")) return;
+
+                          try {
+                            const key = STORAGE_KEYS.reports;
+                            const raw = window.localStorage.getItem(key) || "[]";
+                            const arr = (JSON.parse(raw) as any[]) || [];
+                            const out = arr.filter((x) => x && x.id !== r.id);
+                            window.localStorage.setItem(key, JSON.stringify(out));
+                          } catch {}
+
+                          setReports((prev) => prev.filter((x) => x.id !== r.id));
+                        }}
+                      >
+                        Delete
+                      </Button>
+
                       <Link href={href}>
                         <Button size="sm" variant="primary" disabled={false}>
                           Open report
                         </Button>
                       </Link>
-                      {null}
                     </div>
                   </div>
                 </div>
