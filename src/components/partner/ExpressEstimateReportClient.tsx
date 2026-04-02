@@ -108,7 +108,19 @@ export function ExpressEstimateReportClient(props: {
 
   const [file, setFile] = useState<File | null>(null);
   const [notes, setNotes] = useState<string>("");
-  const isUploadedReport = !!props.stagedId || !!file;
+
+  // Once the staged file is consumed we delete it, so on refresh `props.stagedId` is gone.
+  // Persist a flag so the UI can still show the right empty-state messaging for an uploaded report.
+  const [wasUploaded, setWasUploaded] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.sessionStorage.getItem(`hw.expressEstimate.wasUploaded.${props.reportId}`) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const isUploadedReport = !!props.stagedId || !!file || wasUploaded;
 
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string>("");
@@ -295,6 +307,11 @@ export function ExpressEstimateReportClient(props: {
     const stagedId = props.stagedId;
     if (!stagedId) return;
 
+    try {
+      window.sessionStorage.setItem(`hw.expressEstimate.wasUploaded.${props.reportId}`, "1");
+      setWasUploaded(true);
+    } catch {}
+
     (async () => {
       try {
         const f = await getStagedFile(stagedId);
@@ -305,7 +322,7 @@ export function ExpressEstimateReportClient(props: {
         } catch {}
       }
     })();
-  }, [props.stagedId]);
+  }, [props.reportId, props.stagedId]);
 
   // Collapse the totals bar on mobile after a short moment (shows full card on arrival, then gets out of the way).
   useEffect(() => {
@@ -534,9 +551,7 @@ export function ExpressEstimateReportClient(props: {
               <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
                 Property Address: <span className="font-semibold text-[var(--hw-ink)]">{effectiveAddress || "—"}</span>
               </div>
-              {report || isUploadedReport ? null : (
-                <div className="mt-1 text-sm text-[var(--hw-muted)]">This report does not exist in demo data.</div>
-              )}
+              {null}
               {analysisError ? (
                 <div className="mt-2 rounded-[14px] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] p-3">
                   <div className="flex items-start justify-between gap-3">
@@ -623,11 +638,11 @@ export function ExpressEstimateReportClient(props: {
           {extracted.length === 0 ? (
             <div className="mt-5">
               <EmptyState
-                title={isUploadedReport ? "We couldn’t read this report" : "No demo data"}
+                title={isUploadedReport ? "We couldn’t generate an estimate" : "No estimate yet"}
                 text={
                   isUploadedReport
-                    ? "We couldn’t extract readable text from this PDF (it may be scanned or image-only). Try exporting a text-based PDF or upload a version with selectable text."
-                    : "No items available yet."
+                    ? "We couldn’t extract enough readable text from this PDF to build an estimate (it may be scanned or image-only). Try exporting a text-based PDF (selectable text) or upload a different version."
+                    : "Upload an inspection report to generate an Instant Estimate."
                 }
               />
             </div>
