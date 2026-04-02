@@ -9,7 +9,7 @@ import { Button, Card, Chip, Input, Picker, Textarea } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
-import { stageFile } from "@/lib/staged-files";
+import { stageFile, stageFiles } from "@/lib/staged-files";
 import { formatPhoneUS } from "@/lib/phone";
 
 const STORAGE_KEYS = {
@@ -115,7 +115,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const preselectPropertyId = searchParams?.get("property") || "";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [fileName, setFileName] = useState<string>("");
   const [stagedId, setStagedId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -335,12 +335,13 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               ref={fileInputRef}
               className="hidden"
               type="file"
+              multiple
               accept="application/pdf,image/png,image/jpeg"
               onChange={(e) => {
-                const next = e.target.files?.[0] ?? null;
-                if (!next) return;
-                setFile(next);
-                setFileName(next.name);
+                const next = Array.from(e.target.files || []);
+                if (!next.length) return;
+                setFiles(next);
+                setFileName(next.length === 1 ? next[0].name : `${next.length} files selected`);
                 setStagedId("");
                 setStep(selectedPropertyId ? 3 : 2);
 
@@ -353,13 +354,13 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             {/* Step 1: Upload */}
             <div className={
               "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white overflow-hidden " +
-              (file ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
+              (files.length ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
             }>
               <button
                 type="button"
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
-                  (file ? "bg-[rgba(229,57,53,.05)]" : "")
+                  (files.length ? "bg-[rgba(229,57,53,.05)]" : "")
                 }
                 onClick={() => setStep(1)}
               >
@@ -368,12 +369,12 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                     <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">
                       1
                     </div>
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload PDF</div>
-                    {file ? <div className="text-xs font-semibold text-emerald-700">✓</div> : null}
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload file(s)</div>
+                    {files.length ? <div className="text-xs font-semibold text-emerald-700">✓</div> : null}
                   </div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">{fileName ? fileName : "Choose an inspection/appraisal PDF."}</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">{fileName ? fileName : "Choose an inspection/appraisal file(s)."}</div>
                 </div>
-                {file ? (
+                {files.length ? (
                   <div className="shrink-0">
                     <Button
                       size="sm"
@@ -411,12 +412,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       e.preventDefault();
                       e.stopPropagation();
 
-                      const next = e.dataTransfer.files?.[0] ?? null;
-                      if (!next) return;
-                      if (next.type && next.type !== "application/pdf") return;
-
-                      setFile(next);
-                      setFileName(next.name);
+                      const next = Array.from(e.dataTransfer.files || []).filter(Boolean);
+                      if (!next.length) return;
+                      setFiles(next);
+                      setFileName(next.length === 1 ? next[0].name : `${next.length} files selected`);
                       setStagedId("");
                       setStep(selectedPropertyId ? 3 : 2);
 
@@ -438,7 +437,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                             type="button"
                             onClick={(e) => {
                               e.preventDefault();
-                              setFile(null);
+                              setFiles([]);
                               setFileName("");
                               setStagedId("");
                               setStep(1);
@@ -781,9 +780,9 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             <div className="flex items-center justify-end">
               <Button
                 size="sm"
-                disabled={!file || !selectedPropertyId || submitting}
+                disabled={!files.length || !selectedPropertyId || submitting}
                 onClick={() => {
-                  if (!file || !selectedPropertyId || submitting) return;
+                  if (!files.length || !selectedPropertyId || submitting) return;
                   setSubmitting(true);
                   setSubmitError("");
 
@@ -794,21 +793,23 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         window.sessionStorage.setItem("hw.expressEstimate.notes", notes || "");
                       } catch {}
 
-                      const id = await stageFile(file);
-                      setStagedId(id);
+                      const ids = await stageFiles(files);
+                      const staged = ids.join(",");
+                      setStagedId(staged);
 
                       const selectedProp = properties.find((p) => p.id === selectedPropertyId) || null;
                       const address = selectedProp?.address || "";
 
-                      // Use a deterministic report id based on PDF hash + address so we don't create duplicates.
-                      const ab = await file.arrayBuffer();
-                      const digest = await crypto.subtle.digest("SHA-256", ab);
-                      const pdfHash = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+                      // Deterministic report id based on combined file hashes + address.
+                      const hashes: string[] = [];
+                      for (const f of files) {
+                        const ab = await f.arrayBuffer();
+                        const digest = await crypto.subtle.digest("SHA-256", ab);
+                        hashes.push(Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join(""));
+                      }
+                      const combined = hashes.join("|");
                       const locKey = normalizeAddress(address).toLowerCase();
-                      const keyDigest = await crypto.subtle.digest(
-                        "SHA-256",
-                        new TextEncoder().encode(`${pdfHash}|${locKey}`)
-                      );
+                      const keyDigest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${combined}|${locKey}`));
                       const cacheKey = Array.from(new Uint8Array(keyDigest)).map((b) => b.toString(16).padStart(2, "0")).join("");
                       const reportId = `rpt_${cacheKey.slice(0, 12)}`;
 
@@ -836,7 +837,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       });
 
                       const q = new URLSearchParams();
-                      q.set("staged", id);
+                      q.set("staged", staged);
                       if (address) q.set("address", address);
                       if (ownerName) q.set("owner", ownerName);
                       q.set("cacheKey", cacheKey);

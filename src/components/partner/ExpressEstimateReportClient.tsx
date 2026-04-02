@@ -114,7 +114,7 @@ export function ExpressEstimateReportClient(props: {
   const effectiveAddress = report?.address || props.address || "";
   const effectiveOwnerName = props.ownerName || "";
 
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [forceNextRun, setForceNextRun] = useState(false);
   const [notes, setNotes] = useState<string>("");
 
@@ -408,7 +408,7 @@ export function ExpressEstimateReportClient(props: {
     return { full, selected: sel, repairs: rep };
   }, [allItems, repairs, selected]);
 
-  // Load staged file (if present) when arriving from list.
+  // Load staged file(s) (if present) when arriving from list.
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -420,6 +420,12 @@ export function ExpressEstimateReportClient(props: {
     const stagedId = props.stagedId;
     if (!stagedId) return;
 
+    const stagedIds = stagedId
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!stagedIds.length) return;
+
     try {
       window.sessionStorage.setItem(`hw.expressEstimate.wasUploaded.${props.reportId}`, "1");
       setWasUploaded(true);
@@ -427,12 +433,18 @@ export function ExpressEstimateReportClient(props: {
 
     (async () => {
       try {
-        const f = await getStagedFile(stagedId);
-        if (f) setFile(f);
+        const out: File[] = [];
+        for (const id of stagedIds) {
+          const f = await getStagedFile(id);
+          if (f) out.push(f);
+        }
+        if (out.length) setFiles(out);
       } finally {
-        try {
-          await deleteStagedFile(stagedId);
-        } catch {}
+        for (const id of stagedIds) {
+          try {
+            await deleteStagedFile(id);
+          } catch {}
+        }
       }
     })();
   }, [props.reportId, props.stagedId]);
@@ -448,10 +460,10 @@ export function ExpressEstimateReportClient(props: {
     return () => window.clearTimeout(t);
   }, []);
 
-  // When we have a staged PDF, analyze it and replace demo data.
+  // When we have staged file(s), analyze them and replace demo data.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!file) return;
+    if (!files.length) return;
 
     setAnalyzing(true);
     setAnalysisError("");
@@ -461,19 +473,47 @@ export function ExpressEstimateReportClient(props: {
     void (async () => {
       try {
         const fd = new FormData();
-        // Avoid Vercel 413 body limits by extracting text client-side and sending text (not the full PDF).
-        const { text, hash } = await extractPdfTextAndHash(file);
-        if (!text) {
-          setAnalysisError("Analyze failed: Could not extract text from PDF (may be scanned).");
+
+        // Build combined text + hash from all files.
+        const pieces: string[] = [];
+        const hashes: string[] = [];
+
+        for (const f of files) {
+          const mime = f.type || "";
+          // PDFs: extract text client-side.
+          if (mime === "application/pdf" || f.name.toLowerCase().endsWith(".pdf")) {
+            const { text, hash } = await extractPdfTextAndHash(f);
+            if (text) pieces.push(text);
+            if (hash) hashes.push(hash);
+            continue;
+          }
+
+          // Images: send to server for OCR.
+          const ab = await f.arrayBuffer();
+          const digest = await crypto.subtle.digest("SHA-256", ab);
+          const h = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+          hashes.push(h);
+          fd.append("file", f, f.name);
+        }
+
+        const combinedText = pieces.join("\n\n---\n\n").trim();
+        const combinedHash = hashes.join("|");
+
+        if (combinedText) {
+          fd.set("text", combinedText);
+          fd.set("hash", combinedHash);
+        } else if (!fd.get("file")) {
+          setAnalysisError("Analyze failed: no readable input files.");
           setExtracted([]);
           return;
+        } else {
+          // Only images; still send a stable hash.
+          fd.set("hash", combinedHash);
         }
 
         setAnalysisStage("Generating with Homeworke AI (pricing + repair playbook)…");
         setAnalysisProgress(null);
 
-        fd.set("text", text);
-        fd.set("hash", hash);
         fd.set("notes", notes || "");
         fd.set("location", effectiveAddress || "");
 
@@ -615,7 +655,7 @@ export function ExpressEstimateReportClient(props: {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file]);
+  }, [files, forceNextRun]);
 
   // Analysis is triggered during the upload/submit step (list page).
   // This page focuses on viewing results and downloading.
@@ -795,12 +835,13 @@ export function ExpressEstimateReportClient(props: {
                     // for the PDF again and re-extracting text client-side.
                     const input = document.createElement("input");
                     input.type = "file";
+                    input.multiple = true;
                     input.accept = "application/pdf,image/png,image/jpeg";
                     input.onchange = () => {
-                      const f = input.files?.[0] || null;
-                      if (!f) return;
+                      const picked = Array.from(input.files || []).filter(Boolean);
+                      if (!picked.length) return;
                       setForceNextRun(true);
-                      setFile(f);
+                      setFiles(picked);
                     };
                     input.click();
                   }}
