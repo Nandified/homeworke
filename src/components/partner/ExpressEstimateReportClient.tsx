@@ -224,6 +224,13 @@ export function ExpressEstimateReportClient(props: {
         if (typeof j.summary === "string") setAnalysisSummary(j.summary);
         if (j.cache && typeof j.cache.cacheKey === "string") setCacheKey(j.cache.cacheKey);
         if (j.cache && typeof j.cache.expiresAt === "string") setExpiresAt(j.cache.expiresAt);
+
+        // If we already have a saved result, suppress any stale error state
+        // from a failed attempt to reload/rerun analysis.
+        setAnalysisError("");
+        setAnalyzing(false);
+        setAnalysisStage("");
+        setAnalysisProgress(null);
       }
     } catch {}
   }, [props.reportId]);
