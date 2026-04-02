@@ -152,13 +152,10 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
   const [addMode, setAddMode] = React.useState<"property" | "client">("client");
 
   React.useEffect(() => {
-    // Context-aware default: when the modal opens, default to the current tab.
+    // PROs overwhelmingly add properties for clients.
+    // Always default the add-property modal to "Client property" when it opens.
     if (!addOpen) return;
-    if (tab === "clients") setAddMode("client");
-    if (tab === "my") setAddMode("property");
-    if (tab === "all") setAddMode("property");
-    // If we're on "shared", default to "client" since this page is PRO-centric.
-    if (tab === "shared") setAddMode("client");
+    setAddMode("client");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addOpen]);
   const [newPhotoDataUrl, setNewPhotoDataUrl] = React.useState<string>("");
