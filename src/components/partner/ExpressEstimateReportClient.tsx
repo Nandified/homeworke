@@ -435,6 +435,22 @@ export function ExpressEstimateReportClient(props: {
 
         if (normalized.length) setExtracted(normalized);
         setAnalysisSummary(typeof rec.summary === "string" ? rec.summary : "");
+
+        // Persist this report in the local Reports list so it doesn't disappear.
+        try {
+          const key = "hw_express_estimate_reports_v1";
+          const raw = window.localStorage.getItem(key) || "[]";
+          const arr = (JSON.parse(raw) as any[]) || [];
+          const next = {
+            id: props.reportId,
+            address: effectiveAddress || "(unknown address)",
+            type: "Inspection",
+            createdAt: new Date().toISOString(),
+            status: "Ready",
+          };
+          const out = [next, ...arr.filter((r) => r && r.id !== props.reportId)].slice(0, 200);
+          window.localStorage.setItem(key, JSON.stringify(out));
+        } catch {}
       } catch (e) {
         setAnalysisError("Analyze failed. Please try again.");
         setExtracted([]);

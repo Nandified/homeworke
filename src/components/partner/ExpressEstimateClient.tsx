@@ -15,6 +15,7 @@ import { formatPhoneUS } from "@/lib/phone";
 const STORAGE_KEYS = {
   customProps: "hw_props_custom_v1",
   clientProps: "hw_props_client_v1",
+  reports: "hw_express_estimate_reports_v1",
 } as const;
 
 type StoredProperty = { id: string; address: string; nickname?: string; ownerName?: string; propertyType?: string; createdAt: string };
@@ -71,6 +72,31 @@ function writeClientProperties(items: StoredClientProperty[]) {
   } catch {}
 }
 
+function readReports(): Report[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEYS.reports) || "[]";
+    const arr = JSON.parse(raw) as Report[];
+    return Array.isArray(arr) ? arr.filter((r) => r && typeof r.id === "string" && typeof r.address === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeReports(items: Report[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEYS.reports, JSON.stringify(items.slice(0, 200)));
+  } catch {}
+}
+
+function upsertReport(next: Report) {
+  const prev = readReports();
+  const out: Report[] = [next, ...prev.filter((r) => r.id !== next.id)];
+  writeReports(out);
+  return out;
+}
+
 export type ExpressEstimateClientProps = {
   basePath: "/partner" | "/pro";
   title?: string;
@@ -96,6 +122,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [submitError, setSubmitError] = useState<string>("");
   const [toast, setToast] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [notesOpen, setNotesOpen] = useState(false);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [reportQuery, setReportQuery] = useState("");
@@ -126,7 +153,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
   const [reports, setReports] = useState<Report[]>(() => {
     const now = Date.now();
-    return [
+    const demo: Report[] = [
       {
         id: "rpt_4240_mozart",
         address: "4240 S Mozart St, Chicago, IL",
@@ -142,6 +169,18 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         status: "Draft",
       },
     ];
+
+    // Merge persisted reports (uploaded PDFs) on the client.
+    if (typeof window === "undefined") return demo;
+    const persisted = readReports();
+    const seen = new Set<string>();
+    const out: Report[] = [];
+    [...persisted, ...demo].forEach((r) => {
+      if (seen.has(r.id)) return;
+      seen.add(r.id);
+      out.push(r);
+    });
+    return out;
   });
 
   const filteredReports = useMemo(() => {
@@ -232,13 +271,13 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const propertyRequiredMissing = !selectedPropertyId;
   const selectedProperty = properties.find((p) => p.id === selectedPropertyId) || null;
 
-  // Guided stepper auto-advance
+  // Guided stepper: do not auto-open Notes (optional). Keep it collapsed unless the user expands it.
   useEffect(() => {
-    // Only auto-advance when the property selection actually changes (prevents "Change" click from instantly snapping back to Step 3).
     const prev = prevSelectedPropertyIdRef.current;
-    if (step === 2 && selectedPropertyId && selectedPropertyId !== prev) setStep(3);
     prevSelectedPropertyIdRef.current = selectedPropertyId;
-  }, [selectedPropertyId, step]);
+    // no-op
+    void prev;
+  }, [selectedPropertyId]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -703,8 +742,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                   (!file || !selectedPropertyId ? "opacity-60 " : "")
                 }
                 onClick={() => {
-                  // Notes are optional: allow editing anytime.
-                  setStep(3);
+                  // Notes are optional. Start collapsed; user can expand if needed.
+                  setNotesOpen((v) => !v);
                 }}
               >
                 <div className="min-w-0">
@@ -718,7 +757,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 </div>
               </button>
 
-              {step === 3 ? (
+              {notesOpen ? (
                 <div className="px-4 pb-4">
                   <Textarea
                     value={notes}
@@ -760,6 +799,27 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       // Immediately take the user to the report results page (better UX + avoids confusion with demo rows).
                       const reportId = `rpt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
                       const ownerName = selectedProp?.ownerName || "";
+
+                      // Persist a report row locally so it appears under Reports immediately.
+                      setReports((prev) => {
+                        const next: Report = {
+                          id: reportId,
+                          address: address || "(unknown address)",
+                          type: "Inspection",
+                          createdAt: new Date().toISOString(),
+                          status: "Draft",
+                        };
+                        const persisted = upsertReport(next);
+                        // Merge with existing demo rows
+                        const seen = new Set<string>();
+                        const out: Report[] = [];
+                        [...persisted, ...prev].forEach((r) => {
+                          if (seen.has(r.id)) return;
+                          seen.add(r.id);
+                          out.push(r);
+                        });
+                        return out;
+                      });
 
                       const q = new URLSearchParams();
                       q.set("staged", id);
