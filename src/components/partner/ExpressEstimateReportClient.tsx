@@ -297,6 +297,11 @@ export function ExpressEstimateReportClient(props: {
       }
     })();
   }, [cacheKey, extracted.length, props.reportId, props.stagedId]);
+  // If we have results, don't show stale error banners from background cache reload attempts.
+  useEffect(() => {
+    if (extracted.length > 0) setAnalysisError("");
+  }, [extracted.length]);
+
   const [repairIds, setRepairIds] = useState<Set<string>>(new Set());
   const [openItemId, setOpenItemId] = useState<string>("");
   const [totalsCollapsed, setTotalsCollapsed] = useState(false);
