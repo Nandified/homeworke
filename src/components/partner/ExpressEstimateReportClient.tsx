@@ -554,8 +554,8 @@ export function ExpressEstimateReportClient(props: {
               </div>
               {null}
               {analysisError ? (
-                <div className="mt-2 rounded-[14px] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] p-3">
-                  <div className="flex items-start justify-between gap-3">
+                <div className="mt-3 w-full rounded-[14px] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] p-3">
+                  <div className="flex w-full items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="text-xs font-extrabold text-[var(--hw-red)]">Analyze failed</div>
                       <div className="mt-1 whitespace-pre-wrap break-words text-xs font-semibold text-[var(--hw-ink)]/80">
