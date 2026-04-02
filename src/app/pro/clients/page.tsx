@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation";
 
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
-import { Button, Card, Chip, Input, Modal, Picker } from "@/components/ui";
+import { Button, Card, Chip, Input, Label, Modal, Picker } from "@/components/ui";
 import { withDemo } from "@/lib/demo";
+
+import { ChevronDown, ChevronUp, Share2, UserPlus } from "lucide-react";
 
 type StoredClientProperty = {
   id: string;
@@ -88,6 +90,15 @@ export default function Page() {
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteLinkToast, setInviteLinkToast] = useState("");
+
+  const [copiedInviteLink, setCopiedInviteLink] = useState(false);
+  const [inviteExpanded, setInviteExpanded] = useState(false);
+  const [inviteLinkEmail, setInviteLinkEmail] = useState("");
+  const [inviteLinkFirst, setInviteLinkFirst] = useState("");
+  const [inviteLinkLast, setInviteLinkLast] = useState("");
+  const [inviteLinkAddress, setInviteLinkAddress] = useState("");
+  const [inviteLinkSending, setInviteLinkSending] = useState(false);
+  const [inviteLinkResult, setInviteLinkResult] = useState<null | { ok: boolean; message: string }>(null);
 
   const [inviteFirst, setInviteFirst] = useState("");
   const [inviteLast, setInviteLast] = useState("");
@@ -240,20 +251,30 @@ export default function Page() {
             </div>
           ) : null}
 
-          <div className="mt-6 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>
-                <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                  Share this with clients so they can connect to your workspace.
+        </Card>
+
+        {/* Invite link card (same layout/behavior as dashboard) */}
+        <Card className="p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">Share this with clients to connect clients and projects to your workspace.</div>
+            </div>
+            <Link href={withDemo("/pro/clients")} className="shrink-0">
+              <Button size="sm" variant="secondary">View clients</Button>
+            </Link>
+          </div>
+
+          <div className="mt-4 grid gap-4">
+            <div className="relative rounded-[var(--hw-radius-lg)] border-2 border-[var(--hw-line)] bg-white px-3 py-3 overflow-hidden">
+              {/* Scrollable link text */}
+              <div className="pr-[172px]">
+                <div className="text-xs font-semibold text-[var(--hw-ink)] whitespace-nowrap overflow-x-auto">
+                  {partnerInviteLink}
                 </div>
               </div>
-            </div>
 
-            <div className="mt-4 relative rounded-[var(--hw-radius-lg)] border-2 border-[var(--hw-line)] bg-white px-3 py-3 overflow-hidden">
-              <div className="pr-[96px]">
-                <div className="text-xs font-semibold text-[var(--hw-ink)] whitespace-nowrap overflow-x-auto">{partnerInviteLink}</div>
-              </div>
+              {/* Overlay actions (same row) */}
               <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                 <Button
                   size="sm"
@@ -261,21 +282,142 @@ export default function Page() {
                   onClick={async () => {
                     try {
                       await navigator.clipboard.writeText(partnerInviteLink);
-                      setInviteLinkToast("Copied");
-                      window.setTimeout(() => setInviteLinkToast(""), 1200);
+                      setCopiedInviteLink(true);
+                      window.setTimeout(() => setCopiedInviteLink(false), 1300);
+                    } catch {}
+                  }}
+                  disabled={!partnerInviteLink}
+                >
+                  {copiedInviteLink ? "Copied" : "Copy"}
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={async () => {
+                    try {
+                      const text = `Here’s my Homeworke invite link: ${partnerInviteLink}`;
+                      if (navigator.share) {
+                        await navigator.share({ text, url: partnerInviteLink });
+                      } else {
+                        await navigator.clipboard.writeText(partnerInviteLink);
+                        window.location.href = `sms:&body=${encodeURIComponent(text)}`;
+                      }
                     } catch {
-                      setInviteLinkToast("Copy failed");
-                      window.setTimeout(() => setInviteLinkToast(""), 1200);
+                      // ignore
                     }
                   }}
                   disabled={!partnerInviteLink}
                 >
-                  Copy
+                  <Share2 className="h-4 w-4" />
+                  Share
                 </Button>
               </div>
             </div>
 
-            {inviteLinkToast ? <div className="mt-2 text-xs font-semibold text-[var(--hw-muted)]">{inviteLinkToast}</div> : null}
+            <div className="flex flex-col items-center gap-2">
+              <div className="text-xs font-medium text-[var(--hw-muted)]">Or invite via email here</div>
+              <Button
+                size="sm"
+                className="w-auto px-6"
+                onClick={() => {
+                  setInviteLinkResult(null);
+                  setInviteExpanded((v) => !v);
+                }}
+              >
+                <UserPlus className="h-4 w-4" />
+                Invite via email
+                {inviteExpanded ? (
+                  <ChevronUp className="h-4 w-4 opacity-70" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 opacity-70" />
+                )}
+              </Button>
+            </div>
+
+            {inviteExpanded ? (
+              <div className="grid gap-3 animate-[fadeScaleIn_150ms_ease-out]">
+                <div>
+                  <Label htmlFor="invite-email">Client email</Label>
+                  <Input
+                    id="invite-email"
+                    placeholder="email@example.com"
+                    value={inviteLinkEmail}
+                    onChange={(e) => setInviteLinkEmail(e.target.value)}
+                    inputMode="email"
+                    autoComplete="email"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="invite-first">First name</Label>
+                    <Input id="invite-first" placeholder="First name" value={inviteLinkFirst} onChange={(e) => setInviteLinkFirst(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label htmlFor="invite-last">Last name</Label>
+                    <Input id="invite-last" placeholder="Last name" value={inviteLinkLast} onChange={(e) => setInviteLinkLast(e.target.value)} />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="invite-address">Property Address</Label>
+                  <Input
+                    id="invite-address"
+                    placeholder="123 Main St, Chicago, IL"
+                    value={inviteLinkAddress}
+                    onChange={(e) => setInviteLinkAddress(e.target.value)}
+                    autoComplete="street-address"
+                  />
+                </div>
+
+                <div className="flex justify-center sm:justify-end">
+                  <Button
+                    size="sm"
+                    className="w-auto px-8"
+                    disabled={inviteLinkSending || !inviteLinkEmail.trim().includes("@")}
+                    onClick={async () => {
+                      setInviteLinkResult(null);
+                      setInviteLinkSending(true);
+                      try {
+                        // Stub send: store invited client locally so they show on My Clients.
+                        const email = inviteLinkEmail.trim().toLowerCase();
+                        const prev = readInvitedClients();
+                        const id = "cli_" + Math.random().toString(16).slice(2);
+                        const row: StoredInvitedClient = {
+                          id,
+                          createdAt: new Date().toISOString(),
+                          firstName: inviteLinkFirst.trim() || undefined,
+                          lastName: inviteLinkLast.trim() || undefined,
+                          email,
+                          inviteSentAt: new Date().toISOString(),
+                        };
+                        const out = [row, ...prev.filter((c) => (c.email || "").trim().toLowerCase() !== email)];
+                        writeInvitedClients(out);
+                        setInvitedClients(out);
+
+                        setInviteLinkResult({ ok: true, message: `Invite sent to ${email}` });
+                        setInviteLinkEmail("");
+                        setInviteLinkFirst("");
+                        setInviteLinkLast("");
+                        setInviteLinkAddress("");
+                        window.setTimeout(() => setInviteExpanded(false), 600);
+                      } catch {
+                        setInviteLinkResult({ ok: false, message: "Invite failed (stub error)" });
+                      } finally {
+                        setInviteLinkSending(false);
+                      }
+                    }}
+                  >
+                    {inviteLinkSending ? "Sending…" : "Send invite"}
+                  </Button>
+                </div>
+
+                {inviteLinkResult ? (
+                  <div className={"text-xs font-semibold " + (inviteLinkResult.ok ? "text-emerald-700" : "text-[var(--hw-red)]")}>{inviteLinkResult.message}</div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </Card>
 
