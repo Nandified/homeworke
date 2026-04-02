@@ -199,6 +199,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   }, [notes]);
 
   const step2Completed = !!selectedPropertyId && step !== 2;
+  const step2HasSelection = !!selectedPropertyId;
   const notesCompletedVisual = notesCompleted && files.length > 0 && !!selectedPropertyId;
 
   useEffect(() => {
@@ -499,7 +500,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               className={
                 "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white " +
                 (step === 2 ? "relative z-20 " : "") +
-                (step2Completed ? "overflow-hidden shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
+                (step2HasSelection ? "overflow-hidden shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
               }
             >
               <button
@@ -507,7 +508,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
                   (!files.length ? "opacity-60 " : "") +
-                  (step2Completed ? "bg-[rgba(229,57,53,.05)]" : "")
+                  (step2HasSelection ? "bg-[rgba(229,57,53,.05)]" : "")
                 }
                 onClick={() => {
                   if (!files.length) return;

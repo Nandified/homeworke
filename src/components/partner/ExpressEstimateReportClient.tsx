@@ -597,8 +597,15 @@ export function ExpressEstimateReportClient(props: {
           // PDFs: extract text client-side.
           if (mime === "application/pdf" || f.name.toLowerCase().endsWith(".pdf")) {
             const { text, hash } = await extractPdfTextAndHash(f);
-            if (text) pieces.push(text);
             if (hash) hashes.push(hash);
+
+            // If we couldn't extract any readable text client-side (scanned/image-only PDFs),
+            // upload the PDF so the server can attempt extraction/OCR.
+            if (text) {
+              pieces.push(text);
+            } else {
+              fd.append("file", f, f.name);
+            }
             continue;
           }
 
