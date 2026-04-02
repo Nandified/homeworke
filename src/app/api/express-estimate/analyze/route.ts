@@ -251,6 +251,26 @@ function fillMissingRange(label: string, _location: string): string {
   return rangeFromTradeGuardrails(tradeId);
 }
 
+function priceFromRangeByLabel(range: string, label: string): number | null {
+  const r = (range || "").replace(/–/g, "-");
+  const parts = r.split("-").map((p) => p.trim());
+  if (parts.length < 2) return midpointFromRange(range);
+  const lo = parseMoney(parts[0]);
+  const hi = parseMoney(parts[1]);
+  if (lo === null || hi === null) return midpointFromRange(range);
+
+  const a = Math.min(lo, hi);
+  const b = Math.max(lo, hi);
+  if (a === b) return a;
+
+  // Stable pseudo-random within the range so fallback prices don't all look identical.
+  // Keep it centered-ish (30%–69% of the range) so we avoid extreme lows/highs.
+  const h = crypto.createHash("sha1").update(normalizeLabel(label)).digest("hex").slice(0, 8);
+  const n = parseInt(h, 16);
+  const pct = 0.3 + ((n % 40) / 100); // 0.30–0.69
+  return Math.round(a + (b - a) * pct);
+}
+
 function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1): ExtractedLane[] {
   const seen = new Set<string>();
   const homeownerFactor = 1.25; // Homeworke keeps 20% of final price => contractor gets 80%
@@ -260,11 +280,18 @@ function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1)
     .map((lane) => {
       const items = lane.items
         .map((it) => {
-          const baseRange = it.range && it.range.trim() ? it.range : fillMissingRange(it.label, location);
+          const hadRange = !!(it.range && it.range.trim());
+          const baseRange = hadRange ? it.range! : fillMissingRange(it.label, location);
           const range = scaleRange(baseRange, totalFactor);
 
           // If model provided a price, assume it's base contractor cost and scale it.
-          const basePrice = typeof it.price === "number" && Number.isFinite(it.price) ? it.price : midpointFromRange(baseRange) ?? undefined;
+          // If we had to synthesize the range, synthesize a *non-identical* price too.
+          const basePrice =
+            typeof it.price === "number" && Number.isFinite(it.price)
+              ? it.price
+              : hadRange
+                ? (midpointFromRange(baseRange) ?? undefined)
+                : (priceFromRangeByLabel(baseRange, it.label) ?? undefined);
           const price = typeof basePrice === "number" ? Math.round(basePrice * totalFactor) : undefined;
 
           return { ...it, range, price };
