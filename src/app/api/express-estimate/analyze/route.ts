@@ -91,18 +91,58 @@ function demoResult(location: string): { lanes: ExtractedLane[]; summary: string
   };
 }
 
-function dedupeLanes(lanes: ExtractedLane[]): ExtractedLane[] {
+function normalizeLaneTitle(title: string): ExtractedLane["title"] {
+  const t = (title || "").toLowerCase().trim();
+  if (t.includes("exterior")) return "Exterior";
+  if (t.includes("interior")) return "Interior";
+  if (t.includes("system")) return "Systems";
+  if (t.includes("safety")) return "Safety";
+  if (t.includes("need")) return "Need more info";
+  if (t.includes("info")) return "Need more info";
+  return "Other";
+}
+
+function fillMissingRange(label: string, location: string): string {
+  const l = normalizeLabel(label);
+  // Lightweight fallback ranges to avoid $0 totals when the model omits pricing.
+  // These are intentionally broad.
+  const rules: Array<{ re: RegExp; range: string }> = [
+    { re: /roof|shingle|flashing|chimney/, range: "$450–$2,500" },
+    { re: /foundation|masonry|parging|brick|tuckpoint/, range: "$600–$4,500" },
+    { re: /gutter|downspout/, range: "$250–$1,600" },
+    { re: /hvac|furnace|ac|air conditioner|heat pump/, range: "$180–$2,200" },
+    { re: /plumb|leak|water heater|sump/, range: "$200–$2,800" },
+    { re: /electrical|panel|outlet|gfci|breaker/, range: "$180–$1,800" },
+    { re: /window|door/, range: "$150–$1,500" },
+    { re: /paint|drywall|trim/, range: "$200–$2,500" },
+    { re: /floor|tile|carpet/, range: "$250–$3,500" },
+    { re: /grading|drainage/, range: "$400–$3,000" },
+    { re: /garage/, range: "$250–$3,500" },
+  ];
+  for (const r of rules) {
+    if (r.re.test(l)) return r.range;
+  }
+  // Default broad handyman range
+  return location ? "$250–$1,500" : "$250–$1,500";
+}
+
+function dedupeLanes(lanes: ExtractedLane[], location: string): ExtractedLane[] {
   const seen = new Set<string>();
   return lanes
     .map((lane) => {
-      const items = lane.items.filter((it) => {
-        const key = normalizeLabel(it.label);
-        if (!key) return false;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      return { ...lane, items };
+      const items = lane.items
+        .map((it) => {
+          const range = it.range && it.range.trim() ? it.range : fillMissingRange(it.label, location);
+          return { ...it, range };
+        })
+        .filter((it) => {
+          const key = normalizeLabel(it.label);
+          if (!key) return false;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      return { ...lane, title: normalizeLaneTitle(lane.title), items };
     })
     .filter((l) => l.items.length > 0);
 }
@@ -448,7 +488,7 @@ export async function POST(req: Request) {
                     note: { type: "string" },
                     range: { type: "string" },
                   },
-                  required: ["label"],
+                  required: ["label", "range"],
                 },
               },
             },
@@ -464,9 +504,11 @@ export async function POST(req: Request) {
       "You receive extracted issues from a home inspection report. " +
       "Your job is to produce a consistent, de-duplicated Instant Estimate. " +
       "Rules: (1) Do not duplicate items. (2) Do not hallucinate defects not in the issues list. " +
-      "(3) Use location-based pricing ranges when possible. " +
-      "(4) Keep labels short; put narrative in note. " +
-      "(5) Group items into clear lanes.";
+      "(3) Every item MUST include a pricing range string in USD like '$450–$1,200' (never omit range). " +
+      "(4) Use location-based pricing when possible; otherwise use typical US pricing. " +
+      "(5) Keep labels short; put narrative in note. " +
+      "(6) Group items into lanes titled exactly one of: Exterior, Interior, Systems, Safety, Need more info, Other. " +
+      "Avoid dumping everything into Other—only use Other if you truly cannot classify.";
 
     const finalUser =
       `Location: ${location || "(unknown)"}\n` +
@@ -525,7 +567,7 @@ export async function POST(req: Request) {
         return { title, items };
       });
 
-    const cleaned = dedupeLanes(lanes);
+    const cleaned = dedupeLanes(lanes, location);
 
     if (cleaned.length === 0) {
       return NextResponse.json(
