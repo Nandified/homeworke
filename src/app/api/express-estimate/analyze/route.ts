@@ -741,6 +741,7 @@ export async function POST(req: Request) {
         estTotalCostUsd: usageCalls.reduce((a, b) => a + (b.estCostUsd || 0), 0),
       };
 
+      const expiresAtIso = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
       const payload = {
         ok: true,
         summary:
@@ -752,6 +753,7 @@ export async function POST(req: Request) {
           cacheKey,
           pdfHash: hash,
           locationKey,
+          expiresAt: expiresAtIso,
         } satisfies AnalyzeCacheMeta,
         source: {
           extractedText,
@@ -772,6 +774,7 @@ export async function POST(req: Request) {
       estTotalCostUsd: usageCalls.reduce((a, b) => a + (b.estCostUsd || 0), 0),
     };
 
+    const expiresAtIso = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
     const payload = {
       ok: true,
       summary: typeof rec?.summary === "string" ? String(rec.summary) : "",
@@ -782,6 +785,7 @@ export async function POST(req: Request) {
         cacheKey,
         pdfHash: hash,
         locationKey,
+        expiresAt: expiresAtIso,
       } satisfies AnalyzeCacheMeta,
       // Stored so we can rerun without requiring the PDF again.
       source: {

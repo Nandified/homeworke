@@ -800,8 +800,18 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       const selectedProp = properties.find((p) => p.id === selectedPropertyId) || null;
                       const address = selectedProp?.address || "";
 
-                      // Immediately take the user to the report results page (better UX + avoids confusion with demo rows).
-                      const reportId = `rpt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+                      // Use a deterministic report id based on PDF hash + address so we don't create duplicates.
+                      const ab = await file.arrayBuffer();
+                      const digest = await crypto.subtle.digest("SHA-256", ab);
+                      const pdfHash = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+                      const locKey = normalizeAddress(address).toLowerCase();
+                      const keyDigest = await crypto.subtle.digest(
+                        "SHA-256",
+                        new TextEncoder().encode(`${pdfHash}|${locKey}`)
+                      );
+                      const cacheKey = Array.from(new Uint8Array(keyDigest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+                      const reportId = `rpt_${cacheKey.slice(0, 12)}`;
+
                       const ownerName = selectedProp?.ownerName || "";
 
                       // Persist a report row locally so it appears under Reports immediately.
@@ -829,6 +839,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       q.set("staged", id);
                       if (address) q.set("address", address);
                       if (ownerName) q.set("owner", ownerName);
+                      q.set("cacheKey", cacheKey);
 
                       setToast("Submitted ✓ Generating estimate…");
                       router.push(`${props.basePath}/express-estimate/${encodeURIComponent(reportId)}?${q.toString()}`);

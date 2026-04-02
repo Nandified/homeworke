@@ -42,6 +42,7 @@ export function ExpressEstimateReportClient(props: {
   role: "PARTNER" | "PRO";
   reportId: string;
   stagedId?: string;
+  cacheKey?: string;
   ownerName?: string;
   address?: string;
 }) {
@@ -133,7 +134,7 @@ export function ExpressEstimateReportClient(props: {
   const [analysisSummary, setAnalysisSummary] = useState<string>("");
   const [analysisStage, setAnalysisStage] = useState<string>("");
   const [analysisProgress, setAnalysisProgress] = useState<{ current: number; total: number } | null>(null);
-  const [cacheKey, setCacheKey] = useState<string>("");
+  const [cacheKey, setCacheKey] = useState<string>(props.cacheKey || "");
   const [expiresAt, setExpiresAt] = useState<string>("");
 
   const [downloading, setDownloading] = useState<"" | "full" | "selected">("");
@@ -206,9 +207,88 @@ export function ExpressEstimateReportClient(props: {
     ];
   }, []);
 
-  const [extracted, setExtracted] = useState<ExtractedLane[]>(() => (props.stagedId ? [] : demoExtracted));
+  const [extracted, setExtracted] = useState<ExtractedLane[]>(() => []);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Load persisted result on refresh (fixes "demo data" appearing after reload)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(`hw.expressEstimate.result.${props.reportId}`) || "";
+      if (!raw) return;
+      const j = JSON.parse(raw) as any;
+      if (j && Array.isArray(j.lanes)) {
+        setExtracted(j.lanes as ExtractedLane[]);
+        if (typeof j.summary === "string") setAnalysisSummary(j.summary);
+        if (j.cache && typeof j.cache.cacheKey === "string") setCacheKey(j.cache.cacheKey);
+        if (j.cache && typeof j.cache.expiresAt === "string") setExpiresAt(j.cache.expiresAt);
+      }
+    } catch {}
+  }, [props.reportId]);
+
+  // If user refreshes and we don't have a staged file, pull from server cache using cacheKey.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (props.stagedId) return;
+    if (extracted.length > 0) return;
+    if (!cacheKey) return;
+
+    setAnalyzing(true);
+    setAnalysisError("");
+    setAnalysisStage("Loading saved estimate…");
+    setAnalysisProgress(null);
+
+    void (async () => {
+      try {
+        const fd = new FormData();
+        fd.set("cacheKey", cacheKey);
+        const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
+        const j = await r.json().catch(() => null);
+        if (!r.ok || !j || typeof j !== "object") {
+          setAnalysisError(`Analyze failed (${r.status}).`);
+          return;
+        }
+        const rec = j as any;
+        if (rec.ok !== true) {
+          const detail = typeof rec.detail === "string" ? rec.detail : "";
+          const err = typeof rec.error === "string" ? rec.error : "Analyze failed.";
+          setAnalysisError(detail ? `${err}: ${detail}` : err);
+          return;
+        }
+        const lanes = Array.isArray(rec.lanes) ? rec.lanes : [];
+        const normalized: ExtractedLane[] = lanes
+          .filter((l: any) => l && typeof l.title === "string" && Array.isArray(l.items))
+          .map((l: any) => ({
+            title: String(l.title),
+            items: (l.items as any[])
+              .filter((it) => it && typeof it.label === "string")
+              .map((it) => ({
+                id: typeof it.id === "string" ? it.id : `item_${Math.random().toString(36).slice(2, 10)}`,
+                label: String(it.label),
+                note: typeof it.note === "string" ? it.note : undefined,
+                range: typeof it.range === "string" ? it.range : undefined,
+                price: typeof it.price === "number" ? it.price : undefined,
+              })),
+          }));
+        if (normalized.length) setExtracted(normalized);
+        setAnalysisSummary(typeof rec.summary === "string" ? rec.summary : "");
+
+        try {
+          window.localStorage.setItem(
+            `hw.expressEstimate.result.${props.reportId}`,
+            JSON.stringify({ summary: typeof rec.summary === "string" ? rec.summary : "", lanes: normalized, cache: rec.cache || {} })
+          );
+        } catch {}
+      } catch {
+        setAnalysisError("Analyze failed. Please try again.");
+      } finally {
+        setAnalyzing(false);
+        setAnalysisStage("");
+        setAnalysisProgress(null);
+      }
+    })();
+  }, [cacheKey, extracted.length, props.reportId, props.stagedId]);
   const [repairIds, setRepairIds] = useState<Set<string>>(new Set());
   const [openItemId, setOpenItemId] = useState<string>("");
   const [totalsCollapsed, setTotalsCollapsed] = useState(false);
@@ -239,12 +319,12 @@ export function ExpressEstimateReportClient(props: {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const ck = window.localStorage.getItem(`hw.expressEstimate.cacheKey.${props.reportId}`) || "";
+      const ck = props.cacheKey || window.localStorage.getItem(`hw.expressEstimate.cacheKey.${props.reportId}`) || "";
       const exp = window.localStorage.getItem(`hw.expressEstimate.expiresAt.${props.reportId}`) || "";
       if (ck) setCacheKey(ck);
       if (exp) setExpiresAt(exp);
     } catch {}
-  }, [props.reportId]);
+  }, [props.cacheKey, props.reportId]);
 
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
   const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
@@ -476,6 +556,14 @@ export function ExpressEstimateReportClient(props: {
 
         if (normalized.length) setExtracted(normalized);
         setAnalysisSummary(typeof rec.summary === "string" ? rec.summary : "");
+
+        // Persist result so refresh doesn't fall back to demo/empty.
+        try {
+          window.localStorage.setItem(
+            `hw.expressEstimate.result.${props.reportId}`,
+            JSON.stringify({ summary: typeof rec.summary === "string" ? rec.summary : "", lanes: normalized, cache: (rec as any).cache || {} })
+          );
+        } catch {}
 
         // Persist this report in the local Reports list so it doesn't disappear.
         try {

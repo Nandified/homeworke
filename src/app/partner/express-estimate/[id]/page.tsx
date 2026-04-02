@@ -9,6 +9,7 @@ export default async function PartnerExpressEstimateReportPage(props: {
   const staged = typeof sp.staged === "string" ? sp.staged : undefined;
   const ownerName = typeof sp.owner === "string" ? sp.owner : undefined;
   const address = typeof sp.address === "string" ? sp.address : undefined;
+  const cacheKey = typeof sp.cacheKey === "string" ? sp.cacheKey : undefined;
 
   return (
     <ExpressEstimateReportClient
@@ -16,6 +17,7 @@ export default async function PartnerExpressEstimateReportPage(props: {
       role="PARTNER"
       reportId={id}
       stagedId={staged}
+      cacheKey={cacheKey}
       ownerName={ownerName}
       address={address}
     />
