@@ -161,7 +161,6 @@ async function callOpenAIJsonSchema(args: {
   user: string;
 }) {
   const temperature = typeof args.temperature === "number" ? args.temperature : 0;
-  const seed = typeof args.seed === "number" ? args.seed : 42;
 
   // Some model endpoints (and some org configurations) reject `response_format`.
   // We enforce JSON-only via prompt + post-parse instead.
@@ -178,7 +177,6 @@ async function callOpenAIJsonSchema(args: {
     body: JSON.stringify({
       model: args.model,
       temperature,
-      seed,
       input: [
         { role: "system", content: system },
         { role: "user", content: args.user },
