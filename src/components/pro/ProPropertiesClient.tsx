@@ -149,7 +149,7 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
   const [newClientEmail, setNewClientEmail] = React.useState("");
   const [newClientPhone, setNewClientPhone] = React.useState("");
 
-  const [addMode, setAddMode] = React.useState<"property" | "client">("property");
+  const [addMode, setAddMode] = React.useState<"property" | "client">("client");
 
   React.useEffect(() => {
     // Context-aware default: when the modal opens, default to the current tab.
@@ -504,18 +504,6 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => setAddMode("property")}
-              className={
-                "rounded-full px-3 py-2 text-xs font-semibold transition " +
-                (addMode === "property"
-                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-              }
-            >
-              My property
-            </button>
-            <button
-              type="button"
               onClick={() => setAddMode("client")}
               className={
                 "rounded-full px-3 py-2 text-xs font-semibold transition " +
@@ -525,6 +513,18 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
               }
             >
               Client property
+            </button>
+            <button
+              type="button"
+              onClick={() => setAddMode("property")}
+              className={
+                "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                (addMode === "property"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              My property
             </button>
           </div>
 

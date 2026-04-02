@@ -130,7 +130,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const prevSelectedPropertyIdRef = useRef<string>("");
 
   const [propertyMode, setPropertyMode] = useState<"existing" | "new">("existing");
-  const [propertyOwner, setPropertyOwner] = useState<"my" | "client">("my");
+  const [propertyOwner, setPropertyOwner] = useState<"my" | "client">("client");
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
   const [properties, setProperties] = useState<
     Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string; propertyType?: string }>
@@ -567,18 +567,6 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => setPropertyOwner("my")}
-                          className={
-                            "rounded-full px-3 py-2 text-xs font-semibold transition " +
-                            (propertyOwner === "my"
-                              ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                              : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-                          }
-                        >
-                          My property
-                        </button>
-                        <button
-                          type="button"
                           onClick={() => setPropertyOwner("client")}
                           className={
                             "rounded-full px-3 py-2 text-xs font-semibold transition " +
@@ -588,6 +576,18 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           }
                         >
                           Client property
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPropertyOwner("my")}
+                          className={
+                            "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                            (propertyOwner === "my"
+                              ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                              : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                          }
+                        >
+                          My property
                         </button>
                       </div>
 
