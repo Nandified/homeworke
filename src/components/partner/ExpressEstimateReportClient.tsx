@@ -139,6 +139,29 @@ export function ExpressEstimateReportClient(props: {
   const [cacheKey, setCacheKey] = useState<string>(props.cacheKey || "");
   const [expiresAt, setExpiresAt] = useState<string>("");
 
+  const FUN_ANALYSIS_LINES = useMemo(
+    () => [
+      "Warming up the estimate engine…",
+      "Reading the inspection like a detective…",
+      "Hunting for repairs hiding in plain sight…",
+      "Checking Chicagoland pricing guardrails…",
+      "Calling in the contractor brain trust…",
+      "Comparing materials vs labor…",
+      "Looking for the ‘uh-oh’ items first…",
+      "Translating inspector-speak into repair-speak…",
+      "Doing math so you don’t have to…",
+      "Making the numbers behave…",
+      "Finding the best-price lane for each repair…",
+      "Double-checking totals (no funny business)…",
+      "Putting it into a clean, client-ready report…",
+      "Final polish—almost there…",
+    ],
+    []
+  );
+
+  const [funAnalysisLine, setFunAnalysisLine] = useState<string>(FUN_ANALYSIS_LINES[0] || "Working…");
+  const [uiProgressPct, setUiProgressPct] = useState<number>(0);
+
   const [downloading, setDownloading] = useState<"" | "full" | "selected">("");
   const [toast, setToast] = useState<string>("");
   const demoExtracted = useMemo<ExtractedLane[]>(() => {
@@ -212,6 +235,50 @@ export function ExpressEstimateReportClient(props: {
   const [extracted, setExtracted] = useState<ExtractedLane[]>(() => []);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Fun rotating status + smoother progress bar (users hate a stuck bar)
+  useEffect(() => {
+    if (!analyzing) {
+      setUiProgressPct(0);
+      setFunAnalysisLine(FUN_ANALYSIS_LINES[0] || "Working…");
+      return;
+    }
+
+    let lineIndex = 0;
+    setFunAnalysisLine(FUN_ANALYSIS_LINES[lineIndex] || "Working…");
+
+    const lineTimer = window.setInterval(() => {
+      lineIndex = (lineIndex + 1) % FUN_ANALYSIS_LINES.length;
+      setFunAnalysisLine(FUN_ANALYSIS_LINES[lineIndex] || "Working…");
+    }, 1750);
+
+    // Fake progress that moves (caps at 97% until we finish) so the bar never feels stuck.
+    const progTimer = window.setInterval(() => {
+      setUiProgressPct((prev) => {
+        const pct = Math.max(0, Math.min(97, prev));
+        if (pct >= 97) return 97;
+
+        // Move faster early, slower later.
+        const step = pct < 40 ? 3.5 : pct < 70 ? 2.0 : 0.9;
+        const jitter = Math.random() * 0.7;
+        return Math.min(97, pct + step + jitter);
+      });
+    }, 420);
+
+    return () => {
+      window.clearInterval(lineTimer);
+      window.clearInterval(progTimer);
+    };
+  }, [analyzing, FUN_ANALYSIS_LINES]);
+
+  // When we have real extraction progress (page-by-page), ensure the bar matches (never goes backwards).
+  useEffect(() => {
+    if (!analysisProgress) return;
+    const pct = Math.round((analysisProgress.current / Math.max(1, analysisProgress.total)) * 100);
+    // During extraction, we map 0–100% extraction → 0–35% overall.
+    const mapped = Math.max(6, Math.min(35, Math.round(pct * 0.35)));
+    setUiProgressPct((prev) => Math.max(prev, mapped));
+  }, [analysisProgress?.current, analysisProgress?.total]);
 
   // Load persisted result on refresh (fixes "demo data" appearing after reload)
   useEffect(() => {
@@ -744,15 +811,19 @@ export function ExpressEstimateReportClient(props: {
             <div className="w-full max-w-sm rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white p-5 text-center shadow-[0_20px_60px_rgba(0,0,0,.25)]">
               <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-2 border-[rgba(229,57,53,.20)] border-t-[var(--hw-red)]" />
               <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">Analyzing inspection report…</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">
+              <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]/80">{funAnalysisLine}</div>
+              <div className="mt-1 text-xs text-[var(--hw-muted)]">
                 {analysisStage || "Working…"}
                 {analysisProgress ? ` (${analysisProgress.current}/${analysisProgress.total})` : ""}
               </div>
               <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
                 <div
                   className="h-full bg-[rgba(229,57,53,.55)] transition-[width] duration-300"
-                  style={{ width: `${analysisProgress ? Math.max(6, Math.min(100, Math.round((analysisProgress.current / Math.max(1, analysisProgress.total)) * 100))) : 20}%` }}
+                  style={{ width: `${Math.max(6, Math.min(97, Math.round(uiProgressPct || 0)))}%` }}
                 />
+              </div>
+              <div className="mt-2 text-[11px] font-semibold text-[var(--hw-muted)]">
+                Tip: scanned PDFs can take a bit—grab coffee, we got this.
               </div>
             </div>
           </div>
