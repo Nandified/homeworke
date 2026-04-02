@@ -1036,9 +1036,54 @@ export function ExpressEstimateReportClient(props: {
               <div className="grid gap-4">
                 {extracted.map((lane) => (
                   <div key={lane.title} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white">
-                    <div className="flex items-center justify-between gap-3 border-b border-[var(--hw-line)] px-4 py-3">
-                      <div className="text-xs font-semibold tracking-wide uppercase text-[var(--hw-muted)]">{lane.title}</div>
-                      <Chip className="border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-ink)]">{lane.items.length}</Chip>
+                    <div className="flex flex-col gap-2 border-b border-[var(--hw-line)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="text-xs font-semibold tracking-wide uppercase text-[var(--hw-muted)]">{lane.title}</div>
+                        <Chip className="border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-ink)]">{lane.items.length}</Chip>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="rounded-full px-3"
+                          onClick={() => {
+                            const ids = lane.items.map((it) => it.id);
+                            const allOn = ids.length > 0 && ids.every((id) => selectedIds.has(id));
+                            setSelectedIds((prev) => {
+                              const next = new Set(prev);
+                              for (const id of ids) {
+                                if (allOn) next.delete(id);
+                                else next.add(id);
+                              }
+                              return next;
+                            });
+                          }}
+                        >
+                          Select all
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="rounded-full px-3"
+                          onClick={() => {
+                            const ids = lane.items.filter((it) => it.pricingMode !== "Quote-only").map((it) => it.id);
+                            if (!ids.length) return;
+                            const allOn = ids.every((id) => repairIds.has(id));
+                            setRepairIds((prev) => {
+                              const next = new Set(prev);
+                              for (const id of ids) {
+                                if (allOn) next.delete(id);
+                                else next.add(id);
+                              }
+                              return next;
+                            });
+                          }}
+                        >
+                          Book all repairs
+                        </Button>
+                      </div>
                     </div>
                     <div className="grid gap-1 p-2">
                       {lane.items.map((item) => {
@@ -1109,7 +1154,7 @@ export function ExpressEstimateReportClient(props: {
                                       <Button
                                         size="sm"
                                         variant={on ? "secondary" : "primary"}
-                                        className="rounded-full px-3"
+                                        className="rounded-full px-3 min-w-[92px]"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           e.stopPropagation();
@@ -1127,7 +1172,7 @@ export function ExpressEstimateReportClient(props: {
                                     <Button
                                       size="sm"
                                       variant={repairIds.has(item.id) ? "secondary" : "ghost"}
-                                      className="rounded-full px-3"
+                                      className="rounded-full px-3 min-w-[120px]"
                                       disabled={item.pricingMode === "Quote-only"}
                                       title={
                                         item.pricingMode === "Quote-only"
