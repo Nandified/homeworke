@@ -805,7 +805,9 @@ export function ExpressEstimateReportClient(props: {
                   </div>
                 );
               })() : null}
-              {analysisSummary ? <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div> : null}
+              {analysisSummary && !/fallback grouping\/pricing/i.test(analysisSummary) ? (
+                <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div>
+              ) : null}
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-6 sm:flex-nowrap">
