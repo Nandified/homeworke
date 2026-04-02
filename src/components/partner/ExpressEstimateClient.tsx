@@ -755,6 +755,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                   </div>
                   <div className="mt-1 text-sm text-[var(--hw-muted)]">Anything you want the estimate to focus on?</div>
                 </div>
+
+                <div className="shrink-0 pt-1 text-[var(--hw-muted)]">
+                  <div className={"transition " + (notesOpen ? "rotate-180" : "")}>⌄</div>
+                </div>
               </button>
 
               {notesOpen ? (
