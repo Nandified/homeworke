@@ -108,6 +108,7 @@ export function ExpressEstimateReportClient(props: {
 
   const [file, setFile] = useState<File | null>(null);
   const [notes, setNotes] = useState<string>("");
+  const isUploadedReport = !!props.stagedId || !!file;
 
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string>("");
@@ -533,7 +534,7 @@ export function ExpressEstimateReportClient(props: {
               <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">
                 Property Address: <span className="font-semibold text-[var(--hw-ink)]">{effectiveAddress || "—"}</span>
               </div>
-              {report ? null : (
+              {report || isUploadedReport ? null : (
                 <div className="mt-1 text-sm text-[var(--hw-muted)]">This report does not exist in demo data.</div>
               )}
               {analysisError ? (
@@ -621,7 +622,14 @@ export function ExpressEstimateReportClient(props: {
 
           {extracted.length === 0 ? (
             <div className="mt-5">
-              <EmptyState title="No demo data" text="No items available yet." />
+              <EmptyState
+                title={isUploadedReport ? "We couldn’t read this report" : "No demo data"}
+                text={
+                  isUploadedReport
+                    ? "We couldn’t extract readable text from this PDF (it may be scanned or image-only). Try exporting a text-based PDF or upload a version with selectable text."
+                    : "No items available yet."
+                }
+              />
             </div>
           ) : (
             <div className="mt-5 grid gap-6">
