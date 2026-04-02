@@ -734,7 +734,7 @@ export function ExpressEstimateReportClient(props: {
               <Button
                 size="sm"
                 variant="secondary"
-                disabled={!report}
+                disabled={false}
                 onClick={() => {
                   setShareMode(selected.length ? "selected" : "full");
                   setShareUrl("");
@@ -1143,9 +1143,8 @@ export function ExpressEstimateReportClient(props: {
                     <div className="sm:col-span-2 flex flex-wrap items-center justify-end gap-2">
                       <Button
                         size="sm"
-                        disabled={!report || shareBusy || !shareEmail}
+                        disabled={shareBusy || !shareEmail || extracted.length === 0}
                         onClick={async () => {
-                          if (!report) return;
                           setShareBusy(true);
                           try {
                             const name = `${shareFirstName} ${shareLastName}`.trim();
@@ -1153,9 +1152,9 @@ export function ExpressEstimateReportClient(props: {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
-                                reportId: report.id,
-                                address: report.address,
-                                reportType: report.type,
+                                reportId: report?.id || props.reportId,
+                                address: effectiveAddress,
+                                reportType: report?.type || "Inspection",
                                 mode: "full",
                                 lanes: extracted,
                                 pro: {
@@ -1242,9 +1241,9 @@ export function ExpressEstimateReportClient(props: {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
-                                reportId: report.id,
-                                address: report.address,
-                                reportType: report.type,
+                                reportId: report?.id || props.reportId,
+                                address: effectiveAddress,
+                                reportType: report?.type || "Inspection",
                                 mode: "full",
                                 lanes: extracted,
                                 pro: {
@@ -1290,8 +1289,7 @@ export function ExpressEstimateReportClient(props: {
                     </div>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <Button size="sm" variant="secondary" disabled={!report || shareBusy} className="gap-2" onClick={async () => {
-                        if (!report) return;
+                      <Button size="sm" variant="secondary" disabled={shareBusy || extracted.length === 0} className="gap-2" onClick={async () => {
                         setShareBusy(true);
                         try {
                           let url = shareUrl;
@@ -1300,9 +1298,9 @@ export function ExpressEstimateReportClient(props: {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
-                                reportId: report.id,
-                                address: report.address,
-                                reportType: report.type,
+                                reportId: report?.id || props.reportId,
+                                address: effectiveAddress,
+                                reportType: report?.type || "Inspection",
                                 mode: "full",
                                 lanes: extracted,
                                 pro: {
