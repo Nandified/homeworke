@@ -358,3 +358,16 @@ model PageEditor {
   @@id([pageId, userId])
   @@index([userId])
 }
+
+model ExpressEstimateCache {
+  id        String   @id @default(cuid())
+  cacheKey  String   @unique
+  pdfHash   String
+  location  String
+  payload   Json
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([pdfHash])
+  @@index([expiresAt])
+}

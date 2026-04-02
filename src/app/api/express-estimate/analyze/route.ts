@@ -8,6 +8,8 @@ import path from "node:path";
 
 import pdf from "pdf-parse";
 
+import { db, dbEnabled } from "@/lib/db";
+
 type EvidenceThumb = { src: string; caption?: string };
 
 type LaneItem = {
@@ -211,7 +213,30 @@ function chunkText(text: string, maxChars = 45_000) {
   return chunks;
 }
 
+function normalizeLocationKey(location: string) {
+  return (location || "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function computeCacheKey(pdfHash: string, location: string) {
+  const loc = normalizeLocationKey(location);
+  return crypto.createHash("sha256").update(`${pdfHash}|${loc}`).digest("hex");
+}
+
 async function readCache(cacheKey: string) {
+  // Prefer DB cache when available (stable across Vercel instances)
+  if (dbEnabled()) {
+    try {
+      const row = await db().expressEstimateCache.findUnique({ where: { cacheKey } });
+      if (!row) return null;
+      if (row.expiresAt && row.expiresAt.getTime() < Date.now()) return null;
+      const j = row.payload as any;
+      if (j && j.ok === true && Array.isArray(j.lanes)) return j;
+      return null;
+    } catch {
+      // fall back to /tmp
+    }
+  }
+
   try {
     const dir = path.join("/tmp", "hw_ai_cache_v1");
     const p = path.join(dir, `${cacheKey}.json`);
@@ -224,7 +249,22 @@ async function readCache(cacheKey: string) {
   }
 }
 
-async function writeCache(cacheKey: string, payload: unknown) {
+async function writeCache(cacheKey: string, payload: unknown, pdfHash: string, location: string) {
+  if (dbEnabled()) {
+    try {
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      await db().expressEstimateCache.upsert({
+        where: { cacheKey },
+        create: { cacheKey, pdfHash, location: normalizeLocationKey(location), payload: payload as any, expiresAt },
+        update: { payload: payload as any, expiresAt },
+      });
+      return;
+    } catch {
+      // fall back to /tmp
+    }
+  }
+
   try {
     const dir = path.join("/tmp", "hw_ai_cache_v1");
     await fs.mkdir(dir, { recursive: true });
@@ -378,8 +418,9 @@ export async function POST(req: Request) {
       }
     }
 
-    // Cache by hash (PDF bytes hash if provided, else text hash)
-    const cached = await readCache(hash);
+    // Cache by (pdfHash + location) so the same PDF priced in different markets can differ.
+    const cacheKey = computeCacheKey(hash, location);
+    const cached = await readCache(cacheKey);
     if (cached) {
       return NextResponse.json({ ...cached, cached: true });
     }
@@ -632,7 +673,7 @@ export async function POST(req: Request) {
         usage,
       };
 
-      await writeCache(hash, payload);
+      await writeCache(cacheKey, payload, hash, location);
       return NextResponse.json(payload);
     }
 
@@ -652,7 +693,7 @@ export async function POST(req: Request) {
       usage,
     };
 
-    await writeCache(hash, payload);
+    await writeCache(cacheKey, payload, hash, location);
     return NextResponse.json(payload);
   } catch (e: unknown) {
     const msg = e && typeof e === "object" && "message" in e ? String((e as any).message) : String(e || "unknown");
