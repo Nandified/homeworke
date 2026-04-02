@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
-import { Button, Card, Chip, EmptyState, Input } from "@/components/ui";
+import { Button, Card, Chip, Input, Picker } from "@/components/ui";
 import { withDemo } from "@/lib/demo";
 
 type StoredClientProperty = {
@@ -38,6 +38,40 @@ function readClientProps(): StoredClientProperty[] {
   }
 }
 
+type StoredInvitedClient = {
+  id: string;
+  createdAt: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  phone?: string;
+  role?: "Homeowner" | "Homebuyer";
+  acceptedAt?: string;
+  inviteSentAt?: string;
+};
+
+const STORAGE_KEY_INVITED_CLIENTS = "hw_clients_v1";
+
+function readInvitedClients(): StoredInvitedClient[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY_INVITED_CLIENTS) || "[]";
+    const arr = JSON.parse(raw) as StoredInvitedClient[];
+    return Array.isArray(arr) ? arr.filter((c) => c && typeof c.id === "string" && typeof c.email === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeInvitedClients(items: StoredInvitedClient[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY_INVITED_CLIENTS, JSON.stringify(items.slice(0, 500)));
+  } catch {
+    // ignore
+  }
+}
+
 type ClientRow = {
   key: string;
   name: string;
@@ -48,14 +82,25 @@ type ClientRow = {
 export default function Page() {
   const [q, setQ] = useState("");
   const [clientProps, setClientProps] = useState<StoredClientProperty[]>([]);
+  const [invitedClients, setInvitedClients] = useState<StoredInvitedClient[]>([]);
+
+  const [inviteFirst, setInviteFirst] = useState("");
+  const [inviteLast, setInviteLast] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [invitePhone, setInvitePhone] = useState("");
+  const [inviteRole, setInviteRole] = useState<"Homeowner" | "Homebuyer" | "">("");
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteToast, setInviteToast] = useState("");
 
   useEffect(() => {
     // In demo mode, Properties + Instant Estimate store client properties in localStorage.
     // This page derives a client list from those entries so the flows feel connected.
     setClientProps(readClientProps());
+    setInvitedClients(readInvitedClients());
 
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY_CLIENT_PROPS) setClientProps(readClientProps());
+      if (e.key === STORAGE_KEY_INVITED_CLIENTS) setInvitedClients(readInvitedClients());
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
@@ -63,6 +108,14 @@ export default function Page() {
 
   const derivedClients = useMemo<ClientRow[]>(() => {
     const map = new Map<string, ClientRow>();
+
+    for (const c of invitedClients) {
+      const email = (c.email || "").trim().toLowerCase();
+      if (!email) continue;
+      const name = `${c.firstName || ""} ${c.lastName || ""}`.trim() || "Client";
+      const status: ClientRow["status"] = c.acceptedAt ? "Active" : "Invited";
+      map.set(email, { key: email, name, email, status });
+    }
 
     for (const p of clientProps) {
       const email = (p.clientEmail || "").trim().toLowerCase();
@@ -72,16 +125,15 @@ export default function Page() {
       // Today we don't have a true accept/open signal, so default client-added-from-property as "Invited".
       // Once the email-confirm flow exists, we'll flip to Active when acceptedAt is present.
       const status: ClientRow["status"] = p.acceptedAt ? "Active" : "Invited";
-      const key = email;
 
-      const existing = map.get(key);
+      const existing = map.get(email);
       if (!existing) {
-        map.set(key, { key, name, email, status });
+        map.set(email, { key: email, name, email, status });
       } else {
         // Prefer Active if any entry is Active, and prefer a longer/more specific name.
         const nextStatus = existing.status === "Active" || status === "Active" ? "Active" : "Invited";
         const nextName = existing.name.length >= name.length ? existing.name : name;
-        map.set(key, { ...existing, name: nextName, status: nextStatus });
+        map.set(email, { ...existing, name: nextName, status: nextStatus });
       }
     }
 
@@ -92,7 +144,7 @@ export default function Page() {
       return out.filter((c) => c.name.toLowerCase().includes(needle) || c.email.toLowerCase().includes(needle));
     }
     return out;
-  }, [clientProps, q]);
+  }, [clientProps, invitedClients, q]);
 
   return (
     <PortalShell
@@ -151,15 +203,84 @@ export default function Page() {
           </div>
         </Card>
 
-        <EmptyState
-          title="Invite a client"
-          text="Send an invite link so your buyer/seller can share a project and message with your office."
-          action={
-            <Link href={withDemo("/pro/clients?invite=1")}>
-              <Button>Generate invite link (stub)</Button>
-            </Link>
-          }
-        />
+        <Card className="p-6" id="invite">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Invite a client</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                Add a client to your workspace. (Email delivery will be wired next — for now this creates an “Invited” client.)
+              </div>
+            </div>
+            {inviteToast ? <div className="text-xs font-semibold text-[var(--hw-red)]">{inviteToast}</div> : null}
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Input value={inviteFirst} onChange={(e) => setInviteFirst(e.target.value)} placeholder="First name" />
+            <Input value={inviteLast} onChange={(e) => setInviteLast(e.target.value)} placeholder="Last name" />
+
+            <div className="sm:col-span-2">
+              <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="Email" />
+            </div>
+
+            <div className="sm:col-span-2">
+              <Input value={invitePhone} onChange={(e) => setInvitePhone(e.target.value)} placeholder="Phone" />
+            </div>
+
+            <div className="sm:col-span-2">
+              <Picker
+                value={inviteRole}
+                placeholder="Role"
+                options={[
+                  { id: "Homeowner", label: "Homeowner" },
+                  { id: "Homebuyer", label: "Homebuyer" },
+                ]}
+                onChange={(id) => setInviteRole((id as any) || "")}
+              />
+            </div>
+
+            <div className="sm:col-span-2 flex items-center justify-end gap-2">
+              <Button
+                size="sm"
+                disabled={inviteBusy || !(inviteEmail || "").trim()}
+                onClick={() => {
+                  const email = inviteEmail.trim().toLowerCase();
+                  if (!email) return;
+                  setInviteBusy(true);
+                  try {
+                    const prev = readInvitedClients();
+                    const id = "cli_" + Math.random().toString(16).slice(2);
+                    const row: StoredInvitedClient = {
+                      id,
+                      createdAt: new Date().toISOString(),
+                      firstName: inviteFirst.trim() || undefined,
+                      lastName: inviteLast.trim() || undefined,
+                      email,
+                      phone: invitePhone.trim() || undefined,
+                      role: (inviteRole as any) || undefined,
+                      inviteSentAt: new Date().toISOString(),
+                    };
+                    const out = [row, ...prev.filter((c) => (c.email || "").trim().toLowerCase() !== email)];
+                    writeInvitedClients(out);
+                    setInvitedClients(out);
+
+                    setInviteToast("Client invited.");
+                    window.setTimeout(() => setInviteToast(""), 1600);
+
+                    setInviteFirst("");
+                    setInviteLast("");
+                    setInviteEmail("");
+                    setInvitePhone("");
+                    setInviteRole("");
+                  } finally {
+                    setInviteBusy(false);
+                  }
+                }}
+              >
+                {inviteBusy ? "Inviting…" : "Invite client"}
+              </Button>
+            </div>
+          </div>
+        </Card>
       </div>
     </PortalShell>
   );
