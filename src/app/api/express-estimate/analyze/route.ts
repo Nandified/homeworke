@@ -166,14 +166,22 @@ function fillMissingRange(label: string, location: string): string {
   // Lightweight fallback ranges to avoid $0 totals when the model omits pricing.
   // These are intentionally broad.
   const rules: Array<{ re: RegExp; range: string }> = [
-    { re: /roof|shingle|flashing|chimney/, range: "$450–$2,500" },
+    // Roof / chimney (split into more specific buckets to avoid identical pricing everywhere)
+    { re: /chimney\s+cap|install\s+cap|missing\s+cap/, range: "$180–$750" },
+    { re: /chimney\s+cricket|install\s+cricket/, range: "$600–$2,400" },
+    { re: /chimney\s+flashing|counter\s+flashing|step\s+flashing/, range: "$350–$1,800" },
+    { re: /roof\s+flashing|flashing\s+install|flashing\s+repair/, range: "$250–$1,500" },
+    { re: /replace\s+missing\s+shingles|missing\s+shingles|shingle\s+repair/, range: "$200–$1,200" },
+    { re: /roof\s+sheathing|sheathing\s+repair|decking/, range: "$900–$4,500" },
+    { re: /roof\b|roofing|shingles|soffit|fascia/, range: "$450–$3,200" },
+
     { re: /foundation|masonry|parging|brick|tuckpoint/, range: "$600–$4,500" },
     { re: /gutter|downspout/, range: "$250–$1,600" },
     { re: /hvac|furnace|ac|air conditioner|heat pump/, range: "$180–$2,200" },
     { re: /plumb|leak|water heater|sump/, range: "$200–$2,800" },
     { re: /electrical|panel|outlet|gfci|breaker/, range: "$180–$1,800" },
-    { re: /window|door/, range: "$150–$1,500" },
-    { re: /paint|drywall|trim/, range: "$200–$2,500" },
+    { re: /window|door|screen/, range: "$150–$1,500" },
+    { re: /paint|drywall|trim|baseboard/, range: "$200–$2,500" },
     { re: /floor|tile|carpet/, range: "$250–$3,500" },
     { re: /grading|drainage/, range: "$400–$3,000" },
     { re: /garage/, range: "$250–$3,500" },
