@@ -250,7 +250,7 @@ export function ExpressEstimateReportClient(props: {
     const lineTimer = window.setInterval(() => {
       lineIndex = (lineIndex + 1) % FUN_ANALYSIS_LINES.length;
       setFunAnalysisLine(FUN_ANALYSIS_LINES[lineIndex] || "Working…");
-    }, 1750);
+    }, 2250);
 
     // Fake progress that moves (caps at 97% until we finish) so the bar never feels stuck.
     const progTimer = window.setInterval(() => {
@@ -258,12 +258,12 @@ export function ExpressEstimateReportClient(props: {
         const pct = Math.max(0, Math.min(97, prev));
         if (pct >= 97) return 97;
 
-        // Move faster early, slower later.
-        const step = pct < 40 ? 3.5 : pct < 70 ? 2.0 : 0.9;
-        const jitter = Math.random() * 0.7;
+        // Move faster early, slower later (overall slower than before).
+        const step = pct < 40 ? 2.4 : pct < 70 ? 1.4 : 0.6;
+        const jitter = Math.random() * 0.5;
         return Math.min(97, pct + step + jitter);
       });
-    }, 420);
+    }, 600);
 
     return () => {
       window.clearInterval(lineTimer);
@@ -579,7 +579,7 @@ export function ExpressEstimateReportClient(props: {
           fd.set("hash", combinedHash);
         }
 
-        setAnalysisStage("Generating with Homeworke AI (pricing + repair playbook)…");
+        setAnalysisStage("Generating with Homeworke AI");
         setAnalysisProgress(null);
 
         fd.set("notes", notes || "");
