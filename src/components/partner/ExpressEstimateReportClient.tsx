@@ -163,6 +163,7 @@ export function ExpressEstimateReportClient(props: {
   const [files, setFiles] = useState<File[]>([]);
   const [forceNextRun, setForceNextRun] = useState(false);
   const [notes, setNotes] = useState<string>("");
+  const didOcrFallbackRef = useRef(false);
 
   // Once the staged file is consumed we delete it, so on refresh `props.stagedId` is gone.
   // Persist a flag so the UI can still show the right empty-state messaging for an uploaded report.
@@ -606,7 +607,7 @@ export function ExpressEstimateReportClient(props: {
 
             // Scanned/image-only PDFs: Vercel will often 413 if we upload the whole PDF.
             // Instead, rasterize pages client-side and OCR page-images via a lightweight endpoint.
-            setAnalysisStage("This PDF looks scanned — running OCR…");
+            setAnalysisStage("Reading report…");
 
             const ab = await f.arrayBuffer();
             const pdf = await getDocument({ data: ab }).promise;
@@ -680,7 +681,7 @@ export function ExpressEstimateReportClient(props: {
         // Force this run when triggered by the Re-run button.
         if (forceNextRun) fd.set("force", "1");
 
-        const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
+        let r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
 
         // Try JSON first; if the platform returns HTML/text on error, fall back to text so we can show *some* reason.
         let j: unknown = null;
@@ -691,26 +692,90 @@ export function ExpressEstimateReportClient(props: {
         }
 
         if (!r.ok) {
-          let extra = "";
-          if (j && typeof j === "object") {
-            const rec = j as Record<string, unknown>;
-            const detail = typeof rec.detail === "string" ? rec.detail : "";
-            const err = typeof rec.error === "string" ? rec.error : "";
-            extra = detail || err;
-          } else {
-            try {
-              const t = await r.text();
-              extra = (t || "").trim().slice(0, 280);
-            } catch {
-              extra = "";
+          // If we extracted *some* text but the server couldn't find actionable issues,
+          // fall back to OCRing rendered pages (helps PDFs where text selection "jumps" / is mostly artifacts).
+          try {
+            const rec = j && typeof j === "object" ? (j as any) : null;
+            if (r.status === 422 && rec?.error === "no_issues_extracted" && !didOcrFallbackRef.current) {
+              const pdfFile = files.find((f) => (f.type || "") === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"));
+              if (pdfFile) {
+                didOcrFallbackRef.current = true;
+                setAnalysisStage("Reading report…");
+                setAnalysisProgress(null);
+
+                const ab = await pdfFile.arrayBuffer();
+                const pdf = await getDocument({ data: ab }).promise;
+                const maxPages = Math.min(pdf.numPages || 0, 12);
+                const ocrParts: string[] = [];
+
+                for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+                  setAnalysisProgress({ current: pageNum, total: maxPages });
+                  const page = await pdf.getPage(pageNum);
+                  const viewport = page.getViewport({ scale: 1.35 });
+                  const canvas = document.createElement("canvas");
+                  const ctx = canvas.getContext("2d");
+                  if (!ctx) continue;
+                  canvas.width = Math.max(1, Math.floor(viewport.width));
+                  canvas.height = Math.max(1, Math.floor(viewport.height));
+                  await page.render({ canvasContext: ctx as any, viewport }).promise;
+
+                  const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.7));
+                  if (!blob) continue;
+                  const imgFile = new File([blob], `ocr-p${pageNum}.jpg`, { type: "image/jpeg" });
+
+                  const ocrFd = new FormData();
+                  ocrFd.set("file", imgFile, imgFile.name);
+                  const rr = await fetch("/api/express-estimate/ocr", { method: "POST", body: ocrFd });
+                  const jj = (await rr.json().catch(() => null)) as any;
+                  if (rr.ok && jj?.ok === true && typeof jj.text === "string" && jj.text.trim()) ocrParts.push(jj.text.trim());
+                }
+
+                const ocrText = ocrParts.join("\n\n---\n\n").trim();
+                if (ocrText) {
+                  const fd2 = new FormData();
+                  fd2.set("text", `${combinedText}\n\n---\n\n${ocrText}`);
+                  fd2.set("hash", combinedHash + "|ocr");
+                  fd2.set("notes", notes || "");
+                  fd2.set("location", effectiveAddress || "");
+                  if (forceNextRun) fd2.set("force", "1");
+
+                  const r2 = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd2 });
+                  const j2 = (await r2.json().catch(() => null)) as any;
+                  if (r2.ok && j2?.ok === true) {
+                    r = r2;
+                    j = j2;
+                  } else {
+                    // fall through to normal error handling
+                    j = j2 || j;
+                  }
+                }
+              }
             }
+          } catch {
+            // ignore fallback errors; show original error below
           }
 
-          setAnalysisError(
-            extra ? `Analyze failed (${r.status}): ${extra}` : `Analyze failed (${r.status}): (no error body returned)`
-          );
-          setExtracted([]);
-          return;
+          // If the OCR retry succeeded, fall through to normal success handling below.
+          if (!r.ok) {
+            let extra = "";
+            if (j && typeof j === "object") {
+              const rec = j as Record<string, unknown>;
+              const detail = typeof rec.detail === "string" ? rec.detail : "";
+              const err = typeof rec.error === "string" ? rec.error : "";
+              extra = detail || err;
+            } else {
+              try {
+                const t = await r.text();
+                extra = (t || "").trim().slice(0, 280);
+              } catch {
+                extra = "";
+              }
+            }
+
+            setAnalysisError(extra ? `Analyze failed (${r.status}): ${extra}` : `Analyze failed (${r.status}): (no error body returned)`);
+            setExtracted([]);
+            return;
+          }
         }
 
         if (!j || typeof j !== "object") {
