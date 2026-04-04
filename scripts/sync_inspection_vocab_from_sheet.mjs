@@ -20,6 +20,8 @@ const OUT =
   process.env.INSPECTION_VOCAB_OUT ||
   path.join(process.cwd(), "src/lib/inspection-normalization-map.generated.ts");
 
+const OVERRIDE_CSV_URL = process.env.INSPECTION_VOCAB_CSV_URL || "";
+
 function csvUrl(sheetId, sheetName, range) {
   // gviz supports range + csv output; sheet must be readable.
   const base = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq`;
@@ -112,17 +114,36 @@ function normalizeContext(s) {
 }
 
 async function main() {
-  const url = csvUrl(SHEET_ID, SHEET_NAME, RANGE);
+  const url = OVERRIDE_CSV_URL || csvUrl(SHEET_ID, SHEET_NAME, RANGE);
 
   let csv;
   try {
-    const r = await fetch(url, { cache: "no-store" });
+    const r = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        // Some proxies cache aggressively; this nudges freshness.
+        "cache-control": "no-cache",
+      },
+    });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     csv = await r.text();
   } catch (e) {
     console.warn(`[sync_inspection_vocab] WARN: could not fetch sheet CSV (${url}): ${e?.message || e}`);
-    // Generate an empty module so build doesn't fail.
-    const fallback = `// AUTO-GENERATED (fallback). Sheet fetch failed at build time.\nexport const SHEET_RULES = [];\n`;
+
+    // Fail-safe: DO NOT overwrite an existing generated file.
+    // This prevents a transient network/privacy issue from wiping rules in production.
+    try {
+      const existing = await fs.readFile(OUT, "utf8");
+      if (existing && existing.includes("SHEET_RULES")) {
+        console.warn(`[sync_inspection_vocab] keeping existing generated rules at ${OUT}`);
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
+    // If no existing file, write an empty module so build doesn't fail.
+    const fallback = `// AUTO-GENERATED (fallback). Sheet fetch failed at build time.\nexport const SHEET_RULES = [];\nexport const SHEET_META = { ok: false };\n`;
     await fs.mkdir(path.dirname(OUT), { recursive: true });
     await fs.writeFile(OUT, fallback, "utf8");
     return;
@@ -174,8 +195,20 @@ async function main() {
     }
   }
 
-  const out = `// AUTO-GENERATED from Google Sheet at build time. Do not edit by hand.\n` +
-    `// Source: https://docs.google.com/spreadsheets/d/${SHEET_ID}\n` +
+  const meta = {
+    ok: true,
+    generatedAt: new Date().toISOString(),
+    sheetId: SHEET_ID,
+    sheetName: SHEET_NAME,
+    range: RANGE,
+    sourceUrl: url,
+    ruleCount: rules.length,
+  };
+
+  const out =
+    `// AUTO-GENERATED from Google Sheet at build time. Do not edit by hand.\n` +
+    `// Source: ${url}\n` +
+    `export const SHEET_META = ${JSON.stringify(meta, null, 2)};\n` +
     `export const SHEET_RULES = ${JSON.stringify(rules, null, 2)};\n`;
 
   await fs.mkdir(path.dirname(OUT), { recursive: true });
