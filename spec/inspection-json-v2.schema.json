@@ -65,11 +65,19 @@
             "triplex",
             "fourplex",
             "multi_family",
+            "mixed_use",
             "manufactured",
+            "light_commercial",
             "other",
             "unknown"
           ]
         },
+        "use": {
+          "type": "string",
+          "enum": ["residential", "mixed_use", "commercial", "unknown"],
+          "description": "High-level use bucket; residential can include multi-family/condo/townhome; commercial second phase"
+        },
+        "units": { "type": "integer", "minimum": 0, "description": "Number of dwelling units when known" },
         "year_built": { "type": "integer", "minimum": 1600, "maximum": 2200 },
         "sqft": { "type": "number", "minimum": 0 },
         "stories": { "type": "number", "minimum": 0 },
