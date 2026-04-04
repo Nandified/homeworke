@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/sync_inspection_vocab_from_sheet.mjs && node scripts/prisma_db_push_if_db.mjs && prisma generate && next build",
+    "build": "node scripts/sync_inspection_vocab_from_sheet.mjs && node scripts/generate_repair_catalog_from_csv.mjs && node scripts/prisma_db_push_if_db.mjs && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "prisma:generate": "prisma generate"

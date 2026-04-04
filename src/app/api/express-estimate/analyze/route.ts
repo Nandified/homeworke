@@ -263,6 +263,7 @@ type TradeGuardrailsConfig = {
 // Keep this as a direct import so Vercel bundles it and we don't rely on FS paths at runtime.
 // (This is our hard-coded pricing seed that we tune over time.)
 import guardrailsChicagoland from "@/lib/trade-guardrails.chicagoland.json";
+import { REPAIR_CATALOG } from "@/lib/repair-catalog.generated";
 
 const CHICAGOLAND_GUARDRAILS = guardrailsChicagoland as unknown as TradeGuardrailsConfig;
 const TRADE_GUARDRAILS_BY_ID = new Map(
@@ -321,6 +322,122 @@ function inferTradeId(label: string): string {
   ];
   const hit = rules.find((r) => r.re.test(l));
   return hit?.tradeId || "handyman";
+}
+
+type CatalogItem = {
+  item_code: string;
+  item_name: string;
+  system: string;
+  trade: string;
+  unit: string;
+  typical_qty_notes: string;
+  labor_hours_low: number | null;
+  labor_hours_high: number | null;
+  material_low: number | null;
+  material_high: number | null;
+  complexity_modifiers_notes: string;
+  permit_likely: boolean;
+  specialist_required: boolean;
+};
+
+function tokens(s: string): string[] {
+  const t = normalizeLabel(s)
+    .replace(/[()/+-]/g, " ")
+    .split(" ")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  // remove very common filler tokens
+  const stop = new Set(["replace", "repair", "install", "add", "basic", "minor", "localized", "standard", "swap", "per"]);
+  return t.filter((x) => x.length >= 3 && !stop.has(x));
+}
+
+function overlapScore(a: string[], b: string[]) {
+  if (!a.length || !b.length) return 0;
+  const setB = new Set(b);
+  let hit = 0;
+  for (const w of a) if (setB.has(w)) hit++;
+  return hit;
+}
+
+function normalizeCatalogTradeId(trade: string): string {
+  const t = normalizeLabel(trade);
+  // Normalize common catalog trade labels into our guardrail IDs.
+  if (/electric/.test(t)) return "electrical";
+  if (/plumb|drain/.test(t)) return "plumbing";
+  if (/hvac|furnace|ac\b|air conditioner|heat pump/.test(t)) return "hvac";
+  if (/roof/.test(t)) return "roofing";
+  if (/gutter/.test(t)) return "gutters";
+  if (/mason|brick|stucco/.test(t)) return "masonry";
+  if (/drywall/.test(t)) return "drywall";
+  if (/paint/.test(t)) return "painting";
+  if (/floor/.test(t)) return "flooring";
+  if (/garage door/.test(t)) return "garage_door";
+  if (/landscap/.test(t)) return "landscaping";
+  if (/concrete/.test(t)) return "concrete";
+  if (/window|door|glazier/.test(t)) return "windows_doors";
+  return "handyman";
+}
+
+function rangeFromCatalogItem(it: CatalogItem, marketFactor = 1): string | null {
+  const tradeId = normalizeCatalogTradeId(it.trade);
+  const g = TRADE_GUARDRAILS_BY_ID.get(String(tradeId || "").toLowerCase());
+  const fallback = CHICAGOLAND_GUARDRAILS?.defaultGuardrails;
+  const minTrip = (g?.minTripCharge ?? fallback?.minTripCharge ?? 250) || 0;
+  const minHours = (g?.minBillableHours ?? fallback?.minBillableHours ?? 1) || 0;
+  const hrMin = (g?.hourlyRate?.min ?? fallback?.hourlyRate?.min ?? 95) || 0;
+  const hrMax = (g?.hourlyRate?.max ?? fallback?.hourlyRate?.max ?? 185) || 0;
+
+  const hLo = it.labor_hours_low ?? null;
+  const hHi = it.labor_hours_high ?? null;
+  const mLo = it.material_low ?? 0;
+  const mHi = it.material_high ?? mLo;
+  if (hLo === null && hHi === null && (mLo || mHi)) {
+    const matOnlyLo = (mLo || 0) * marketFactor;
+    const matOnlyHi = (mHi || 0) * marketFactor;
+    return `${formatUsdCompact(matOnlyLo)}–${formatUsdCompact(matOnlyHi)}`;
+  }
+
+  const laborLo = (Math.max(minHours, hLo ?? minHours) * hrMin + minTrip) * marketFactor;
+  const laborHi = (Math.max(minHours, hHi ?? Math.max(minHours, hLo ?? minHours)) * hrMax + minTrip) * marketFactor;
+  const totalLo = laborLo + (mLo || 0) * marketFactor;
+  const totalHi = Math.max(totalLo, laborHi + (mHi || 0) * marketFactor);
+
+  // Convert to homeowner price (Homeworke keeps 20%).
+  const homeownerLo = totalLo / 0.8;
+  const homeownerHi = totalHi / 0.8;
+  return `${formatUsdCompact(homeownerLo)}–${formatUsdCompact(homeownerHi)}`;
+}
+
+function matchCatalogForFinding(f: { issue: string; narrative?: string; system?: string; component?: string }, marketFactor = 1) {
+  const issueT = tokens(f.issue);
+  const compT = tokens(f.component || "");
+  const sys = normalizeLabel(f.system || "");
+
+  let best: { item: CatalogItem; score: number; range: string | null } | null = null;
+
+  for (const raw of REPAIR_CATALOG as unknown as CatalogItem[]) {
+    const nameT = tokens(raw.item_name);
+    const s = overlapScore(issueT, nameT) * 3 + overlapScore(compT, nameT);
+    const sysBonus = sys && normalizeLabel(raw.system).includes(sys) ? 3 : 0;
+    const score = s + sysBonus;
+    if (!best || score > best.score) {
+      best = { item: raw, score, range: rangeFromCatalogItem(raw, marketFactor) };
+    }
+  }
+
+  // Require a minimal score so we don't attach nonsense.
+  if (!best || best.score < 4) return null;
+  return {
+    item_code: best.item.item_code,
+    item_name: best.item.item_name,
+    unit: best.item.unit,
+    trade: best.item.trade,
+    score: best.score,
+    rangeHint: best.range,
+    permitLikely: best.item.permit_likely,
+    specialistRequired: best.item.specialist_required,
+    notes: best.item.complexity_modifiers_notes,
+  };
 }
 
 function inferScope(label: string, note?: string): { scopeMultiplier: number; quantityHint: string; confidence: number } {
@@ -1146,11 +1263,20 @@ export async function POST(req: Request) {
       "(8) Group items into lanes titled exactly one of: Exterior, Interior, Systems, Safety, Need more info, Other. " +
       "Avoid dumping everything into Other—only use Other if you truly cannot classify.";
 
+    const pricedFindings = dedupedFindings.map((f) => {
+      const catalog = matchCatalogForFinding(f, marketFactor);
+      return {
+        ...f,
+        catalog,
+        rangeHint: catalog?.rangeHint || null,
+      };
+    });
+
     const finalUser =
       `Location: ${location || "(unknown)"}\n` +
       `User notes: ${notes || "(none)"}\n\n` +
-      "Issues extracted (JSON):\n" +
-      JSON.stringify(dedupedFindings.slice(0, 180), null, 2);
+      "Findings extracted (JSON). If rangeHint is present, prefer it unless you have strong reason to adjust:\n" +
+      JSON.stringify(pricedFindings.slice(0, 220), null, 2);
 
     let final:
       | Awaited<ReturnType<typeof callOpenAIJsonSchema>>
@@ -1215,19 +1341,22 @@ export async function POST(req: Request) {
       for (const it of dedupedFindings) {
         const lane = normalizeLaneTitle(it.lane || "Other");
         const label = it.issue;
+        const catalog = matchCatalogForFinding(it, marketFactor);
         const noteParts = [
           it.system ? `System: ${it.system}` : "",
           it.component ? `Component: ${it.component}` : "",
           it.location ? `Location: ${it.location}` : "",
           it.rating ? `Rating: ${it.rating}` : "",
+          it.priority ? `Priority: ${it.priority}` : "",
           it.recommendedTrade ? `Trade: ${it.recommendedTrade}` : "",
+          catalog?.item_code ? `Catalog: ${catalog.item_code}` : "",
           it.requiresSpecialist ? "Requires specialist/licensed pro" : "",
           it.accessLimitation ? "Access limitation noted" : "",
           it.narrative,
           it.recommendation ? `Recommendation: ${it.recommendation}` : "",
         ].filter(Boolean);
         const note = noteParts.join("\n");
-        const range = fillMissingRange(label, location);
+        const range = catalog?.rangeHint || fillMissingRange(label, location);
         const price = midpointFromRange(range) ?? undefined;
         buckets.get(lane)!.push({ id: stableIdFor(label + "|" + (it.location || "")), label, note, range, price });
       }
