@@ -30,7 +30,27 @@ export type RegexRule<T extends string> = {
   note?: string;
 };
 
+import { SHEET_RULES } from "@/lib/inspection-normalization-map.generated";
+
+function asRules<T extends string>(context: NormalizationContext): Array<RegexRule<T>> {
+  return (SHEET_RULES || [])
+    .filter((r) => r && typeof r === "object" && String((r as any).context) === context)
+    .map((r) => ({
+      context,
+      pattern: String((r as any).pattern || ""),
+      value: String((r as any).value || "") as T,
+      note: typeof (r as any).note === "string" ? (r as any).note : undefined,
+    }))
+    .filter((r) => r.pattern && r.value);
+}
+
+const SHEET_SYSTEM_RULES = asRules<FindingSystem>("system");
+const SHEET_RATING_RULES = asRules<FindingRating>("rating");
+const SHEET_TRADE_RULES = asRules<string>("trade");
+
 export const SYSTEM_RULES: Array<RegexRule<FindingSystem>> = [
+  ...SHEET_SYSTEM_RULES,
+  // Built-in fallbacks
   { context: "system", pattern: "roof|flashing", value: "Roof" },
   { context: "system", pattern: "exterior|siding|trim|deck|porch|steps|driveway|walkway|ground(s)?|site", value: "Exterior" },
   { context: "system", pattern: "grading|drainage", value: "SiteDrainage" },
@@ -50,6 +70,7 @@ export const SYSTEM_RULES: Array<RegexRule<FindingSystem>> = [
 ];
 
 export const RATING_RULES: Array<RegexRule<FindingRating>> = [
+  ...SHEET_RATING_RULES,
   { context: "rating", pattern: "safety|hazard|danger", value: "Safety" },
   { context: "rating", pattern: "not accessible|not inspected|inaccessible|limited|unable to|could not|not visible|obstruct", value: "NotAccessible" },
   { context: "rating", pattern: "unsat|defect|defective|deficient|repair|replace|recommend", value: "Repair" },
@@ -58,6 +79,7 @@ export const RATING_RULES: Array<RegexRule<FindingRating>> = [
 ];
 
 export const TRADE_RULES: Array<RegexRule<string>> = [
+  ...SHEET_TRADE_RULES,
   { context: "trade", pattern: "electric", value: "electrician" },
   { context: "trade", pattern: "plumb", value: "plumber" },
   { context: "trade", pattern: "hvac|furnace|boiler|air conditioner|heat pump", value: "hvac" },
