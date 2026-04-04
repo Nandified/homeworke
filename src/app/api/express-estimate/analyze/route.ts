@@ -378,7 +378,7 @@ function normalizeCatalogTradeId(trade: string): string {
   return "handyman";
 }
 
-function rangeFromCatalogItem(it: CatalogItem, marketFactor = 1): string | null {
+function rangeFromCatalogItem(it: CatalogItem, marketFactor = 1, qty = 1): string | null {
   const tradeId = normalizeCatalogTradeId(it.trade);
   const g = TRADE_GUARDRAILS_BY_ID.get(String(tradeId || "").toLowerCase());
   const fallback = CHICAGOLAND_GUARDRAILS?.defaultGuardrails;
@@ -387,20 +387,28 @@ function rangeFromCatalogItem(it: CatalogItem, marketFactor = 1): string | null 
   const hrMin = (g?.hourlyRate?.min ?? fallback?.hourlyRate?.min ?? 95) || 0;
   const hrMax = (g?.hourlyRate?.max ?? fallback?.hourlyRate?.max ?? 185) || 0;
 
+  // Only scale qty for unit-priced items (ea / each / circuit). For LF/SF/CY/allowance,
+  // the catalog row is assumed to already represent a scoped allowance.
+  const unit = normalizeLabel(it.unit || "");
+  const scalesWithQty = unit === "ea" || unit === "each" || unit === "circuit";
+  const q = scalesWithQty ? Math.max(1, Math.min(12, Number(qty) || 1)) : 1;
+
   const hLo = it.labor_hours_low ?? null;
   const hHi = it.labor_hours_high ?? null;
   const mLo = it.material_low ?? 0;
   const mHi = it.material_high ?? mLo;
+
   if (hLo === null && hHi === null && (mLo || mHi)) {
-    const matOnlyLo = (mLo || 0) * marketFactor;
-    const matOnlyHi = (mHi || 0) * marketFactor;
+    const matOnlyLo = (mLo || 0) * q * marketFactor;
+    const matOnlyHi = (mHi || 0) * q * marketFactor;
     return `${formatUsdCompact(matOnlyLo)}–${formatUsdCompact(matOnlyHi)}`;
   }
 
-  const laborLo = (Math.max(minHours, hLo ?? minHours) * hrMin + minTrip) * marketFactor;
-  const laborHi = (Math.max(minHours, hHi ?? Math.max(minHours, hLo ?? minHours)) * hrMax + minTrip) * marketFactor;
-  const totalLo = laborLo + (mLo || 0) * marketFactor;
-  const totalHi = Math.max(totalLo, laborHi + (mHi || 0) * marketFactor);
+  const laborLo = (Math.max(minHours, (hLo ?? minHours) * q) * hrMin + minTrip) * marketFactor;
+  const laborHi =
+    (Math.max(minHours, (hHi ?? Math.max(minHours, hLo ?? minHours)) * q) * hrMax + minTrip) * marketFactor;
+  const totalLo = laborLo + (mLo || 0) * q * marketFactor;
+  const totalHi = Math.max(totalLo, laborHi + (mHi || 0) * q * marketFactor);
 
   // Convert to homeowner price (Homeworke keeps 20%).
   const homeownerLo = totalLo / 0.8;
@@ -408,12 +416,46 @@ function rangeFromCatalogItem(it: CatalogItem, marketFactor = 1): string | null 
   return `${formatUsdCompact(homeownerLo)}–${formatUsdCompact(homeownerHi)}`;
 }
 
+function inferQtyForFinding(f: any, catalogItem: CatalogItem): { qty: number; source: string; missing: boolean } {
+  // Explicit quantity from extraction
+  const explicit = typeof f?.quantity?.qty === "number" && Number.isFinite(f.quantity.qty) ? f.quantity.qty : null;
+  if (explicit && explicit > 0) return { qty: Math.max(1, Math.min(50, explicit)), source: "explicit", missing: false };
+
+  const unit = normalizeLabel(catalogItem.unit || "");
+  const scales = unit === "ea" || unit === "each" || unit === "circuit";
+  if (!scales) return { qty: 1, source: "n/a", missing: true };
+
+  const text = `${f?.issue || ""} ${f?.narrative || ""} ${f?.recommendation || ""}`.toLowerCase();
+  const pluralCue = /(multiple|several|various|throughout|numerous|many|all|both)/.test(text);
+
+  const photos = Number(f?.evidence?.photoCount || 0);
+  const videos = Number(f?.evidence?.videoCount || 0);
+  const mediaCue = Math.max(photos, videos);
+
+  // Conservative defaults: 1 unless we have a reason.
+  let qty = 1;
+  let source = "default";
+
+  if (pluralCue) {
+    qty = 2;
+    source = "plural_cue";
+  }
+
+  // Weak proxy: more media often implies more occurrences.
+  if (mediaCue >= 2) {
+    qty = Math.max(qty, Math.min(6, mediaCue));
+    source = source === "default" ? "media_proxy" : source;
+  }
+
+  return { qty, source, missing: true };
+}
+
 function matchCatalogForFinding(f: { issue: string; narrative?: string; system?: string; component?: string }, marketFactor = 1) {
   const issueT = tokens(f.issue);
-  const compT = tokens(f.component || "");
-  const sys = normalizeLabel(f.system || "");
+  const compT = tokens((f as any).component || "");
+  const sys = normalizeLabel((f as any).system || "");
 
-  let best: { item: CatalogItem; score: number; range: string | null } | null = null;
+  let best: { item: CatalogItem; score: number } | null = null;
 
   for (const raw of REPAIR_CATALOG as unknown as CatalogItem[]) {
     const nameT = tokens(raw.item_name);
@@ -421,19 +463,26 @@ function matchCatalogForFinding(f: { issue: string; narrative?: string; system?:
     const sysBonus = sys && normalizeLabel(raw.system).includes(sys) ? 3 : 0;
     const score = s + sysBonus;
     if (!best || score > best.score) {
-      best = { item: raw, score, range: rangeFromCatalogItem(raw, marketFactor) };
+      best = { item: raw, score };
     }
   }
 
   // Require a minimal score so we don't attach nonsense.
   if (!best || best.score < 4) return null;
+
+  const qtyMeta = inferQtyForFinding(f as any, best.item);
+  const range = rangeFromCatalogItem(best.item, marketFactor, qtyMeta.qty);
+
   return {
     item_code: best.item.item_code,
     item_name: best.item.item_name,
     unit: best.item.unit,
     trade: best.item.trade,
     score: best.score,
-    rangeHint: best.range,
+    qty: qtyMeta.qty,
+    qtySource: qtyMeta.source,
+    qtyMissing: qtyMeta.missing,
+    rangeHint: range,
     permitLikely: best.item.permit_likely,
     specialistRequired: best.item.specialist_required,
     notes: best.item.complexity_modifiers_notes,
