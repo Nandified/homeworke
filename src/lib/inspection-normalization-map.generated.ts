@@ -2,12 +2,58 @@
 // Source: https://docs.google.com/spreadsheets/d/10mTd71gvi7njJAbSuWDWez9mjGMGvlemQ3aXgsOLBAk/gviz/tq?tqx=out%3Acsv&sheet=Sheet1&range=F97%3AK2000
 export const SHEET_META = {
   "ok": true,
-  "generatedAt": "2026-04-04T17:02:10.049Z",
+  "generatedAt": "2026-04-04T17:07:07.161Z",
   "sheetId": "10mTd71gvi7njJAbSuWDWez9mjGMGvlemQ3aXgsOLBAk",
   "sheetName": "Sheet1",
   "range": "F97:K2000",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/10mTd71gvi7njJAbSuWDWez9mjGMGvlemQ3aXgsOLBAk/gviz/tq?tqx=out%3Acsv&sheet=Sheet1&range=F97%3AK2000",
-  "ruleCount": 21
+  "ruleCount": 21,
+  "validation": {
+    "allowedSystems": [
+      "Roof",
+      "Exterior",
+      "Garage",
+      "Attic",
+      "Interior",
+      "Appliances",
+      "HVAC",
+      "Electrical",
+      "Plumbing",
+      "Structure",
+      "Foundation",
+      "WindowsDoors",
+      "InsulationVentilation",
+      "Fireplace",
+      "PoolSpa",
+      "SiteDrainage",
+      "Other"
+    ],
+    "allowedRatings": [
+      "Acceptable",
+      "Monitor",
+      "Repair",
+      "Safety",
+      "NotAccessible",
+      "Unknown"
+    ],
+    "allowedTrades": [
+      "general_contractor",
+      "electrician",
+      "electrician_licensed",
+      "plumber",
+      "plumber_licensed",
+      "hvac",
+      "roofer",
+      "mason",
+      "foundation",
+      "carpenter",
+      "pest",
+      "mold",
+      "asbestos",
+      "structural_engineer",
+      "other"
+    ]
+  }
 };
 export const SHEET_RULES = [
   {

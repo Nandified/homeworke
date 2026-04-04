@@ -113,6 +113,55 @@ function normalizeContext(s) {
   return null;
 }
 
+const ALLOWED_SYSTEMS = new Set([
+  "Roof",
+  "Exterior",
+  "Garage",
+  "Attic",
+  "Interior",
+  "Appliances",
+  "HVAC",
+  "Electrical",
+  "Plumbing",
+  "Structure",
+  "Foundation",
+  "WindowsDoors",
+  "InsulationVentilation",
+  "Fireplace",
+  "PoolSpa",
+  "SiteDrainage",
+  "Other",
+]);
+
+const ALLOWED_RATINGS = new Set(["Acceptable", "Monitor", "Repair", "Safety", "NotAccessible", "Unknown"]);
+
+const ALLOWED_TRADES = new Set([
+  "general_contractor",
+  "electrician",
+  "electrician_licensed",
+  "plumber",
+  "plumber_licensed",
+  "hvac",
+  "roofer",
+  "mason",
+  "foundation",
+  "carpenter",
+  "pest",
+  "mold",
+  "asbestos",
+  "structural_engineer",
+  "other",
+]);
+
+function isAllowedValue(context, value) {
+  if (context === "system") return ALLOWED_SYSTEMS.has(value);
+  if (context === "rating") return ALLOWED_RATINGS.has(value);
+  if (context === "trade") return ALLOWED_TRADES.has(value);
+  // access rules aren't applied in code yet; allow but keep conservative.
+  if (context === "access") return value === "NotAccessible";
+  return false;
+}
+
 async function main() {
   const url = OVERRIDE_CSV_URL || csvUrl(SHEET_ID, SHEET_NAME, RANGE);
 
@@ -186,6 +235,13 @@ async function main() {
         // (We keep it conservative to avoid injecting wrong rules.)
       }
 
+      if (!isAllowedValue(context, normalizedValue)) {
+        console.warn(
+          `[sync_inspection_vocab] skipping invalid enum: context=${context} raw='${rawPhrase}' value='${normalizedValue}' (${notes || ""})`
+        );
+        continue;
+      }
+
       rules.push({
         context,
         pattern: safeRegexSource(rawPhrase),
@@ -203,7 +259,29 @@ async function main() {
     range: RANGE,
     sourceUrl: url,
     ruleCount: rules.length,
+    validation: {
+      allowedSystems: Array.from(ALLOWED_SYSTEMS),
+      allowedRatings: Array.from(ALLOWED_RATINGS),
+      allowedTrades: Array.from(ALLOWED_TRADES),
+    },
   };
+
+  // Rule-count drop guard: if the new rule count collapses, keep the existing file.
+  const prevCountMatch = (await fs
+    .readFile(OUT, "utf8")
+    .catch(() => ""))
+    .match(/"ruleCount"\s*:\s*(\d+)/);
+  const prevCount = prevCountMatch ? Number(prevCountMatch[1]) : null;
+  if (prevCount !== null && Number.isFinite(prevCount) && prevCount > 0) {
+    const dropRatio = rules.length / prevCount;
+    const MIN_RATIO = 0.5; // don't allow >50% drop automatically
+    if (dropRatio < MIN_RATIO) {
+      console.warn(
+        `[sync_inspection_vocab] WARN: ruleCount drop too large (prev=${prevCount}, new=${rules.length}). Keeping existing generated file.`
+      );
+      return;
+    }
+  }
 
   const out =
     `// AUTO-GENERATED from Google Sheet at build time. Do not edit by hand.\n` +
