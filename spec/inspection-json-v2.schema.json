@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://homeworke.app/schemas/inspection-json-v2.schema.json",
+  "title": "Inspection JSON v2 (verbatim-first)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["report", "property", "inspection", "findings"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "inspection_json_v2" },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider"],
+      "properties": {
+        "provider": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "company_name": { "type": "string" },
+            "inspector_name": { "type": "string" },
+            "license_ids": { "type": "array", "items": { "type": "string" } },
+            "template_hint": { "type": "string", "description": "Optional hint like TopTier|Emerson|CityHome|Other" }
+          }
+        },
+        "type": { "type": "string" },
+        "report_id": { "type": "string" },
+        "inspection_datetime": { "type": "string", "format": "date-time" },
+        "generated_datetime": { "type": "string", "format": "date-time" },
+        "language": { "type": "string" },
+        "parse": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "method": { "type": "string", "description": "pdf_text|ocr|portal_export|other" },
+            "extracted_text_sha256": { "type": "string" },
+            "notes": { "type": "string" }
+          }
+        }
+      }
+    },
+    "property": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["address"],
+      "properties": {
+        "address": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["full"],
+          "properties": {
+            "full": { "type": "string" },
+            "street": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string" },
+            "zip": { "type": "string" }
+          }
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "single_family",
+            "condo",
+            "townhome",
+            "duplex",
+            "triplex",
+            "fourplex",
+            "multi_family",
+            "manufactured",
+            "other",
+            "unknown"
+          ]
+        },
+        "year_built": { "type": "integer", "minimum": 1600, "maximum": 2200 },
+        "sqft": { "type": "number", "minimum": 0 },
+        "stories": { "type": "number", "minimum": 0 },
+        "notes": { "type": "string" }
+      }
+    },
+    "client": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" }
+      }
+    },
+    "inspection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "attendees": { "type": "array", "items": { "type": "string" } },
+        "weather": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "condition": { "type": "string" },
+            "temp_f": { "type": "number" }
+          }
+        },
+        "utilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "water_on": { "type": "boolean" },
+            "gas_on": { "type": "boolean" },
+            "electric_on": { "type": "boolean" }
+          }
+        },
+        "access": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "limitations": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "standards": { "type": "array", "items": { "type": "string" } },
+            "limitations": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "items_inspected": { "type": "integer", "minimum": 0 },
+            "recommendations": { "type": "integer", "minimum": 0 },
+            "safety_hazards": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string" },
+              "count": { "type": "integer", "minimum": 0 }
+            },
+            "required": ["label"]
+          }
+        }
+      }
+    },
+    "raw": { "type": "object", "description": "Provider-specific leftovers (verbatim)" }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system", "rating", "priority", "issue", "narrative", "confidence"],
+      "properties": {
+        "id": { "type": "string" },
+        "system": {
+          "type": "string",
+          "enum": [
+            "Roof",
+            "Exterior",
+            "Garage",
+            "Attic",
+            "Interior",
+            "Appliances",
+            "HVAC",
+            "Electrical",
+            "Plumbing",
+            "Structure",
+            "Foundation",
+            "WindowsDoors",
+            "InsulationVentilation",
+            "Fireplace",
+            "PoolSpa",
+            "SiteDrainage",
+            "Other"
+          ]
+        },
+        "component": { "type": "string" },
+        "location": { "type": "string" },
+        "material": { "type": "string" },
+        "rating": {
+          "type": "string",
+          "enum": ["Acceptable", "Monitor", "Repair", "Safety", "NotAccessible", "Unknown"]
+        },
+        "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] },
+        "safety_hazard": { "type": "boolean" },
+        "issue": { "type": "string" },
+        "narrative": { "type": "string" },
+        "recommendation": { "type": "string" },
+        "recommended_trade": {
+          "type": "string",
+          "enum": [
+            "general_contractor",
+            "electrician",
+            "electrician_licensed",
+            "plumber",
+            "plumber_licensed",
+            "hvac",
+            "roofer",
+            "mason",
+            "foundation",
+            "carpenter",
+            "pest",
+            "mold",
+            "asbestos",
+            "structural_engineer",
+            "other"
+          ]
+        },
+        "requires_specialist": { "type": "boolean" },
+        "quantity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "qty": { "type": "number", "minimum": 0 },
+            "unit": { "type": "string" },
+            "notes": { "type": "string" }
+          }
+        },
+        "measurements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["value"],
+            "properties": {
+              "value": { "type": "number" },
+              "unit": { "type": "string" },
+              "context": { "type": "string" }
+            }
+          }
+        },
+        "media": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "assets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": { "type": "string", "enum": ["photo", "video", "other"] },
+                  "source": { "type": "string", "enum": ["drive", "pdf", "provider_portal", "other"] },
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "caption": { "type": "string" }
+                }
+              }
+            },
+            "photo_count": { "type": "integer", "minimum": 0 },
+            "video_count": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "section_heading": { "type": "string" },
+            "page": { "type": "integer", "minimum": 1 },
+            "provider_rating_raw": { "type": "string" },
+            "provider_system_raw": { "type": "string" }
+          }
+        },
+        "verbatim": {
+          "type": "object",
+          "description": "Verbatim-first capture. Normalized fields above are derived but we keep raw strings.",
+          "additionalProperties": false,
+          "properties": {
+            "text": { "type": "string" },
+            "recommendation": { "type": "string" },
+            "rating": { "type": "string" },
+            "location": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

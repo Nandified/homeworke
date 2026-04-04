@@ -823,34 +823,74 @@ export async function POST(req: Request) {
       type: "object",
       additionalProperties: false,
       properties: {
-        issues: {
+        findings: {
           type: "array",
           items: {
             type: "object",
             additionalProperties: false,
             properties: {
-              label: { type: "string" },
-              note: { type: "string" },
+              system: { type: "string" },
+              component: { type: "string" },
+              location: { type: "string" },
+              rating: { type: "string" },
+              issue: { type: "string" },
+              narrative: { type: "string" },
+              recommendation: { type: "string" },
+              recommendedTrade: { type: "string" },
+              requiresSpecialist: { type: "boolean" },
+              quantity: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  qty: { type: "number" },
+                  unit: { type: "string" },
+                  notes: { type: "string" },
+                },
+              },
+              evidence: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  photoCount: { type: "number" },
+                  videoCount: { type: "number" },
+                },
+              },
+              accessLimitation: { type: "boolean" },
               lane: { type: "string" },
             },
-            required: ["label"],
+            required: ["issue", "narrative"],
           },
         },
       },
-      required: ["issues"],
+      required: ["findings"],
     };
 
     const chunkSystem =
-      "You are extracting repair issues from a home inspection report chunk. " +
-      "Return de-duplicated issues supported by the text. " +
-      "Prefer summary/overview items. Do not invent defects. " +
-      "Use short scannable labels; put the detailed narrative in note. " +
+      "You are extracting normalized findings from a home inspection report chunk. " +
+      "Return de-duplicated findings supported by the text (do not invent defects). " +
+      "Each finding MUST include: issue (short label) + narrative (verbatim-ish). " +
+      "Include as many cost-driver fields as you can: system, component, location, rating, recommendation, recommendedTrade, requiresSpecialist, quantity, evidence counts, accessLimitation. " +
+      "If the report uses a severity scheme, map it into rating using these buckets: Acceptable | Monitor | Repair | Safety | NotAccessible | Unknown. " +
       "Lane should be one of: Exterior, Interior, Systems, Safety, Need more info, Other.";
 
     const chunks = chunkText(extractedText, 45_000);
 
     const usageCalls: UsageCost[] = [];
-    const issues: Array<{ label: string; note?: string; lane?: string }> = [];
+    const findings: Array<{
+      system?: string;
+      component?: string;
+      location?: string;
+      rating?: string;
+      issue: string;
+      narrative: string;
+      recommendation?: string;
+      recommendedTrade?: string;
+      requiresSpecialist?: boolean;
+      quantity?: { qty?: number; unit?: string; notes?: string };
+      evidence?: { photoCount?: number; videoCount?: number };
+      accessLimitation?: boolean;
+      lane?: string;
+    }> = [];
 
     for (let i = 0; i < chunks.length; i++) {
       const userMsg =
@@ -887,29 +927,63 @@ export async function POST(req: Request) {
       }
 
       usageCalls.push(r.usage);
-      const arr = Array.isArray(r.json?.issues) ? r.json.issues : [];
+      const arr = Array.isArray((r.json as any)?.findings) ? ((r.json as any).findings as unknown[]) : [];
       for (const it of arr) {
         if (!it || typeof it !== "object") continue;
         const rec = it as Record<string, unknown>;
-        const label = typeof rec.label === "string" ? rec.label.trim() : "";
-        if (!label) continue;
-        const note = typeof rec.note === "string" ? rec.note : undefined;
+
+        const issue = typeof rec.issue === "string" ? rec.issue.trim() : "";
+        const narrative = typeof rec.narrative === "string" ? rec.narrative.trim() : "";
+        if (!issue || !narrative) continue;
+
+        const system = typeof rec.system === "string" ? rec.system : undefined;
+        const component = typeof rec.component === "string" ? rec.component : undefined;
+        const location = typeof rec.location === "string" ? rec.location : undefined;
+        const rating = typeof rec.rating === "string" ? rec.rating : undefined;
+        const recommendation = typeof rec.recommendation === "string" ? rec.recommendation : undefined;
+        const recommendedTrade = typeof rec.recommendedTrade === "string" ? rec.recommendedTrade : undefined;
+        const requiresSpecialist = typeof rec.requiresSpecialist === "boolean" ? rec.requiresSpecialist : undefined;
         const lane = typeof rec.lane === "string" ? rec.lane : undefined;
-        issues.push({ label, note, lane });
+        const accessLimitation = typeof rec.accessLimitation === "boolean" ? rec.accessLimitation : undefined;
+
+        const quantity = rec.quantity && typeof rec.quantity === "object" ? (rec.quantity as any) : undefined;
+        const qQty = typeof quantity?.qty === "number" && Number.isFinite(quantity.qty) ? quantity.qty : undefined;
+        const qUnit = typeof quantity?.unit === "string" ? quantity.unit : undefined;
+        const qNotes = typeof quantity?.notes === "string" ? quantity.notes : undefined;
+
+        const evidence = rec.evidence && typeof rec.evidence === "object" ? (rec.evidence as any) : undefined;
+        const photoCount = typeof evidence?.photoCount === "number" && Number.isFinite(evidence.photoCount) ? evidence.photoCount : undefined;
+        const videoCount = typeof evidence?.videoCount === "number" && Number.isFinite(evidence.videoCount) ? evidence.videoCount : undefined;
+
+        findings.push({
+          system,
+          component,
+          location,
+          rating,
+          issue,
+          narrative,
+          recommendation,
+          recommendedTrade,
+          requiresSpecialist,
+          quantity: qQty || qUnit || qNotes ? { qty: qQty, unit: qUnit, notes: qNotes } : undefined,
+          evidence: photoCount || videoCount ? { photoCount, videoCount } : undefined,
+          accessLimitation,
+          lane,
+        });
       }
     }
 
     // De-dupe issues by normalized label
     const issueSeen = new Set<string>();
-    const dedupedIssues = issues.filter((it) => {
-      const k = normalizeLabel(it.label);
+    const dedupedFindings = findings.filter((it) => {
+      const k = normalizeLabel([it.system, it.component, it.location, it.issue].filter(Boolean).join(" | "));
       if (!k) return false;
       if (issueSeen.has(k)) return false;
       issueSeen.add(k);
       return true;
     });
 
-    if (dedupedIssues.length === 0) {
+    if (dedupedFindings.length === 0) {
       return NextResponse.json(
         {
           ok: false,
@@ -962,21 +1036,22 @@ export async function POST(req: Request) {
 
     const finalSystem =
       "You are an expert home inspection estimator. " +
-      "You receive extracted issues from a home inspection report. " +
+      "You receive normalized findings extracted from a home inspection report (system/component/location/rating/issue/narrative/etc.). " +
       "Your job is to produce a consistent, de-duplicated Instant Estimate. " +
-      "Rules: (1) Do not duplicate items. (2) Do not hallucinate defects not in the issues list. " +
+      "Rules: (1) Do not duplicate items. (2) Do not hallucinate defects not supported by the findings list. " +
       "(3) Every item MUST include a pricing range string in USD like '$450–$1,200' (never omit range). " +
       "(4) Use location-based pricing when possible; otherwise use typical US pricing. " +
       "(5) IMPORTANT: Ranges should reflect the homeowner price. Homeworke keeps 20% of the final price (contractor receives 80%), so homeowner price ~= contractor cost / 0.80. " +
-      "(6) Keep labels short; put narrative in note. " +
-      "(7) Group items into lanes titled exactly one of: Exterior, Interior, Systems, Safety, Need more info, Other. " +
+      "(6) Keep labels short; put specifics (location, narrative, constraints) in note. " +
+      "(7) Use the cost-driver fields to vary ranges realistically: rating/priority, trade, quantity, access limitations, and evidence. " +
+      "(8) Group items into lanes titled exactly one of: Exterior, Interior, Systems, Safety, Need more info, Other. " +
       "Avoid dumping everything into Other—only use Other if you truly cannot classify.";
 
     const finalUser =
       `Location: ${location || "(unknown)"}\n` +
       `User notes: ${notes || "(none)"}\n\n` +
       "Issues extracted (JSON):\n" +
-      JSON.stringify(dedupedIssues.slice(0, 140), null, 2);
+      JSON.stringify(dedupedFindings.slice(0, 180), null, 2);
 
     let final:
       | Awaited<ReturnType<typeof callOpenAIJsonSchema>>
@@ -1033,18 +1108,29 @@ export async function POST(req: Request) {
     const cleaned = dedupeLanes(lanes, location, marketFactor);
 
     if (cleaned.length === 0) {
-      // Fallback: build lanes directly from extracted issues so we still return something usable.
+      // Fallback: build lanes directly from extracted findings so we still return something usable.
       const laneOrder = ["Exterior", "Interior", "Systems", "Safety", "Need more info", "Other"] as const;
       const buckets = new Map<string, LaneItem[]>();
       for (const t of laneOrder) buckets.set(t, []);
 
-      for (const it of dedupedIssues) {
+      for (const it of dedupedFindings) {
         const lane = normalizeLaneTitle(it.lane || "Other");
-        const label = it.label;
-        const note = it.note;
+        const label = it.issue;
+        const noteParts = [
+          it.system ? `System: ${it.system}` : "",
+          it.component ? `Component: ${it.component}` : "",
+          it.location ? `Location: ${it.location}` : "",
+          it.rating ? `Rating: ${it.rating}` : "",
+          it.recommendedTrade ? `Trade: ${it.recommendedTrade}` : "",
+          it.requiresSpecialist ? "Requires specialist/licensed pro" : "",
+          it.accessLimitation ? "Access limitation noted" : "",
+          it.narrative,
+          it.recommendation ? `Recommendation: ${it.recommendation}` : "",
+        ].filter(Boolean);
+        const note = noteParts.join("\n");
         const range = fillMissingRange(label, location);
         const price = midpointFromRange(range) ?? undefined;
-        buckets.get(lane)!.push({ id: stableIdFor(label), label, note, range, price });
+        buckets.get(lane)!.push({ id: stableIdFor(label + "|" + (it.location || "")), label, note, range, price });
       }
 
       const fallbackLanes: ExtractedLane[] = laneOrder
