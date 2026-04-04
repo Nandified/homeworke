@@ -119,28 +119,16 @@ function normalizeLaneTitle(title: string): ExtractedLane["title"] {
   return "Other";
 }
 
-type FindingSystem =
-  | "Roof"
-  | "Exterior"
-  | "Garage"
-  | "Attic"
-  | "Interior"
-  | "Appliances"
-  | "HVAC"
-  | "Electrical"
-  | "Plumbing"
-  | "Structure"
-  | "Foundation"
-  | "WindowsDoors"
-  | "InsulationVentilation"
-  | "Fireplace"
-  | "PoolSpa"
-  | "SiteDrainage"
-  | "Other";
-
-type FindingRating = "Acceptable" | "Monitor" | "Repair" | "Safety" | "NotAccessible" | "Unknown";
-
-type FindingPriority = "P0" | "P1" | "P2" | "P3";
+import {
+  applyRegexRules,
+  LICENSE_HINT,
+  RATING_RULES,
+  SYSTEM_RULES,
+  TRADE_RULES,
+  type FindingPriority,
+  type FindingRating,
+  type FindingSystem,
+} from "@/lib/inspection-normalization-map";
 
 type NormalizedFinding = {
   system?: FindingSystem;
@@ -161,56 +149,21 @@ type NormalizedFinding = {
 };
 
 function normalizeSystem(raw?: string): FindingSystem | undefined {
-  const s = (raw || "").toLowerCase();
-  if (!s) return undefined;
-  if (/(roof|flashing|chimney)/.test(s)) return "Roof";
-  if (/(exterior|siding|trim|deck|porch|steps|driveway|walkway|grading|drainage|site)/.test(s)) return "Exterior";
-  if (/(garage)/.test(s)) return "Garage";
-  if (/(attic)/.test(s)) return "Attic";
-  if (/(interior|walls|ceilings|floors|doors|stairs|trim)/.test(s)) return "Interior";
-  if (/(appliance|dishwasher|range|oven|microwave|refrigerator|washer|dryer)/.test(s)) return "Appliances";
-  if (/(hvac|furnace|boiler|ac|a\/c|air conditioner|heat pump|duct)/.test(s)) return "HVAC";
-  if (/(electrical|panel|breaker|outlet|receptacle|gfc[i]?)\b/.test(s)) return "Electrical";
-  if (/(plumbing|water heater|supply|drain|waste|vent|sump|sewer)/.test(s)) return "Plumbing";
-  if (/(structure|framing|joist|beam|post|column)/.test(s)) return "Structure";
-  if (/(foundation|crawlspace|basement|slab)/.test(s)) return "Foundation";
-  if (/(window|door)/.test(s)) return "WindowsDoors";
-  if (/(insulation|ventilation|soffit|ridge vent)/.test(s)) return "InsulationVentilation";
-  if (/(fireplace|chimney)/.test(s)) return "Fireplace";
-  if (/(pool|spa|hot tub)/.test(s)) return "PoolSpa";
-  if (/(drainage|grading)/.test(s)) return "SiteDrainage";
-  return "Other";
+  return applyRegexRules(SYSTEM_RULES, raw) || (raw ? "Other" : undefined);
 }
 
 function normalizeRating(raw?: string): FindingRating | undefined {
-  const r = (raw || "").toLowerCase().trim();
-  if (!r) return undefined;
-  if (/(safety|hazard|danger)/.test(r)) return "Safety";
-  if (/(not accessible|not inspected|inaccessible|limited|unable to|could not)/.test(r)) return "NotAccessible";
-  if (/(defect|defective|repair|replace|unsat|not satisfactory|recommend)/.test(r)) return "Repair";
-  if (/(monitor|maintenance|marginal|watch)/.test(r)) return "Monitor";
-  if (/(acceptable|ok|satisfactory|good|working|functional)/.test(r)) return "Acceptable";
-  return "Unknown";
+  return applyRegexRules(RATING_RULES, raw) || (raw ? "Unknown" : undefined);
 }
 
 function normalizeTrade(raw?: string): string | undefined {
-  const t = (raw || "").toLowerCase();
-  if (!t) return undefined;
-  if (t.includes("electric")) return t.includes("licens") ? "electrician_licensed" : "electrician";
-  if (t.includes("plumb")) return t.includes("licens") ? "plumber_licensed" : "plumber";
-  if (/(hvac|furnace|boiler|ac|a\/c|air conditioner|heat pump)/.test(t)) return "hvac";
-  if (/(roof)/.test(t)) return "roofer";
-  if (/(foundation)/.test(t)) return "foundation";
-  if (/(mason|brick|tuckpoint)/.test(t)) return "mason";
-  if (/(pest|termite)/.test(t)) return "pest";
-  if (/(mold)/.test(t)) return "mold";
-  if (/(asbestos)/.test(t)) return "asbestos";
-  if (/(engineer)/.test(t)) return "structural_engineer";
-  if (/(carpenter|framing)/.test(t)) return "carpenter";
-  if (/(general|contractor|qualified contractor|handyman)/.test(t)) return "general_contractor";
-  return "other";
+  const base = applyRegexRules(TRADE_RULES, raw);
+  if (!base) return raw ? "other" : undefined;
+  const hasLicenseHint = LICENSE_HINT.test(raw || "");
+  if (base === "electrician" && hasLicenseHint) return "electrician_licensed";
+  if (base === "plumber" && hasLicenseHint) return "plumber_licensed";
+  return base;
 }
-
 function derivePriority(rating: FindingRating | undefined, text: string): FindingPriority {
   const t = (text || "").toLowerCase();
   if (rating === "Safety") return "P0";
@@ -1082,7 +1035,7 @@ export async function POST(req: Request) {
         const requiresSpecialist =
           typeof requiresSpecialistRaw === "boolean"
             ? requiresSpecialistRaw
-            : /\blicensed\b|\bqualified\b|\bcertified\b/.test(`${recommendedTradeRaw || ""} ${recommendation || ""}`.toLowerCase());
+            : LICENSE_HINT.test(`${recommendedTradeRaw || ""} ${recommendation || ""}`);
 
         const quantity = rec.quantity && typeof rec.quantity === "object" ? (rec.quantity as any) : undefined;
         const qQty = typeof quantity?.qty === "number" && Number.isFinite(quantity.qty) ? quantity.qty : undefined;
