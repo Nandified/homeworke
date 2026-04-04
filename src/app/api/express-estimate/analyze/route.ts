@@ -868,6 +868,8 @@ export async function POST(req: Request) {
     const chunkSystem =
       "You are extracting normalized findings from a home inspection report chunk. " +
       "Return de-duplicated findings supported by the text (do not invent defects). " +
+      "Only include ACTIONABLE issues that need repair, monitoring, safety attention, or need-more-info due to access limitations. " +
+      "Do NOT include items that are acceptable / good / working / satisfactory / functional unless the text also notes a defect. " +
       "Each finding MUST include: issue (short label) + narrative (verbatim-ish). " +
       "Include as many cost-driver fields as you can: system, component, location, rating, recommendation, recommendedTrade, requiresSpecialist, quantity, evidence counts, accessLimitation. " +
       "If the report uses a severity scheme, map it into rating using these buckets: Acceptable | Monitor | Repair | Safety | NotAccessible | Unknown. " +
@@ -936,10 +938,33 @@ export async function POST(req: Request) {
         const narrative = typeof rec.narrative === "string" ? rec.narrative.trim() : "";
         if (!issue || !narrative) continue;
 
+        // Skip "acceptable / good condition" items; we only price actionable issues.
+        const ratingLower = (rating || "").toLowerCase();
+        const issueLower = issue.toLowerCase();
+        const narrativeLower = narrative.toLowerCase();
+        const looksAcceptable =
+          ratingLower === "acceptable" ||
+          ratingLower.includes("satisfactory") ||
+          ratingLower.includes("good") ||
+          ratingLower.includes("working");
+        const saysOk =
+          issueLower.includes("acceptable") ||
+          issueLower.includes("satisfactory") ||
+          issueLower.includes("good condition") ||
+          issueLower.includes("working") ||
+          narrativeLower.includes("in good condition") ||
+          narrativeLower.includes("operated as intended") ||
+          narrativeLower.includes("no defects") ||
+          narrativeLower.includes("no issues noted") ||
+          narrativeLower.includes("serviceable") ||
+          narrativeLower.includes("ok");
+        if (looksAcceptable && saysOk) continue;
+
         const system = typeof rec.system === "string" ? rec.system : undefined;
         const component = typeof rec.component === "string" ? rec.component : undefined;
         const location = typeof rec.location === "string" ? rec.location : undefined;
-        const rating = typeof rec.rating === "string" ? rec.rating : undefined;
+        const ratingRaw = typeof rec.rating === "string" ? rec.rating : undefined;
+        const rating = ratingRaw ? ratingRaw.trim() : undefined;
         const recommendation = typeof rec.recommendation === "string" ? rec.recommendation : undefined;
         const recommendedTrade = typeof rec.recommendedTrade === "string" ? rec.recommendedTrade : undefined;
         const requiresSpecialist = typeof rec.requiresSpecialist === "boolean" ? rec.requiresSpecialist : undefined;
