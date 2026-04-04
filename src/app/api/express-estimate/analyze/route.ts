@@ -1445,6 +1445,30 @@ export async function POST(req: Request) {
       };
 
       await writeCache(cacheKey, payload, hash, location);
+
+      // Learning loop: log extracted+priced outputs (DB-first). Silent failure.
+      try {
+        if (dbEnabled()) {
+          await db().inspectionLearningEvent.create({
+            data: {
+              pdfHash: hash,
+              location: location || null,
+              zip: marketMeta.zip || null,
+              state: marketMeta.state || null,
+              marketMultiplier: marketMeta.multiplier ?? null,
+              findings: dedupedFindings as any,
+              lanes: payload.lanes as any,
+              summary: payload.summary || null,
+              schemaVersion: "inspection_json_v2",
+              modelChunk: "gpt-5.4-mini",
+              modelFinal: "gpt-5.4",
+            },
+          });
+        }
+      } catch {
+        // ignore
+      }
+
       return NextResponse.json(payload);
     }
 
@@ -1479,6 +1503,32 @@ export async function POST(req: Request) {
     };
 
     await writeCache(cacheKey, payload, hash, location);
+
+    // Learning loop: log extracted+priced outputs (DB-first). Silent failure.
+    try {
+      if (dbEnabled()) {
+        // Prefer enriched findings with catalog/range hints when available.
+        const findingsForLog = (typeof pricedFindings !== "undefined" ? pricedFindings : dedupedFindings) as any;
+        await db().inspectionLearningEvent.create({
+          data: {
+            pdfHash: hash,
+            location: location || null,
+            zip: marketMeta.zip || null,
+            state: marketMeta.state || null,
+            marketMultiplier: marketMeta.multiplier ?? null,
+            findings: findingsForLog,
+            lanes: payload.lanes as any,
+            summary: payload.summary || null,
+            schemaVersion: "inspection_json_v2",
+            modelChunk: "gpt-5.4-mini",
+            modelFinal: "gpt-5.4",
+          },
+        });
+      }
+    } catch {
+      // ignore
+    }
+
     return NextResponse.json(payload);
   } catch (e: unknown) {
     const msg = e && typeof e === "object" && "message" in e ? String((e as any).message) : String(e || "unknown");

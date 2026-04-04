@@ -371,3 +371,32 @@ model ExpressEstimateCache {
   @@index([pdfHash])
   @@index([expiresAt])
 }
+
+model InspectionLearningEvent {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+
+  // Minimal identifiers (avoid storing raw PDF text)
+  pdfHash     String
+  location    String?
+  zip         String?
+  state       String?
+
+  // Pricing context
+  marketMultiplier Float?
+
+  // What we extracted + how we priced
+  findings    Json
+  lanes       Json
+  summary     String?
+
+  // Optional debugging / evolution
+  schemaVersion String? // e.g. inspection_json_v2
+  modelChunk   String?
+  modelFinal   String?
+
+  @@index([pdfHash])
+  @@index([createdAt])
+  @@index([zip])
+  @@index([state])
+}
