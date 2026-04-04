@@ -119,6 +119,126 @@ function normalizeLaneTitle(title: string): ExtractedLane["title"] {
   return "Other";
 }
 
+type FindingSystem =
+  | "Roof"
+  | "Exterior"
+  | "Garage"
+  | "Attic"
+  | "Interior"
+  | "Appliances"
+  | "HVAC"
+  | "Electrical"
+  | "Plumbing"
+  | "Structure"
+  | "Foundation"
+  | "WindowsDoors"
+  | "InsulationVentilation"
+  | "Fireplace"
+  | "PoolSpa"
+  | "SiteDrainage"
+  | "Other";
+
+type FindingRating = "Acceptable" | "Monitor" | "Repair" | "Safety" | "NotAccessible" | "Unknown";
+
+type FindingPriority = "P0" | "P1" | "P2" | "P3";
+
+type NormalizedFinding = {
+  system?: FindingSystem;
+  component?: string;
+  location?: string;
+  rating?: FindingRating;
+  priority?: FindingPriority;
+  issue: string;
+  narrative: string;
+  recommendation?: string;
+  recommendedTrade?: string;
+  requiresSpecialist?: boolean;
+  quantity?: { qty?: number; unit?: string; notes?: string };
+  evidence?: { photoCount?: number; videoCount?: number };
+  accessLimitation?: boolean;
+  confidence?: number; // 0..1
+  lane?: string;
+};
+
+function normalizeSystem(raw?: string): FindingSystem | undefined {
+  const s = (raw || "").toLowerCase();
+  if (!s) return undefined;
+  if (/(roof|flashing|chimney)/.test(s)) return "Roof";
+  if (/(exterior|siding|trim|deck|porch|steps|driveway|walkway|grading|drainage|site)/.test(s)) return "Exterior";
+  if (/(garage)/.test(s)) return "Garage";
+  if (/(attic)/.test(s)) return "Attic";
+  if (/(interior|walls|ceilings|floors|doors|stairs|trim)/.test(s)) return "Interior";
+  if (/(appliance|dishwasher|range|oven|microwave|refrigerator|washer|dryer)/.test(s)) return "Appliances";
+  if (/(hvac|furnace|boiler|ac|a\/c|air conditioner|heat pump|duct)/.test(s)) return "HVAC";
+  if (/(electrical|panel|breaker|outlet|receptacle|gfc[i]?)\b/.test(s)) return "Electrical";
+  if (/(plumbing|water heater|supply|drain|waste|vent|sump|sewer)/.test(s)) return "Plumbing";
+  if (/(structure|framing|joist|beam|post|column)/.test(s)) return "Structure";
+  if (/(foundation|crawlspace|basement|slab)/.test(s)) return "Foundation";
+  if (/(window|door)/.test(s)) return "WindowsDoors";
+  if (/(insulation|ventilation|soffit|ridge vent)/.test(s)) return "InsulationVentilation";
+  if (/(fireplace|chimney)/.test(s)) return "Fireplace";
+  if (/(pool|spa|hot tub)/.test(s)) return "PoolSpa";
+  if (/(drainage|grading)/.test(s)) return "SiteDrainage";
+  return "Other";
+}
+
+function normalizeRating(raw?: string): FindingRating | undefined {
+  const r = (raw || "").toLowerCase().trim();
+  if (!r) return undefined;
+  if (/(safety|hazard|danger)/.test(r)) return "Safety";
+  if (/(not accessible|not inspected|inaccessible|limited|unable to|could not)/.test(r)) return "NotAccessible";
+  if (/(defect|defective|repair|replace|unsat|not satisfactory|recommend)/.test(r)) return "Repair";
+  if (/(monitor|maintenance|marginal|watch)/.test(r)) return "Monitor";
+  if (/(acceptable|ok|satisfactory|good|working|functional)/.test(r)) return "Acceptable";
+  return "Unknown";
+}
+
+function normalizeTrade(raw?: string): string | undefined {
+  const t = (raw || "").toLowerCase();
+  if (!t) return undefined;
+  if (t.includes("electric")) return t.includes("licens") ? "electrician_licensed" : "electrician";
+  if (t.includes("plumb")) return t.includes("licens") ? "plumber_licensed" : "plumber";
+  if (/(hvac|furnace|boiler|ac|a\/c|air conditioner|heat pump)/.test(t)) return "hvac";
+  if (/(roof)/.test(t)) return "roofer";
+  if (/(foundation)/.test(t)) return "foundation";
+  if (/(mason|brick|tuckpoint)/.test(t)) return "mason";
+  if (/(pest|termite)/.test(t)) return "pest";
+  if (/(mold)/.test(t)) return "mold";
+  if (/(asbestos)/.test(t)) return "asbestos";
+  if (/(engineer)/.test(t)) return "structural_engineer";
+  if (/(carpenter|framing)/.test(t)) return "carpenter";
+  if (/(general|contractor|qualified contractor|handyman)/.test(t)) return "general_contractor";
+  return "other";
+}
+
+function derivePriority(rating: FindingRating | undefined, text: string): FindingPriority {
+  const t = (text || "").toLowerCase();
+  if (rating === "Safety") return "P0";
+  if (/(active leak|leaking now|sparking|shock|smoke|gas leak|carbon monoxide|no heat|sewer backup|standing water)/.test(t)) return "P1";
+  if (rating === "Repair") return "P2";
+  if (rating === "NotAccessible") return "P3";
+  if (rating === "Monitor") return "P3";
+  return "P2";
+}
+
+function deriveConfidence(it: {
+  rating?: FindingRating;
+  evidence?: { photoCount?: number; videoCount?: number };
+  accessLimitation?: boolean;
+  location?: string;
+  component?: string;
+}): number {
+  let c = 0.7;
+  const photos = it.evidence?.photoCount || 0;
+  const videos = it.evidence?.videoCount || 0;
+  if (photos > 0 || videos > 0) c += 0.1;
+  if (it.accessLimitation || it.rating === "NotAccessible") c -= 0.3;
+  if (!it.location) c -= 0.1;
+  if (!it.component) c -= 0.05;
+  c = Math.max(0, Math.min(1, c));
+  return Math.round(c * 100) / 100;
+}
+
 function parseMoney(s: string): number | null {
   const t = (s || "").replace(/,/g, "").trim();
   const m = t.match(/\$?\s*([0-9]+(?:\.[0-9]+)?)(k|m)?/i);
@@ -878,21 +998,7 @@ export async function POST(req: Request) {
     const chunks = chunkText(extractedText, 45_000);
 
     const usageCalls: UsageCost[] = [];
-    const findings: Array<{
-      system?: string;
-      component?: string;
-      location?: string;
-      rating?: string;
-      issue: string;
-      narrative: string;
-      recommendation?: string;
-      recommendedTrade?: string;
-      requiresSpecialist?: boolean;
-      quantity?: { qty?: number; unit?: string; notes?: string };
-      evidence?: { photoCount?: number; videoCount?: number };
-      accessLimitation?: boolean;
-      lane?: string;
-    }> = [];
+    const findings: NormalizedFinding[] = [];
 
     for (let i = 0; i < chunks.length; i++) {
       const userMsg =
@@ -960,16 +1066,23 @@ export async function POST(req: Request) {
           narrativeLower.includes("ok");
         if (looksAcceptable && saysOk) continue;
 
-        const system = typeof rec.system === "string" ? rec.system : undefined;
+        const systemRaw = typeof rec.system === "string" ? rec.system : undefined;
         const component = typeof rec.component === "string" ? rec.component : undefined;
         const location = typeof rec.location === "string" ? rec.location : undefined;
         const ratingRaw = typeof rec.rating === "string" ? rec.rating : undefined;
-        const rating = ratingRaw ? ratingRaw.trim() : undefined;
         const recommendation = typeof rec.recommendation === "string" ? rec.recommendation : undefined;
-        const recommendedTrade = typeof rec.recommendedTrade === "string" ? rec.recommendedTrade : undefined;
-        const requiresSpecialist = typeof rec.requiresSpecialist === "boolean" ? rec.requiresSpecialist : undefined;
+        const recommendedTradeRaw = typeof rec.recommendedTrade === "string" ? rec.recommendedTrade : undefined;
+        const requiresSpecialistRaw = typeof rec.requiresSpecialist === "boolean" ? rec.requiresSpecialist : undefined;
         const lane = typeof rec.lane === "string" ? rec.lane : undefined;
         const accessLimitation = typeof rec.accessLimitation === "boolean" ? rec.accessLimitation : undefined;
+
+        const system = normalizeSystem(systemRaw);
+        const rating = normalizeRating(ratingRaw);
+        const recommendedTrade = normalizeTrade(recommendedTradeRaw);
+        const requiresSpecialist =
+          typeof requiresSpecialistRaw === "boolean"
+            ? requiresSpecialistRaw
+            : /\blicensed\b|\bqualified\b|\bcertified\b/.test(`${recommendedTradeRaw || ""} ${recommendation || ""}`.toLowerCase());
 
         const quantity = rec.quantity && typeof rec.quantity === "object" ? (rec.quantity as any) : undefined;
         const qQty = typeof quantity?.qty === "number" && Number.isFinite(quantity.qty) ? quantity.qty : undefined;
@@ -980,19 +1093,27 @@ export async function POST(req: Request) {
         const photoCount = typeof evidence?.photoCount === "number" && Number.isFinite(evidence.photoCount) ? evidence.photoCount : undefined;
         const videoCount = typeof evidence?.videoCount === "number" && Number.isFinite(evidence.videoCount) ? evidence.videoCount : undefined;
 
+        const quantityObj = qQty || qUnit || qNotes ? { qty: qQty, unit: qUnit, notes: qNotes } : undefined;
+        const evidenceObj = photoCount || videoCount ? { photoCount, videoCount } : undefined;
+
+        const priority = derivePriority(rating, `${issue} ${narrative} ${recommendation || ""}`);
+        const confidence = deriveConfidence({ rating, evidence: evidenceObj, accessLimitation, location, component });
+
         findings.push({
           system,
           component,
           location,
           rating,
+          priority,
           issue,
           narrative,
           recommendation,
           recommendedTrade,
           requiresSpecialist,
-          quantity: qQty || qUnit || qNotes ? { qty: qQty, unit: qUnit, notes: qNotes } : undefined,
-          evidence: photoCount || videoCount ? { photoCount, videoCount } : undefined,
+          quantity: quantityObj,
+          evidence: evidenceObj,
           accessLimitation,
+          confidence,
           lane,
         });
       }
