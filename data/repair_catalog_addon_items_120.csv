@@ -1,0 +1,156 @@
+item_code,item_name,system,trade,unit,typical_qty_notes,labor_hours_low,labor_hours_high,material_low,material_high,complexity_modifiers_notes,permit_likely,specialist_required
+ROOF-014,Install/repair kickout flashing at roof-to-wall,Roofing,Roofing,ea,"1 per roof-wall termination at eave",2.5,6.0,40,180,"Siding/stucco removal, multi-story access, water damage behind",no,no
+ROOF-015,Repair/replace chimney crown (minor),Roofing,Masonry,ea,"1 chimney crown patch/rebuild",6.0,14.0,60,400,"Tall chimney, spalling brick, forming/rebar, scaffold",no,yes
+ROOF-016,Install/replace chimney cap/spark arrestor,Roofing,Masonry,ea,"1 cap per flue",1.5,4.0,50,250,"Custom sizing, steep roof, multiple flues",no,yes
+ROOF-017,Re-seal/replace roof flashing at dormer (localized),Roofing,Roofing,ea,"Per dormer/wall intersection",4.0,10.0,80,350,"Multiple planes, siding removal, steep pitch",no,no
+ROOF-018,Repair/replace drip edge at eaves/rakes (localized),Roofing,Roofing,lf,"Often 20–80 LF affected",4.0,12.0,40,200,"Shingle lift, ice & water, high roof access",no,no
+ROOF-019,Repair loose roof sheathing/nail pops (localized),Roofing,Roofing,ea,"Per area; includes shingle lift and re-fastening",3.0,8.0,20,120,"Brittle shingles, decking rot, steep pitch",no,no
+ROOF-020,Replace damaged roof decking (spot),Roofing,Roofing,sf,"Small areas 10–50 SF typical",6.0,16.0,80,400,"Hidden rot, framing repair, reroof tie-in",yes,no
+ROOF-021,Repair/replace roof-to-wall counterflashing at stucco,Roofing,Roofing,lf,"Often 10–30 LF",6.0,16.0,100,450,"Stucco cut/patch, waterproofing integration, multi-story",no,yes
+ROOF-022,Install/repair attic ventilation (add box vents),Roofing,Roofing,ea,"Per vent; often 2–6",2.0,6.0,40,180,"Cut-in on older roof, matching shingles, attic layout",no,no
+ROOF-023,Replace/repair roof turbine vent,Roofing,Roofing,ea,"1–2 typical",1.5,4.0,40,180,"Old curb condition, balancing ventilation",no,no
+ROOF-024,Repair/replace roof flashing at plumbing vent (lead/collar),Roofing,Roofing,ea,"Per vent",1.5,4.0,25,150,"Tile/metal roof increases labor, brittle pipe",no,no
+ROOF-025,Install/repair ice and water shield at eaves (localized),Roofing,Roofing,lf,"Often 20–60 LF at problem area",6.0,16.0,100,450,"Requires shingle removal, cold-weather work, multiple layers",no,no
+ROOF-026,Repair sagging roof ridge/rafter ties (localized),Roofing/Structure,Carpentry,ea,"Per bay/area; small framing correction",8.0,24.0,80,400,"Engineering needed, finished ceilings limit access, structural load",yes,yes
+ROOF-027,Seal/repair minor roof leak at flashing (diagnose + patch),Roofing,Roofing,ea,"Per leak area",2.0,6.0,20,120,"Water testing time, multiple potential sources, wet decking",no,no
+EXT-021,Replace rotted exterior window sill/trim (localized),Exterior,Carpentry,ea,"Per opening",4.0,12.0,40,250,"Hidden rot, lead paint precautions, height/access",no,no
+EXT-022,Repair/replace exterior vent hood (dryer/bath) termination,Exterior,HVAC/Handyman,ea,"Per termination",1.0,3.5,15,80,"High elevation, siding/stucco patching, damper fit",no,no
+EXT-023,Install missing weep screed/repair stucco weep path (localized),Exterior,Stucco,lf,"Often 10–30 LF",8.0,20.0,80,350,"Moisture damage behind stucco, lath repairs, color match",no,yes
+EXT-024,Replace damaged exterior hose bibb mounting block/escutcheon,Exterior,Handyman,ea,"Per penetration",0.5,2.0,10,60,"Rot behind, siding type, caulk/flash detail",no,no
+EXT-025,Repair loose/bowed exterior siding (re-fastening),Exterior,Siding,ea,"Per wall section",2.0,6.0,0,60,"Wind damage, brittle vinyl, height",no,no
+EXT-026,Install/repair Z-flashing above trim/ledger (localized),Exterior,Carpentry,lf,"Often 10–30 LF",4.0,12.0,30,150,"Siding removal, moisture damage behind",no,no
+EXT-027,Repair/replace exterior caulk at windows/doors (full perimeter),Exterior,Handyman,ea,"Per opening",1.0,3.0,10,50,"Old caulk removal, wet substrates, ladder work",no,no
+EXT-028,Replace damaged exterior light box/mounting block,Exterior,Electrician,ea,"Per location",1.5,4.0,10,60,"Rot behind, masonry mount, water intrusion",no,no
+EXT-029,Repair/replace exterior brick weep holes (clear/restore),Exterior,Masonry,ea,"Per wall section",1.0,4.0,0,30,"Mortar droppings, insect screens, access",no,yes
+EXT-030,Install/repair termite shield or sill plate flashing (localized),Exterior,Carpentry,lf,"Often 10–30 LF",6.0,18.0,60,250,"Sill access, existing damage, masonry ledge",no,yes
+EXT-031,Replace rotted exterior stair stringer (single),Exterior,Carpentry,ea,"Per stringer",6.0,16.0,80,350,"Footing issues, code rise/run, permits if major rebuild",yes,no
+EXT-032,Repair/replace porch/deck beam pocket flashing (localized),Exterior,Carpentry,ea,"Per beam end/pocket",4.0,12.0,20,120,"Hidden rot, siding/stucco removal",no,no
+EXT-033,Repair exterior grading at mulch beds against siding (remove/adjust),Exterior,Landscaping,cy,"Often 0.5–3 CY",3.0,10.0,0,150,"Haul-off, plantings, access constraints",no,no
+EXT-034,Replace damaged exterior vented soffit (continuous strip),Exterior,Carpentry,lf,"Often 10–40 LF",4.0,12.0,50,250,"Pest nesting, height, paint match",no,no
+EXT-035,Install exterior hose bibb frost-proof insulation wrap (seasonal),Exterior,Handyman,ea,"Per hose bibb",0.2,0.6,5,25,"Add-on; not substitute for plumbing repairs",no,no
+WINDOW-006,Replace failed window balance/sash spring,Windows/Doors,Handyman,ea,"Per sash",1.0,3.0,10,80,"Parts availability, older windows, tilt sash complexity",no,no
+WINDOW-007,Install/replace window lock/latch,Windows/Doors,Handyman,ea,"Per window",0.3,1.5,5,40,"Obsolete hardware, drilling into vinyl/metal",no,no
+WINDOW-008,Repair/replace window sill pan flashing (localized),Windows/Doors,Carpentry,ea,"Per opening",6.0,16.0,40,200,"Siding removal, water damage, interior trim repair",no,no
+WINDOW-009,Replace exterior door threshold (rot/damage),Windows/Doors,Carpentry,ea,"Per door",2.5,8.0,25,150,"Door slab clearance, uneven floors, water intrusion",no,no
+WINDOW-010,Install/replace door closer (exterior storm/screen),Windows/Doors,Handyman,ea,"Per door",0.5,2.0,10,50,"Wood rot at mounting points, alignment",no,no
+INTERIOR-021,Replace damaged drywall (small patch w/ texture match),Interior,Drywall/Paint,sf,"Often 10–50 SF",3.0,10.0,15,120,"Multiple coats/dry time, texture match, high ceilings",no,no
+INTERIOR-022,Repair plaster cracks (lath/plaster patch),Interior,Drywall/Plaster,ea,"Per area",4.0,14.0,20,150,"Historic plaster, keys failure, dust control",no,yes
+INTERIOR-023,Replace damaged interior stair baluster/spindle,Interior,Carpentry,ea,"Per spindle; 1–10",1.0,3.0,5,40,"Matching profiles, stain/paint finish",no,no
+INTERIOR-024,Install/replace handrail bracket/secure loose handrail,Interior,Handyman,ea,"Per bracket/section",0.5,2.0,5,35,"Missing blocking, plaster walls, anchor repairs",no,no
+INTERIOR-025,Repair loose tile/grout failure at shower floor (localized),Interior,Tile,ea,"Small area/spot repair",6.0,18.0,30,250,"Waterproofing risk, matching tile, pan issues",no,yes
+INTERIOR-026,Replace damaged shower door sweep/seal,Interior,Handyman,ea,"Per door",0.5,2.0,10,60,"Non-standard glass thickness, adhesive cleanup",no,no
+INTERIOR-027,Replace bathroom fan duct insulation (condensation fix),Interior/HVAC,HVAC,lf,"Often 10–25 LF",2.0,6.0,20,120,"Tight attic, long run, vapor barrier repairs",no,no
+INTERIOR-028,Install/repair access panel (plumbing/electrical),Interior,Carpentry,ea,"Per location",1.5,4.0,20,120,"Cutting finished surfaces, fire rating requirement",no,no
+INTERIOR-029,Replace damaged subfloor (localized around toilet),Interior,Carpentry,sf,"Often 10–30 SF",8.0,20.0,80,350,"Tile removal, joist rot, plumbing reset coordination",yes,no
+INTERIOR-030,Repair/replace loose stair nosing/transition strip,Interior,Flooring,ea,"Per transition",0.5,2.0,5,40,"Concrete substrate, matching profiles",no,no
+ATTIC-001,Remove bath fan duct discharge into attic and vent outdoors,Attic/HVAC,HVAC,ea,"Per fan",3.0,10.0,40,200,"Roof/wall penetration, insulation disturbance, mold cleanup",no,no
+ATTIC-002,Install attic catwalk/service platform (localized),Attic/Insulation,Carpentry,ea,"Per access path/area",4.0,12.0,60,250,"Truss restrictions, limited headroom, insulation compression",no,no
+ATTIC-003,Remove/replace vermiculite insulation (abatement required),Attic/Insulation,Abatement,sf,"Per SF; only when confirmed hazardous",16.0,40.0,1000,6000,"Asbestos risk, containment/air monitoring, disposal",yes,yes
+ATTIC-004,Repair attic access ladder (pull-down) hardware/hinges,Attic/Interior,Handyman,ea,"Per ladder",1.0,3.5,10,80,"Odd sizes, broken springs, ceiling framing",no,no
+ATTIC-005,Install/repair attic gable vent screen (pest exclusion),Attic/Exterior,Handyman,ea,"Per vent",1.0,3.0,10,60,"High gables, wasp nests, fragile louvers",no,no
+INSUL-007,Install insulation dam around recessed lights (as applicable),Attic/Insulation,Insulation,ea,"Per can light; often 4–12",2.0,6.0,20,120,"Non-IC rated lights require clearance, wiring issues",no,no
+INSUL-008,Install/repair crawlspace pipe heat tape (as allowed),Plumbing/Insulation,Electrician/Handyman,lf,"Often 10–40 LF",2.0,6.0,20,150,"GFCI requirement, wet crawlspace, not allowed in some jurisdictions",no,yes
+INSUL-009,Install/repair rim joist insulation (spray foam/batt),Attic/Insulation,Insulation,lf,"Often 20–80 LF",4.0,14.0,80,600,"Moisture issues, wiring/pipe penetrations, ignition barrier rules",no,no
+INSUL-010,Replace damaged duct insulation wrap (localized),HVAC,HVAC,lf,"Often 10–40 LF",2.0,8.0,20,180,"Tight attic/crawl, moldy insulation requires remediation",no,no
+SITE-010,Install/repair channel drain at driveway/garage entry,Site/Drainage,Concrete/Drainage,ea,"Per drain run (10–20 LF typical)",10.0,24.0,300,1500,"Sawcut concrete, tie-in to daylight/storm, slope constraints",yes,yes
+SITE-011,Extend downspout discharge to daylight (above ground pipe),Site/Drainage,Handyman,lf,"Often 10–40 LF",1.0,4.0,15,120,"Trip hazard routing, UV-rated pipe, aesthetics",no,no
+SITE-012,Repair/replace settled paver walkway (trip hazard spot),Site/Drainage,Hardscape,sf,"Often 10–60 SF",6.0,18.0,50,400,"Base failure, edge restraints, re-sand/polymeric",no,yes
+SITE-013,Install/repair retaining wall drainage (weep/pipe) localized,Site/Drainage,Hardscape,ea,"Per wall section",8.0,24.0,100,600,"Wall stability, excavation depth, access",no,yes
+SITE-014,Install erosion control at downspout outlet (riprap),Site/Drainage,Landscaping,ea,"Per outlet",1.0,4.0,30,200,"High flow areas, geotextile needs, hauling stone",no,no
+SITE-015,Repair/replace broken exterior cleanout cap,Site/Drainage,Plumber,ea,"Per cleanout",0.3,1.5,5,40,"Buried/covered caps, brittle pipe threads",no,no
+FOUND-009,Install/repair interior perimeter drain (localized section),Structure/Foundation,Foundation Repair,lf,"Often 10–30 LF partial systems",16.0,40.0,600,2500,"Concrete demolition, sump tie-in, finished basement constraints",yes,yes
+FOUND-010,Install/repair exterior foundation waterproofing spot,Structure/Foundation,Foundation Repair,sf,"Often 50–200 SF",20.0,60.0,800,4000,"Excavation access, utilities, landscaping restoration",yes,yes
+FOUND-011,Install/repair crawlspace drainage trench to sump,Structure/Crawlspace,Drainage,lf,"Often 20–60 LF",12.0,32.0,300,1500,"Low clearance, mud/water, pump discharge routing",no,yes
+FOUND-012,Install/repair crawlspace access door (secure/vented),Structure/Crawlspace,Carpentry,ea,"1 access",3.0,10.0,40,200,"Masonry opening, pest exclusion, locks",no,no
+FOUND-013,Repair foundation vent well (keep grade below sill),Structure/Foundation,Landscaping,ea,"Per vent well",3.0,10.0,30,200,"Excavation, retaining edges, drainage",no,no
+FOUND-014,Install/replace sump pump check valve and discharge union,Structure/Foundation,Plumbing,ea,"Per pump",0.8,2.5,15,60,"Old piping brittle, tight pit",no,no
+STRUCT-011,Repair/replace rotted sill plate (localized),Structure,Foundation/Carpentry,lf,"Often 4–12 LF",16.0,48.0,200,900,"Shoring/jacking, termite damage, engineering",yes,yes
+STRUCT-012,Install temporary shoring for sagging beam (investigative),Structure,Carpentry,ea,"Per area",8.0,20.0,80,300,"Engineering required for permanent fix, limited access",yes,yes
+STRUCT-013,Repair/replace cracked floor truss web (engineered),Structure,Structural Engineer/Carpentry,ea,"Per truss",6.0,20.0,40,200,"Engineering letter, specialty plates, access",yes,yes
+STRUCT-014,Repair/replace damaged roof truss (engineered),Structure,Structural Engineer/Carpentry,ea,"Per truss",10.0,40.0,80,500,"Requires engineer design, attic access, permits",yes,yes
+STRUCT-015,Install/repair anchor bolts/straps at sill (seismic/structural),Structure,Foundation/Carpentry,ea,"Per location; 4–12 typical",6.0,20.0,60,300,"Masonry drilling, epoxy anchors, access",yes,yes
+STRUCT-016,Repair/replace wood rot at garage header (localized),Structure/Garage,Carpentry,ea,"Per opening",8.0,24.0,80,350,"Load support, door track removal, water source correction",yes,no
+STRUCT-017,Repair cracked drywall due to truss uplift (tape/flexible joint),Structure/Interior,Drywall/Paint,ea,"Per room/area",3.0,10.0,10,80,"Seasonal movement, texture matching",no,no
+STRUCT-018,Install/repair masonry lintel rust expansion (localized),Structure/Exterior,Masonry,lf,"Often 4–12 LF",8.0,24.0,80,400,"Brick removal/relay, corrosion extent, scaffold",no,yes
+ELECT-028,Replace/repair missing bonding at gas line (bond clamp/jumper),Electrical,Electrician,ea,"Per bond point",0.8,2.5,10,50,"Access to GES, meter location, local code variance",no,no
+ELECT-029,Correct improper neutral/ground bonding in subpanel,Electrical,Electrician,ea,"Per subpanel",2.0,6.0,0,40,"Crowded panel, mislabeled conductors, requires testing",no,yes
+ELECT-030,Replace/repair loose panel lugs (torque/terminate),Electrical,Electrician,ea,"Per panel",1.0,3.5,0,30,"Utility shutoff required, aluminum conductors, overheating evidence",yes,yes
+ELECT-031,Install/replace missing panel deadfront screws (proper type),Electrical,Electrician,ea,"Per panel",0.2,0.8,2,10,"Stripped holes, missing knockouts",no,no
+ELECT-032,Correct oversized breaker for conductor gauge,Electrical,Electrician,circuit,"Per circuit",1.5,4.0,15,120,"May require rewire, load calculation, multiwire circuits",no,yes
+ELECT-033,Replace/repair damaged service entrance cable insulation (SE),Electrical,Electrician,ea,"Per service",6.0,16.0,120,600,"Utility coordination, mast height, weatherhead",yes,yes
+ELECT-034,Install/replace whole-house disconnect (if required),Electrical,Electrician,ea,"Per service",6.0,16.0,150,700,"Service equipment changes, meter base coordination",yes,yes
+ELECT-035,Install/replace bonding at water meter jumper,Electrical,Electrician,ea,"Per meter",1.0,3.0,10,60,"Access in pit/crawl, corrosion, mixed materials",no,no
+ELECT-036,Replace cloth-sheathed wiring section (localized),Electrical,Electrician,lf,"Often 10–30 LF accessible",6.0,20.0,40,250,"Finished walls, brittle insulation, junction box additions",yes,yes
+ELECT-037,Replace knob-and-tube wiring (localized remediation),Electrical,Electrician,ea,"Per area/circuit",12.0,40.0,300,1800,"Requires rewiring, insulation contact restrictions, permits",yes,yes
+ELECT-038,Install/repair proper conduit/strain relief at panel entries,Electrical,Electrician,ea,"Per entry",0.8,2.5,5,40,"Tight spacing, existing cable damage",no,no
+ELECT-039,Correct missing anti-oxidant paste on aluminum conductors,Electrical,Electrician,ea,"Per termination group",1.0,3.0,5,25,"De-energizing required, damaged conductors",no,yes
+ELECT-040,Install/replace tamper-resistant GFCI receptacle,Electrical,Electrician,ea,"Per location",0.6,1.2,18,40,"Box fill issues, no ground, shared neutrals",no,no
+ELECT-041,Replace/repair exterior disconnect enclosure (rusted),Electrical,Electrician,ea,"Per disconnect",2.0,6.0,40,200,"Corrosion, conduit work, code clearances",no,yes
+ELECT-042,Install arc-fault protection for bedroom circuits (upgrade per defect),Electrical,Electrician,circuit,"Per circuit lacking required protection",1.0,3.0,45,160,"Panel compatibility, nuisance trips, shared neutrals",no,no
+ELECT-043,Correct missing GFCI protection for dishwasher/disposal,Electrical,Electrician,circuit,"Per appliance circuit",1.0,3.0,20,140,"Hardwired appliances, breaker availability",no,no
+ELECT-044,Replace/repair exterior service grounding clamp (corroded),Electrical,Electrician,ea,"Per clamp",0.5,2.0,5,25,"Corrosion at rod, multiple electrodes",no,no
+ELECT-045,Install/replace meter base (damaged/corroded),Electrical,Electrician,ea,"Per meter base",10.0,24.0,250,1200,"Utility coordination, service rework, permits",yes,yes
+ELECT-046,Install/replace junction box for buried splice (attic/crawl),Electrical,Electrician,ea,"Per splice location",1.0,4.0,5,30,"Hard-to-find splices, damaged insulation",no,no
+ELECT-047,Replace/repair missing smoke alarm in bedroom (add location),Electrical,Handyman/Electrician,ea,"Per alarm",0.3,1.0,15,60,"Hardwired interconnect adds labor",no,no
+ELECT-048,Install/replace dedicated outlet for sump pump (GFCI as needed),Electrical,Electrician,ea,"Per outlet",2.0,6.0,20,120,"Finished basement, wet location requirements",no,no
+ELECT-049,Replace/repair flickering light due to loose neutral (diagnose/terminate),Electrical,Electrician,ea,"Per issue",2.0,8.0,0,80,"Service neutral issue may involve utility, multiple circuits",yes,yes
+ELECT-050,Install/replace attic/crawl light with switch (basic),Electrical,Electrician,ea,"Per area",2.0,6.0,20,120,"No existing power, tight access",no,no
+ELECT-051,Correct missing nail plates at stud penetrations (accessible),Electrical,Electrician,ea,"Per area",1.0,3.5,5,25,"Open walls required, multiple lines",no,no
+ELECT-052,Replace/repair exhaust fan wiring (improper splices),Electrical,Electrician,ea,"Per fan",1.0,4.0,5,30,"Attic access, wet location, old wiring",no,no
+ELECT-053,Install/replace intersystem bonding termination (if required),Electrical,Electrician,ea,"1 per service",1.0,3.0,10,60,"Code/local requirements, service location",no,no
+PLUMB-028,Repair/replace leaking tub drain shoe,Plumbing,Plumber,ea,"Per tub",2.0,6.0,15,80,"Limited access, old brass, ceiling below patching",no,no
+PLUMB-029,Replace/repair shower pan liner failure (partial),Plumbing,Tile/Plumber,ea,"Per shower",24.0,80.0,400,2500,"Full rebuild often required; leak verification",yes,yes
+PLUMB-030,Install/repair shower door weep holes (clear/adjust),Plumbing,Handyman,ea,"Per shower door track",0.5,2.0,0,20,"Track removal risk, mold",no,no
+PLUMB-031,Replace/repair leaking lavatory drain in wall (trap arm),Plumbing,Plumber,ea,"Per sink",3.0,10.0,20,120,"Open wall required, old cast iron/galvanized",no,no
+PLUMB-032,Replace/repair leaking shower arm drop-ear or elbow,Plumbing,Plumber,ea,"Per shower",4.0,12.0,20,120,"Tile access, wall repair",no,no
+PLUMB-033,Replace/repair leaking washer box valves (in wall),Plumbing,Plumber,ea,"Per box",4.0,12.0,30,180,"Open wall, mold/damage, PEX/copper type",no,no
+PLUMB-034,Replace/repair corroded water heater vent connector (plumbing scope),Plumbing,Plumber,ea,"Per heater",2.0,6.0,40,200,"Combustion safety, chimney draft",yes,yes
+PLUMB-035,Install/replace sediment trap (drip leg) at gas appliance,Plumbing,Plumber,ea,"Per appliance",1.0,3.0,10,40,"Tight spaces, old black iron fittings",no,no
+PLUMB-036,Repair/replace gas flex connector (damaged/old),Plumbing,Plumber,ea,"Per appliance",0.8,2.5,15,60,"Shutoff valve condition, code-approved connector",no,no
+PLUMB-037,Replace/repair missing dishwasher high loop/air gap,Plumbing,Plumber,ea,"Per dishwasher",0.5,2.0,0,30,"Cabinet constraints, air gap drilling",no,no
+PLUMB-038,Install/replace trap primer (where required),Plumbing,Plumber,ea,"Per floor drain/trap",4.0,10.0,40,200,"Access to water line, code requirement, concrete work",yes,no
+PLUMB-039,Repair/replace floor drain trap seal (add trap seal device),Plumbing,Plumber,ea,"Per drain",1.0,3.0,20,80,"Nonstandard drains, sizing",no,no
+PLUMB-040,Replace/repair leaking water main shutoff valve,Plumbing,Plumber,ea,"1 main valve",3.0,8.0,30,180,"Old gate valves, meter pit access, utility coordination",yes,no
+PLUMB-041,Install/replace water heater expansion tank,Plumbing,Plumber,ea,"Per heater",1.0,3.0,40,120,"Mounting support, high pressure diagnosis",no,no
+PLUMB-042,Replace/repair recirculation pump (under-sink or heater),Plumbing,Plumber,ea,"Per pump",2.0,6.0,100,350,"Electrical outlet, timer/thermostatic valve",no,no
+PLUMB-043,Repair/replace leaking outdoor yard hydrant,Plumbing,Plumber,ea,"Per hydrant",4.0,12.0,80,300,"Excavation depth, drain-back gravel, freeze damage",no,no
+PLUMB-044,Replace/repair clogged aerator (fixture cleaning),Plumbing,Handyman,ea,"Per faucet",0.2,0.8,0,10,"Mineral buildup, thread damage",no,no
+PLUMB-045,Replace/repair water pressure issues (diagnose/adjust PRV),Plumbing,Plumber,ea,"Per home",1.0,4.0,0,60,"May require PRV replacement, meter issues",no,no
+PLUMB-046,Repair/replace leaking copper joint (solder),Plumbing,Plumber,ea,"Per leak",2.0,6.0,10,80,"Wet pipes, fire watch, insulation removal",no,no
+PLUMB-047,Repair/replace PEX manifold valve (leaking),Plumbing,Plumber,ea,"Per valve",1.0,3.0,10,60,"Cramped panel, brand compatibility",no,no
+PLUMB-048,Replace/repair polybutylene piping section (localized),Plumbing,Plumber,lf,"Often 10–30 LF accessible",6.0,20.0,80,400,"Full repipe often recommended; access constraints",yes,yes
+PLUMB-049,Replace/repair cast iron drain section (localized),Plumbing,Plumber,lf,"Often 2–10 LF",6.0,18.0,60,350,"Ceiling access, heavy pipe support, no-hub couplings",yes,no
+PLUMB-050,Install/repair air admittance valve (AAV) where allowed,Plumbing,Plumber,ea,"Per fixture",1.0,3.0,15,60,"Code restrictions, access behind cabinet/wall",no,no
+PLUMB-051,Replace/repair leaking shower cartridge (service),Plumbing,Plumber,ea,"Per valve",1.5,5.0,15,120,"Brand-specific parts, stuck cartridge, water shutoff",no,no
+PLUMB-052,Replace/repair leaking toilet fill valve/flapper,Plumbing,Handyman/Plumber,ea,"Per toilet",0.5,2.0,10,35,"Old shutoffs fail, tank bolts corroded",no,no
+PLUMB-053,Replace/repair toilet flange (broken/corroded),Plumbing,Plumber,ea,"Per toilet",2.5,6.0,15,80,"Subfloor rot, cast iron flange, lead bend",no,no
+HVAC-020,Replace/repair furnace condensate trap/tubing,HVAC,HVAC Tech,ea,"Per furnace",1.0,3.0,10,60,"High-efficiency units, brittle tubing, drain routing",no,yes
+HVAC-021,Install/repair combustion air intake (for gas appliances),HVAC,HVAC Tech,ea,"Per mechanical room",4.0,12.0,60,250,"Code requirements, exterior termination, tight spaces",yes,yes
+HVAC-022,Repair/replace rusted flue pipe sections (Type B vent),HVAC,HVAC Tech,lf,"Often 5–15 LF",3.0,10.0,60,250,"Draft issues, attic access, roof jack",yes,yes
+HVAC-023,Install/repair return air pathway (transfer grille/jump duct),HVAC,HVAC,ea,"Per room",4.0,10.0,40,200,"Drywall/paint repair, sound concerns",no,no
+HVAC-024,Seal/repair supply plenum leaks (mastic/foil),HVAC,HVAC,ea,"Per system",2.0,6.0,10,80,"Limited access, old ductboard, insulation replacement",no,no
+HVAC-025,Replace/repair damaged flex duct inner liner (localized),HVAC,HVAC,lf,"Often 10–25 LF",3.0,10.0,40,220,"Tight routing, balancing, attic heat",no,no
+HVAC-026,Install/replace attic unit emergency drain pan (secondary pan),HVAC,HVAC,ea,"Per unit",3.0,10.0,60,250,"Coil lift needed, tight platforms",no,no
+HVAC-027,Install/replace condensate overflow safety switch (in-line),HVAC,HVAC Tech,ea,"Per unit",1.0,3.0,20,80,"Wiring to controls, testing",no,no
+HVAC-028,Replace/repair refrigerant line insulation (UV/weathered),HVAC,HVAC,lf,"Often 6–20 LF",0.5,2.0,10,60,"High lineset, weather exposure, tape/cover",no,no
+HVAC-029,Repair/replace outdoor condenser pad (leveling),HVAC,HVAC,ea,"Per condenser",2.0,8.0,50,250,"Settlement, drainage, line set stress",no,no
+HVAC-030,Replace/repair damaged bath fan backdraft damper,HVAC,HVAC,ea,"Per fan",1.0,3.0,10,60,"Roof/wall cap access, lint buildup",no,no
+HVAC-031,Replace/repair humidifier bypass/leak (whole-house),HVAC,HVAC Tech,ea,"Per humidifier",2.0,6.0,20,180,"Water line, drain routing, seasonal parts",no,yes
+HVAC-032,Repair/replace duct strap/support (sagging),HVAC,HVAC,ea,"Per sagging run",1.0,4.0,5,40,"Crawlspace conditions, tight access",no,no
+GARAGE-007,Replace/repair garage door bottom seal,Garage,Garage Door Tech,ea,"Per door",0.8,2.5,20,80,"Retainer type, door condition",no,yes
+GARAGE-008,Replace/repair damaged garage door rollers (nylon/steel),Garage,Garage Door Tech,ea,"Per door set",1.0,3.0,20,120,"Track condition, high-lift doors",no,yes
+GARAGE-009,Repair/replace garage door track alignment (minor),Garage,Garage Door Tech,ea,"Per door",1.0,3.5,0,40,"Bent tracks, fastener pull-out",no,yes
+GARAGE-010,Install/repair fire-rated door between garage and house (swap),Garage,Carpentry,ea,"Per door",4.0,10.0,200,700,"Frame out-of-square, self-close requirement, hardware",yes,no
+ELECT-054,Install/replace GFCI protection for garage receptacles (per circuit),Electrical,Electrician,circuit,"Per circuit",1.0,3.0,45,160,"Shared neutrals, panel brand availability",no,no
+ELECT-055,Replace/repair missing bonding to CSST gas piping,Electrical,Electrician,ea,"Per CSST system",1.0,4.0,15,80,"Verify manufacturer requirements, access to GES",no,yes
+ELECT-056,Replace/repair missing/loose fixture box support (ceiling light),Electrical,Electrician,ea,"Per fixture",1.5,4.5,10,80,"Old plaster ceilings, attic access",no,no
+ELECT-057,Replace/repair exterior conduit straps and fittings (weathered),Electrical,Electrician,ea,"Per run section",1.0,4.0,10,80,"Sun damage, water intrusion, ladder work",no,no
+PLUMB-054,Install/replace vacuum breaker on irrigation backflow (testable),Plumbing,Backflow Tester,ea,"Per device",2.0,6.0,120,450,"Testing/certification, access in box, freeze damage",yes,yes
+PLUMB-055,Replace/repair missing water heater seismic straps (add where code),Plumbing,Handyman/Plumber,ea,"Per heater",0.5,2.0,15,60,"Wall type, clearance, code",no,no
+SITE-016,Repair/replace broken irrigation head causing pooling,Site/Drainage,Irrigation,ea,"Per head",0.5,2.0,5,25,"Zone shutoff, buried lines",no,yes
+SITE-017,Repair/replace hose bibb anti-siphon (integral),Site/Drainage,Plumber,ea,"Per hose bibb",0.5,2.0,8,35,"Stuck threads, freezing",no,no
+EXT-036,Install/repair attic or crawlspace pest exclusion at eaves,Exterior,Pest Control,ea,"Per entry point/group",2.0,8.0,20,200,"Bat exclusions require specialist, height",no,yes
+EXT-037,Repair/replace exterior dryer vent cover (bird guard type),Exterior,Handyman,ea,"Per cover",0.5,2.0,10,60,"High walls, siding match",no,no
+ROOF-028,Replace/repair roof jack flashing for electrical mast,Roofing,Roofing,ea,"1 mast",3.0,8.0,60,250,"Utility coordination, mast movement, steep pitch",yes,yes
+STRUCT-019,Repair/replace stair stringer attachment (loose),Structure/Interior,Carpentry,ea,"Per stair",6.0,18.0,20,150,"Finish repairs, hidden framing",yes,no
+FOUND-015,Install/repair crawlspace vapor barrier seam taping (detail),Structure/Crawlspace,Insulation,sf,"Often 200–800 SF seam/detail work",3.0,10.0,20,120,"Mud/wet surfaces reduce adhesion, low clearance",no,no

@@ -6,7 +6,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const IN_PATH = process.env.REPAIR_CATALOG_CSV || path.join(process.cwd(), "data/repair_catalog_top100.csv");
+const IN_PATH = process.env.REPAIR_CATALOG_CSV || path.join(process.cwd(), "data/repair_catalog_master.csv");
 const OUT_PATH =
   process.env.REPAIR_CATALOG_OUT || path.join(process.cwd(), "src/lib/repair-catalog.generated.ts");
 
