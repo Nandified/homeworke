@@ -372,21 +372,26 @@ export function ExpressEstimateReportClient(props: {
     setAnalysisProgress(null);
 
     void (async () => {
+      let errMsg = "";
+      let gotResult = false;
       try {
         const fd = new FormData();
         fd.set("cacheKey", cacheKey);
         const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
         const j = await r.json().catch(() => null);
         if (!r.ok || !j || typeof j !== "object") {
-          // If we already have results (from localStorage), don't show a stale error banner.
-          if (extracted.length === 0) setAnalysisError(`Analyze failed (${r.status}).`);
+          errMsg = `Analyze failed (${r.status}).`;
+          setToast(errMsg);
+          window.setTimeout(() => setToast(""), 2200);
           return;
         }
         const rec = j as any;
         if (rec.ok !== true) {
           const detail = typeof rec.detail === "string" ? rec.detail : "";
           const err = typeof rec.error === "string" ? rec.error : "Analyze failed.";
-          if (extracted.length === 0) setAnalysisError(detail ? `${err}: ${detail}` : err);
+          errMsg = detail ? `${err}: ${detail}` : err;
+          setToast(errMsg);
+          window.setTimeout(() => setToast(""), 2600);
           return;
         }
         const lanes = Array.isArray(rec.lanes) ? rec.lanes : [];
@@ -404,7 +409,10 @@ export function ExpressEstimateReportClient(props: {
                 price: typeof it.price === "number" ? it.price : undefined,
               })),
           }));
-        if (normalized.length) setExtracted(normalized);
+        if (normalized.length) {
+          gotResult = true;
+          setExtracted(normalized);
+        }
         setAnalysisSummary(typeof rec.summary === "string" ? rec.summary : "");
 
         try {
@@ -414,8 +422,13 @@ export function ExpressEstimateReportClient(props: {
           );
         } catch {}
       } catch {
-        if (extracted.length === 0) setAnalysisError("Analyze failed. Please try again.");
+        errMsg = "Analyze failed. Please try again.";
+        setToast(errMsg);
+        window.setTimeout(() => setToast(""), 2600);
       } finally {
+        // Only show the persistent error banner if we truly ended with no results.
+        if (!gotResult && extracted.length === 0 && errMsg) setAnalysisError(errMsg);
+
         setAnalyzing(false);
         setAnalysisStage("");
         setAnalysisProgress(null);
