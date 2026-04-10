@@ -156,6 +156,7 @@ export function PortalShell(props: {
   const supportHref = basePath ? `${basePath}/support` : "/";
 
   const instantEstimateHref = basePath ? `${basePath}/express-estimate` : "/express-estimate";
+  // Sidebar/menu CTA (always available for PRO/Partner).
   const sidebarPrimaryAction =
     baseRole === "pro" || baseRole === "partner"
       ? (
@@ -165,14 +166,8 @@ export function PortalShell(props: {
         )
       : props.primaryAction;
 
-  const shouldHideInstantEstimateCtaOnPage =
-    typeof window !== "undefined" &&
-    (window.location.pathname.startsWith(`${basePath}/express-estimate`) ||
-      window.location.pathname === instantEstimateHref);
-
-  // Keep CTA in the sidebar/menu for consistency, but hide the redundant page-level CTA
-  // when we are already on the Instant Estimate flow.
-  const pagePrimaryAction = shouldHideInstantEstimateCtaOnPage ? null : sidebarPrimaryAction;
+  // Page-level header CTA: only what the page explicitly requests (e.g. "Back to reports").
+  const pagePrimaryAction = props.primaryAction;
 
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
