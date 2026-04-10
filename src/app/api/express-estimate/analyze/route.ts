@@ -461,14 +461,21 @@ function matchCatalogForFinding(f: { issue: string; narrative?: string; system?:
     const nameT = tokens(raw.item_name);
     const s = overlapScore(issueT, nameT) * 3 + overlapScore(compT, nameT);
     const sysBonus = sys && normalizeLabel(raw.system).includes(sys) ? 3 : 0;
-    const score = s + sysBonus;
+
+    // Prefer catalog rows that actually have labor/material assumptions (avoid collapsing to min-trip guardrails).
+    const hasHours = raw.labor_hours_low !== null || raw.labor_hours_high !== null;
+    const hasMaterial = (raw.material_low ?? 0) > 0 || (raw.material_high ?? 0) > 0;
+    const richnessBonus = (hasHours ? 2 : 0) + (hasMaterial ? 1 : 0);
+
+    const score = s + sysBonus + richnessBonus;
     if (!best || score > best.score) {
       best = { item: raw, score };
     }
   }
 
   // Require a minimal score so we don't attach nonsense.
-  if (!best || best.score < 4) return null;
+  // Slightly higher threshold to avoid matching generic/low-information catalog rows.
+  if (!best || best.score < 6) return null;
 
   const qtyMeta = inferQtyForFinding(f as any, best.item);
   const range = rangeFromCatalogItem(best.item, marketFactor, qtyMeta.qty);
