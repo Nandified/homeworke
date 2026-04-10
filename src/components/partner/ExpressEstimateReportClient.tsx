@@ -1274,8 +1274,75 @@ export function ExpressEstimateReportClient(props: {
                                     </div>
                                   </div>
 
-                                  {/* Row 2: Details under the price (left), actions on the right */}
-                                  <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:justify-end">
+                                  {/* Row 2: Mobile = single action row. Desktop = current cluster. */}
+                                  <div className="sm:hidden">
+                                    <div className="flex items-center gap-2">
+                                      {/* Details (tertiary) */}
+                                      <button
+                                        type="button"
+                                        className={
+                                          "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[11px] font-semibold " +
+                                          (open
+                                            ? "border-[rgba(229,57,53,.22)] bg-white text-[var(--hw-red)]"
+                                            : "border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-muted)]")
+                                        }
+                                        title="Expand to view details"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          setOpenItemId((prev) => (prev === item.id ? "" : item.id));
+                                        }}
+                                        aria-expanded={open}
+                                      >
+                                        <Camera className={"h-3.5 w-3.5 " + (hasEvidence ? "opacity-100" : "opacity-0")} />
+                                        <span>Details</span>
+                                        <ChevronDown className={"h-3.5 w-3.5 transition " + (open ? "rotate-180" : "")} />
+                                      </button>
+
+                                      {/* Select (primary, fills) */}
+                                      <Button
+                                        size="sm"
+                                        variant={on ? "secondary" : "primary"}
+                                        className="flex-1 rounded-full px-3"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          setSelectedIds((prev) => {
+                                            const next = new Set(prev);
+                                            if (next.has(item.id)) next.delete(item.id);
+                                            else next.add(item.id);
+                                            return next;
+                                          });
+                                        }}
+                                      >
+                                        {on ? "Selected" : "Select"}
+                                      </Button>
+
+                                      {/* Book (secondary) */}
+                                      <Button
+                                        size="sm"
+                                        variant={repairIds.has(item.id) ? "secondary" : "ghost"}
+                                        className="shrink-0 rounded-full px-3"
+                                        disabled={item.pricingMode === "Quote-only"}
+                                        title={item.pricingMode === "Quote-only" ? "Needs scope confirmation (quote-only)." : ""}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          if (item.pricingMode === "Quote-only") return;
+                                          setRepairIds((prev) => {
+                                            const next = new Set(prev);
+                                            if (next.has(item.id)) next.delete(item.id);
+                                            else next.add(item.id);
+                                            return next;
+                                          });
+                                        }}
+                                      >
+                                        {item.pricingMode === "Quote-only" ? "Quote" : repairIds.has(item.id) ? "Repair ✓" : "Book"}
+                                      </Button>
+                                    </div>
+                                  </div>
+
+                                  <div className="hidden sm:flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:justify-end">
                                     <div
                                       className={
                                         "inline-flex w-[98px] items-center justify-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-semibold " +
@@ -1309,33 +1376,29 @@ export function ExpressEstimateReportClient(props: {
                                         {on ? "Selected" : "Select"}
                                       </Button>
 
-                                    <Button
-                                      size="sm"
-                                      variant={repairIds.has(item.id) ? "secondary" : "ghost"}
-                                      className="rounded-full px-3 min-w-[120px]"
-                                      disabled={item.pricingMode === "Quote-only"}
-                                      title={
-                                        item.pricingMode === "Quote-only"
-                                          ? "Needs scope confirmation (quote-only)."
-                                          : ""
-                                      }
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        if (item.pricingMode === "Quote-only") return;
-                                        setRepairIds((prev) => {
-                                          const next = new Set(prev);
-                                          if (next.has(item.id)) next.delete(item.id);
-                                          else next.add(item.id);
-                                          return next;
-                                        });
-                                      }}
-                                    >
-                                      {item.pricingMode === "Quote-only" ? "Request quote" : repairIds.has(item.id) ? "Repair ✓" : "Book repair"}
-                                    </Button>
+                                      <Button
+                                        size="sm"
+                                        variant={repairIds.has(item.id) ? "secondary" : "ghost"}
+                                        className="rounded-full px-3 min-w-[120px]"
+                                        disabled={item.pricingMode === "Quote-only"}
+                                        title={item.pricingMode === "Quote-only" ? "Needs scope confirmation (quote-only)." : ""}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          if (item.pricingMode === "Quote-only") return;
+                                          setRepairIds((prev) => {
+                                            const next = new Set(prev);
+                                            if (next.has(item.id)) next.delete(item.id);
+                                            else next.add(item.id);
+                                            return next;
+                                          });
+                                        }}
+                                      >
+                                        {item.pricingMode === "Quote-only" ? "Request quote" : repairIds.has(item.id) ? "Repair ✓" : "Book repair"}
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
                               </div>
                             </button>
 
