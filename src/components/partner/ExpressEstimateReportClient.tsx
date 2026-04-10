@@ -27,6 +27,15 @@ type ExtractedLane = {
     confidence?: number;
     quantityHint?: string;
     scopeMultiplier?: number;
+    pricingDebug?: {
+      pricingSource: "catalog" | "guardrails";
+      tradeId: string;
+      marketFactor: number;
+      scopeMultiplier: number;
+      totalFactor: number;
+      catalogItemCode?: string;
+      catalogScore?: number;
+    };
   }>;
 };
 
@@ -1327,6 +1336,21 @@ export function ExpressEstimateReportClient(props: {
                                 {item.pricingMode === "Quote-only" ? (
                                   <div className="mb-3 rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] px-3 py-2 text-xs font-semibold text-[var(--hw-ink)]/80">
                                     Quote-only until scope is confirmed{item.quantityHint ? ` (hint: ${item.quantityHint})` : ""}.
+                                  </div>
+                                ) : null}
+
+                                {item.pricingDebug ? (
+                                  <div className="mb-3 rounded-[14px] border border-[rgba(17,24,39,.10)] bg-[rgba(17,24,39,.02)] px-3 py-2 text-[11px] font-semibold text-[var(--hw-muted)]">
+                                    Pricing source: <span className="text-[var(--hw-ink)]">{item.pricingDebug.pricingSource}</span>
+                                    {item.pricingDebug.pricingSource === "catalog" && item.pricingDebug.catalogItemCode ? (
+                                      <>
+                                        {" "}• Catalog: <span className="text-[var(--hw-ink)]">{item.pricingDebug.catalogItemCode}</span>
+                                        {typeof item.pricingDebug.catalogScore === "number" ? (
+                                          <> ({Math.round(item.pricingDebug.catalogScore)})</>
+                                        ) : null}
+                                      </>
+                                    ) : null}
+                                    {" "}• Trade: <span className="text-[var(--hw-ink)]">{item.pricingDebug.tradeId}</span>
                                   </div>
                                 ) : null}
 

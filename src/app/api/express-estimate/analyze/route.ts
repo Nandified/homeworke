@@ -25,6 +25,17 @@ type LaneItem = {
   confidence?: number; // 0..1
   quantityHint?: string; // e.g. "2 windows" | "multiple"
   scopeMultiplier?: number; // applied to guardrail-derived ranges/prices
+
+  // Debug / explainability (optional)
+  pricingDebug?: {
+    pricingSource: "catalog" | "guardrails";
+    tradeId: string;
+    marketFactor: number;
+    scopeMultiplier: number;
+    totalFactor: number;
+    catalogItemCode?: string;
+    catalogScore?: number;
+  };
 };
 
 type ExtractedLane = {
@@ -568,6 +579,10 @@ function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1)
           const baseRange = !hadRange ? scaleRange(baseRangeRaw, scopeMultiplier) : baseRangeRaw;
           const range = scaleRange(baseRange, totalFactor);
 
+          // Explainability: attempt catalog match from the label so we can report why ranges look uniform.
+          const catalog = matchCatalogForFinding({ issue: it.label, system: "", component: "" }, marketFactor);
+          const pricingSource: "catalog" | "guardrails" = catalog ? "catalog" : "guardrails";
+
           // If model provided a price, assume it's base contractor cost and scale it.
           // If we had to synthesize the range, synthesize a *non-identical* price too.
           const basePrice =
@@ -591,6 +606,15 @@ function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1)
             quantityHint: it.quantityHint || inferred.quantityHint,
             confidence,
             pricingMode,
+            pricingDebug: {
+              pricingSource,
+              tradeId,
+              marketFactor: Number.isFinite(marketFactor) && marketFactor > 0 ? marketFactor : 1,
+              scopeMultiplier,
+              totalFactor,
+              catalogItemCode: catalog?.item_code,
+              catalogScore: catalog?.score,
+            },
           };
         })
         .filter((it) => {
