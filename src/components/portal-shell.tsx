@@ -165,6 +165,13 @@ export function PortalShell(props: {
         )
       : props.primaryAction;
 
+  const shouldHideInstantEstimateCta =
+    typeof window !== "undefined" &&
+    (window.location.pathname.startsWith(`${basePath}/express-estimate`) ||
+      window.location.pathname === instantEstimateHref);
+
+  const effectiveSidebarPrimaryAction = shouldHideInstantEstimateCta ? null : sidebarPrimaryAction;
+
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
@@ -341,7 +348,7 @@ export function PortalShell(props: {
             </div>
 
             <div className="p-5">
-              {sidebarPrimaryAction ? <div className="mb-4">{sidebarPrimaryAction}</div> : null}
+              {effectiveSidebarPrimaryAction ? <div className="mb-4">{effectiveSidebarPrimaryAction}</div> : null}
 
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Navigation</div>
               <nav className="mt-3 grid gap-1">
@@ -403,9 +410,9 @@ export function PortalShell(props: {
                   </div>
                 </div>
 
-                {sidebarPrimaryAction ? (
+                {effectiveSidebarPrimaryAction ? (
                   <div className="px-4 pb-4 mt-2">
-                    <div>{sidebarPrimaryAction}</div>
+                    <div>{effectiveSidebarPrimaryAction}</div>
                   </div>
                 ) : null}
               </>
@@ -488,7 +495,7 @@ export function PortalShell(props: {
                     {props.description || ""}
                   </p>
                 </div>
-                {sidebarPrimaryAction ? <div className="shrink-0 md:hidden">{sidebarPrimaryAction}</div> : null}
+                {effectiveSidebarPrimaryAction ? <div className="shrink-0 md:hidden">{effectiveSidebarPrimaryAction}</div> : null}
               </div>
             )}
 
