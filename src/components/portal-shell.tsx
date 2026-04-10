@@ -165,12 +165,14 @@ export function PortalShell(props: {
         )
       : props.primaryAction;
 
-  const shouldHideInstantEstimateCta =
+  const shouldHideInstantEstimateCtaOnPage =
     typeof window !== "undefined" &&
     (window.location.pathname.startsWith(`${basePath}/express-estimate`) ||
       window.location.pathname === instantEstimateHref);
 
-  const effectiveSidebarPrimaryAction = shouldHideInstantEstimateCta ? null : sidebarPrimaryAction;
+  // Keep CTA in the sidebar/menu for consistency, but hide the redundant page-level CTA
+  // when we are already on the Instant Estimate flow.
+  const pagePrimaryAction = shouldHideInstantEstimateCtaOnPage ? null : sidebarPrimaryAction;
 
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
@@ -348,7 +350,7 @@ export function PortalShell(props: {
             </div>
 
             <div className="p-5">
-              {effectiveSidebarPrimaryAction ? <div className="mb-4">{effectiveSidebarPrimaryAction}</div> : null}
+              {sidebarPrimaryAction ? <div className="mb-4">{sidebarPrimaryAction}</div> : null}
 
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Navigation</div>
               <nav className="mt-3 grid gap-1">
@@ -410,9 +412,9 @@ export function PortalShell(props: {
                   </div>
                 </div>
 
-                {effectiveSidebarPrimaryAction ? (
+                {sidebarPrimaryAction ? (
                   <div className="px-4 pb-4 mt-2">
-                    <div>{effectiveSidebarPrimaryAction}</div>
+                    <div>{sidebarPrimaryAction}</div>
                   </div>
                 ) : null}
               </>
@@ -495,7 +497,7 @@ export function PortalShell(props: {
                     {props.description || ""}
                   </p>
                 </div>
-                {effectiveSidebarPrimaryAction ? <div className="shrink-0 md:hidden">{effectiveSidebarPrimaryAction}</div> : null}
+                {pagePrimaryAction ? <div className="shrink-0 md:hidden">{pagePrimaryAction}</div> : null}
               </div>
             )}
 
