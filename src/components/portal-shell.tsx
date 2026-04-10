@@ -82,16 +82,12 @@ function NavIcon(props: { name: string; className?: string }) {
       return (
         <svg {...common}>
           <path
-            d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-          <path
-            d="M19.4 15a7.5 7.5 0 0 0 .1-1 7.5 7.5 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7.3 7.3 0 0 0-1.7-1L15 3h-6l-.2 2.5c-.6.3-1.2.6-1.7 1L4.7 5.5l-2 3.5 2 1.5a7.5 7.5 0 0 0-.1 1 7.5 7.5 0 0 0 .1 1l-2 1.5 2 3.5 2.4-1c.5.4 1.1.7 1.7 1L9 21h6l.2-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.5-2-1.5Z"
+            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.72l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinejoin="round"
           />
+          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
         </svg>
       );
     case "collapse":
@@ -374,7 +370,13 @@ export function PortalShell(props: {
                 aria-label="Homeworke"
                 title={sidebarCollapsed ? "Homeworke" : undefined}
               >
-                <span className={"text-lg " + (sidebarCollapsed ? "" : "")}>Homeworke</span>
+                {sidebarCollapsed ? (
+                  <span className="grid h-10 w-10 place-items-center rounded-[16px] bg-[rgba(229,57,53,.10)] text-[12px] font-extrabold text-[var(--hw-red)]">
+                    HW
+                  </span>
+                ) : (
+                  <span className="text-lg">Homeworke</span>
+                )}
               </Link>
 
               {sidebarCollapsed ? null : (
@@ -388,7 +390,22 @@ export function PortalShell(props: {
             {/* Primary action */}
             {props.primaryAction ? (
               <div className={"px-4 " + (sidebarCollapsed ? "pb-3" : "pb-4") + (sidebarCollapsed ? "" : " mt-2") }>
-                <div className={sidebarCollapsed ? "grid place-items-center" : ""}>{props.primaryAction}</div>
+                {sidebarCollapsed ? (
+                  <Link
+                    href={withDemo(
+                      props.nav.find((n) => /express-estimate|estimate/i.test(n.href) || /estimate/i.test(n.label))?.href ||
+                        props.nav[0]?.href ||
+                        "/"
+                    )}
+                    className="grid h-10 w-10 place-items-center rounded-full bg-[var(--hw-red)] text-white shadow-[0_8px_20px_rgba(229,57,53,.30)] hover:brightness-[1.05]"
+                    aria-label="Start"
+                    title="Start"
+                  >
+                    <NavIcon name="bolt" className="text-white" />
+                  </Link>
+                ) : (
+                  <div>{props.primaryAction}</div>
+                )}
               </div>
             ) : null}
 
@@ -403,18 +420,23 @@ export function PortalShell(props: {
                       key={n.href}
                       href={withDemo(n.href)}
                       className={
-                        "group flex items-center gap-3 rounded-[14px] px-3 py-2.5 text-sm font-medium transition-colors " +
-                        (active
-                          ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                          : "text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] hover:text-[var(--hw-ink)]") +
-                        (sidebarCollapsed ? " justify-center" : "")
+                        sidebarCollapsed
+                          ? "group flex items-center justify-center rounded-[14px] px-2 py-2 transition-colors hover:bg-[var(--hw-soft)]"
+                          :
+                            "group flex items-center gap-3 rounded-[14px] px-3 py-2.5 text-sm font-medium transition-colors " +
+                            (active
+                              ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                              : "text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] hover:text-[var(--hw-ink)]")
                       }
                       title={sidebarCollapsed ? n.label : undefined}
                     >
                       <span
                         className={
-                          "grid h-9 w-9 place-items-center rounded-[14px] border border-transparent transition-colors " +
-                          (active ? "bg-white" : "bg-white/70 group-hover:bg-white")
+                          sidebarCollapsed
+                            ? "grid h-10 w-10 place-items-center rounded-[16px] transition-colors " +
+                              (active ? "bg-[rgba(229,57,53,.10)]" : "bg-white/70 group-hover:bg-white")
+                            : "grid h-9 w-9 place-items-center rounded-[14px] border border-transparent transition-colors " +
+                              (active ? "bg-white" : "bg-white/70 group-hover:bg-white")
                         }
                       >
                         <NavIcon name={iconName} className={active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]"} />
@@ -439,8 +461,8 @@ export function PortalShell(props: {
                 type="button"
                 onClick={() => setSidebarCollapsed((v) => !v)}
                 className={
-                  "flex items-center gap-2 rounded-[12px] px-2 py-2 text-xs font-medium text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] hover:text-[var(--hw-ink)] " +
-                  (sidebarCollapsed ? "w-full justify-center" : "")
+                  "flex w-full items-center gap-2 rounded-[14px] px-3 py-2.5 text-sm font-medium text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] hover:text-[var(--hw-ink)]" +
+                  (sidebarCollapsed ? " justify-center" : "")
                 }
                 aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                 title={sidebarCollapsed ? "Expand" : "Collapse"}
