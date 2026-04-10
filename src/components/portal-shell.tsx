@@ -238,21 +238,23 @@ export function PortalShell(props: {
           <div className="flex flex-1 items-center justify-end gap-2">
             {isDemoMode() ? <Pill className="bg-white">Demo</Pill> : null}
 
-            {/* Role pill */}
-            <div className="relative hidden sm:block">
-              <button type="button" onClick={() => setRolePopoverOpen((v) => !v)} aria-label="Portal info">
-                <Pill className="border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)]">
-                  {props.role}
-                </Pill>
-              </button>
+            {/* Role pill (hide for PRO; it will appear next to the name in the profile button) */}
+            {baseRole === "pro" ? null : (
+              <div className="relative hidden sm:block">
+                <button type="button" onClick={() => setRolePopoverOpen((v) => !v)} aria-label="Portal info">
+                  <Pill className="border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(229,57,53,.02))] text-[var(--hw-ink)]">
+                    {props.role}
+                  </Pill>
+                </button>
 
-              {rolePopoverOpen ? (
-                <div className="absolute right-0 top-[46px] z-30 w-64 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3 shadow-[0_20px_60px_rgba(0,0,0,.18)]">
-                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
-                  <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{portalTitle}</div>
-                </div>
-              ) : null}
-            </div>
+                {rolePopoverOpen ? (
+                  <div className="absolute right-0 top-[46px] z-30 w-64 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3 shadow-[0_20px_60px_rgba(0,0,0,.18)]">
+                    <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
+                    <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{portalTitle}</div>
+                  </div>
+                ) : null}
+              </div>
+            )}
 
             {/* Profile block */}
             <div className="relative" data-profile-menu-root>
@@ -264,8 +266,15 @@ export function PortalShell(props: {
               >
                 <UserAvatar fullName={profile.fullName || "Your account"} photoUrl={profile.photoDataUrl} size={30} />
                 <div className="hidden md:block text-left leading-tight">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{profile.fullName || "Your account"}</div>
-                  <div className="text-[11px] font-semibold text-[var(--hw-muted)]">{profile.company || ""}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{profile.fullName || "Your account"}</div>
+                    {baseRole === "pro" ? (
+                      <span className="rounded-full border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.10)] px-2 py-0.5 text-[10px] font-semibold text-[var(--hw-ink)]">
+                        PRO
+                      </span>
+                    ) : null}
+                  </div>
+                  {/* Hide company/team in the closed selector; show inside the dropdown instead. */}
                 </div>
                 <svg className="hidden md:block" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -284,7 +293,9 @@ export function PortalShell(props: {
                         ) : null}
                         <div className="mt-1 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
                           <span>Role</span>
-                          <span className="rounded-full bg-[var(--hw-soft)] px-2 py-0.5 text-[10px] text-[var(--hw-ink)]">{props.role}</span>
+                          <span className="rounded-full bg-[var(--hw-soft)] px-2 py-0.5 text-[10px] text-[var(--hw-ink)]">
+                            {baseRole === "pro" ? "Real Estate Broker" : props.role}
+                          </span>
                         </div>
                       </div>
                     </div>
