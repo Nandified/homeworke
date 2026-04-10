@@ -15,6 +15,7 @@ function initials(name: string) {
 
 export const PROFILE_STORAGE_KEYS = {
   fullName: "hw_profile_fullName_v1",
+  company: "hw_profile_company_v1",
   photoDataUrl: "hw_profile_photoDataUrl_v1",
 } as const;
 
@@ -27,8 +28,9 @@ function demoPhotoForPartner(partnerId: string | null | undefined) {
 }
 
 export function useStoredProfile() {
-  const [profile, setProfile] = React.useState<{ fullName: string; photoDataUrl: string }>(() => ({
+  const [profile, setProfile] = React.useState<{ fullName: string; company: string; photoDataUrl: string }>(() => ({
     fullName: "",
+    company: "",
     photoDataUrl: "",
   }));
 
@@ -39,42 +41,48 @@ export function useStoredProfile() {
     if (typeof window === "undefined") return;
     try {
       let fullName = window.localStorage.getItem(PROFILE_STORAGE_KEYS.fullName) || "";
+      let company = window.localStorage.getItem(PROFILE_STORAGE_KEYS.company) || "";
       let photoDataUrl = window.localStorage.getItem(PROFILE_STORAGE_KEYS.photoDataUrl) || "";
 
       // If we previously seeded placeholder initials (e.g. YRE), replace them with a better default for the PRO portal.
       const isPlaceholder = (s: string) => (s || "").trim().toUpperCase() === "YRE";
       if (isProPortal && isPlaceholder(fullName)) {
         fullName = "";
+        company = "";
         photoDataUrl = "";
         try {
           window.localStorage.removeItem(PROFILE_STORAGE_KEYS.fullName);
+          window.localStorage.removeItem(PROFILE_STORAGE_KEYS.company);
           window.localStorage.removeItem(PROFILE_STORAGE_KEYS.photoDataUrl);
         } catch {}
       }
 
       // localStorage doesn't sync across devices. If we have a partner context, seed a sensible
       // default so the portal doesn't fall back to placeholder initials.
-      if (!fullName) {
+      if (!fullName || !company) {
         const partner = loadPartner();
-        let seededName = partner?.partnerName || "";
-        let seededPhoto = demoPhotoForPartner(partner?.partnerId) || "";
+        let seededName = fullName || partner?.partnerName || "";
+        let seededCompany = company || partner?.officeName || "";
+        let seededPhoto = photoDataUrl || demoPhotoForPartner(partner?.partnerId) || "";
 
         // Until auth/user profiles are wired, the PRO portal uses a demo context.
         // If no partner context exists (common on mobile), seed FRJ defaults.
         if (!seededName && typeof window !== "undefined" && window.location.pathname.startsWith("/pro")) {
           seededName = "Fernando Rocha Jr";
-          seededPhoto = "/partners/frj-headshot.jpg";
+          seededCompany = seededCompany || "The FRJ Group";
+          seededPhoto = seededPhoto || "/partners/frj-headshot.jpg";
         }
 
         if (seededName) window.localStorage.setItem(PROFILE_STORAGE_KEYS.fullName, seededName);
+        if (seededCompany) window.localStorage.setItem(PROFILE_STORAGE_KEYS.company, seededCompany);
         if (seededPhoto) window.localStorage.setItem(PROFILE_STORAGE_KEYS.photoDataUrl, seededPhoto);
-        if (seededName || seededPhoto) {
-          setProfile({ fullName: seededName, photoDataUrl: seededPhoto });
+        if (seededName || seededCompany || seededPhoto) {
+          setProfile({ fullName: seededName, company: seededCompany, photoDataUrl: seededPhoto });
           return;
         }
       }
 
-      setProfile({ fullName, photoDataUrl });
+      setProfile({ fullName, company, photoDataUrl });
     } catch {
       // ignore
     }
