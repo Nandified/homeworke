@@ -1163,6 +1163,9 @@ export async function POST(req: Request) {
         const narrative = typeof rec.narrative === "string" ? rec.narrative.trim() : "";
         if (!issue || !narrative) continue;
 
+        const ratingRaw = typeof rec.rating === "string" ? rec.rating : undefined;
+        const rating = normalizeRating(ratingRaw);
+
         // Skip "acceptable / good condition" items; we only price actionable issues.
         const ratingLower = (rating || "").toLowerCase();
         const issueLower = issue.toLowerCase();
@@ -1188,7 +1191,6 @@ export async function POST(req: Request) {
         const systemRaw = typeof rec.system === "string" ? rec.system : undefined;
         const component = typeof rec.component === "string" ? rec.component : undefined;
         const location = typeof rec.location === "string" ? rec.location : undefined;
-        const ratingRaw = typeof rec.rating === "string" ? rec.rating : undefined;
         const recommendation = typeof rec.recommendation === "string" ? rec.recommendation : undefined;
         const recommendedTradeRaw = typeof rec.recommendedTrade === "string" ? rec.recommendedTrade : undefined;
         const requiresSpecialistRaw = typeof rec.requiresSpecialist === "boolean" ? rec.requiresSpecialist : undefined;
@@ -1196,7 +1198,6 @@ export async function POST(req: Request) {
         const accessLimitation = typeof rec.accessLimitation === "boolean" ? rec.accessLimitation : undefined;
 
         const system = normalizeSystem(systemRaw);
-        const rating = normalizeRating(ratingRaw);
         const recommendedTrade = normalizeTrade(recommendedTradeRaw);
         const requiresSpecialist =
           typeof requiresSpecialistRaw === "boolean"
