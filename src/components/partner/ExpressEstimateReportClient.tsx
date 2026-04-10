@@ -407,6 +407,7 @@ export function ExpressEstimateReportClient(props: {
                 note: typeof it.note === "string" ? it.note : undefined,
                 range: typeof it.range === "string" ? it.range : undefined,
                 price: typeof it.price === "number" ? it.price : undefined,
+                pricingDebug: it.pricingDebug && typeof it.pricingDebug === "object" ? it.pricingDebug : undefined,
               })),
           }));
         if (normalized.length) {
@@ -855,6 +856,7 @@ export function ExpressEstimateReportClient(props: {
                       .filter((ev: any) => ev && typeof ev.src === "string")
                       .map((ev: any) => ({ src: String(ev.src), caption: typeof ev.caption === "string" ? ev.caption : undefined }))
                   : undefined,
+                pricingDebug: it.pricingDebug && typeof it.pricingDebug === "object" ? it.pricingDebug : undefined,
               })),
           }));
 
