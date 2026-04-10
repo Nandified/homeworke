@@ -1919,8 +1919,12 @@ export function ExpressEstimateReportClient(props: {
                       <div key={item.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <div className="truncate text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
-                            {item.note ? <div className="mt-1 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
+                            <div className="text-sm font-medium text-[var(--hw-ink)] whitespace-normal break-words line-clamp-2">{item.label}</div>
+                            {item.note ? (
+                              <div className="mt-1 text-xs text-[var(--hw-muted)] whitespace-normal break-words line-clamp-2">
+                                {item.note}
+                              </div>
+                            ) : null}
                           </div>
                           <button
                             className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
@@ -1995,8 +1999,12 @@ export function ExpressEstimateReportClient(props: {
                       <div key={item.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <div className="truncate text-sm font-medium text-[var(--hw-ink)]">{item.label}</div>
-                            {item.note ? <div className="mt-1 truncate text-xs text-[var(--hw-muted)]">{item.note}</div> : null}
+                            <div className="text-sm font-medium text-[var(--hw-ink)] whitespace-normal break-words line-clamp-2">{item.label}</div>
+                            {item.note ? (
+                              <div className="mt-1 text-xs text-[var(--hw-muted)] whitespace-normal break-words line-clamp-2">
+                                {item.note}
+                              </div>
+                            ) : null}
                           </div>
                           <button
                             className="inline-flex h-7 items-center text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
