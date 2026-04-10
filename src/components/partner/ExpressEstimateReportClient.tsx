@@ -952,17 +952,24 @@ export function ExpressEstimateReportClient(props: {
     >
       <div className="grid gap-6">
         {toast ? (
-          <div className="fixed left-1/2 top-20 z-[80] w-[min(560px,calc(100vw-32px))] -translate-x-1/2">
-            {downloading ? <div className="pointer-events-none fixed inset-0 bg-black/10" aria-hidden /> : null}
-            <div className="flex items-center justify-center gap-3 rounded-[999px] border border-[rgba(229,57,53,.18)] bg-white px-5 py-3 text-center text-sm font-semibold text-[var(--hw-ink)] shadow-[0_20px_60px_rgba(17,24,39,.18)]">
-              {downloading ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="animate-spin text-[var(--hw-red)]">
-                  <path d="M21 12a9 9 0 1 1-2.64-6.36" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              ) : null}
-              <span>{toast}</span>
+          <>
+            {downloading ? <div className="pointer-events-none fixed inset-0 z-[79] bg-black/10" aria-hidden /> : null}
+            <div
+              className={
+                "fixed left-1/2 z-[80] w-[min(560px,calc(100vw-32px))] -translate-x-1/2 " +
+                (downloading ? "top-1/2 -translate-y-1/2" : "top-24")
+              }
+            >
+              <div className="flex items-center justify-center gap-3 rounded-[999px] border border-[rgba(229,57,53,.18)] bg-white px-5 py-3 text-center text-sm font-semibold text-[var(--hw-ink)] shadow-[0_20px_60px_rgba(17,24,39,.18)]">
+                {downloading ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="animate-spin text-[var(--hw-red)]">
+                    <path d="M21 12a9 9 0 1 1-2.64-6.36" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                ) : null}
+                <span>{toast}</span>
+              </div>
             </div>
-          </div>
+          </>
         ) : null}
 
         {analyzing ? (
