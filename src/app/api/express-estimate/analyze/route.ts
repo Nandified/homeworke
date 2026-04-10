@@ -768,6 +768,8 @@ async function callOpenAIJsonSchema(args: {
     body: JSON.stringify({
       model: args.model,
       temperature,
+      // Seed improves repeatability across runs for the same input.
+      ...(typeof args.seed === "number" ? { seed: args.seed } : {}),
       input: [
         { role: "system", content: system },
         { role: "user", content: args.user },
@@ -1147,6 +1149,10 @@ export async function POST(req: Request) {
 
     const chunks = chunkText(extractedText, 45_000);
 
+    // Seed the model for better repeatability on re-runs of the same report+location.
+    // (Still not a hard guarantee, but it materially reduces "different line items" surprises.)
+    const runSeed = parseInt(String(cacheKey).slice(0, 8), 16);
+
     const usageCalls: UsageCost[] = [];
     const findings: NormalizedFinding[] = [];
 
@@ -1164,6 +1170,7 @@ export async function POST(req: Request) {
         r = await callOpenAIJsonSchema({
           apiKey,
           model: "gpt-5.4-mini",
+          seed: Number.isFinite(runSeed) ? runSeed : undefined,
           schemaName: "instant_estimate_chunk_issues",
           schema: chunkSchema,
           system: chunkSystem,
@@ -1366,6 +1373,7 @@ export async function POST(req: Request) {
       final = await callOpenAIJsonSchema({
         apiKey,
         model: "gpt-5.4",
+        seed: Number.isFinite(runSeed) ? runSeed : undefined,
         schemaName: "instant_estimate_final",
         schema: finalSchema,
         system: finalSystem,
