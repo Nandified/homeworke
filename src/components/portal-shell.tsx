@@ -12,8 +12,8 @@ export type PortalNavItem = { href: string; label: string };
 function NavIcon(props: { name: string; className?: string }) {
   const cn = props.className || "";
   const common = {
-    width: 18,
-    height: 18,
+    width: 20,
+    height: 20,
     viewBox: "0 0 24 24",
     fill: "none",
     "aria-hidden": true as const,
@@ -30,7 +30,7 @@ function NavIcon(props: { name: string; className?: string }) {
     case "bolt":
       return (
         <svg {...common}>
-          <path d="M13 2 3 14h7l-1 8 12-14h-7l1-6Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+          <path d="M13 2 3 14h7l-1 8 12-14h-7l1-6Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         </svg>
       );
     case "briefcase":
