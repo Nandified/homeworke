@@ -955,10 +955,7 @@ export function ExpressEstimateReportClient(props: {
           <>
             {downloading ? <div className="pointer-events-none fixed inset-0 z-[79] bg-black/10" aria-hidden /> : null}
             <div
-              className={
-                "fixed left-1/2 z-[80] w-[min(560px,calc(100vw-32px))] -translate-x-1/2 " +
-                (downloading ? "top-1/2 -translate-y-1/2" : "top-24")
-              }
+              className="fixed left-1/2 top-1/2 z-[80] w-[min(560px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2"
             >
               <div className="flex items-center justify-center gap-3 rounded-[999px] border border-[rgba(229,57,53,.18)] bg-white px-5 py-3 text-center text-sm font-semibold text-[var(--hw-ink)] shadow-[0_20px_60px_rgba(17,24,39,.18)]">
                 {downloading ? (
