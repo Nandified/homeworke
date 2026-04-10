@@ -150,6 +150,16 @@ export function PortalShell(props: {
   const accountHref = basePath ? `${basePath}/account` : "/";
   const supportHref = basePath ? `${basePath}/support` : "/";
 
+  const instantEstimateHref = basePath ? `${basePath}/express-estimate` : "/express-estimate";
+  const sidebarPrimaryAction =
+    baseRole === "pro" || baseRole === "partner"
+      ? (
+          <Link href={withDemo(instantEstimateHref)}>
+            <Button>Start Instant Estimate</Button>
+          </Link>
+        )
+      : props.primaryAction;
+
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const [rolePopoverOpen, setRolePopoverOpen] = React.useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = React.useState(false);
@@ -315,7 +325,7 @@ export function PortalShell(props: {
             </div>
 
             <div className="p-5">
-              {props.primaryAction ? <div className="mb-4">{props.primaryAction}</div> : null}
+              {sidebarPrimaryAction ? <div className="mb-4">{sidebarPrimaryAction}</div> : null}
 
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Navigation</div>
               <nav className="mt-3 grid gap-1">
@@ -377,9 +387,9 @@ export function PortalShell(props: {
                   </div>
                 </div>
 
-                {props.primaryAction ? (
+                {sidebarPrimaryAction ? (
                   <div className="px-4 pb-4 mt-2">
-                    <div>{props.primaryAction}</div>
+                    <div>{sidebarPrimaryAction}</div>
                   </div>
                 ) : null}
               </>
@@ -462,7 +472,7 @@ export function PortalShell(props: {
                     {props.description || ""}
                   </p>
                 </div>
-                {props.primaryAction ? <div className="shrink-0 md:hidden">{props.primaryAction}</div> : null}
+                {sidebarPrimaryAction ? <div className="shrink-0 md:hidden">{sidebarPrimaryAction}</div> : null}
               </div>
             )}
 

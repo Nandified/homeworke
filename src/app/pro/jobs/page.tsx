@@ -15,7 +15,7 @@ export default function Page() {
       description="Track every active and closed job across client-shared projects and your own properties."
       primaryAction={
         <Link href="/pro/express-estimate">
-          <Button>Start Express Estimate</Button>
+          <Button>Start Instant Estimate</Button>
         </Link>
       }
     >

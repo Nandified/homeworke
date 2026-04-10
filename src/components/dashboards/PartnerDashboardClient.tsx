@@ -454,7 +454,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
       description="Shared projects, quick invites, and the next touchpoint—without hunting through threads."
       primaryAction={
         <Link href={`${basePath}/express-estimate`}>
-          <Button>Start Express Estimate</Button>
+          <Button>Start Instant Estimate</Button>
         </Link>
       }
       hideHeading
