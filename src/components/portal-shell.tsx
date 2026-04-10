@@ -491,7 +491,7 @@ export function PortalShell(props: {
                     {props.description || ""}
                   </p>
                 </div>
-                {pagePrimaryAction ? <div className="shrink-0 md:hidden">{pagePrimaryAction}</div> : null}
+                {pagePrimaryAction ? <div className="shrink-0">{pagePrimaryAction}</div> : null}
               </div>
             )}
 
