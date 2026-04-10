@@ -380,18 +380,16 @@ export function ExpressEstimateReportClient(props: {
         const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
         const j = await r.json().catch(() => null);
         if (!r.ok || !j || typeof j !== "object") {
+          // Background load can fail transiently; only surface error if we end up with no results.
           errMsg = `Analyze failed (${r.status}).`;
-          setToast(errMsg);
-          window.setTimeout(() => setToast(""), 2200);
           return;
         }
         const rec = j as any;
         if (rec.ok !== true) {
           const detail = typeof rec.detail === "string" ? rec.detail : "";
           const err = typeof rec.error === "string" ? rec.error : "Analyze failed.";
+          // Background load can fail transiently; only surface error if we end up with no results.
           errMsg = detail ? `${err}: ${detail}` : err;
-          setToast(errMsg);
-          window.setTimeout(() => setToast(""), 2600);
           return;
         }
         const lanes = Array.isArray(rec.lanes) ? rec.lanes : [];
@@ -423,9 +421,8 @@ export function ExpressEstimateReportClient(props: {
           );
         } catch {}
       } catch {
+        // Background load can fail transiently; only surface error if we end up with no results.
         errMsg = "Analyze failed. Please try again.";
-        setToast(errMsg);
-        window.setTimeout(() => setToast(""), 2600);
       } finally {
         // Only show the persistent error banner if we truly ended with no results.
         if (!gotResult && extracted.length === 0 && errMsg) setAnalysisError(errMsg);
