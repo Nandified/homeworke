@@ -81,9 +81,13 @@ function NavIcon(props: { name: string; className?: string }) {
     case "settings":
       return (
         <svg {...common}>
-          <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" strokeWidth="2" />
           <path
-            d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.04.04a2.2 2.2 0 0 1-1.56 3.76h-.1a1.8 1.8 0 0 0-1.7 1.26 1.8 1.8 0 0 1-3.42 0 1.8 1.8 0 0 0-1.7-1.26H9.7a2.2 2.2 0 0 1-1.56-3.76l.04-.04A1.8 1.8 0 0 0 8.54 15a1.8 1.8 0 0 0-1.25-1.7 1.8 1.8 0 0 1 0-3.4 1.8 1.8 0 0 0 1.25-1.7 1.8 1.8 0 0 0-.36-1.98l-.04-.04A2.2 2.2 0 0 1 9.7 2.38h.1A1.8 1.8 0 0 0 11.5 1.1a1.8 1.8 0 0 1 3.42 0 1.8 1.8 0 0 0 1.7 1.26h.1a2.2 2.2 0 0 1 1.56 3.76l-.04.04A1.8 1.8 0 0 0 19.4 8c0 .78.5 1.47 1.25 1.7a1.8 1.8 0 0 1 0 3.4 1.8 1.8 0 0 0-1.25 1.7Z"
+            d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+          <path
+            d="M19.4 15a7.5 7.5 0 0 0 .1-1 7.5 7.5 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7.3 7.3 0 0 0-1.7-1L15 3h-6l-.2 2.5c-.6.3-1.2.6-1.7 1L4.7 5.5l-2 3.5 2 1.5a7.5 7.5 0 0 0-.1 1 7.5 7.5 0 0 0 .1 1l-2 1.5 2 3.5 2.4-1c.5.4 1.1.7 1.7 1L9 21h6l.2-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.5-2-1.5Z"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinejoin="round"
@@ -364,28 +368,26 @@ export function PortalShell(props: {
               <Link
                 href={withDemo("/")}
                 className={
-                  "flex items-center gap-2 rounded-[14px] px-2 py-2 font-extrabold tracking-tight text-[var(--hw-red)] hover:bg-[var(--hw-soft)] " +
+                  "flex items-center rounded-[14px] px-2 py-2 font-extrabold tracking-tight text-[var(--hw-red)] hover:bg-[var(--hw-soft)] " +
                   (sidebarCollapsed ? "justify-center" : "")
                 }
                 aria-label="Homeworke"
                 title={sidebarCollapsed ? "Homeworke" : undefined}
               >
-                <span className="grid h-9 w-9 place-items-center rounded-[14px] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]">
-                  H
-                </span>
-                {sidebarCollapsed ? null : <span className="text-lg">Homeworke</span>}
+                <span className={"text-lg " + (sidebarCollapsed ? "" : "")}>Homeworke</span>
               </Link>
+
               {sidebarCollapsed ? null : (
-                <div className="mt-2 px-2">
-                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
-                  <div className="mt-0.5 text-xs font-semibold text-[var(--hw-ink)]">{portalTitle}</div>
+                <div className="mt-3 px-2">
+                  <div className="text-[11px] font-medium uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
+                  <div className="mt-1 text-xs font-medium text-[var(--hw-ink)]">{portalTitle}</div>
                 </div>
               )}
             </div>
 
             {/* Primary action */}
             {props.primaryAction ? (
-              <div className={"px-4 " + (sidebarCollapsed ? "pb-2" : "pb-3")}>
+              <div className={"px-4 " + (sidebarCollapsed ? "pb-3" : "pb-4") + (sidebarCollapsed ? "" : " mt-2") }>
                 <div className={sidebarCollapsed ? "grid place-items-center" : ""}>{props.primaryAction}</div>
               </div>
             ) : null}
@@ -401,8 +403,10 @@ export function PortalShell(props: {
                       key={n.href}
                       href={withDemo(n.href)}
                       className={
-                        "group flex items-center gap-3 rounded-[14px] px-3 py-2.5 text-sm font-semibold transition-colors " +
-                        (active ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]" : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]") +
+                        "group flex items-center gap-3 rounded-[14px] px-3 py-2.5 text-sm font-medium transition-colors " +
+                        (active
+                          ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                          : "text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] hover:text-[var(--hw-ink)]") +
                         (sidebarCollapsed ? " justify-center" : "")
                       }
                       title={sidebarCollapsed ? n.label : undefined}
@@ -422,8 +426,8 @@ export function PortalShell(props: {
               </nav>
             </div>
 
-            {/* Bottom: collapse + demo */}
-            <div className="border-t border-[var(--hw-line)] p-3">
+            {/* Bottom: collapse (simple, Inked-style) + demo */}
+            <div className="p-3">
               {isDemoMode() && !sidebarCollapsed ? (
                 <div className="mb-3 rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-3">
                   <div className="text-xs font-semibold text-[var(--hw-ink)]">Demo mode</div>
@@ -435,14 +439,14 @@ export function PortalShell(props: {
                 type="button"
                 onClick={() => setSidebarCollapsed((v) => !v)}
                 className={
-                  "flex w-full items-center gap-2 rounded-[14px] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm font-semibold text-[var(--hw-ink)] shadow-sm hover:bg-[var(--hw-soft)] " +
-                  (sidebarCollapsed ? "justify-center" : "")
+                  "flex items-center gap-2 rounded-[12px] px-2 py-2 text-xs font-medium text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] hover:text-[var(--hw-ink)] " +
+                  (sidebarCollapsed ? "w-full justify-center" : "")
                 }
                 aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                 title={sidebarCollapsed ? "Expand" : "Collapse"}
               >
                 <NavIcon name={sidebarCollapsed ? "expand" : "collapse"} className="text-[var(--hw-muted)]" />
-                {sidebarCollapsed ? null : <span>{sidebarCollapsed ? "Expand" : "Collapse"}</span>}
+                {sidebarCollapsed ? null : <span>Collapse</span>}
               </button>
             </div>
           </div>
