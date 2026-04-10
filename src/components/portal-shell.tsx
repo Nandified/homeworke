@@ -142,11 +142,16 @@ export function PortalShell(props: {
   hideHeading?: boolean;
   children: React.ReactNode;
 }) {
-  const portalTitle = props.portalTitle ?? props.title;
+  const baseRole = (props.role || "").toLowerCase();
+  const portalTitle =
+    props.portalTitle ??
+    (baseRole === "pro" ? "Real Estate Pro" : baseRole === "partner" ? "Partner" : props.title);
 
   const profile = useStoredProfile();
-  const baseRole = (props.role || "").toLowerCase();
-  const basePath = baseRole === "pro" || baseRole === "pm" || baseRole === "sp" || baseRole === "hg" || baseRole === "ho" || baseRole === "partner" ? `/${baseRole}` : "";
+  const basePath =
+    baseRole === "pro" || baseRole === "pm" || baseRole === "sp" || baseRole === "hg" || baseRole === "ho" || baseRole === "partner"
+      ? `/${baseRole}`
+      : "";
   const accountHref = basePath ? `${basePath}/account` : "/";
   const supportHref = basePath ? `${basePath}/support` : "/";
 
