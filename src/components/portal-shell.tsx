@@ -93,15 +93,13 @@ function NavIcon(props: { name: string; className?: string }) {
     case "collapse":
       return (
         <svg {...common}>
-          <path d="M9 18 3 12l6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M21 18V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="m14 18-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case "expand":
       return (
         <svg {...common}>
-          <path d="M15 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M3 18V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="m10 6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     default:
@@ -359,58 +357,36 @@ export function PortalShell(props: {
               "flex h-full w-full flex-col overflow-hidden rounded-[20px] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(17,24,39,.10)]"
             }
           >
-            {/* Logo */}
-            <div className={"px-4 pt-4 " + (sidebarCollapsed ? "pb-3" : "pb-2")}>
-              <Link
-                href={withDemo("/")}
-                className={
-                  "flex items-center rounded-[14px] px-2 py-2 font-extrabold tracking-tight text-[var(--hw-red)] hover:bg-[var(--hw-soft)] " +
-                  (sidebarCollapsed ? "justify-center" : "")
-                }
-                aria-label="Homeworke"
-                title={sidebarCollapsed ? "Homeworke" : undefined}
-              >
-                {sidebarCollapsed ? (
-                  <span className="grid h-10 w-10 place-items-center rounded-[16px] bg-[rgba(229,57,53,.10)] text-[12px] font-extrabold text-[var(--hw-red)]">
-                    HW
-                  </span>
-                ) : (
-                  <span className="text-lg">Homeworke</span>
-                )}
-              </Link>
-
-              {sidebarCollapsed ? null : (
-                <div className="mt-3 px-2">
-                  <div className="text-[11px] font-medium uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
-                  <div className="mt-1 text-xs font-medium text-[var(--hw-ink)]">{portalTitle}</div>
-                </div>
-              )}
-            </div>
-
-            {/* Primary action */}
-            {props.primaryAction ? (
-              <div className={"px-4 " + (sidebarCollapsed ? "pb-3" : "pb-4") + (sidebarCollapsed ? "" : " mt-2") }>
-                {sidebarCollapsed ? (
+            {/* Header / logo (hidden when collapsed, per Inked-style) */}
+            {sidebarCollapsed ? (
+              <div className="h-4" />
+            ) : (
+              <>
+                <div className="px-4 pt-4 pb-2">
                   <Link
-                    href={withDemo(
-                      props.nav.find((n) => /express-estimate|estimate/i.test(n.href) || /estimate/i.test(n.label))?.href ||
-                        props.nav[0]?.href ||
-                        "/"
-                    )}
-                    className="grid h-10 w-10 place-items-center rounded-full bg-[var(--hw-red)] text-white shadow-[0_8px_20px_rgba(229,57,53,.30)] hover:brightness-[1.05]"
-                    aria-label="Start"
-                    title="Start"
+                    href={withDemo("/")}
+                    className="flex items-center rounded-[14px] px-2 py-2 font-extrabold tracking-tight text-[var(--hw-red)] hover:bg-[var(--hw-soft)]"
+                    aria-label="Homeworke"
                   >
-                    <NavIcon name="bolt" className="text-white" />
+                    <span className="text-lg">Homeworke</span>
                   </Link>
-                ) : (
-                  <div>{props.primaryAction}</div>
-                )}
-              </div>
-            ) : null}
+
+                  <div className="mt-3 px-2">
+                    <div className="text-[11px] font-medium uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
+                    <div className="mt-1 text-xs font-medium text-[var(--hw-ink)]">{portalTitle}</div>
+                  </div>
+                </div>
+
+                {props.primaryAction ? (
+                  <div className="px-4 pb-4 mt-2">
+                    <div>{props.primaryAction}</div>
+                  </div>
+                ) : null}
+              </>
+            )}
 
             {/* Nav */}
-            <div className="flex-1 px-2 pb-3">
+            <div className={"flex-1 pb-3 " + (sidebarCollapsed ? "px-0 pt-2" : "px-2")}>
               <nav className="grid gap-1">
                 {props.nav.map((n) => {
                   const active = typeof window !== "undefined" && window.location.pathname === n.href;
