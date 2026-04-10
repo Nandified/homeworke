@@ -193,7 +193,7 @@ export function PortalShell(props: {
     <div className="min-h-screen bg-[#fbfbfc]">
       {/* ── Header ── */}
       <header className="sticky top-0 z-30 border-b border-[var(--hw-line)] bg-white/85 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-        <Container className="relative flex h-14 items-center md:h-16">
+        <Container className="relative flex h-14 items-center md:h-16 max-w-none">
           {/* Left */}
           <div className="flex flex-1 items-center gap-2">
             <button
@@ -347,76 +347,104 @@ export function PortalShell(props: {
       ) : null}
 
       <div className="flex">
-        {/* Desktop sidebar */}
+        {/* Desktop sidebar (floating panel, Inked-style) */}
         <aside
           className={
-            "hidden md:flex md:sticky md:top-16 md:h-[calc(100vh-64px)] shrink-0 flex-col border-r border-[var(--hw-line)] bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/50 transition-[width] duration-200 " +
-            (sidebarCollapsed ? "w-[72px]" : "w-60")
+            "hidden md:flex md:sticky md:top-16 md:h-[calc(100vh-64px)] shrink-0 p-4 transition-[width] duration-200 " +
+            (sidebarCollapsed ? "w-[92px]" : "w-[280px]")
           }
         >
-          <div className="flex-1 p-3">
-            <div className={"mb-3 flex items-center gap-2 " + (sidebarCollapsed ? "justify-center" : "justify-between")}
-            >
-              <div className={"flex items-center gap-2 " + (sidebarCollapsed ? "hidden" : "")}
+          <div
+            className={
+              "flex h-full w-full flex-col overflow-hidden rounded-[20px] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(17,24,39,.10)]"
+            }
+          >
+            {/* Logo */}
+            <div className={"px-4 pt-4 " + (sidebarCollapsed ? "pb-3" : "pb-2")}>
+              <Link
+                href={withDemo("/")}
+                className={
+                  "flex items-center gap-2 rounded-[14px] px-2 py-2 font-extrabold tracking-tight text-[var(--hw-red)] hover:bg-[var(--hw-soft)] " +
+                  (sidebarCollapsed ? "justify-center" : "")
+                }
+                aria-label="Homeworke"
+                title={sidebarCollapsed ? "Homeworke" : undefined}
               >
-                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
-                <div className="text-xs font-semibold text-[var(--hw-ink)]">{portalTitle}</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSidebarCollapsed((v) => !v)}
-                className="grid h-9 w-9 place-items-center rounded-full border border-[var(--hw-line)] bg-white shadow-sm hover:bg-[var(--hw-soft)]"
-                aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                title={sidebarCollapsed ? "Expand" : "Collapse"}
-              >
-                <NavIcon name={sidebarCollapsed ? "expand" : "collapse"} className="text-[var(--hw-muted)]" />
-              </button>
+                <span className="grid h-9 w-9 place-items-center rounded-[14px] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]">
+                  H
+                </span>
+                {sidebarCollapsed ? null : <span className="text-lg">Homeworke</span>}
+              </Link>
+              {sidebarCollapsed ? null : (
+                <div className="mt-2 px-2">
+                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Portal</div>
+                  <div className="mt-0.5 text-xs font-semibold text-[var(--hw-ink)]">{portalTitle}</div>
+                </div>
+              )}
             </div>
 
+            {/* Primary action */}
             {props.primaryAction ? (
-              <div className="mb-3">
+              <div className={"px-4 " + (sidebarCollapsed ? "pb-2" : "pb-3")}>
                 <div className={sidebarCollapsed ? "grid place-items-center" : ""}>{props.primaryAction}</div>
               </div>
             ) : null}
 
-            <nav className="mt-2 grid gap-1">
-              {props.nav.map((n) => {
-                const active = typeof window !== "undefined" && window.location.pathname === n.href;
-                const iconName = iconForHref(n.href);
-                return (
-                  <Link
-                    key={n.href}
-                    href={withDemo(n.href)}
-                    className={
-                      "group flex items-center gap-3 rounded-[12px] px-3 py-2.5 text-sm font-semibold transition-colors " +
-                      (active ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]" : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]") +
-                      (sidebarCollapsed ? " justify-center" : "")
-                    }
-                    title={sidebarCollapsed ? n.label : undefined}
-                  >
-                    <span
+            {/* Nav */}
+            <div className="flex-1 px-2 pb-3">
+              <nav className="grid gap-1">
+                {props.nav.map((n) => {
+                  const active = typeof window !== "undefined" && window.location.pathname === n.href;
+                  const iconName = iconForHref(n.href);
+                  return (
+                    <Link
+                      key={n.href}
+                      href={withDemo(n.href)}
                       className={
-                        "grid h-9 w-9 place-items-center rounded-[12px] border border-transparent transition-colors " +
-                        (active ? "bg-white" : "bg-white/60 group-hover:bg-white")
+                        "group flex items-center gap-3 rounded-[14px] px-3 py-2.5 text-sm font-semibold transition-colors " +
+                        (active ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]" : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]") +
+                        (sidebarCollapsed ? " justify-center" : "")
                       }
+                      title={sidebarCollapsed ? n.label : undefined}
                     >
-                      <NavIcon name={iconName} className={active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]"} />
-                    </span>
-                    {sidebarCollapsed ? null : <span className="truncate">{n.label}</span>}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
+                      <span
+                        className={
+                          "grid h-9 w-9 place-items-center rounded-[14px] border border-transparent transition-colors " +
+                          (active ? "bg-white" : "bg-white/70 group-hover:bg-white")
+                        }
+                      >
+                        <NavIcon name={iconName} className={active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]"} />
+                      </span>
+                      {sidebarCollapsed ? null : <span className="truncate">{n.label}</span>}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
 
-          <div className="p-3">
-            {isDemoMode() ? (
-              <div className={"rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-3 " + (sidebarCollapsed ? "hidden" : "")}
+            {/* Bottom: collapse + demo */}
+            <div className="border-t border-[var(--hw-line)] p-3">
+              {isDemoMode() && !sidebarCollapsed ? (
+                <div className="mb-3 rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-3">
+                  <div className="text-xs font-semibold text-[var(--hw-ink)]">Demo mode</div>
+                  <div className="mt-1 text-xs text-[var(--hw-muted)]">Sample data is enabled for this portal.</div>
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={() => setSidebarCollapsed((v) => !v)}
+                className={
+                  "flex w-full items-center gap-2 rounded-[14px] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm font-semibold text-[var(--hw-ink)] shadow-sm hover:bg-[var(--hw-soft)] " +
+                  (sidebarCollapsed ? "justify-center" : "")
+                }
+                aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                title={sidebarCollapsed ? "Expand" : "Collapse"}
               >
-                <div className="text-xs font-semibold text-[var(--hw-ink)]">Demo mode</div>
-                <div className="mt-1 text-xs text-[var(--hw-muted)]">Sample data is enabled for this portal.</div>
-              </div>
-            ) : null}
+                <NavIcon name={sidebarCollapsed ? "expand" : "collapse"} className="text-[var(--hw-muted)]" />
+                {sidebarCollapsed ? null : <span>{sidebarCollapsed ? "Expand" : "Collapse"}</span>}
+              </button>
+            </div>
           </div>
         </aside>
 

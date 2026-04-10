@@ -492,13 +492,14 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           <div className="lg:hidden">{MessagesCard}</div>
         </div>
 
-        {/* Desktop: keep Instant Estimate here */}
-        <div className="hidden lg:block">
-          <InstantEstimateCard basePath={basePath} />
-        </div>
+        {/* Desktop: keep layout full but not stretched (2-column row) */}
+        <div className="grid gap-6 lg:grid-cols-12 lg:items-stretch">
+          <div className="hidden lg:block lg:col-span-7">
+            <InstantEstimateCard basePath={basePath} />
+          </div>
 
-        {/* Invite (moved up under KPI tiles) */}
-        <Card className="p-5">
+          {/* Invite */}
+          <Card className="p-5 lg:col-span-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>
@@ -698,6 +699,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               ) : null}
             </div>
         </Card>
+        </div>
 
         {loading && (
           <Card className="p-6">
