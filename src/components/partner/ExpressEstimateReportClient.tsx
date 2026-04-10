@@ -1879,7 +1879,7 @@ export function ExpressEstimateReportClient(props: {
               onClick={() => setDrawerOpen(false)}
               aria-label="Close"
             />
-            <div className="absolute right-0 top-0 h-full w-full max-w-[420px] bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
+            <div className="absolute right-0 top-0 flex h-full w-full max-w-[420px] flex-col bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
               <div className="flex items-start justify-between gap-3 border-b border-[var(--hw-line)] p-5">
                 <div>
                   <div className="text-sm font-semibold text-[var(--hw-ink)]">Selected items</div>
@@ -1890,7 +1890,7 @@ export function ExpressEstimateReportClient(props: {
                 </Button>
               </div>
 
-              <div className="p-5">
+              <div className="flex-1 overflow-y-auto p-5">
                 <div className="mb-4 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
                   <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Selected total</div>
                   <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(totals.selected)}</div>
@@ -1956,7 +1956,7 @@ export function ExpressEstimateReportClient(props: {
         {repairsOpen ? (
           <div className="fixed inset-0 z-50">
             <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setRepairsOpen(false)} aria-label="Close" />
-            <div className="absolute inset-0 bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)] lg:inset-auto lg:right-0 lg:top-0 lg:h-full lg:w-full lg:max-w-[420px]">
+            <div className="absolute inset-0 flex h-full flex-col bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)] lg:inset-auto lg:right-0 lg:top-0 lg:h-full lg:w-full lg:max-w-[420px]">
               <div className="grid grid-cols-3 items-center gap-3 border-b border-[var(--hw-line)] p-5">
                 <div />
                 <div className="text-center">
@@ -1970,14 +1970,14 @@ export function ExpressEstimateReportClient(props: {
                 </div>
               </div>
 
-              <div className="p-5">
+              <div className="flex-1 overflow-y-auto p-5">
                 <div className="mb-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
                   <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Repairs total (est.)</div>
                   <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(totals.repairs)}</div>
                   <div className="mt-1 text-xs text-[var(--hw-muted)]">This is a placeholder flow — next step will be Checkout/Booking.</div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex w-full justify-end gap-2">
                   <Button size="sm" disabled={repairs.length === 0} onClick={() => {}}>
                     Continue to book
                   </Button>
