@@ -39,7 +39,13 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
   const [activeThreadId, setActiveThreadId] = React.useState<string>("");
   const [composer, setComposer] = React.useState<string>("");
   const [query, setQuery] = React.useState<string>("");
-  const [filter, setFilter] = React.useState<"all" | "unread" | "needs_reply">("all");
+  const [filter, setFilter] = React.useState<"all" | "unread" | "needs_attention">("all");
+
+  const [newOpen, setNewOpen] = React.useState(false);
+  const [newOwnerName, setNewOwnerName] = React.useState("");
+  const [newPropertyAddress, setNewPropertyAddress] = React.useState("");
+  const [newTitle, setNewTitle] = React.useState("");
+  const [newFirstMessage, setNewFirstMessage] = React.useState("");
 
   const reload = React.useCallback(() => {
     if (!partnerId) return;
@@ -74,8 +80,9 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
       const ownerName = last?.ownerName || sorted.find((x) => x.ownerName)?.ownerName || "";
       const propertyAddress = last?.propertyAddress || sorted.find((x) => x.propertyAddress)?.propertyAddress || "";
       const title = last?.threadTitle || ownerName || propertyAddress || `Thread ${threadId.replace("thread_", "#")}`;
-      const needsReply = !!last && last.fromRole === "HO";
-      return { threadId, messages: sorted, last, unread, needsReply, ownerName, propertyAddress, title };
+      const unreadCount = sorted.reduce((acc, x) => acc + (!x.readAt ? 1 : 0), 0);
+      const needsAttention = !!last && last.fromRole === "HO" && !last.readAt;
+      return { threadId, messages: sorted, last, unread, unreadCount, needsAttention, ownerName, propertyAddress, title };
     });
 
     out.sort((a, b) => (b.last ? new Date(b.last.createdAt).getTime() : 0) - (a.last ? new Date(a.last.createdAt).getTime() : 0));
@@ -83,7 +90,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
     const q = (query || "").trim().toLowerCase();
     const filtered = out.filter((t) => {
       if (filter === "unread" && !t.unread) return false;
-      if (filter === "needs_reply" && !t.needsReply) return false;
+      if (filter === "needs_attention" && !t.needsAttention) return false;
       if (!q) return true;
       const hay = `${t.ownerName} ${t.propertyAddress} ${t.title} ${t.last?.body || ""}`.toLowerCase();
       return hay.includes(q);
@@ -98,6 +105,9 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
   }, [threads, activeThreadId]);
 
   const active = threads.find((t) => t.threadId === activeThreadId) || null;
+
+  const unreadThreadsCount = React.useMemo(() => threads.filter((t) => t.unread).length, [threads]);
+  const needsAttentionCount = React.useMemo(() => threads.filter((t) => t.needsAttention).length, [threads]);
 
   // Mark thread as read when opened (demo + DB when available)
   React.useEffect(() => {
@@ -129,18 +139,144 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
+      {newOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setNewOpen(false)} aria-label="Close" />
+          <Card className="relative w-full max-w-xl p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Start a new thread</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">Create a message thread tied to an owner + property.</div>
+              </div>
+              <button
+                type="button"
+                className="rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                onClick={() => setNewOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              <div className="grid gap-1">
+                <div className="text-xs font-semibold text-[var(--hw-muted)]">Owner name</div>
+                <input
+                  value={newOwnerName}
+                  onChange={(e) => setNewOwnerName(e.target.value)}
+                  placeholder="e.g. Desyi Mejia"
+                  className="h-10 w-full rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-3 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                />
+              </div>
+
+              <div className="grid gap-1">
+                <div className="text-xs font-semibold text-[var(--hw-muted)]">Property address</div>
+                <input
+                  value={newPropertyAddress}
+                  onChange={(e) => setNewPropertyAddress(e.target.value)}
+                  placeholder="e.g. 2310 Cuyler Avenue, Berwyn, IL 60402"
+                  className="h-10 w-full rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-3 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                />
+              </div>
+
+              <div className="grid gap-1">
+                <div className="text-xs font-semibold text-[var(--hw-muted)]">Thread title (optional)</div>
+                <input
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="e.g. Seller credits packet"
+                  className="h-10 w-full rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-3 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                />
+              </div>
+
+              <div className="grid gap-1">
+                <div className="text-xs font-semibold text-[var(--hw-muted)]">First message</div>
+                <textarea
+                  value={newFirstMessage}
+                  onChange={(e) => setNewFirstMessage(e.target.value)}
+                  placeholder="Write the first message…"
+                  className="min-h-[96px] w-full resize-none rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-3 py-3 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                />
+              </div>
+
+              <div className="mt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  className="rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                  onClick={() => {
+                    setNewOwnerName("");
+                    setNewPropertyAddress("");
+                    setNewTitle("");
+                    setNewFirstMessage("");
+                  }}
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  className="rounded-full bg-[var(--hw-red)] px-5 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-95 disabled:opacity-50"
+                  disabled={!newOwnerName.trim() || !newPropertyAddress.trim() || !newFirstMessage.trim()}
+                  onClick={() => {
+                    const threadId = `thread_${Math.random().toString(36).slice(2, 10)}`;
+                    fetch("/api/messages", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        action: "send",
+                        partnerId,
+                        threadId,
+                        fromRole: "PARTNER",
+                        fromName: profile.fullName || "",
+                        text: newFirstMessage.trim(),
+                        threadTitle: newTitle.trim() || undefined,
+                        propertyAddress: newPropertyAddress.trim(),
+                        ownerName: newOwnerName.trim(),
+                      }),
+                    })
+                      .then(() => {
+                        setNewOpen(false);
+                        setNewOwnerName("");
+                        setNewPropertyAddress("");
+                        setNewTitle("");
+                        setNewFirstMessage("");
+                        reload();
+                        setActiveThreadId(threadId);
+                      })
+                      .catch(() => {});
+                  }}
+                >
+                  Create thread
+                </button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      ) : null}
+
       {/* Inbox */}
       <Card className="overflow-hidden">
         <div className="border-b border-[var(--hw-line)] px-4 py-3">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">Inbox</div>
-            <button
-              type="button"
-              className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
-              onClick={reload}
-            >
-              Refresh
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Inbox</div>
+              {unreadThreadsCount ? <Chip className="border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.06)] text-[var(--hw-red)]">{unreadThreadsCount} unread</Chip> : null}
+              {needsAttentionCount ? <Chip>{needsAttentionCount} needs attention</Chip> : null}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                onClick={() => setNewOpen(true)}
+              >
+                New thread
+              </button>
+              <button
+                type="button"
+                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                onClick={reload}
+              >
+                Refresh
+              </button>
+            </div>
           </div>
 
           <div className="mt-3 flex flex-col gap-2">
@@ -174,13 +310,13 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               </button>
               <button
                 type="button"
-                onClick={() => setFilter("needs_reply")}
+                onClick={() => setFilter("needs_attention")}
                 className={
                   "rounded-full border px-3 py-1.5 text-xs font-semibold " +
-                  (filter === "needs_reply" ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]" : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)]")
+                  (filter === "needs_attention" ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]" : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)]")
                 }
               >
-                Needs reply
+                Needs attention
               </button>
             </div>
           </div>
