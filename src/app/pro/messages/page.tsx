@@ -1,6 +1,7 @@
 import { Card, EmptyState, Pill } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
+import { ClientErrorBoundary } from "@/components/ClientErrorBoundary";
 import { ProMessagesClient } from "@/components/pro/ProMessagesClient";
 
 export default function Page() {
@@ -27,14 +28,18 @@ export default function Page() {
         </div>
 
         <div className="mt-5">
-          <ProMessagesClient
-            empty={
-              <EmptyState
-                title="No messages yet"
-                text="Messages will appear once a homeowner starts a thread from a shared project."
-              />
-            }
-          />
+          {/* Guard against any client-only runtime issues so the whole app doesn't white-screen. */}
+          {/**/}
+          <ClientErrorBoundary title="Messages crashed" hint="We hit a client-side error while rendering Messages. Refresh and try again.">
+            <ProMessagesClient
+              empty={
+                <EmptyState
+                  title="No messages yet"
+                  text="Messages will appear once a homeowner starts a thread from a shared project."
+                />
+              }
+            />
+          </ClientErrorBoundary>
         </div>
       </Card>
     </PortalShell>
