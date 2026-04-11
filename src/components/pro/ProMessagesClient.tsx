@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { Card, Chip, Divider } from "@/components/ui";
+import { Button, Card, Chip, Divider } from "@/components/ui";
 import { useStoredProfile } from "@/components/user-avatar";
 import { isDemoMode } from "@/lib/demo";
 import { cn } from "@/lib/utils";
@@ -291,9 +291,10 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               </div>
 
               <div className="mt-2 flex items-center justify-end gap-2">
-                <button
+                <Button
                   type="button"
-                  className="rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => {
                     setNewOwnerName("");
                     setNewPropertyAddress("");
@@ -303,10 +304,11 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                   }}
                 >
                   Clear
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  className="rounded-full bg-[var(--hw-red)] px-5 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-95 disabled:opacity-50"
+                  variant="primary"
+                  size="sm"
                   disabled={!newOwnerName.trim() || !newPropertyAddress.trim() || !newFirstMessage.trim()}
                   onClick={() => {
                     const threadId = `thread_${Math.random().toString(36).slice(2, 10)}`;
@@ -340,7 +342,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                   }}
                 >
                   Create thread
-                </button>
+                </Button>
               </div>
             </div>
           </Card>
@@ -357,27 +359,15 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               {needsAttentionCount ? <Chip>{needsAttentionCount} needs attention</Chip> : null}
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
-                onClick={() => setNewOpen(true)}
-              >
+              <Button type="button" variant="primary" size="sm" onClick={() => setNewOpen(true)}>
                 New thread
-              </button>
-              <button
-                type="button"
-                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
-                onClick={loadDemo}
-              >
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={loadDemo}>
                 Load demo
-              </button>
-              <button
-                type="button"
-                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
-                onClick={reload}
-              >
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={reload}>
                 Refresh
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -389,13 +379,13 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               className="h-9 w-full rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)] px-3 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
             />
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex w-full items-center gap-1 rounded-full border border-[var(--hw-line)] bg-white p-1">
               <button
                 type="button"
                 onClick={() => setFilter("all")}
                 className={
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold " +
-                  (filter === "all" ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]" : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)]")
+                  "h-8 flex-1 rounded-full px-3 text-xs font-semibold transition " +
+                  (filter === "all" ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]" : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
                 }
               >
                 All
@@ -404,8 +394,8 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                 type="button"
                 onClick={() => setFilter("unread")}
                 className={
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold " +
-                  (filter === "unread" ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]" : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)]")
+                  "h-8 flex-1 rounded-full px-3 text-xs font-semibold transition " +
+                  (filter === "unread" ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]" : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
                 }
               >
                 Unread
@@ -414,8 +404,8 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                 type="button"
                 onClick={() => setFilter("needs_attention")}
                 className={
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold " +
-                  (filter === "needs_attention" ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]" : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)]")
+                  "h-8 flex-1 rounded-full px-3 text-xs font-semibold transition " +
+                  (filter === "needs_attention" ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]" : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
                 }
               >
                 Needs attention
@@ -429,20 +419,12 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
             <div className="rounded-[14px] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-sm text-[var(--hw-muted)]">
               No threads yet. Create one, or load demo.
               <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  className="rounded-full bg-[var(--hw-red)] px-5 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-95"
-                  onClick={() => setNewOpen(true)}
-                >
+                <Button type="button" variant="primary" size="sm" onClick={() => setNewOpen(true)}>
                   New thread
-                </button>
-                <button
-                  type="button"
-                  className="rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
-                  onClick={loadDemo}
-                >
+                </Button>
+                <Button type="button" variant="secondary" size="sm" onClick={loadDemo}>
                   Load demo
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -522,20 +504,20 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               </div>
             </div>
             <div className="shrink-0 flex items-center gap-2">
-              <button
+              <Button
                 type="button"
-                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                variant="secondary"
+                size="sm"
                 onClick={() => {
-                  setComposer(
-                    "Can you upload 2–3 photos of the area + 1 wide shot so we can tighten the price range?"
-                  );
+                  setComposer("Can you upload 2–3 photos of the area + 1 wide shot so we can tighten the price range?");
                 }}
               >
                 Request photos
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   setComposer(
                     "Quick update: we’re lining up the next step now. What deadline are you working against (inspection response / attorney review / closing)?"
@@ -543,10 +525,11 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                 }}
               >
                 Nudge for deadline
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   setComposer(
                     "I can package this into a clean seller-credits summary (Safety + Repairs + assumptions). Want that as a PDF?"
@@ -554,7 +537,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                 }}
               >
                 Offer packet
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -676,7 +659,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                 placeholder="Write a message…"
                 className="min-h-[44px] flex-1 resize-none rounded-[18px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 py-3 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
               />
-              <label className="inline-flex h-[44px] cursor-pointer items-center rounded-full border border-[var(--hw-line)] bg-white px-4 text-sm font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]">
+              <label className="inline-flex h-[44px] cursor-pointer select-none items-center justify-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-5 text-sm font-semibold text-[var(--hw-ink)] shadow-sm transition hover:bg-[var(--hw-soft)] hover:border-[color-mix(in_srgb,var(--hw-line)_80%,transparent)] active:scale-[.97]">
                 Attach
                 <input
                   type="file"
@@ -690,12 +673,9 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                   }}
                 />
               </label>
-              <button
-                type="submit"
-                className="h-[44px] rounded-full bg-[var(--hw-red)] px-5 text-sm font-semibold text-white shadow-sm hover:opacity-95"
-              >
+              <Button type="submit" variant="primary" size="md">
                 Send
-              </button>
+              </Button>
             </div>
           </form>
           <div className="mt-2 text-[11px] font-semibold text-[var(--hw-muted)]">
