@@ -384,7 +384,7 @@ export function PortalShell(props: {
         >
           <div
             className={
-              "flex h-full w-full flex-col overflow-hidden rounded-[20px] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(17,24,39,.10)]"
+              "flex h-full w-full min-h-0 flex-col overflow-hidden rounded-[20px] border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(17,24,39,.10)]"
             }
           >
             {/* Header / logo (hidden when collapsed, per Inked-style) */}
@@ -416,7 +416,7 @@ export function PortalShell(props: {
             )}
 
             {/* Nav */}
-            <div className={"flex-1 pb-3 " + (sidebarCollapsed ? "px-0 pt-2" : "px-2")}>
+            <div className={"flex-1 min-h-0 overflow-y-auto pb-3 " + (sidebarCollapsed ? "px-0 pt-2" : "px-2")}>
               <nav className="grid gap-1">
                 {props.nav.map((n) => {
                   const active = typeof window !== "undefined" && window.location.pathname === n.href;
