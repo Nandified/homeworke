@@ -54,6 +54,47 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
   const [newTitle, setNewTitle] = React.useState("");
   const [newFirstMessage, setNewFirstMessage] = React.useState("");
 
+  const DEMO_LOCAL_KEY = React.useMemo(() => (partnerId ? `hw.messages.local.${partnerId}` : ""), [partnerId]);
+
+  const readLocalMessages = React.useCallback((): ApiMessage[] => {
+    if (!partnerId) return [];
+    try {
+      const raw = window.localStorage.getItem(DEMO_LOCAL_KEY) || "[]";
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? (arr as ApiMessage[]) : [];
+    } catch {
+      return [];
+    }
+  }, [DEMO_LOCAL_KEY, partnerId]);
+
+  const writeLocalMessages = React.useCallback(
+    (next: ApiMessage[]) => {
+      if (!partnerId) return;
+      try {
+        window.localStorage.setItem(DEMO_LOCAL_KEY, JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+    },
+    [DEMO_LOCAL_KEY, partnerId]
+  );
+
+  const syncUnreadBadge = React.useCallback(
+    (next: ApiMessage[]) => {
+      if (!partnerId) return;
+      try {
+        const unreadThreads = new Set<string>();
+        for (const m of next as ApiMessage[]) {
+          if (!m.readAt) unreadThreads.add(m.threadId);
+        }
+        window.localStorage.setItem(`hw.messages.unreadThreads.${partnerId}`, String(unreadThreads.size));
+      } catch {
+        // ignore
+      }
+    },
+    [partnerId]
+  );
+
   const reload = React.useCallback(() => {
     if (!partnerId) return;
     const url = new URL("/api/messages", window.location.origin);
@@ -64,18 +105,24 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
     fetch(url)
       .then((r) => r.json())
       .then((j) => {
-        const next = j.messages || [];
-        setMessages(next);
-        try {
-          const unreadThreads = new Set<string>();
-          for (const m of next as ApiMessage[]) {
-            if (!m.readAt) unreadThreads.add(m.threadId);
-          }
-          window.localStorage.setItem(`hw.messages.unreadThreads.${partnerId}`, String(unreadThreads.size));
-        } catch {}
+        const next = (j.messages || []) as ApiMessage[];
+
+        // When DB is disabled, the server uses an in-memory mock store which can reset between requests
+        // on Vercel/serverless. To prevent “everything disappeared”, we mirror the most recent message
+        // list into localStorage and fall back to it if the API returns empty.
+        const local = readLocalMessages();
+        const chosen = next.length ? next : local;
+
+        setMessages(chosen);
+        if (next.length) writeLocalMessages(next);
+        syncUnreadBadge(chosen);
       })
-      .catch(() => setMessages([]));
-  }, [partnerId]);
+      .catch(() => {
+        const local = readLocalMessages();
+        setMessages(local);
+        syncUnreadBadge(local);
+      });
+  }, [partnerId, readLocalMessages, syncUnreadBadge, writeLocalMessages]);
 
   React.useEffect(() => {
     reload();
@@ -131,9 +178,23 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
   const unreadThreadsCount = React.useMemo(() => allThreads.filter((t) => t.unread).length, [allThreads]);
   const needsAttentionCount = React.useMemo(() => allThreads.filter((t) => t.needsAttention).length, [allThreads]);
 
-  // Mark thread as read when opened (demo + DB when available)
+  // Mark thread as read when opened (DB when available; also mirror locally so UI doesn't “jump”)
   React.useEffect(() => {
     if (!partnerId || !activeThreadId) return;
+
+    // Local mirror
+    setMessages((prev) => {
+      if (!prev) return prev;
+      const now = new Date().toISOString();
+      const next = prev.map((m) => (m.threadId === activeThreadId && !m.readAt ? { ...m, readAt: now } : m));
+      try {
+        writeLocalMessages(next);
+        syncUnreadBadge(next);
+      } catch {}
+      return next;
+    });
+
+    // Server attempt (ignored if DB/mock isn't persistent)
     fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -141,7 +202,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
     })
       .then(() => reload())
       .catch(() => {});
-  }, [partnerId, activeThreadId, reload]);
+  }, [partnerId, activeThreadId, reload, syncUnreadBadge, writeLocalMessages]);
 
   const loadDemo = React.useCallback(() => {
     if (!partnerId) return;
@@ -331,14 +392,42 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                       }),
                     })
                       .then(() => {
+                        const now = new Date().toISOString();
+                        // Optimistic local insert so threads never “disappear” even if mock API resets.
+                        setMessages((prev) => {
+                          const base = prev || [];
+                          const next = [
+                            {
+                              id: `msg_local_${Math.random().toString(36).slice(2, 10)}`,
+                              createdAt: now,
+                              threadId,
+                              threadTitle: newTitle.trim() || undefined,
+                              propertyAddress: newPropertyAddress.trim(),
+                              ownerName: newOwnerName.trim(),
+                              propertyId: newPropertyId.trim() || null,
+                              workOrderId: null,
+                              reportId: null,
+                              fromRole: "PARTNER",
+                              fromName: profile.fullName || null,
+                              body: newFirstMessage.trim(),
+                              readAt: now,
+                              attachments: [],
+                            } as ApiMessage,
+                            ...base,
+                          ];
+                          writeLocalMessages(next);
+                          syncUnreadBadge(next);
+                          return next;
+                        });
+
                         setNewOpen(false);
                         setNewOwnerName("");
                         setNewPropertyAddress("");
                         setNewTitle("");
                         setNewFirstMessage("");
                         setNewPropertyId("");
-                        reload();
                         setActiveThreadId(threadId);
+                        reload();
                       })
                       .catch(() => {});
                   }}
@@ -598,6 +687,35 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               if ((!text && pendingFiles.length === 0) || !active) return;
 
               try {
+                const now = new Date().toISOString();
+
+                // Optimistic local insert first (prevents “vanish” if mock store resets between requests)
+                setMessages((prev) => {
+                  const base = prev || [];
+                  const next = [
+                    {
+                      id: `msg_local_${Math.random().toString(36).slice(2, 10)}`,
+                      createdAt: now,
+                      threadId: active.threadId,
+                      threadTitle: active.title,
+                      propertyAddress: active.propertyAddress,
+                      ownerName: active.ownerName,
+                      propertyId: active.propertyId || null,
+                      workOrderId: active.workOrderId || null,
+                      reportId: active.reportId || null,
+                      fromRole: "PARTNER",
+                      fromName: profile.fullName || null,
+                      body: text,
+                      readAt: now,
+                      attachments: [],
+                    } as ApiMessage,
+                    ...base,
+                  ];
+                  writeLocalMessages(next);
+                  syncUnreadBadge(next);
+                  return next;
+                });
+
                 const r = await fetch("/api/messages", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
