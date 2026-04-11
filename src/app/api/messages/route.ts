@@ -32,13 +32,43 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as {
+      // legacy lead payload
       partnerId?: string;
       name?: string;
       email?: string;
       message?: string;
+
+      // thread messaging payload (Phase 2 demo)
+      threadId?: string;
+      fromRole?: "HO" | "PARTNER" | "SP" | "HG" | "PM" | "SYSTEM";
+      text?: string;
+      threadTitle?: string;
+      propertyAddress?: string;
+      ownerName?: string;
     };
 
     const partnerId = body.partnerId?.trim();
+
+    // If threadId+text are provided, treat as a thread message send.
+    if (partnerId && body.threadId && (body.text || body.message)) {
+      // DB mode: messages aren't modeled yet. We'll accept and no-op (prevents UI breakage).
+      if (dbEnabled()) return json({ ok: true });
+
+      createMessage({
+        partnerId,
+        threadId: String(body.threadId),
+        fromRole: body.fromRole || "PARTNER",
+        body: String(body.text || body.message || "").trim(),
+        readAt: null,
+        threadTitle: body.threadTitle,
+        propertyAddress: body.propertyAddress,
+        ownerName: body.ownerName,
+      });
+
+      return json({ ok: true });
+    }
+
+    // Legacy: lead capture
     const name = body.name?.trim();
     const email = body.email?.trim().toLowerCase();
     const message = body.message?.trim();
@@ -48,10 +78,7 @@ export async function POST(req: Request) {
     if (!email || !email.includes("@")) return json({ ok: false, error: "invalid_email" }, { status: 400 });
     if (!message) return json({ ok: false, error: "missing_message" }, { status: 400 });
 
-    // DB mode: messages aren't modeled yet. We'll accept and no-op (prevents UI breakage).
-    if (dbEnabled()) {
-      return json({ ok: true });
-    }
+    if (dbEnabled()) return json({ ok: true });
 
     createMessage({
       partnerId,

@@ -39,6 +39,10 @@ export type Message = {
   token?: string;
   partnerId?: string;
   threadId: string;
+  /** Optional thread metadata (demo + Phase 2). */
+  threadTitle?: string;
+  propertyAddress?: string;
+  ownerName?: string;
   fromRole: "HO" | "PARTNER" | "SP" | "HG" | "PM" | "SYSTEM";
   body: string;
   readAt?: string | null;
@@ -153,24 +157,67 @@ export function seedDemoStoreIfEmpty() {
     wo.createdAt = new Date(now - idx * 1000 * 60 * 60 * 8).toISOString();
   });
 
-  // Messages
-  const msgBodies = [
-    "Can you confirm access for the inspection visit window?",
-    "Estimate is ready—want me to package it for the seller credits request?",
-    "Need 2 photos of the affected area to finalize pricing.",
-    "Scheduling update: provider can come Thursday 9–11am.",
-    "Work completed—please confirm and leave a quick review.",
+  // Messages (demo inbox + threads)
+  const threads: Array<{ id: string; title: string; ownerName: string; propertyAddress: string }> = [
+    {
+      id: "thread_credits",
+      title: "Seller credits packet",
+      ownerName: "Desyi Mejia",
+      propertyAddress: "2310 Cuyler Avenue, Berwyn, IL 60402",
+    },
+    {
+      id: "thread_schedule_plumber",
+      title: "Plumbing visit scheduling",
+      ownerName: "Estrella Puente",
+      propertyAddress: "3836 Home Avenue, Berwyn, IL 60402",
+    },
+    {
+      id: "thread_followup_photos",
+      title: "Need photos to finalize",
+      ownerName: "Saul Margarito",
+      propertyAddress: "6635 South Karlov Avenue, Chicago, IL 60629",
+    },
   ];
-  msgBodies.forEach((body, i) => {
-    createMessage({
+
+  const now2 = Date.now();
+
+  const push = (
+    t: (typeof threads)[number],
+    idx: number,
+    fromRole: Message["fromRole"],
+    body: string,
+    unread = false
+  ) => {
+    const m = createMessage({
       token,
       partnerId,
-      fromRole: i % 2 === 0 ? "HG" : "HO",
+      threadId: t.id,
+      threadTitle: t.title,
+      ownerName: t.ownerName,
+      propertyAddress: t.propertyAddress,
+      fromRole,
       body,
-      readAt: i < 2 ? null : new Date().toISOString(),
-      threadId: `thread_${i % 2}`,
+      readAt: unread ? null : new Date().toISOString(),
     });
-  });
+    m.createdAt = new Date(now2 - idx * 1000 * 60 * 22).toISOString();
+  };
+
+  // Thread: credits packet
+  push(threads[0], 1, "HO", "Hey Fernando — can you send me a clean summary for seller credits?", true);
+  push(threads[0], 2, "HG", "We can package a negotiation-friendly repair list + ranges. Any deadline?", true);
+  push(threads[0], 3, "HO", "Offer review is tomorrow morning. Ideally tonight.");
+  push(threads[0], 4, "HG", "Got it. I’ll prioritize the Safety + Repair items and include assumptions.");
+
+  // Thread: scheduling plumber
+  push(threads[1], 5, "HG", "Plumber available Thu 9–11am or Fri 1–3pm. Which works?", true);
+  push(threads[1], 6, "HO", "Friday afternoon works best.");
+  push(threads[1], 7, "HG", "Confirmed Fri 1–3pm. We’ll text when en route.");
+
+  // Thread: photos follow-up
+  push(threads[2], 8, "HG", "Quick ask — can you snap 2 photos of the affected wall so pricing is tighter?", true);
+  push(threads[2], 9, "HO", "Yep, I can take them after work.");
+  push(threads[2], 10, "HG", "Perfect. Upload here anytime — we’ll update the estimate within the hour.");
+
 }
 
 
