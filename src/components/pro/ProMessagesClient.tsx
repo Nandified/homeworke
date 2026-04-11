@@ -135,7 +135,39 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
     );
   }
 
-  if (!messages.length) return <>{props.empty}</>;
+  if (!messages.length) {
+    return (
+      <div className="grid gap-3">
+        {props.empty}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="rounded-full bg-[var(--hw-red)] px-5 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-95"
+            onClick={() => setNewOpen(true)}
+          >
+            New thread
+          </button>
+          <button
+            type="button"
+            className="rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+            onClick={() => {
+              // Load seeded demo conversations without requiring a URL param.
+              const url = new URL("/api/messages", window.location.origin);
+              url.searchParams.set("partnerId", partnerId);
+              url.searchParams.set("limit", "250");
+              url.searchParams.set("demo", "1");
+              fetch(url)
+                .then((r) => r.json())
+                .then((j) => setMessages(j.messages || []))
+                .catch(() => setMessages([]));
+            }}
+          >
+            Load demo conversations
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
