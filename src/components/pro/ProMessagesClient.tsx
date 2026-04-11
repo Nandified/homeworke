@@ -443,18 +443,19 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
       {/* Inbox */}
       <Card className="overflow-hidden">
         <div className="border-b border-[var(--hw-line)] px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Inbox</div>
               {unreadThreadsCount ? <Chip className="border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.06)] text-[var(--hw-red)]">{unreadThreadsCount} unread</Chip> : null}
               {needsAttentionCount ? <Chip>{needsAttentionCount} needs attention</Chip> : null}
             </div>
-            <div className="flex items-center gap-2">
+
+            <div className="flex items-center gap-1.5">
               <Button type="button" variant="primary" size="xs" onClick={() => setNewOpen(true)}>
-                New thread
+                + New
               </Button>
               <Button type="button" variant="secondary" size="xs" onClick={loadDemo}>
-                Load demo
+                Demo
               </Button>
               <Button type="button" variant="ghost" size="xs" onClick={reload}>
                 Refresh
@@ -561,11 +562,22 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
       {/* Thread */}
       <Card className="overflow-hidden">
         <div className="border-b border-[var(--hw-line)] px-5 py-4">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">{active?.ownerName || active?.title || "Thread"}</div>
-              {active?.propertyAddress ? <div className="mt-1 truncate text-sm text-[var(--hw-muted)]">{active.propertyAddress}</div> : null}
-              {active?.title && active.ownerName ? <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">{active.title}</div> : null}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">
+                  {active?.ownerName || active?.title || "Conversation"}
+                </div>
+                {active?.title && active.ownerName ? (
+                  <div className="text-xs font-semibold text-[var(--hw-muted)]">{active.title}</div>
+                ) : null}
+              </div>
+
+              {active?.propertyAddress ? (
+                <div className="mt-1 truncate text-sm text-[var(--hw-muted)]">{active.propertyAddress}</div>
+              ) : (
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">Select a thread to view messages.</div>
+              )}
 
               <div className="mt-2 flex flex-wrap gap-2">
                 {active?.propertyId ? (
@@ -573,7 +585,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                     href={`/pro/properties/${encodeURIComponent(active.propertyId)}`}
                     className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
                   >
-                    View property
+                    Property
                   </a>
                 ) : null}
                 {active?.workOrderId ? (
@@ -581,7 +593,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                     href={`/pro/jobs/${encodeURIComponent(active.workOrderId)}`}
                     className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
                   >
-                    View job
+                    Job
                   </a>
                 ) : null}
                 {active?.reportId ? (
@@ -589,12 +601,12 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                     href={`/pro/express-estimate/${encodeURIComponent(active.reportId)}`}
                     className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
                   >
-                    View report
+                    Report
                   </a>
                 ) : null}
               </div>
             </div>
-            <div className="shrink-0 flex items-center gap-2">
+            <div className="shrink-0 flex flex-wrap items-center gap-2">
               <Button
                 type="button"
                 variant="secondary"
@@ -603,7 +615,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                   setComposer("Can you upload 2–3 photos of the area + 1 wide shot so we can tighten the price range?");
                 }}
               >
-                Request photos
+                Photos
               </Button>
               <Button
                 type="button"
@@ -615,7 +627,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                   );
                 }}
               >
-                Nudge for deadline
+                Deadline
               </Button>
               <Button
                 type="button"
@@ -627,7 +639,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                   );
                 }}
               >
-                Offer packet
+                Packet
               </Button>
             </div>
           </div>

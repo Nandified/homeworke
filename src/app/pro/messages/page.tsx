@@ -20,7 +20,7 @@ export default function Page() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="text-sm font-semibold text-[var(--hw-ink)]">Messages</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">Latest threads shared with your office.</div>
+            <div className="mt-1 text-sm text-[var(--hw-muted)]">Conversations with homeowners across your active properties and jobs.</div>
           </div>
           <div className="flex items-center gap-2">
             <Pill>Inbox</Pill>
