@@ -36,7 +36,7 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export function Button({ className, variant = "primary", size = "md", ...props }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(229,57,53,.4)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[.97]";
+    "inline-flex items-center justify-center gap-2 rounded-[14px] text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(229,57,53,.4)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[.97]";
 
   const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {
     xs: "px-3 py-1.5 text-[11px]",

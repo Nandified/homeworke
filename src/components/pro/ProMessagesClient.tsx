@@ -468,9 +468,6 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               <Button type="button" variant="primary" size="xs" onClick={() => setNewOpen(true)}>
                 + New
               </Button>
-              <Button type="button" variant="secondary" size="xs" onClick={loadDemo}>
-                Demo
-              </Button>
               <Button type="button" variant="ghost" size="xs" onClick={reload}>
                 Refresh
               </Button>
@@ -485,12 +482,12 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               className="h-9 w-full rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)] px-3 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
             />
 
-            <div className="flex w-full items-center gap-1 rounded-full border border-[var(--hw-line)] bg-white p-1">
+            <div className="flex w-full items-center gap-1 rounded-[14px] border border-[var(--hw-line)] bg-white p-1">
               <button
                 type="button"
                 onClick={() => setFilter("all")}
                 className={
-                  "h-8 flex-1 rounded-full px-3 text-xs font-semibold transition " +
+                  "h-8 flex-1 rounded-[12px] px-3 text-xs font-semibold transition " +
                   (filter === "all" ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]" : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
                 }
               >
@@ -500,7 +497,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                 type="button"
                 onClick={() => setFilter("unread")}
                 className={
-                  "h-8 flex-1 rounded-full px-3 text-xs font-semibold transition " +
+                  "h-8 flex-1 rounded-[12px] px-3 text-xs font-semibold transition " +
                   (filter === "unread" ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]" : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
                 }
               >
@@ -510,7 +507,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                 type="button"
                 onClick={() => setFilter("needs_attention")}
                 className={
-                  "h-8 flex-1 rounded-full px-3 text-xs font-semibold transition " +
+                  "h-8 flex-1 rounded-[12px] px-3 text-xs font-semibold transition " +
                   (filter === "needs_attention" ? "bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]" : "text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
                 }
               >
@@ -527,9 +524,6 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button type="button" variant="primary" size="xs" onClick={() => setNewOpen(true)}>
                   New thread
-                </Button>
-                <Button type="button" variant="secondary" size="xs" onClick={loadDemo}>
-                  Load demo
                 </Button>
               </div>
             </div>
@@ -561,7 +555,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                         {t.propertyAddress ? (
                           <div className="mt-0.5 truncate text-xs font-medium text-[var(--hw-muted)]">{t.propertyAddress}</div>
                         ) : null}
-                        <div className="mt-1 truncate text-xs text-[var(--hw-muted)]">{t.last?.body || ""}</div>
+                        <div className="mt-1 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[var(--hw-muted)]">{t.last?.body || ""}</div>
                       </div>
                       <div className="shrink-0 text-[11px] font-semibold text-[var(--hw-muted)]">{t.last ? timeAgo(t.last.createdAt) : ""}</div>
                     </div>
@@ -825,7 +819,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
             </div>
           </form>
           <div className="mt-2 text-[11px] font-semibold text-[var(--hw-muted)]">
-            Attachments require Vercel Blob config (BLOB_READ_WRITE_TOKEN). In demo mode, use “Load demo.”
+            Attachments require Vercel Blob config (BLOB_READ_WRITE_TOKEN).
           </div>
         </div>
       </Card>
