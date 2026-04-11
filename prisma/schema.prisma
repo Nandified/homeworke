@@ -201,6 +201,7 @@ model Property {
 
   user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   workOrders WorkOrder[]
+  messageThreads MessageThread[]
 
   @@index([userId])
 }
@@ -209,32 +210,60 @@ model MessageThread {
   /** Stable id (e.g. thread_credits). */
   id              String   @id
   partnerCode     String
+
+  // Links to real objects (preferred over free-text fields when available)
+  propertyId      String?
+  workOrderId     String?
+  reportId        String?
+
   title           String?
   ownerName       String?
   propertyAddress String?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  property  Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  workOrder WorkOrder? @relation(fields: [workOrderId], references: [id], onDelete: SetNull)
 
   messages Message[]
 
   @@index([partnerCode, updatedAt])
+  @@index([propertyId])
+  @@index([workOrderId])
+  @@index([reportId])
 }
 
 model Message {
-  id        String      @id @default(cuid())
-  threadId  String
+  id          String      @id @default(cuid())
+  threadId    String
   partnerCode String
-  fromRole  MessageRole
-  fromName  String?
-  body      String
-  createdAt DateTime    @default(now())
-  readAt    DateTime?
+  fromRole    MessageRole
+  fromName    String?
+  body        String
+  createdAt   DateTime    @default(now())
+  readAt      DateTime?
 
-  thread MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  thread       MessageThread       @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  attachments  MessageAttachment[]
 
   @@index([partnerCode, createdAt])
   @@index([threadId, createdAt])
   @@index([readAt])
+}
+
+model MessageAttachment {
+  id        String   @id @default(cuid())
+  messageId String
+  url       String
+  mimeType  String?
+  fileName  String?
+  bytes     Int?
+  createdAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
 }
 
 model PartnerClient {
@@ -278,6 +307,7 @@ model WorkOrder {
   property         Property?        @relation(fields: [propertyId], references: [id], onDelete: SetNull)
 
   attributionEvents AttributionEvent[]
+  messageThreads MessageThread[]
 
   @@index([userId])
   @@index([originPartnerId])

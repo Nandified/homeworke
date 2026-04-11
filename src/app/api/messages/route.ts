@@ -23,14 +23,32 @@ export async function GET(req: Request) {
   if (dbEnabled() && !demo) {
     // DB mode
     const take = Number.isFinite(limit) ? Math.max(1, Math.min(500, limit)) : 20;
+    // Permissions: only allow messages for this partner's proCode.
+    // If a thread is linked to a WorkOrder, also require that the WorkOrder is shared with this partner.
+    const partnerProfile = await db().partnerProfile.findUnique({ where: { proCode: partnerId } });
+    const sharedWorkOrderIds = partnerProfile
+      ? (
+          await db().workOrder.findMany({
+            where: {
+              shareWithPartnerId: partnerProfile.id,
+            },
+            select: { id: true },
+            take: 500,
+          })
+        ).map((x) => x.id)
+      : [];
+
     const messages = await db().message.findMany({
       where: {
         partnerCode: partnerId,
         ...(token ? { token } : {}),
+        thread: {
+          OR: [{ workOrderId: null }, { workOrderId: { in: sharedWorkOrderIds } }],
+        },
       } as any,
       orderBy: { createdAt: "desc" },
       take,
-      include: { thread: true },
+      include: { thread: true, attachments: true },
     });
 
     return json({
@@ -42,10 +60,16 @@ export async function GET(req: Request) {
         threadTitle: (m.thread as any)?.title || null,
         propertyAddress: (m.thread as any)?.propertyAddress || null,
         ownerName: (m.thread as any)?.ownerName || null,
+        propertyId: (m.thread as any)?.propertyId || null,
+        workOrderId: (m.thread as any)?.workOrderId || null,
+        reportId: (m.thread as any)?.reportId || null,
         fromRole: m.fromRole,
         fromName: m.fromName || null,
         body: m.body,
         readAt: m.readAt ? m.readAt.toISOString() : null,
+        attachments: Array.isArray((m as any).attachments)
+          ? (m as any).attachments.map((a: any) => ({ id: a.id, url: a.url, mimeType: a.mimeType, fileName: a.fileName, bytes: a.bytes }))
+          : [],
       })),
     });
   }
@@ -73,6 +97,9 @@ export async function POST(req: Request) {
       threadTitle?: string;
       propertyAddress?: string;
       ownerName?: string;
+      propertyId?: string;
+      workOrderId?: string;
+      reportId?: string;
       token?: string;
     };
 
@@ -112,18 +139,24 @@ export async function POST(req: Request) {
           create: {
             id: threadId,
             partnerCode: partnerId,
+            propertyId: body.propertyId || null,
+            workOrderId: body.workOrderId || null,
+            reportId: body.reportId || null,
             title: body.threadTitle || null,
             ownerName: body.ownerName || null,
             propertyAddress: body.propertyAddress || null,
           },
           update: {
+            propertyId: body.propertyId || undefined,
+            workOrderId: body.workOrderId || undefined,
+            reportId: body.reportId || undefined,
             title: body.threadTitle || undefined,
             ownerName: body.ownerName || undefined,
             propertyAddress: body.propertyAddress || undefined,
           },
         });
 
-        await db().message.create({
+        const created = await db().message.create({
           data: {
             threadId,
             partnerCode: partnerId,
@@ -134,10 +167,10 @@ export async function POST(req: Request) {
           },
         });
 
-        return json({ ok: true });
+        return json({ ok: true, messageId: created.id });
       }
 
-      createMessage({
+      const created = createMessage({
         partnerId,
         token: body.token,
         threadId,
@@ -149,7 +182,7 @@ export async function POST(req: Request) {
         readAt: null,
       });
 
-      return json({ ok: true });
+      return json({ ok: true, messageId: created.id });
     }
 
     // Legacy: lead capture

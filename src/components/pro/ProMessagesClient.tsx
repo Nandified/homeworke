@@ -16,9 +16,14 @@ type ApiMessage = {
   threadTitle?: string;
   propertyAddress?: string;
   ownerName?: string;
+  propertyId?: string | null;
+  workOrderId?: string | null;
+  reportId?: string | null;
   fromRole: string;
+  fromName?: string | null;
   body: string;
   readAt?: string | null;
+  attachments?: Array<{ id?: string; url: string; mimeType?: string | null; fileName?: string | null; bytes?: number | null }>;
 };
 
 function timeAgo(iso: string) {
@@ -38,12 +43,14 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
   const [messages, setMessages] = React.useState<ApiMessage[] | null>(null);
   const [activeThreadId, setActiveThreadId] = React.useState<string>("");
   const [composer, setComposer] = React.useState<string>("");
+  const [pendingFiles, setPendingFiles] = React.useState<File[]>([]);
   const [query, setQuery] = React.useState<string>("");
   const [filter, setFilter] = React.useState<"all" | "unread" | "needs_attention">("all");
 
   const [newOpen, setNewOpen] = React.useState(false);
   const [newOwnerName, setNewOwnerName] = React.useState("");
   const [newPropertyAddress, setNewPropertyAddress] = React.useState("");
+  const [newPropertyId, setNewPropertyId] = React.useState<string>("");
   const [newTitle, setNewTitle] = React.useState("");
   const [newFirstMessage, setNewFirstMessage] = React.useState("");
 
@@ -92,7 +99,10 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
       const title = last?.threadTitle || ownerName || propertyAddress || `Thread ${threadId.replace("thread_", "#")}`;
       const unreadCount = sorted.reduce((acc, x) => acc + (!x.readAt ? 1 : 0), 0);
       const needsAttention = !!last && last.fromRole === "HO" && !last.readAt;
-      return { threadId, messages: sorted, last, unread, unreadCount, needsAttention, ownerName, propertyAddress, title };
+      const propertyId = last?.propertyId || sorted.find((x) => x.propertyId)?.propertyId || null;
+      const workOrderId = last?.workOrderId || sorted.find((x) => x.workOrderId)?.workOrderId || null;
+      const reportId = last?.reportId || sorted.find((x) => x.reportId)?.reportId || null;
+      return { threadId, messages: sorted, last, unread, unreadCount, needsAttention, ownerName, propertyAddress, propertyId, workOrderId, reportId, title };
     });
 
     out.sort((a, b) => (b.last ? new Date(b.last.createdAt).getTime() : 0) - (a.last ? new Date(a.last.createdAt).getTime() : 0));
@@ -160,23 +170,27 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
 
   // Pull local properties (created/used elsewhere in the portal) for the New Thread picker.
   const propertyOptions = React.useMemo(() => {
-    if (typeof window === "undefined") return [] as Array<{ ownerName?: string; address: string }>;
+    if (typeof window === "undefined") return [] as Array<{ id?: string; ownerName?: string; address: string }>;
     const keys = ["hw_props_client_v1", "hw_props_custom_v1"];
-    const out: Array<{ ownerName?: string; address: string }> = [];
+    const out: Array<{ id?: string; ownerName?: string; address: string }> = [];
     try {
       for (const k of keys) {
         const raw = window.localStorage.getItem(k) || "[]";
         const arr = (JSON.parse(raw) as any[]) || [];
         for (const p of arr) {
           if (!p || typeof p.address !== "string") continue;
-          out.push({ ownerName: typeof p.ownerName === "string" ? p.ownerName : undefined, address: p.address });
+          out.push({
+            id: typeof p.id === "string" ? p.id : undefined,
+            ownerName: typeof p.ownerName === "string" ? p.ownerName : undefined,
+            address: p.address,
+          });
         }
       }
     } catch {}
     // de-dupe
     const seen = new Set<string>();
     return out.filter((p) => {
-      const key = `${(p.ownerName || "").trim()}|${p.address.trim()}`;
+      const key = `${(p.id || "").trim()}|${(p.ownerName || "").trim()}|${p.address.trim()}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -216,6 +230,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                       if (!opt) return;
                       setNewOwnerName(opt.ownerName || "");
                       setNewPropertyAddress(opt.address || "");
+                      setNewPropertyId(opt.id || "");
                     }}
                   >
                     <option value="" disabled>
@@ -280,6 +295,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                   onClick={() => {
                     setNewOwnerName("");
                     setNewPropertyAddress("");
+                    setNewPropertyId("");
                     setNewTitle("");
                     setNewFirstMessage("");
                   }}
@@ -305,6 +321,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                         threadTitle: newTitle.trim() || undefined,
                         propertyAddress: newPropertyAddress.trim(),
                         ownerName: newOwnerName.trim(),
+                        propertyId: newPropertyId.trim() || undefined,
                       }),
                     })
                       .then(() => {
@@ -313,6 +330,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                         setNewPropertyAddress("");
                         setNewTitle("");
                         setNewFirstMessage("");
+                        setNewPropertyId("");
                         reload();
                         setActiveThreadId(threadId);
                       })
@@ -473,6 +491,33 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               <div className="text-sm font-semibold text-[var(--hw-ink)]">{active?.ownerName || active?.title || "Thread"}</div>
               {active?.propertyAddress ? <div className="mt-1 truncate text-sm text-[var(--hw-muted)]">{active.propertyAddress}</div> : null}
               {active?.title && active.ownerName ? <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">{active.title}</div> : null}
+
+              <div className="mt-2 flex flex-wrap gap-2">
+                {active?.propertyId ? (
+                  <a
+                    href={`/pro/properties/${encodeURIComponent(active.propertyId)}`}
+                    className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                  >
+                    View property
+                  </a>
+                ) : null}
+                {active?.workOrderId ? (
+                  <a
+                    href={`/pro/jobs/${encodeURIComponent(active.workOrderId)}`}
+                    className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                  >
+                    View job
+                  </a>
+                ) : null}
+                {active?.reportId ? (
+                  <a
+                    href={`/pro/express-estimate/${encodeURIComponent(active.reportId)}`}
+                    className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                  >
+                    View report
+                  </a>
+                ) : null}
+              </div>
             </div>
             <div className="shrink-0 flex items-center gap-2">
               <button
@@ -531,6 +576,24 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                       <div className="text-[11px] font-semibold text-[var(--hw-muted)]">{timeAgo(m.createdAt)}</div>
                     </div>
                     <div className="whitespace-pre-wrap">{m.body}</div>
+
+                    {Array.isArray((m as any).attachments) && (m as any).attachments.length ? (
+                      <div className="mt-3 grid gap-2">
+                        {(m as any).attachments.map((a: any) => (
+                          <a
+                            key={a.id || a.url}
+                            href={a.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="overflow-hidden rounded-[14px] border border-[var(--hw-line)] bg-white"
+                            title={a.fileName || "Attachment"}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={a.url} alt={a.fileName || "Attachment"} className="h-40 w-full object-cover" />
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               );
@@ -541,52 +604,100 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
         <Divider />
         <div className="p-4">
           <form
-            className="flex items-end gap-2"
-            onSubmit={(e) => {
+            className="grid gap-2"
+            onSubmit={async (e) => {
               e.preventDefault();
               const text = composer.trim();
-              if (!text || !active) return;
+              if ((!text && pendingFiles.length === 0) || !active) return;
 
-              // Demo-only send: hit the same endpoint to append to the mock store.
-              fetch("/api/messages", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  action: "send",
-                  partnerId,
-                  threadId: active.threadId,
-                  fromRole: "PARTNER",
-                  fromName: profile.fullName || "",
-                  text,
-                  threadTitle: active.title,
-                  propertyAddress: active.propertyAddress,
-                  ownerName: active.ownerName,
-                }),
-              })
-                .then(() => {
-                  setComposer("");
-                  reload();
-                })
-                .catch(() => {
-                  // ignore
+              try {
+                const r = await fetch("/api/messages", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    action: "send",
+                    partnerId,
+                    threadId: active.threadId,
+                    fromRole: "PARTNER",
+                    fromName: profile.fullName || "",
+                    text,
+                    threadTitle: active.title,
+                    propertyAddress: active.propertyAddress,
+                    ownerName: active.ownerName,
+                    propertyId: active.propertyId || undefined,
+                    workOrderId: active.workOrderId || undefined,
+                    reportId: active.reportId || undefined,
+                  }),
                 });
+                const j = await r.json();
+                const messageId = String(j.messageId || "");
+
+                if (messageId && pendingFiles.length) {
+                  for (const f of pendingFiles) {
+                    const fd = new FormData();
+                    fd.set("messageId", messageId);
+                    fd.set("file", f);
+                    await fetch("/api/messages/upload", { method: "POST", body: fd });
+                  }
+                }
+
+                setComposer("");
+                setPendingFiles([]);
+                reload();
+              } catch {
+                // ignore
+              }
             }}
           >
-            <textarea
-              value={composer}
-              onChange={(e) => setComposer(e.target.value)}
-              placeholder="Write a message…"
-              className="min-h-[44px] flex-1 resize-none rounded-[18px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 py-3 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
-            />
-            <button
-              type="submit"
-              className="h-[44px] rounded-full bg-[var(--hw-red)] px-5 text-sm font-semibold text-white shadow-sm hover:opacity-95"
-            >
-              Send
-            </button>
+            {pendingFiles.length ? (
+              <div className="flex flex-wrap gap-2">
+                {pendingFiles.map((f, idx) => (
+                  <div key={idx} className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)]">
+                    <span className="max-w-[220px] truncate">{f.name}</span>
+                    <button
+                      type="button"
+                      className="text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                      onClick={() => setPendingFiles((prev) => prev.filter((_, i) => i !== idx))}
+                      aria-label="Remove attachment"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            <div className="flex items-end gap-2">
+              <textarea
+                value={composer}
+                onChange={(e) => setComposer(e.target.value)}
+                placeholder="Write a message…"
+                className="min-h-[44px] flex-1 resize-none rounded-[18px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 py-3 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+              />
+              <label className="inline-flex h-[44px] cursor-pointer items-center rounded-full border border-[var(--hw-line)] bg-white px-4 text-sm font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]">
+                Attach
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length) setPendingFiles((prev) => [...prev, ...files].slice(0, 6));
+                    e.currentTarget.value = "";
+                  }}
+                />
+              </label>
+              <button
+                type="submit"
+                className="h-[44px] rounded-full bg-[var(--hw-red)] px-5 text-sm font-semibold text-white shadow-sm hover:opacity-95"
+              >
+                Send
+              </button>
+            </div>
           </form>
           <div className="mt-2 text-[11px] font-semibold text-[var(--hw-muted)]">
-            Demo UI: send appends to mock store when DB is disabled.
+            Attachments require Vercel Blob config (BLOB_READ_WRITE_TOKEN). In demo mode, use “Load demo.”
           </div>
         </div>
       </Card>
