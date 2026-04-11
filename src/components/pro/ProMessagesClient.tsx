@@ -555,7 +555,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                         {t.propertyAddress ? (
                           <div className="mt-0.5 truncate text-xs font-medium text-[var(--hw-muted)]">{t.propertyAddress}</div>
                         ) : null}
-                        <div className="mt-1 max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[var(--hw-muted)]">{t.last?.body || ""}</div>
+                        <div className="mt-1 text-xs text-[var(--hw-muted)] whitespace-normal break-words line-clamp-2">{t.last?.body || ""}</div>
                       </div>
                       <div className="shrink-0 text-[11px] font-semibold text-[var(--hw-muted)]">{t.last ? timeAgo(t.last.createdAt) : ""}</div>
                     </div>
