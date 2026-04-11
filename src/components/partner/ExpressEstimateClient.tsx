@@ -33,7 +33,29 @@ type StoredClientProperty = {
 };
 
 function normalizeAddress(s: string) {
+  // Lightweight normalization used for report ID stability. Do not change behavior lightly.
   return (s || "").replace(/\s+/g, " ").trim();
+}
+
+function addressKey(s: string) {
+  // More aggressive normalization for matching/search (case/punctuation/abbrev tolerant).
+  return (s || "")
+    .toLowerCase()
+    .replace(/[.,#]/g, " ")
+    .replace(/\bst\b/g, "street")
+    .replace(/\bave\b/g, "avenue")
+    .replace(/\bblvd\b/g, "boulevard")
+    .replace(/\brd\b/g, "road")
+    .replace(/\bdr\b/g, "drive")
+    .replace(/\bln\b/g, "lane")
+    .replace(/\bct\b/g, "court")
+    .replace(/\bpl\b/g, "place")
+    .replace(/\btrl\b/g, "trail")
+    .replace(/\bter\b/g, "terrace")
+    .replace(/\bpkwy\b/g, "parkway")
+    .replace(/\ssuite\s|\bste\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function readCustomProperties(): StoredProperty[] {
@@ -186,13 +208,18 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   });
 
   const filteredReports = useMemo(() => {
-    const q = normalizeAddress(reportQuery).toLowerCase();
+    const q = addressKey(reportQuery);
     if (!q) return reports;
     return reports.filter((r) => {
-      const derivedOwner =
-        r.ownerName ||
-        properties.find((p) => normalizeAddress(p.address).toLowerCase() === normalizeAddress(r.address).toLowerCase())?.ownerName ||
-        "";
+      const derivedOwner = (() => {
+        if (r.ownerName) return r.ownerName;
+        try {
+          const persisted = window.localStorage.getItem(`hw.expressEstimate.owner.${r.id}`) || "";
+          if (persisted.trim()) return persisted.trim();
+        } catch {}
+        const key = addressKey(r.address);
+        return properties.find((p) => addressKey(p.address) === key)?.ownerName || "";
+      })();
       const hay = `${derivedOwner} ${r.address} ${r.type} ${r.status}`.toLowerCase();
       return hay.includes(q);
     });
@@ -930,10 +957,15 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
             {filteredReports.slice(0, 10).map((r) => {
               const address = r.address;
-              const ownerName =
-                r.ownerName ||
-                properties.find((p) => normalizeAddress(p.address).toLowerCase() === normalizeAddress(r.address).toLowerCase())?.ownerName ||
-                "";
+              const ownerName = (() => {
+                if (r.ownerName) return r.ownerName;
+                try {
+                  const persisted = window.localStorage.getItem(`hw.expressEstimate.owner.${r.id}`) || "";
+                  if (persisted.trim()) return persisted.trim();
+                } catch {}
+                const key = addressKey(r.address);
+                return properties.find((p) => addressKey(p.address) === key)?.ownerName || "";
+              })();
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
               if (address) q.set("address", address);
