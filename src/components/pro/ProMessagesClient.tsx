@@ -135,39 +135,41 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
     );
   }
 
-  if (!messages.length) {
-    return (
-      <div className="grid gap-3">
-        {props.empty}
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="rounded-full bg-[var(--hw-red)] px-5 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-95"
-            onClick={() => setNewOpen(true)}
-          >
-            New thread
-          </button>
-          <button
-            type="button"
-            className="rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
-            onClick={() => {
-              // Load seeded demo conversations without requiring a URL param.
-              const url = new URL("/api/messages", window.location.origin);
-              url.searchParams.set("partnerId", partnerId);
-              url.searchParams.set("limit", "250");
-              url.searchParams.set("demo", "1");
-              fetch(url)
-                .then((r) => r.json())
-                .then((j) => setMessages(j.messages || []))
-                .catch(() => setMessages([]));
-            }}
-          >
-            Load demo conversations
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const loadDemo = React.useCallback(() => {
+    const url = new URL("/api/messages", window.location.origin);
+    url.searchParams.set("partnerId", partnerId);
+    url.searchParams.set("limit", "250");
+    url.searchParams.set("demo", "1");
+    fetch(url)
+      .then((r) => r.json())
+      .then((j) => setMessages(j.messages || []))
+      .catch(() => setMessages([]));
+  }, [partnerId]);
+
+  // Pull local properties (created/used elsewhere in the portal) for the New Thread picker.
+  const propertyOptions = React.useMemo(() => {
+    if (typeof window === "undefined") return [] as Array<{ ownerName?: string; address: string }>;
+    const keys = ["hw_props_client_v1", "hw_props_custom_v1"];
+    const out: Array<{ ownerName?: string; address: string }> = [];
+    try {
+      for (const k of keys) {
+        const raw = window.localStorage.getItem(k) || "[]";
+        const arr = (JSON.parse(raw) as any[]) || [];
+        for (const p of arr) {
+          if (!p || typeof p.address !== "string") continue;
+          out.push({ ownerName: typeof p.ownerName === "string" ? p.ownerName : undefined, address: p.address });
+        }
+      }
+    } catch {}
+    // de-dupe
+    const seen = new Set<string>();
+    return out.filter((p) => {
+      const key = `${(p.ownerName || "").trim()}|${p.address.trim()}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, []);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
@@ -190,6 +192,35 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
             </div>
 
             <div className="mt-5 grid gap-3">
+              {propertyOptions.length ? (
+                <div className="grid gap-1">
+                  <div className="text-xs font-semibold text-[var(--hw-muted)]">Choose from Properties</div>
+                  <select
+                    className="h-10 w-full rounded-[14px] border border-[var(--hw-line)] bg-white px-3 text-sm font-semibold text-[var(--hw-ink)] outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                    value={""}
+                    onChange={(e) => {
+                      const idx = Number(e.target.value);
+                      const opt = Number.isFinite(idx) ? propertyOptions[idx] : null;
+                      if (!opt) return;
+                      setNewOwnerName(opt.ownerName || "");
+                      setNewPropertyAddress(opt.address || "");
+                    }}
+                  >
+                    <option value="" disabled>
+                      Select a property…
+                    </option>
+                    {propertyOptions.map((p, idx) => (
+                      <option key={idx} value={String(idx)}>
+                        {(p.ownerName ? `${p.ownerName} — ` : "") + p.address}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="text-[11px] font-semibold text-[var(--hw-muted)]">
+                    Pulls from your saved Properties in this browser.
+                  </div>
+                </div>
+              ) : null}
+
               <div className="grid gap-1">
                 <div className="text-xs font-semibold text-[var(--hw-muted)]">Owner name</div>
                 <input
@@ -304,6 +335,13 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               <button
                 type="button"
                 className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                onClick={loadDemo}
+              >
+                Load demo
+              </button>
+              <button
+                type="button"
+                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
                 onClick={reload}
               >
                 Refresh
@@ -355,40 +393,63 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
         </div>
 
         <div className="max-h-[66vh] overflow-y-auto p-2">
-          <div className="grid gap-1">
-            {threads.map((t) => {
-              const selected = t.threadId === activeThreadId;
-              return (
+          {!threads.length ? (
+            <div className="rounded-[14px] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-sm text-[var(--hw-muted)]">
+              No threads yet. Create one, or load demo.
+              <div className="mt-3 flex flex-wrap gap-2">
                 <button
-                  key={t.threadId}
                   type="button"
-                  onClick={() => setActiveThreadId(t.threadId)}
-                  className={
-                    "w-full rounded-[14px] px-3 py-3 text-left transition " +
-                    (selected ? "bg-[rgba(229,57,53,.08)]" : "hover:bg-[var(--hw-soft)]")
-                  }
+                  className="rounded-full bg-[var(--hw-red)] px-5 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-95"
+                  onClick={() => setNewOpen(true)}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <div className={cn("truncate text-sm font-semibold", selected ? "text-[var(--hw-red)]" : "text-[var(--hw-ink)]")}>
-                          {t.ownerName || t.title}
-                        </div>
-                        {t.unread ? (
-                          <Chip className="border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.06)] text-[var(--hw-red)]">Unread</Chip>
-                        ) : null}
-                      </div>
-                      {t.propertyAddress ? (
-                        <div className="mt-0.5 truncate text-xs font-medium text-[var(--hw-muted)]">{t.propertyAddress}</div>
-                      ) : null}
-                      <div className="mt-1 truncate text-xs text-[var(--hw-muted)]">{t.last?.body || ""}</div>
-                    </div>
-                    <div className="shrink-0 text-[11px] font-semibold text-[var(--hw-muted)]">{t.last ? timeAgo(t.last.createdAt) : ""}</div>
-                  </div>
+                  New thread
                 </button>
-              );
-            })}
-          </div>
+                <button
+                  type="button"
+                  className="rounded-full border border-[var(--hw-line)] bg-white px-4 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                  onClick={loadDemo}
+                >
+                  Load demo
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-1">
+              {threads.map((t) => {
+                const selected = t.threadId === activeThreadId;
+                return (
+                  <button
+                    key={t.threadId}
+                    type="button"
+                    onClick={() => setActiveThreadId(t.threadId)}
+                    className={
+                      "w-full rounded-[14px] px-3 py-3 text-left transition " +
+                      (selected ? "bg-[rgba(229,57,53,.08)]" : "hover:bg-[var(--hw-soft)]")
+                    }
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <div className={cn("truncate text-sm font-semibold", selected ? "text-[var(--hw-red)]" : "text-[var(--hw-ink)]")}>
+                            {t.ownerName || t.title}
+                          </div>
+                          {t.unread ? (
+                            <Chip className="border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.06)] text-[var(--hw-red)]">{t.unreadCount}</Chip>
+                          ) : null}
+                          {t.needsAttention ? <Chip>Needs attention</Chip> : null}
+                        </div>
+                        {t.propertyAddress ? (
+                          <div className="mt-0.5 truncate text-xs font-medium text-[var(--hw-muted)]">{t.propertyAddress}</div>
+                        ) : null}
+                        <div className="mt-1 truncate text-xs text-[var(--hw-muted)]">{t.last?.body || ""}</div>
+                      </div>
+                      <div className="shrink-0 text-[11px] font-semibold text-[var(--hw-muted)]">{t.last ? timeAgo(t.last.createdAt) : ""}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </Card>
 
