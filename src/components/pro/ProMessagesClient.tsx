@@ -39,9 +39,19 @@ function timeAgo(iso: string) {
 
 export function ProMessagesClient(props: { empty: React.ReactNode }) {
   const { partnerId } = usePartnerContext();
+
+  const initialThreadIdFromUrl = React.useMemo(() => {
+    if (typeof window === "undefined") return "";
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return (params.get("threadId") || "").trim();
+    } catch {
+      return "";
+    }
+  }, []);
   const profile = useStoredProfile();
   const [messages, setMessages] = React.useState<ApiMessage[] | null>(null);
-  const [activeThreadId, setActiveThreadId] = React.useState<string>("");
+  const [activeThreadId, setActiveThreadId] = React.useState<string>(initialThreadIdFromUrl || "");
   const [composer, setComposer] = React.useState<string>("");
   const [pendingFiles, setPendingFiles] = React.useState<File[]>([]);
   const [query, setQuery] = React.useState<string>("");
@@ -169,7 +179,10 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
   }, [allThreads, query, filter]);
 
   React.useEffect(() => {
-    if (activeThreadId) return;
+    if (activeThreadId) {
+      // If a thread was deep-linked, keep it as long as it exists.
+      if (allThreads.some((t) => t.threadId === activeThreadId)) return;
+    }
     if (allThreads.length) setActiveThreadId(allThreads[0].threadId);
   }, [allThreads, activeThreadId]);
 

@@ -40,6 +40,8 @@ type Message = {
   body: string;
   fromRole: string;
   readAt?: string | null;
+  // Phase 1/2: thread metadata (present when DB/messages are enabled)
+  threadId?: string;
 };
 
 const STATUS_GROUPS = ["Pending", "Scheduled", "In progress", "Completed"] as const;
@@ -399,13 +401,14 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
   const previewRows = messages.length
     ? messages.slice(0, 1).map((m) => ({
         id: m.id,
+        threadId: m.threadId || "",
         from: m.fromRole,
         address: recentWorkOrders?.[0]?.address || "",
         body: m.body,
         createdAt: m.createdAt,
         unread: !m.readAt,
       }))
-    : demoPreviewMessages.slice(0, 1).map((m) => ({ ...m, unread: true }));
+    : demoPreviewMessages.slice(0, 1).map((m) => ({ ...m, threadId: "thread_credits", unread: true }));
 
   const MessagesCard = (
     <Card className="max-w-full overflow-hidden p-3">
@@ -421,27 +424,34 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             ) : null}
           </div>
         </div>
-        <Link href={`${basePath}/messages`} className="shrink-0">
+        <Link href={`${basePath}/messages${messages.length ? "" : "?demo=1"}`} className="shrink-0">
           <Button size="sm" className="px-3">View</Button>
         </Link>
       </div>
 
       <div className="mt-2 grid gap-2">
-        {previewRows.map((m) => (
-          <div
-            key={m.id}
-            className="max-w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2"
-          >
-            <div className="flex min-w-0 items-start gap-2">
-              {m.unread ? <span className="mt-[3px] h-2 w-2 shrink-0 rounded-full bg-[rgb(229,57,53)]" /> : null}
-              <div className="min-w-0">
-                <div className="text-xs font-semibold text-[var(--hw-ink)] truncate">{m.from}</div>
-                {m.address ? <div className="mt-0.5 text-[11px] text-[var(--hw-muted)] truncate">{m.address}</div> : null}
-                <div className="mt-1 text-xs text-[var(--hw-ink)] truncate">{m.body}</div>
+        {previewRows.map((m) => {
+          const href = m.threadId
+            ? `${basePath}/messages?threadId=${encodeURIComponent(m.threadId)}`
+            : `${basePath}/messages`;
+
+          return (
+            <Link
+              key={m.id}
+              href={href + (messages.length ? "" : "&demo=1")}
+              className="block max-w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2 transition hover:bg-[var(--hw-soft)]"
+            >
+              <div className="flex min-w-0 items-start gap-2">
+                {m.unread ? <span className="mt-[3px] h-2 w-2 shrink-0 rounded-full bg-[rgb(229,57,53)]" /> : null}
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold text-[var(--hw-ink)] truncate">{m.from}</div>
+                  {m.address ? <div className="mt-0.5 text-[11px] text-[var(--hw-muted)] truncate">{m.address}</div> : null}
+                  <div className="mt-1 text-xs text-[var(--hw-ink)] truncate">{m.body}</div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            </Link>
+          );
+        })}
       </div>
     </Card>
   );
