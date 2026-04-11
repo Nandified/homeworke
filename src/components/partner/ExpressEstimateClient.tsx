@@ -106,6 +106,7 @@ export type ExpressEstimateClientProps = {
 type Report = {
   id: string;
   address: string;
+  ownerName?: string;
   type: "Inspection" | "Appraisal";
   createdAt: string;
   status: "Draft" | "Ready";
@@ -188,7 +189,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     const q = normalizeAddress(reportQuery).toLowerCase();
     if (!q) return reports;
     return reports.filter((r) => {
-      const hay = `${r.address} ${r.type} ${r.status}`.toLowerCase();
+      const hay = `${r.ownerName || ""} ${r.address} ${r.type} ${r.status}`.toLowerCase();
       return hay.includes(q);
     });
   }, [reportQuery, reports]);
@@ -850,6 +851,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         const next: Report = {
                           id: reportId,
                           address: address || "(unknown address)",
+                          ownerName: ownerName || undefined,
                           type: "Inspection",
                           createdAt: new Date().toISOString(),
                           status: "Draft", // internal only (hidden from UI)
@@ -923,9 +925,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             ) : null}
 
             {filteredReports.slice(0, 10).map((r) => {
-              const selectedProp = properties.find((p) => p.id === selectedPropertyId) || null;
-              const address = selectedProp?.address || r.address;
-              const ownerName = selectedProp?.ownerName || "";
+              const address = r.address;
+              const ownerName = r.ownerName || "";
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
               if (address) q.set("address", address);
@@ -941,7 +942,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{r.address}</div>
+                      {r.ownerName ? (
+                        <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{r.ownerName}</div>
+                      ) : null}
+                      <div className={(r.ownerName ? "mt-0.5 " : "") + "truncate text-sm font-semibold text-[var(--hw-ink)]"}>{r.address}</div>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--hw-muted)]">
                         <span>{r.type}</span>
                         <span>•</span>
