@@ -161,6 +161,23 @@ export function ExpressEstimateReportClient(props: {
         window.localStorage.setItem(`hw.expressEstimate.address.${props.reportId}`, props.address.trim());
         setPersistedAddress(props.address.trim());
       }
+
+      // Backfill the Reports list card view (stored on the client) so owner shows up in the reports list.
+      // This helps for older reports created before we started persisting ownerName.
+      if ((props.ownerName && props.ownerName.trim()) || (props.address && props.address.trim())) {
+        const key = "hw_express_estimate_reports_v1";
+        const raw = window.localStorage.getItem(key) || "[]";
+        const arr = (JSON.parse(raw) as any[]) || [];
+        const out = arr.map((r) => {
+          if (!r || r.id !== props.reportId) return r;
+          return {
+            ...r,
+            ownerName: (props.ownerName && props.ownerName.trim()) || r.ownerName,
+            address: (props.address && props.address.trim()) || r.address,
+          };
+        });
+        window.localStorage.setItem(key, JSON.stringify(out));
+      }
     } catch {
       // ignore
     }
