@@ -214,7 +214,12 @@ export function PortalShell(props: {
 
       // Partner context is identified by proCode (e.g. frj) in the shared portal link.
       const ctxRaw = window.localStorage.getItem("hw3_partner_context_v1") || "";
-      const ctx = ctxRaw ? (JSON.parse(ctxRaw) as any) : null;
+      let ctx: any = null;
+      try {
+        ctx = ctxRaw ? (JSON.parse(ctxRaw) as any) : null;
+      } catch {
+        ctx = null;
+      }
       const partnerId = typeof ctx?.partnerId === "string" ? ctx.partnerId : "";
       const unread = partnerId ? Number(window.localStorage.getItem(`hw.messages.unreadThreads.${partnerId}`) || "0") : 0;
 
