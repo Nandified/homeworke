@@ -141,23 +141,8 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
       .catch(() => {});
   }, [partnerId, activeThreadId, reload]);
 
-  if (!partnerId) {
-    return (
-      <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-sm text-[var(--hw-muted)]">
-        Missing partner context. Open your partner link first (e.g. <span className="font-semibold">/p/frj</span>) or use <span className="font-semibold">?demo=1</span>.
-      </div>
-    );
-  }
-
-  if (messages === null) {
-    return (
-      <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-sm text-[var(--hw-muted)]">
-        Loading messages…
-      </div>
-    );
-  }
-
   const loadDemo = React.useCallback(() => {
+    if (!partnerId) return;
     const url = new URL("/api/messages", window.location.origin);
     url.searchParams.set("partnerId", partnerId);
     url.searchParams.set("limit", "250");
@@ -169,6 +154,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
   }, [partnerId]);
 
   // Pull local properties (created/used elsewhere in the portal) for the New Thread picker.
+  // NOTE: Must be declared before any early returns to keep hook order stable.
   const propertyOptions = React.useMemo(() => {
     if (typeof window === "undefined") return [] as Array<{ id?: string; ownerName?: string; address: string }>;
     const keys = ["hw_props_client_v1", "hw_props_custom_v1"];
@@ -196,6 +182,22 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
       return true;
     });
   }, []);
+
+  if (!partnerId) {
+    return (
+      <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-sm text-[var(--hw-muted)]">
+        Missing partner context. Open your partner link first (e.g. <span className="font-semibold">/p/frj</span>) or use <span className="font-semibold">?demo=1</span>.
+      </div>
+    );
+  }
+
+  if (messages === null) {
+    return (
+      <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-sm text-[var(--hw-muted)]">
+        Loading messages…
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
