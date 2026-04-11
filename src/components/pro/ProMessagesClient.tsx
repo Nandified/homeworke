@@ -81,7 +81,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
     reload();
   }, [reload]);
 
-  const threads = React.useMemo(() => {
+  const allThreads = React.useMemo(() => {
     const list = messages || [];
     const by = new Map<string, ApiMessage[]>();
     for (const m of list) {
@@ -106,28 +106,30 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
     });
 
     out.sort((a, b) => (b.last ? new Date(b.last.createdAt).getTime() : 0) - (a.last ? new Date(a.last.createdAt).getTime() : 0));
+    return out;
+  }, [messages]);
 
+  const threads = React.useMemo(() => {
+    const out = allThreads;
     const q = (query || "").trim().toLowerCase();
-    const filtered = out.filter((t) => {
+    return out.filter((t) => {
       if (filter === "unread" && !t.unread) return false;
       if (filter === "needs_attention" && !t.needsAttention) return false;
       if (!q) return true;
       const hay = `${t.ownerName} ${t.propertyAddress} ${t.title} ${t.last?.body || ""}`.toLowerCase();
       return hay.includes(q);
     });
-
-    return filtered;
-  }, [messages, query, filter]);
+  }, [allThreads, query, filter]);
 
   React.useEffect(() => {
     if (activeThreadId) return;
-    if (threads.length) setActiveThreadId(threads[0].threadId);
-  }, [threads, activeThreadId]);
+    if (allThreads.length) setActiveThreadId(allThreads[0].threadId);
+  }, [allThreads, activeThreadId]);
 
-  const active = threads.find((t) => t.threadId === activeThreadId) || null;
+  const active = allThreads.find((t) => t.threadId === activeThreadId) || null;
 
-  const unreadThreadsCount = React.useMemo(() => threads.filter((t) => t.unread).length, [threads]);
-  const needsAttentionCount = React.useMemo(() => threads.filter((t) => t.needsAttention).length, [threads]);
+  const unreadThreadsCount = React.useMemo(() => allThreads.filter((t) => t.unread).length, [allThreads]);
+  const needsAttentionCount = React.useMemo(() => allThreads.filter((t) => t.needsAttention).length, [allThreads]);
 
   // Mark thread as read when opened (demo + DB when available)
   React.useEffect(() => {
@@ -294,7 +296,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                 <Button
                   type="button"
                   variant="secondary"
-                  size="sm"
+                  size="xs"
                   onClick={() => {
                     setNewOwnerName("");
                     setNewPropertyAddress("");
@@ -308,7 +310,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                 <Button
                   type="button"
                   variant="primary"
-                  size="sm"
+                  size="xs"
                   disabled={!newOwnerName.trim() || !newPropertyAddress.trim() || !newFirstMessage.trim()}
                   onClick={() => {
                     const threadId = `thread_${Math.random().toString(36).slice(2, 10)}`;
@@ -359,13 +361,13 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               {needsAttentionCount ? <Chip>{needsAttentionCount} needs attention</Chip> : null}
             </div>
             <div className="flex items-center gap-2">
-              <Button type="button" variant="primary" size="sm" onClick={() => setNewOpen(true)}>
+              <Button type="button" variant="primary" size="xs" onClick={() => setNewOpen(true)}>
                 New thread
               </Button>
-              <Button type="button" variant="secondary" size="sm" onClick={loadDemo}>
+              <Button type="button" variant="secondary" size="xs" onClick={loadDemo}>
                 Load demo
               </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={reload}>
+              <Button type="button" variant="ghost" size="xs" onClick={reload}>
                 Refresh
               </Button>
             </div>
@@ -419,10 +421,10 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
             <div className="rounded-[14px] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-sm text-[var(--hw-muted)]">
               No threads yet. Create one, or load demo.
               <div className="mt-3 flex flex-wrap gap-2">
-                <Button type="button" variant="primary" size="sm" onClick={() => setNewOpen(true)}>
+                <Button type="button" variant="primary" size="xs" onClick={() => setNewOpen(true)}>
                   New thread
                 </Button>
-                <Button type="button" variant="secondary" size="sm" onClick={loadDemo}>
+                <Button type="button" variant="secondary" size="xs" onClick={loadDemo}>
                   Load demo
                 </Button>
               </div>
@@ -507,7 +509,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               <Button
                 type="button"
                 variant="secondary"
-                size="sm"
+                size="xs"
                 onClick={() => {
                   setComposer("Can you upload 2–3 photos of the area + 1 wide shot so we can tighten the price range?");
                 }}
@@ -517,7 +519,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               <Button
                 type="button"
                 variant="secondary"
-                size="sm"
+                size="xs"
                 onClick={() => {
                   setComposer(
                     "Quick update: we’re lining up the next step now. What deadline are you working against (inspection response / attorney review / closing)?"
@@ -529,7 +531,7 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               <Button
                 type="button"
                 variant="secondary"
-                size="sm"
+                size="xs"
                 onClick={() => {
                   setComposer(
                     "I can package this into a clean seller-credits summary (Safety + Repairs + assumptions). Want that as a PDF?"

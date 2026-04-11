@@ -31,7 +31,7 @@ export function Pill(props: React.HTMLAttributes<HTMLSpanElement>) {
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "ghost" | "destructive";
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
 };
 
 export function Button({ className, variant = "primary", size = "md", ...props }: ButtonProps) {
@@ -39,6 +39,7 @@ export function Button({ className, variant = "primary", size = "md", ...props }
     "inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(229,57,53,.4)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[.97]";
 
   const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {
+    xs: "px-3 py-1.5 text-[11px]",
     sm: "px-4 py-2 text-xs",
     md: "px-5 py-2.5 text-sm",
   };
