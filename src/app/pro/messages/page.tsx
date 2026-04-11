@@ -4,12 +4,15 @@ import { PRO_NAV } from "@/components/pro/nav";
 import { ProMessagesClient } from "@/components/pro/ProMessagesClient";
 
 export default function Page() {
+  // Messages badge is hydrated client-side by PortalShell reading localStorage.
+  const nav = PRO_NAV;
+
   return (
     <PortalShell
       role="PRO"
       title="Messages"
       portalTitle="Real Estate Pro"
-      nav={PRO_NAV as unknown as { href: string; label: string }[]}
+      nav={nav as unknown as { href: string; label: string; badge?: string | number }[]}
       description="Quickly scan recent threads, nudge homeowners, and keep deals moving."
     >
       <Card className="p-6">

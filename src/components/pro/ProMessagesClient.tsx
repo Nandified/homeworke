@@ -56,7 +56,17 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
 
     fetch(url)
       .then((r) => r.json())
-      .then((j) => setMessages(j.messages || []))
+      .then((j) => {
+        const next = j.messages || [];
+        setMessages(next);
+        try {
+          const unreadThreads = new Set<string>();
+          for (const m of next as ApiMessage[]) {
+            if (!m.readAt) unreadThreads.add(m.threadId);
+          }
+          window.localStorage.setItem(`hw.messages.unreadThreads.${partnerId}`, String(unreadThreads.size));
+        } catch {}
+      })
       .catch(() => setMessages([]));
   }, [partnerId]);
 
@@ -116,8 +126,10 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "markRead", partnerId, threadId: activeThreadId }),
-    }).catch(() => {});
-  }, [partnerId, activeThreadId]);
+    })
+      .then(() => reload())
+      .catch(() => {});
+  }, [partnerId, activeThreadId, reload]);
 
   if (!partnerId) {
     return (

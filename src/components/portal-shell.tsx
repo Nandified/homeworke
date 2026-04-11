@@ -7,7 +7,7 @@ import { Button, Container, Pill } from "@/components/ui";
 import { UserAvatar, useStoredProfile } from "@/components/user-avatar";
 import { isDemoMode, withDemo } from "@/lib/demo";
 
-export type PortalNavItem = { href: string; label: string };
+export type PortalNavItem = { href: string; label: string; badge?: string | number };
 
 function NavIcon(props: { name: string; className?: string }) {
   const cn = props.className || "";
@@ -206,6 +206,28 @@ export function PortalShell(props: {
     return () => window.removeEventListener("mousedown", onDown);
   }, [profileMenuOpen]);
 
+  // Client-only badges (e.g. unread message counts)
+  const navWithBadges = React.useMemo(() => {
+    try {
+      if (typeof window === "undefined") return props.nav;
+      if (baseRole !== "pro" && baseRole !== "partner") return props.nav;
+
+      // Partner context is identified by proCode (e.g. frj) in the shared portal link.
+      const ctxRaw = window.localStorage.getItem("hw3_partner_context_v1") || "";
+      const ctx = ctxRaw ? (JSON.parse(ctxRaw) as any) : null;
+      const partnerId = typeof ctx?.partnerId === "string" ? ctx.partnerId : "";
+      const unread = partnerId ? Number(window.localStorage.getItem(`hw.messages.unreadThreads.${partnerId}`) || "0") : 0;
+
+      return props.nav.map((n) => {
+        if (!n || typeof n !== "object") return n;
+        if (String((n as any).label || "").toLowerCase() !== "messages") return n;
+        return { ...n, badge: unread || undefined };
+      });
+    } catch {
+      return props.nav;
+    }
+  }, [props.nav, baseRole]);
+
   return (
     <div className="min-h-screen bg-[#fbfbfc]">
       {/* ── Header ── */}
@@ -349,7 +371,7 @@ export function PortalShell(props: {
 
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Navigation</div>
               <nav className="mt-3 grid gap-1">
-                {props.nav.map((n) => {
+                {navWithBadges.map((n) => {
                   const active = typeof window !== "undefined" && window.location.pathname === n.href;
                   return (
                     <Link
@@ -418,7 +440,7 @@ export function PortalShell(props: {
             {/* Nav */}
             <div className={"flex-1 min-h-0 overflow-y-auto pb-3 " + (sidebarCollapsed ? "px-0 pt-2" : "px-2")}>
               <nav className="grid gap-1">
-                {props.nav.map((n) => {
+                {navWithBadges.map((n) => {
                   const active = typeof window !== "undefined" && window.location.pathname === n.href;
                   const iconName = iconForHref(n.href);
                   return (
@@ -447,7 +469,16 @@ export function PortalShell(props: {
                       >
                         <NavIcon name={iconName} className={active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]"} />
                       </span>
-                      {sidebarCollapsed ? null : <span className="truncate">{n.label}</span>}
+                      {sidebarCollapsed ? null : (
+                        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+                          <span className="truncate">{n.label}</span>
+                          {typeof n.badge !== "undefined" && n.badge !== "" && n.badge !== 0 ? (
+                            <span className="shrink-0 rounded-full border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] px-2 py-0.5 text-[10px] font-semibold text-[var(--hw-red)]">
+                              {n.badge}
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
                     </Link>
                   );
                 })}
