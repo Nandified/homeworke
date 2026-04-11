@@ -354,7 +354,7 @@ export function PortalShell(props: {
       {mobileNavOpen ? (
         <div className="fixed inset-0 z-50 md:hidden">
           <button type="button" className="absolute inset-0 bg-black/40" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)} />
-          <div className="absolute left-0 top-0 h-full w-[86%] max-w-sm bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
+          <div className="absolute left-0 top-0 flex h-full w-[86%] max-w-sm flex-col bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)]">
             <div className="flex items-center justify-between border-b border-[var(--hw-line)] px-5 py-4">
               <div>
                 <div className="text-base font-extrabold tracking-tight text-[var(--hw-red)]">Homeworke</div>
@@ -366,7 +366,7 @@ export function PortalShell(props: {
               </Button>
             </div>
 
-            <div className="p-5">
+            <div className="flex-1 overflow-y-auto p-5">
               {sidebarPrimaryAction ? <div className="mb-4">{sidebarPrimaryAction}</div> : null}
 
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Navigation</div>
