@@ -574,24 +574,29 @@ function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1)
           const inferred = inferScope(it.label, it.note);
           const scopeMultiplier = Math.max(1, Number.isFinite(inferred.scopeMultiplier) ? inferred.scopeMultiplier : 1);
 
+          // Explainability + improved pricing: attempt catalog match from the label.
+          // If we have a catalog-derived rangeHint, trust it over the model's range (more consistent + more realistic).
+          const catalog = matchCatalogForFinding({ issue: it.label, system: "", component: "" }, marketFactor);
+          const pricingSource: "catalog" | "guardrails" = catalog?.rangeHint ? "catalog" : "guardrails";
+
           // Only apply scope multiplier when we are synthesizing the guardrail range.
           const baseRangeRaw = hadRange ? it.range! : fillMissingRange(it.label, location);
           const baseRange = !hadRange ? scaleRange(baseRangeRaw, scopeMultiplier) : baseRangeRaw;
-          const range = scaleRange(baseRange, totalFactor);
 
-          // Explainability: attempt catalog match from the label so we can report why ranges look uniform.
-          const catalog = matchCatalogForFinding({ issue: it.label, system: "", component: "" }, marketFactor);
-          const pricingSource: "catalog" | "guardrails" = catalog ? "catalog" : "guardrails";
+          const range = catalog?.rangeHint ? catalog.rangeHint : scaleRange(baseRange, totalFactor);
 
-          // If model provided a price, assume it's base contractor cost and scale it.
-          // If we had to synthesize the range, synthesize a *non-identical* price too.
-          const basePrice =
-            typeof it.price === "number" && Number.isFinite(it.price)
-              ? it.price
-              : hadRange
-                ? (midpointFromRange(baseRange) ?? undefined)
-                : (priceFromRangeByLabel(baseRange, it.label) ?? undefined);
-          const price = typeof basePrice === "number" ? Math.round(basePrice * totalFactor) : undefined;
+          // Price: prefer catalog midpoint when available; otherwise scale provided/synthesized price.
+          const price = (() => {
+            if (catalog?.rangeHint) return midpointFromRange(catalog.rangeHint) ?? undefined;
+
+            const basePrice =
+              typeof it.price === "number" && Number.isFinite(it.price)
+                ? it.price
+                : hadRange
+                  ? (midpointFromRange(baseRange) ?? undefined)
+                  : (priceFromRangeByLabel(baseRange, it.label) ?? undefined);
+            return typeof basePrice === "number" ? Math.round(basePrice * totalFactor) : undefined;
+          })();
 
           // Booking eligibility: if scope is needed but confidence is low, force quote-only.
           const scopeNeeded = needsScopeForBooking(tradeId);
