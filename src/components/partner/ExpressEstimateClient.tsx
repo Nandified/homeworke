@@ -189,10 +189,14 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     const q = normalizeAddress(reportQuery).toLowerCase();
     if (!q) return reports;
     return reports.filter((r) => {
-      const hay = `${r.ownerName || ""} ${r.address} ${r.type} ${r.status}`.toLowerCase();
+      const derivedOwner =
+        r.ownerName ||
+        properties.find((p) => normalizeAddress(p.address).toLowerCase() === normalizeAddress(r.address).toLowerCase())?.ownerName ||
+        "";
+      const hay = `${derivedOwner} ${r.address} ${r.type} ${r.status}`.toLowerCase();
       return hay.includes(q);
     });
-  }, [reportQuery, reports]);
+  }, [reportQuery, reports, properties]);
 
   const notesCompleted = useMemo(() => {
     // Treat any whitespace (including non-breaking spaces) as empty.
@@ -926,7 +930,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
             {filteredReports.slice(0, 10).map((r) => {
               const address = r.address;
-              const ownerName = r.ownerName || "";
+              const ownerName =
+                r.ownerName ||
+                properties.find((p) => normalizeAddress(p.address).toLowerCase() === normalizeAddress(r.address).toLowerCase())?.ownerName ||
+                "";
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
               if (address) q.set("address", address);
