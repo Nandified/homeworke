@@ -38,7 +38,8 @@ function timeAgo(iso: string) {
 }
 
 export function ProMessagesClient(props: { empty: React.ReactNode }) {
-  const { partnerId } = usePartnerContext();
+  const { partnerId: rawPartnerId } = usePartnerContext();
+  const partnerId = React.useMemo(() => (rawPartnerId ? rawPartnerId.replace(/^(pro_|partner_)/, "") : null), [rawPartnerId]);
 
   const initialThreadIdFromUrl = React.useMemo(() => {
     if (typeof window === "undefined") return "";

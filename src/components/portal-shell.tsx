@@ -492,12 +492,7 @@ export function PortalShell(props: {
 
             {/* Bottom: collapse (simple, Inked-style) + demo */}
             <div className="p-3">
-              {isDemoMode() && !sidebarCollapsed ? (
-                <div className="mb-3 rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-3">
-                  <div className="text-xs font-semibold text-[var(--hw-ink)]">Demo mode</div>
-                  <div className="mt-1 text-xs text-[var(--hw-muted)]">Sample data is enabled for this portal.</div>
-                </div>
-              ) : null}
+              {/* Demo mode notice removed (noise in production + demo) */}
 
               <button
                 type="button"

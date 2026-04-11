@@ -14,7 +14,8 @@ function json(data: unknown, init?: { status?: number }) {
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const token = url.searchParams.get("token") || undefined;
-  const partnerId = url.searchParams.get("partnerId") || undefined;
+  const rawPartnerId = url.searchParams.get("partnerId") || undefined;
+  const partnerId = rawPartnerId ? rawPartnerId.replace(/^(pro_|partner_)/, "") : undefined;
   const limit = Number(url.searchParams.get("limit") || "20");
 
   const demo = url.searchParams.get("demo") === "1";
@@ -104,7 +105,7 @@ export async function POST(req: Request) {
     };
 
     const action = body.action || (body.threadId ? "send" : undefined);
-    const partnerId = body.partnerId?.trim();
+    const partnerId = body.partnerId?.trim().replace(/^(pro_|partner_)/, "");
 
     if (!partnerId) return json({ ok: false, error: "missing_partner" }, { status: 400 });
 
