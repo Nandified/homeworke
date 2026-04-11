@@ -297,3 +297,12 @@ export function listMessages(input: { token?: string; partnerId?: string; limit?
     .filter((m) => (input.partnerId ? m.partnerId === input.partnerId : true))
     .slice(0, limit);
 }
+
+export function markReadThread(input: { partnerId?: string; threadId: string }) {
+  const now = new Date().toISOString();
+  for (const m of store().messages) {
+    if (m.threadId !== input.threadId) continue;
+    if (input.partnerId && m.partnerId !== input.partnerId) continue;
+    if (!m.readAt) m.readAt = now;
+  }
+}

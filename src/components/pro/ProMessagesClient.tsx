@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { Card, Chip, Divider } from "@/components/ui";
+import { useStoredProfile } from "@/components/user-avatar";
 import { isDemoMode } from "@/lib/demo";
 import { cn } from "@/lib/utils";
 
@@ -33,9 +34,12 @@ function timeAgo(iso: string) {
 
 export function ProMessagesClient(props: { empty: React.ReactNode }) {
   const { partnerId } = usePartnerContext();
+  const profile = useStoredProfile();
   const [messages, setMessages] = React.useState<ApiMessage[] | null>(null);
   const [activeThreadId, setActiveThreadId] = React.useState<string>("");
   const [composer, setComposer] = React.useState<string>("");
+  const [query, setQuery] = React.useState<string>("");
+  const [filter, setFilter] = React.useState<"all" | "unread" | "needs_reply">("all");
 
   const reload = React.useCallback(() => {
     if (!partnerId) return;
@@ -70,12 +74,23 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
       const ownerName = last?.ownerName || sorted.find((x) => x.ownerName)?.ownerName || "";
       const propertyAddress = last?.propertyAddress || sorted.find((x) => x.propertyAddress)?.propertyAddress || "";
       const title = last?.threadTitle || ownerName || propertyAddress || `Thread ${threadId.replace("thread_", "#")}`;
-      return { threadId, messages: sorted, last, unread, ownerName, propertyAddress, title };
+      const needsReply = !!last && last.fromRole === "HO";
+      return { threadId, messages: sorted, last, unread, needsReply, ownerName, propertyAddress, title };
     });
 
     out.sort((a, b) => (b.last ? new Date(b.last.createdAt).getTime() : 0) - (a.last ? new Date(a.last.createdAt).getTime() : 0));
-    return out;
-  }, [messages]);
+
+    const q = (query || "").trim().toLowerCase();
+    const filtered = out.filter((t) => {
+      if (filter === "unread" && !t.unread) return false;
+      if (filter === "needs_reply" && !t.needsReply) return false;
+      if (!q) return true;
+      const hay = `${t.ownerName} ${t.propertyAddress} ${t.title} ${t.last?.body || ""}`.toLowerCase();
+      return hay.includes(q);
+    });
+
+    return filtered;
+  }, [messages, query, filter]);
 
   React.useEffect(() => {
     if (activeThreadId) return;
@@ -83,6 +98,16 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
   }, [threads, activeThreadId]);
 
   const active = threads.find((t) => t.threadId === activeThreadId) || null;
+
+  // Mark thread as read when opened (demo + DB when available)
+  React.useEffect(() => {
+    if (!partnerId || !activeThreadId) return;
+    fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "markRead", partnerId, threadId: activeThreadId }),
+    }).catch(() => {});
+  }, [partnerId, activeThreadId]);
 
   if (!partnerId) {
     return (
@@ -106,15 +131,59 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
     <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
       {/* Inbox */}
       <Card className="overflow-hidden">
-        <div className="flex items-center justify-between gap-3 border-b border-[var(--hw-line)] px-4 py-3">
-          <div className="text-sm font-semibold text-[var(--hw-ink)]">Inbox</div>
-          <button
-            type="button"
-            className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
-            onClick={reload}
-          >
-            Refresh
-          </button>
+        <div className="border-b border-[var(--hw-line)] px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Inbox</div>
+            <button
+              type="button"
+              className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+              onClick={reload}
+            >
+              Refresh
+            </button>
+          </div>
+
+          <div className="mt-3 flex flex-col gap-2">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search threads…"
+              className="h-9 w-full rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)] px-3 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+            />
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setFilter("all")}
+                className={
+                  "rounded-full border px-3 py-1.5 text-xs font-semibold " +
+                  (filter === "all" ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]" : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)]")
+                }
+              >
+                All
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilter("unread")}
+                className={
+                  "rounded-full border px-3 py-1.5 text-xs font-semibold " +
+                  (filter === "unread" ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]" : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)]")
+                }
+              >
+                Unread
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilter("needs_reply")}
+                className={
+                  "rounded-full border px-3 py-1.5 text-xs font-semibold " +
+                  (filter === "needs_reply" ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]" : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)]")
+                }
+              >
+                Needs reply
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="max-h-[66vh] overflow-y-auto p-2">
@@ -165,11 +234,38 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
               {active?.title && active.ownerName ? <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">{active.title}</div> : null}
             </div>
             <div className="shrink-0 flex items-center gap-2">
-              <button className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]">
+              <button
+                type="button"
+                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                onClick={() => {
+                  setComposer(
+                    "Can you upload 2–3 photos of the area + 1 wide shot so we can tighten the price range?"
+                  );
+                }}
+              >
                 Request photos
               </button>
-              <button className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]">
-                Create task
+              <button
+                type="button"
+                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                onClick={() => {
+                  setComposer(
+                    "Quick update: we’re lining up the next step now. What deadline are you working against (inspection response / attorney review / closing)?"
+                  );
+                }}
+              >
+                Nudge for deadline
+              </button>
+              <button
+                type="button"
+                className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]"
+                onClick={() => {
+                  setComposer(
+                    "I can package this into a clean seller-credits summary (Safety + Repairs + assumptions). Want that as a PDF?"
+                  );
+                }}
+              >
+                Offer packet
               </button>
             </div>
           </div>
@@ -215,9 +311,11 @@ export function ProMessagesClient(props: { empty: React.ReactNode }) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                  action: "send",
                   partnerId,
                   threadId: active.threadId,
                   fromRole: "PARTNER",
+                  fromName: profile.fullName || "",
                   text,
                   threadTitle: active.title,
                   propertyAddress: active.propertyAddress,
