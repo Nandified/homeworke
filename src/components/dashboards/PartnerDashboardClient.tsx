@@ -15,7 +15,7 @@ import { PortalShell } from "@/components/portal-shell";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { ListRow } from "@/components/dashboard/ListRow";
 import { loadPartner, PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
-import { ensureDemoPartnerContext, isDemoMode } from "@/lib/demo";
+import { ensureDemoPartnerContext, isDemoMode, withDemo } from "@/lib/demo";
 import { PRO_DEMO_WORK_ORDERS } from "@/lib/demo-data";
 import { stageFile } from "@/lib/staged-files";
 
@@ -431,14 +431,16 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
       <div className="mt-2 grid gap-2">
         {previewRows.map((m) => {
-          const href = m.threadId
+          const baseHref = m.threadId
             ? `${basePath}/messages?threadId=${encodeURIComponent(m.threadId)}`
             : `${basePath}/messages`;
+
+          const href = messages.length ? baseHref : withDemo(baseHref);
 
           return (
             <Link
               key={m.id}
-              href={href + (messages.length ? "" : "&demo=1")}
+              href={href}
               className="block max-w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2 transition hover:bg-[var(--hw-soft)]"
             >
               <div className="flex min-w-0 items-start gap-2">
