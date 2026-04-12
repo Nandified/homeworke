@@ -786,7 +786,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                       footnote={wo.clientName ? `Client: ${wo.clientName}` : undefined}
                       badge={<Chip className={STATUS_CLASS[status]}>{status}</Chip>}
                       meta={
-                        <div className="flex flex-col items-end gap-2">
+                        <div className="flex flex-col items-center gap-2 sm:items-end">
                           <ProgressRail status={status} />
                           {wo.updatedAt ? (
                             <span className="text-xs text-[var(--hw-muted)]">

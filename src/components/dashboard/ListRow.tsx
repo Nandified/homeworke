@@ -28,14 +28,20 @@ export function ListRow({ title, subtitle, meta, badge, footnote, href, classNam
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{title}</div>
-            {badge ? badge : null}
+          <div className="grid grid-cols-[1fr_auto] items-start gap-2">
+            <div className="min-w-0 text-sm font-semibold text-[var(--hw-ink)] line-clamp-2 sm:line-clamp-1">
+              {title}
+            </div>
+            {badge ? <div className="shrink-0 justify-self-end">{badge}</div> : null}
           </div>
           {subtitle ? <div className="mt-0.5 text-sm text-[var(--hw-muted)]">{subtitle}</div> : null}
           {footnote ? <div className="mt-1 text-xs text-[var(--hw-muted)]">{footnote}</div> : null}
         </div>
-        {meta ? <div className="shrink-0 text-xs text-[var(--hw-muted)]">{meta}</div> : null}
+        {meta ? (
+          <div className="mt-1 w-full shrink-0 text-xs text-[var(--hw-muted)] sm:mt-0 sm:w-auto">
+            {meta}
+          </div>
+        ) : null}
       </div>
     </div>
   );
