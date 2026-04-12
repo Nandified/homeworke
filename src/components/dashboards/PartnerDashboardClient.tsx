@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, Image as ImageIcon, Share2, UserPlus, Zap } from "lucide-react";
+import { Calendar, CheckCircle2, ChevronDown, ChevronUp, Clock3, Image as ImageIcon, Share2, UserPlus, Wrench, Zap } from "lucide-react";
 
 import QRCode from "qrcode";
 
@@ -74,28 +74,50 @@ function statusIndex(status: StatusGroup) {
 
 function ProgressRail({ status }: { status: StatusGroup }) {
   const idx = statusIndex(status);
+
+  const iconFor = (s: StatusGroup) => {
+    if (s === "Pending") return Clock3;
+    if (s === "Scheduled") return Calendar;
+    if (s === "In progress") return Wrench;
+    return CheckCircle2;
+  };
+
   return (
-    <div className="flex items-center gap-1.5" aria-label={`Progress: ${status}`}>
+    <div className="flex items-center gap-1.5" aria-label={`Progress: ${status}`}
+      role="group"
+    >
       {STATUS_GROUPS.map((s, i) => {
         const done = i < idx;
         const current = i === idx;
-        const upcoming = i > idx;
 
-        const dotClass = current
-          ? "h-3.5 w-3.5 bg-[var(--hw-ink)] border-[var(--hw-ink)] ring-4 ring-[rgba(17,24,39,.10)]"
+        const Icon = iconFor(s);
+
+        const nodeClass = current
+          ? "border-[var(--hw-ink)] bg-[var(--hw-ink)] text-white ring-4 ring-[rgba(17,24,39,.10)]"
           : done
-            ? "h-3 w-3 bg-[var(--hw-ink)] border-[var(--hw-ink)]"
-            : "h-3 w-3 bg-white border-[var(--hw-line)]";
+            ? "border-[var(--hw-ink)] bg-[var(--hw-ink)] text-white"
+            : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)]";
 
         const lineClass = done
           ? "bg-[linear-gradient(90deg,rgba(17,24,39,.95),rgba(17,24,39,.55))]"
-          : upcoming
-            ? "bg-[var(--hw-line)]"
-            : "bg-[var(--hw-line)]";
+          : "bg-[var(--hw-line)]";
 
         return (
-          <div key={s} className="flex items-center" title={s}>
-            <div className={`rounded-full border shadow-[0_1px_0_rgba(17,24,39,.08)] ${dotClass}`} />
+          <div key={s} className="flex items-center">
+            <div
+              className={
+                "group relative grid h-7 w-7 place-items-center rounded-full border shadow-[0_1px_0_rgba(17,24,39,.08)] transition " +
+                nodeClass
+              }
+              aria-label={s}
+            >
+              <Icon className={"h-3.5 w-3.5 " + (current || done ? "text-white" : "text-[var(--hw-muted)]")} />
+              {/* Lightweight tooltip */}
+              <div className="pointer-events-none absolute -mt-14 hidden rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-ink)] shadow-sm group-hover:block">
+                {s}
+              </div>
+            </div>
+
             {i < STATUS_GROUPS.length - 1 ? <div className={`mx-1 h-[3px] w-7 rounded-full ${lineClass}`} /> : null}
           </div>
         );
