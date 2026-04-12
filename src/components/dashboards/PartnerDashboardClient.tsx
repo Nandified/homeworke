@@ -113,7 +113,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
             >
               <Icon className={"h-3.5 w-3.5 " + (current || done ? "text-white" : "text-[var(--hw-muted)]")} />
               {/* Lightweight tooltip */}
-              <div className="pointer-events-none absolute -mt-14 hidden rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-ink)] shadow-sm group-hover:block">
+              <div className="pointer-events-none absolute -mt-14 hidden whitespace-nowrap rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-ink)] shadow-sm group-hover:block">
                 {s}
               </div>
             </div>
