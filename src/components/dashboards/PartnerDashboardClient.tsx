@@ -40,8 +40,12 @@ type Message = {
   body: string;
   fromRole: string;
   readAt?: string | null;
-  // Phase 1/2: thread metadata (present when DB/messages are enabled)
+
+  // Thread metadata (demo + Phase 2)
   threadId?: string;
+  threadTitle?: string | null;
+  ownerName?: string | null;
+  propertyAddress?: string | null;
 };
 
 const STATUS_GROUPS = ["Pending", "Scheduled", "In progress", "Completed"] as const;
@@ -263,9 +267,10 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     (async () => {
       try {
         const demoQ = isDemoMode() ? "&demo=1" : "";
+        const partnerCode = partner.partnerId.replace(/^(pro_|partner_)/, "");
         const [woRes, msgRes] = await Promise.all([
-          fetch(`/api/pro/work-orders?partnerId=${encodeURIComponent(partner.partnerId)}${demoQ}`),
-          fetch(`/api/messages?partnerId=${encodeURIComponent(partner.partnerId)}&limit=20${demoQ}`),
+          fetch(`/api/pro/work-orders?partnerId=${encodeURIComponent(partnerCode)}${demoQ}`),
+          fetch(`/api/messages?partnerId=${encodeURIComponent(partnerCode)}&limit=20${demoQ}`),
         ]);
 
         if (!woRes.ok) throw new Error(`Failed to load work orders (${woRes.status})`);
@@ -403,7 +408,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
         id: m.id,
         threadId: m.threadId || "",
         from: m.fromRole,
-        address: recentWorkOrders?.[0]?.address || "",
+        address: m.propertyAddress || recentWorkOrders?.[0]?.address || "",
         body: m.body,
         createdAt: m.createdAt,
         unread: !m.readAt,
