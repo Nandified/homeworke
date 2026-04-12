@@ -267,7 +267,7 @@ export function PortalShell(props: {
 
           {/* Right */}
           <div className="flex flex-1 items-center justify-end gap-2">
-            {isDemoMode() ? <Pill className="bg-white">Demo</Pill> : null}
+            {/* Demo pill removed (internal/dev only; avoid UI noise) */}
 
             {/* Role pill (hide for PRO; it will appear next to the name in the profile button) */}
             {baseRole === "pro" ? null : (
