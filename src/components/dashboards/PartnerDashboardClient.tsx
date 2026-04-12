@@ -75,17 +75,28 @@ function statusIndex(status: StatusGroup) {
 function ProgressRail({ status }: { status: StatusGroup }) {
   const idx = statusIndex(status);
   return (
-    <div className="flex items-center gap-2" aria-label={`Progress: ${status}`}>
+    <div className="flex items-center gap-1.5" aria-label={`Progress: ${status}`}>
       {STATUS_GROUPS.map((s, i) => {
-        const done = i <= idx;
+        const done = i < idx;
+        const current = i === idx;
+        const upcoming = i > idx;
+
+        const dotClass = current
+          ? "h-3.5 w-3.5 bg-[var(--hw-ink)] border-[var(--hw-ink)] ring-4 ring-[rgba(17,24,39,.10)]"
+          : done
+            ? "h-3 w-3 bg-[var(--hw-ink)] border-[var(--hw-ink)]"
+            : "h-3 w-3 bg-white border-[var(--hw-line)]";
+
+        const lineClass = done
+          ? "bg-[linear-gradient(90deg,rgba(17,24,39,.95),rgba(17,24,39,.55))]"
+          : upcoming
+            ? "bg-[var(--hw-line)]"
+            : "bg-[var(--hw-line)]";
+
         return (
-          <div key={s} className="flex items-center">
-            <div
-              className={`h-2.5 w-2.5 rounded-full border ${done ? "border-[var(--hw-ink)] bg-[var(--hw-ink)]" : "border-[var(--hw-line)] bg-white"}`}
-            />
-            {i < STATUS_GROUPS.length - 1 ? (
-              <div className={`mx-1 h-[2px] w-6 ${i < idx ? "bg-[var(--hw-ink)]" : "bg-[var(--hw-line)]"}`} />
-            ) : null}
+          <div key={s} className="flex items-center" title={s}>
+            <div className={`rounded-full border shadow-[0_1px_0_rgba(17,24,39,.08)] ${dotClass}`} />
+            {i < STATUS_GROUPS.length - 1 ? <div className={`mx-1 h-[3px] w-7 rounded-full ${lineClass}`} /> : null}
           </div>
         );
       })}
@@ -757,11 +768,11 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                           <ProgressRail status={status} />
                           {wo.updatedAt ? (
                             <span className="text-xs text-[var(--hw-muted)]">
-                              Updated {new Date(wo.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                              Updated {new Date(wo.updatedAt).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
                             </span>
                           ) : wo.createdAt ? (
                             <span className="text-xs text-[var(--hw-muted)]">
-                              Created {new Date(wo.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                              Created {new Date(wo.createdAt).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
                             </span>
                           ) : null}
                         </div>
