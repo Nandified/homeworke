@@ -316,6 +316,19 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           setWorkOrders(woJson.workOrders || []);
           setMessages(msgJson.messages || []);
         }
+
+        // If we have no real messages yet, fall back to seeded demo threads so mobile/desktop match.
+        if (!cancelled && (!msgJson.messages || msgJson.messages.length === 0)) {
+          try {
+            const demoRes = await fetch(`/api/messages?partnerId=${encodeURIComponent(partnerCode)}&limit=20&demo=1`);
+            if (demoRes.ok) {
+              const demoJson = (await demoRes.json()) as { ok?: boolean; messages?: Message[] };
+              if (!cancelled && demoJson.messages?.length) setMessages(demoJson.messages);
+            }
+          } catch {
+            // ignore
+          }
+        }
       } catch (err) {
         if (!cancelled) setError((err as Error)?.message ?? "Something went wrong");
       } finally {
@@ -328,6 +341,10 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     };
   }, [partner]);
 
+  // KPI tiles should match what the user sees. When there are no real work orders/messages yet,
+  // we fall back to the demo list and seeded demo messages.
+  const effectiveWorkOrders = useMemo(() => (workOrders.length ? workOrders : PRO_DEMO_WORK_ORDERS), [workOrders]);
+
   const grouped = useMemo(() => {
     const map: Record<StatusGroup, WorkOrder[]> = {
       Pending: [],
@@ -335,11 +352,16 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
       "In progress": [],
       Completed: [],
     };
-    for (const wo of workOrders) map[normalizeStatus(wo.status)].push(wo);
+    for (const wo of effectiveWorkOrders) map[normalizeStatus(wo.status)].push(wo);
     return map;
-  }, [workOrders]);
+  }, [effectiveWorkOrders]);
 
-  const unreadCount = useMemo(() => messages.filter((m) => !m.readAt).length, [messages]);
+  const unreadCount = useMemo(() => {
+    if (messages.length) return messages.filter((m) => !m.readAt).length;
+    // Keep KPI consistent with the demo preview card.
+    return 1;
+  }, [messages]);
+
   const activeCount = useMemo(() => grouped["In progress"].length + grouped["Scheduled"].length, [grouped]);
   const pendingCount = useMemo(() => grouped.Pending.length, [grouped]);
   const completedCount = useMemo(() => grouped.Completed.length, [grouped]);
