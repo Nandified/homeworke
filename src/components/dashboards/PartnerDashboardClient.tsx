@@ -545,7 +545,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             <AIWorkOrderIntakeCard
               eyebrow="Job Work Order"
               title={partner?.partnerName ? `Hey ${partner.partnerName.split(" ")[0]}, what do you need help with?` : "What do you need help with?"}
-              primaryCta="Start a job request"
+              primaryCta="Schedule a visit"
               secondaryCta="Browse marketplace"
               showServicingPill={false}
             />

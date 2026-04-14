@@ -81,8 +81,9 @@ export function AIWorkOrderIntakeCard(props: {
   const [qIndex, setQIndex] = useState<number>(0);
 
   const [manualOpen, setManualOpen] = useState(true);
+  const [assistantThinking, setAssistantThinking] = useState(false);
 
-  const started = turns.length > 0 || classifying || !!result?.ok || !!classifyError;
+  const started = turns.length > 0 || classifying || assistantThinking || !!result?.ok || !!classifyError;
   const currentQuestion = questions[qIndex] || "";
   const awaitingAnswers = !!result?.ok && qIndex < questions.length;
   const readyToSchedule = !!result?.ok && qIndex >= questions.length;
@@ -157,6 +158,7 @@ export function AIWorkOrderIntakeCard(props: {
   function resetIntakeKeepDraft() {
     setClassifyError("");
     setClassifying(false);
+    setAssistantThinking(false);
     setResult(null);
     setTurns([]);
     setQuestions([]);
@@ -179,11 +181,16 @@ export function AIWorkOrderIntakeCard(props: {
       setIssue("");
 
       const nextIdx = qIndex + 1;
-      setQIndex(nextIdx);
 
-      if (nextIdx < questions.length) {
-        setTurns((prev) => [...prev, { role: "assistant", text: questions[nextIdx] }]);
-      }
+      // Add a short "thinking" beat so it feels natural even when the model is fast.
+      setAssistantThinking(true);
+      window.setTimeout(() => {
+        setAssistantThinking(false);
+        setQIndex(nextIdx);
+        if (nextIdx < questions.length) {
+          setTurns((prev) => [...prev, { role: "assistant", text: questions[nextIdx] }]);
+        }
+      }, 1000);
 
       return;
     }
@@ -192,6 +199,7 @@ export function AIWorkOrderIntakeCard(props: {
     setManualOpen(false);
     setClassifyError("");
     setClassifying(true);
+    setAssistantThinking(false);
     setResult(null);
     setQuestions([]);
     setAnswers([]);
@@ -299,7 +307,7 @@ export function AIWorkOrderIntakeCard(props: {
               </div>
             ))}
 
-            {classifying ? (
+            {classifying || assistantThinking ? (
               <div className="flex justify-start">
                 <div className="rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 shadow-sm">
                   <div className="flex items-center gap-1.5">
@@ -354,20 +362,21 @@ export function AIWorkOrderIntakeCard(props: {
                       onClick={scheduleVisit}
                       disabled={questions.length ? answers.some((a) => !String(a || "").trim()) : false}
                     >
-                      {props.primaryCta || "Schedule visit"}
+                      Schedule a visit
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                     <button
                       type="button"
                       className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
                       onClick={() => {
-                        // Stay in-place; just reset intake state (keep attachments)
+                        // True restart
                         resetIntakeKeepDraft();
-                        setIssue(turns.findLast((t) => t.role === "user")?.text || "");
+                        setAttachments([]);
+                        setIssue("");
                         setTimeout(() => issueRef.current?.focus(), 0);
                       }}
                     >
-                      Refine
+                      Start over
                     </button>
                   </div>
 

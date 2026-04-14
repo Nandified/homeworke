@@ -67,7 +67,7 @@ export default function OfficeDashboardPage() {
       }
     >
       <div className="grid gap-6">
-        <AIWorkOrderIntakeCard eyebrow="AI work order" title="What’s going on with the property?" primaryCta="Start a job request" />
+        <AIWorkOrderIntakeCard eyebrow="AI work order" title="What’s going on with the property?" primaryCta="Schedule a visit" />
 
         <KpiGrid>
           <StatTile label="Active projects" value={String(activeCount)} note="Across all partners (Phase 2: mock)." />
