@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://homeworke.app/schemas/work-order.json",
+  "title": "Homeworke Work Order",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "service",
+    "issue",
+    "property",
+    "schedule",
+    "contact",
+    "meta"
+  ],
+  "properties": {
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trade", "category", "subcategory", "serviceId"],
+      "properties": {
+        "trade": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "minLength": 1 },
+        "subcategory": { "type": "string", "minLength": 1 },
+        "serviceId": {
+          "type": "string",
+          "description": "Stable Homeworke taxonomy id, e.g. plumbing.drain-and-sewer.drain-cleaning"
+        },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "alternates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["serviceId", "trade", "category", "subcategory"],
+            "properties": {
+              "serviceId": { "type": "string" },
+              "trade": { "type": "string" },
+              "category": { "type": "string" },
+              "subcategory": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description"],
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "urgency": {
+          "type": "string",
+          "enum": ["emergency", "asap", "this_week", "flexible"],
+          "description": "Normalized urgency bucket used for routing + scheduling."
+        },
+        "safetyFlags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "gas_smell",
+              "active_leak",
+              "electrical_burning_smell",
+              "sewage_backup",
+              "no_heat_winter",
+              "no_ac_heat_index",
+              "structural_damage"
+            ]
+          }
+        },
+        "aiSummary": {
+          "type": "string",
+          "description": "Short AI-generated summary shown for confirmation; user-editable."
+        },
+        "intakeQna": {
+          "type": "array",
+          "description": "Clarifying questions asked during intake (optional).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["question", "answer"],
+            "properties": {
+              "question": { "type": "string" },
+              "answer": { "type": "string" }
+            }
+          }
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "url"],
+            "properties": {
+              "type": { "type": "string", "enum": ["photo", "video", "pdf"] },
+              "url": { "type": "string" },
+              "caption": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "property": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "propertyId": { "type": "string", "description": "If selected from saved properties." },
+        "address": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "address1": { "type": "string" },
+            "address2": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string" },
+            "zip": { "type": "string" }
+          }
+        },
+        "propertyType": {
+          "type": "string",
+          "enum": ["single_family", "condo", "townhome", "multi_family", "commercial", "other"]
+        },
+        "accessInstructions": { "type": "string" }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preferredDate": { "type": "string", "format": "date" },
+        "preferredTimeWindow": {
+          "type": "string",
+          "enum": ["morning", "midday", "afternoon", "evening", "any"]
+        },
+        "alternateDate": { "type": "string", "format": "date" }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contactMethod": { "type": "string", "enum": ["sms", "email", "in_app"] },
+        "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": ["dashboard_card", "marketplace", "partner_portal", "homeowner_portal", "office_portal"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "ai": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "provider": { "type": "string", "enum": ["openai"] },
+            "model": { "type": "string" },
+            "requestId": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

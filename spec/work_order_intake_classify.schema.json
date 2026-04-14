@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://homeworke.app/schemas/work-order-intake-classify.json",
+  "title": "Work Order Intake Classification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["input"],
+  "properties": {
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "propertyId": { "type": "string" },
+        "zip": { "type": "string" },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "url"],
+            "properties": {
+              "type": { "type": "string", "enum": ["photo", "video"] },
+              "url": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["serviceId", "trade", "category", "subcategory", "aiSummary"],
+      "properties": {
+        "serviceId": { "type": "string" },
+        "trade": { "type": "string" },
+        "category": { "type": "string" },
+        "subcategory": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "aiSummary": { "type": "string" },
+        "urgency": { "type": "string", "enum": ["emergency", "asap", "this_week", "flexible"] },
+        "safetyFlags": { "type": "array", "items": { "type": "string" } },
+        "clarifyingQuestions": { "type": "array", "items": { "type": "string" }, "maxItems": 3 }
+      }
+    }
+  }
+}

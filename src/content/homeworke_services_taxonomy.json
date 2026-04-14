@@ -1,0 +1,1346 @@
+{
+  "version": "2026-04-14",
+  "trades": [
+    "Appliance Repair/Install",
+    "Cleaning / Turnover",
+    "Electrical",
+    "Flooring",
+    "Gutters",
+    "HVAC",
+    "Handyman / General",
+    "Inspections",
+    "Landscaping / Lawn",
+    "Masonry / Concrete / Asphalt",
+    "Mold / Water Damage / Environmental",
+    "Painting & Drywall",
+    "Pest Control",
+    "Plumbing",
+    "Pool / Spa",
+    "Remodeling",
+    "Roofing",
+    "Tree Service",
+    "Windows & Doors"
+  ],
+  "services": [
+    {
+      "id": "appliance-repair-install.install.above-ground-swimming-pool-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Above Ground Swimming Pool Installation"
+    },
+    {
+      "id": "mold-water-damage-environmental.air-quality.air-quality-and-environmental-testing",
+      "trade": "Mold / Water Damage / Environmental",
+      "category": "Air Quality",
+      "label": "Air Quality and Environmental Testing"
+    },
+    {
+      "id": "appliance-repair-install.install.appliance-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Appliance Installation"
+    },
+    {
+      "id": "appliance-repair-install.repair.appliance-repair-or-maintenance",
+      "trade": "Appliance Repair/Install",
+      "category": "Repair",
+      "label": "Appliance Repair or Maintenance"
+    },
+    {
+      "id": "remodeling.design.architectural-services",
+      "trade": "Remodeling",
+      "category": "Design",
+      "label": "Architectural Services"
+    },
+    {
+      "id": "appliance-repair-install.install.artificial-turf-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Artificial Turf Installation"
+    },
+    {
+      "id": "mold-water-damage-environmental.radon-asbestos-lead.asbestos-removal",
+      "trade": "Mold / Water Damage / Environmental",
+      "category": "Radon / Asbestos / Lead",
+      "label": "Asbestos Removal"
+    },
+    {
+      "id": "appliance-repair-install.install.asphalt-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Asphalt Installation"
+    },
+    {
+      "id": "hvac.ducts-and-vents.av-equipment-rental-for-events",
+      "trade": "HVAC",
+      "category": "Ducts & Vents",
+      "label": "AV Equipment Rental for Events"
+    },
+    {
+      "id": "appliance-repair-install.outdoor-appliances.barbecue-and-grill-services",
+      "trade": "Appliance Repair/Install",
+      "category": "Outdoor Appliances",
+      "label": "Barbecue & Grill Services"
+    },
+    {
+      "id": "remodeling.basement.basement-finishing-or-remodeling",
+      "trade": "Remodeling",
+      "category": "Basement",
+      "label": "Basement Finishing or Remodeling"
+    },
+    {
+      "id": "remodeling.bathroom.bathroom-remodel",
+      "trade": "Remodeling",
+      "category": "Bathroom",
+      "label": "Bathroom Remodel"
+    },
+    {
+      "id": "pest-control.pest-control.bed-bug-extermination",
+      "trade": "Pest Control",
+      "category": "Pest Control",
+      "label": "Bed Bug Extermination"
+    },
+    {
+      "id": "masonry-concrete-asphalt.masonry.brick-or-stone-repair",
+      "trade": "Masonry / Concrete / Asphalt",
+      "category": "Masonry",
+      "label": "Brick or Stone Repair"
+    },
+    {
+      "id": "appliance-repair-install.install.cabinet-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Cabinet Installation"
+    },
+    {
+      "id": "painting-and-drywall.painting.cabinet-painting",
+      "trade": "Painting & Drywall",
+      "category": "Painting",
+      "label": "Cabinet Painting"
+    },
+    {
+      "id": "flooring.repair-refinish.cabinet-refinishing-and-repair",
+      "trade": "Flooring",
+      "category": "Repair / Refinish",
+      "label": "Cabinet Refinishing and Repair"
+    },
+    {
+      "id": "handyman-general.cabinets-and-countertops.cabinetry",
+      "trade": "Handyman / General",
+      "category": "Cabinets & Countertops",
+      "label": "Cabinetry"
+    },
+    {
+      "id": "cleaning-turnover.carpet-and-upholstery.carpet-cleaning",
+      "trade": "Cleaning / Turnover",
+      "category": "Carpet & Upholstery",
+      "label": "Carpet Cleaning"
+    },
+    {
+      "id": "cleaning-turnover.carpet-and-upholstery.carpet-installation",
+      "trade": "Cleaning / Turnover",
+      "category": "Carpet & Upholstery",
+      "label": "Carpet Installation"
+    },
+    {
+      "id": "cleaning-turnover.carpet-and-upholstery.carpet-removal",
+      "trade": "Cleaning / Turnover",
+      "category": "Carpet & Upholstery",
+      "label": "Carpet Removal"
+    },
+    {
+      "id": "cleaning-turnover.carpet-and-upholstery.carpet-repair-or-partial-replacement",
+      "trade": "Cleaning / Turnover",
+      "category": "Carpet & Upholstery",
+      "label": "Carpet Repair or Partial Replacement"
+    },
+    {
+      "id": "hvac.ac.central-air-conditioning-installation-or-replacement",
+      "trade": "HVAC",
+      "category": "AC",
+      "label": "Central Air Conditioning Installation or Replacement"
+    },
+    {
+      "id": "hvac.ac.central-air-conditioning-repair-or-maintenance",
+      "trade": "HVAC",
+      "category": "AC",
+      "label": "Central Air Conditioning Repair or Maintenance"
+    },
+    {
+      "id": "electrical.panel-service.circuit-breaker-panel-or-fuse-box-installation",
+      "trade": "Electrical",
+      "category": "Panel / Service",
+      "label": "Circuit Breaker Panel or Fuse Box Installation"
+    },
+    {
+      "id": "electrical.panel-service.circuit-breaker-panel-or-fuse-box-repair",
+      "trade": "Electrical",
+      "category": "Panel / Service",
+      "label": "Circuit Breaker Panel or Fuse Box Repair"
+    },
+    {
+      "id": "appliance-repair-install.install.closet-and-shelving-system-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Closet and Shelving System Installation"
+    },
+    {
+      "id": "remodeling.general-remodeling.closet-remodel",
+      "trade": "Remodeling",
+      "category": "General Remodeling",
+      "label": "Closet Remodel"
+    },
+    {
+      "id": "cleaning-turnover.carpet-and-upholstery.commercial-carpet-cleaning",
+      "trade": "Cleaning / Turnover",
+      "category": "Carpet & Upholstery",
+      "label": "Commercial Carpet Cleaning"
+    },
+    {
+      "id": "cleaning-turnover.commercial-cleaning.commercial-cleaning",
+      "trade": "Cleaning / Turnover",
+      "category": "Commercial Cleaning",
+      "label": "Commercial Cleaning"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.computer-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Computer Repair"
+    },
+    {
+      "id": "appliance-repair-install.install.concrete-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Concrete Installation"
+    },
+    {
+      "id": "masonry-concrete-asphalt.concrete.concrete-removal",
+      "trade": "Masonry / Concrete / Asphalt",
+      "category": "Concrete",
+      "label": "Concrete Removal"
+    },
+    {
+      "id": "remodeling.project-build.construction-services",
+      "trade": "Remodeling",
+      "category": "Project / Build",
+      "label": "Construction Services"
+    },
+    {
+      "id": "appliance-repair-install.install.countertop-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Countertop Installation"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.countertop-repair-or-maintenance",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Countertop Repair or Maintenance"
+    },
+    {
+      "id": "handyman-general.cabinets-and-countertops.custom-cabinet-building",
+      "trade": "Handyman / General",
+      "category": "Cabinets & Countertops",
+      "label": "Custom Cabinet Building"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.deck-or-porch-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Deck or Porch Repair"
+    },
+    {
+      "id": "handyman-general.decks-and-patios.deck-staining-and-sealing",
+      "trade": "Handyman / General",
+      "category": "Decks & Patios",
+      "label": "Deck Staining and Sealing"
+    },
+    {
+      "id": "remodeling.site-prep.demolition-services",
+      "trade": "Remodeling",
+      "category": "Site Prep",
+      "label": "Demolition Services"
+    },
+    {
+      "id": "appliance-repair-install.repair.dishwasher-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Repair",
+      "label": "Dishwasher Installation"
+    },
+    {
+      "id": "appliance-repair-install.install.dog-fence-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Dog Fence Installation"
+    },
+    {
+      "id": "appliance-repair-install.install.door-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Door Installation"
+    },
+    {
+      "id": "windows-and-doors.doors.door-repair",
+      "trade": "Windows & Doors",
+      "category": "Doors",
+      "label": "Door Repair"
+    },
+    {
+      "id": "appliance-repair-install.install.drywall-installation-and-hanging",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Drywall Installation and Hanging"
+    },
+    {
+      "id": "hvac.ducts-and-vents.duct-and-vent-cleaning",
+      "trade": "HVAC",
+      "category": "Ducts & Vents",
+      "label": "Duct and Vent Cleaning"
+    },
+    {
+      "id": "hvac.ducts-and-vents.duct-and-vent-installation-or-removal",
+      "trade": "HVAC",
+      "category": "Ducts & Vents",
+      "label": "Duct and Vent Installation or Removal"
+    },
+    {
+      "id": "cleaning-turnover.dumpster-rental.dumpster-rental",
+      "trade": "Cleaning / Turnover",
+      "category": "Dumpster Rental",
+      "label": "Dumpster Rental"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.electrical-and-wiring-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Electrical and Wiring Repair"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.electronic-machine-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Electronic Machine Repair"
+    },
+    {
+      "id": "plumbing.emergency.emergency-plumbing",
+      "trade": "Plumbing",
+      "category": "Emergency",
+      "label": "Emergency Plumbing"
+    },
+    {
+      "id": "remodeling.design.engineering-and-technical-design",
+      "trade": "Remodeling",
+      "category": "Design",
+      "label": "Engineering & Technical Design"
+    },
+    {
+      "id": "flooring.epoxy-coatings.epoxy-floor-coating",
+      "trade": "Flooring",
+      "category": "Epoxy / Coatings",
+      "label": "Epoxy Floor Coating"
+    },
+    {
+      "id": "hvac.ducts-and-vents.event-florist",
+      "trade": "HVAC",
+      "category": "Ducts & Vents",
+      "label": "Event Florist"
+    },
+    {
+      "id": "hvac.ducts-and-vents.event-help-and-wait-staff",
+      "trade": "HVAC",
+      "category": "Ducts & Vents",
+      "label": "Event Help and Wait Staff"
+    },
+    {
+      "id": "hvac.ducts-and-vents.event-planning",
+      "trade": "HVAC",
+      "category": "Ducts & Vents",
+      "label": "Event Planning"
+    },
+    {
+      "id": "hvac.ducts-and-vents.event-security-and-bouncer-services",
+      "trade": "HVAC",
+      "category": "Ducts & Vents",
+      "label": "Event Security & Bouncer Services"
+    },
+    {
+      "id": "remodeling.site-prep.excavation-services",
+      "trade": "Remodeling",
+      "category": "Site Prep",
+      "label": "Excavation Services"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.exercise-equipment-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Exercise Equipment Repair"
+    },
+    {
+      "id": "painting-and-drywall.painting.exterior-painting",
+      "trade": "Painting & Drywall",
+      "category": "Painting",
+      "label": "Exterior Painting"
+    },
+    {
+      "id": "painting-and-drywall.painting.face-painting",
+      "trade": "Painting & Drywall",
+      "category": "Painting",
+      "label": "Face Painting"
+    },
+    {
+      "id": "appliance-repair-install.install.fan-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Fan Installation"
+    },
+    {
+      "id": "painting-and-drywall.painting.faux-finishing-or-painting",
+      "trade": "Painting & Drywall",
+      "category": "Painting",
+      "label": "Faux Finishing or Painting"
+    },
+    {
+      "id": "appliance-repair-install.install.fence-and-gate-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Fence and Gate Installation"
+    },
+    {
+      "id": "painting-and-drywall.painting.fence-painting",
+      "trade": "Painting & Drywall",
+      "category": "Painting",
+      "label": "Fence Painting"
+    },
+    {
+      "id": "handyman-general.carpentry.finish-carpentry",
+      "trade": "Handyman / General",
+      "category": "Carpentry",
+      "label": "Finish Carpentry"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.fireplace-and-chimney-cleaning-or-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Fireplace and Chimney Cleaning or Repair"
+    },
+    {
+      "id": "appliance-repair-install.install.fireplace-and-chimney-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Fireplace and Chimney Installation"
+    },
+    {
+      "id": "cleaning-turnover.specialty-cleaning.floor-cleaning",
+      "trade": "Cleaning / Turnover",
+      "category": "Specialty Cleaning",
+      "label": "Floor Cleaning"
+    },
+    {
+      "id": "appliance-repair-install.install.floor-installation-or-replacement",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Floor Installation or Replacement"
+    },
+    {
+      "id": "painting-and-drywall.painting.floor-painting-or-coating",
+      "trade": "Painting & Drywall",
+      "category": "Painting",
+      "label": "Floor Painting or Coating"
+    },
+    {
+      "id": "cleaning-turnover.specialty-cleaning.floor-polishing",
+      "trade": "Cleaning / Turnover",
+      "category": "Specialty Cleaning",
+      "label": "Floor Polishing"
+    },
+    {
+      "id": "flooring.repair-refinish.floor-repair",
+      "trade": "Flooring",
+      "category": "Repair / Refinish",
+      "label": "Floor Repair"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.foundation-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Foundation Repair"
+    },
+    {
+      "id": "handyman-general.carpentry.framing-carpentry",
+      "trade": "Handyman / General",
+      "category": "Carpentry",
+      "label": "Framing Carpentry"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.furniture-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Furniture Repair"
+    },
+    {
+      "id": "cleaning-turnover.carpet-and-upholstery.furniture-upholstery",
+      "trade": "Cleaning / Turnover",
+      "category": "Carpet & Upholstery",
+      "label": "Furniture Upholstery"
+    },
+    {
+      "id": "remodeling.general-remodeling.garage-addition-or-remodel",
+      "trade": "Remodeling",
+      "category": "General Remodeling",
+      "label": "Garage Addition or Remodel"
+    },
+    {
+      "id": "appliance-repair-install.install.garage-door-installation-or-replacement",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Garage Door Installation or Replacement"
+    },
+    {
+      "id": "windows-and-doors.doors.garage-door-repair",
+      "trade": "Windows & Doors",
+      "category": "Doors",
+      "label": "Garage Door Repair"
+    },
+    {
+      "id": "cleaning-turnover.specialty-cleaning.garage-basement-attic-cleaning",
+      "trade": "Cleaning / Turnover",
+      "category": "Specialty Cleaning",
+      "label": "Garage/Basement/Attic Cleaning"
+    },
+    {
+      "id": "plumbing.fixtures.garbage-disposal-installation",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Garbage Disposal Installation"
+    },
+    {
+      "id": "plumbing.fixtures.garbage-disposal-repair",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Garbage Disposal Repair"
+    },
+    {
+      "id": "landscaping-lawn.gardening.gardening",
+      "trade": "Landscaping / Lawn",
+      "category": "Gardening",
+      "label": "Gardening"
+    },
+    {
+      "id": "appliance-repair-install.install.gas-line-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Gas Line Installation"
+    },
+    {
+      "id": "appliance-repair-install.install.gazebo-installation-and-construction",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Gazebo Installation and Construction"
+    },
+    {
+      "id": "handyman-general.carpentry.general-carpentry",
+      "trade": "Handyman / General",
+      "category": "Carpentry",
+      "label": "General Carpentry"
+    },
+    {
+      "id": "remodeling.project-build.general-contracting",
+      "trade": "Remodeling",
+      "category": "Project / Build",
+      "label": "General Contracting"
+    },
+    {
+      "id": "electrical.ev-generator-solar.generator-installation",
+      "trade": "Electrical",
+      "category": "EV / Generator / Solar",
+      "label": "Generator Installation"
+    },
+    {
+      "id": "cleaning-turnover.gutter-cleaning.gutter-cleaning-and-maintenance",
+      "trade": "Cleaning / Turnover",
+      "category": "Gutter Cleaning",
+      "label": "Gutter Cleaning and Maintenance"
+    },
+    {
+      "id": "appliance-repair-install.install.gutter-installation-or-replacement",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Gutter Installation or Replacement"
+    },
+    {
+      "id": "gutters.install-repair.gutter-repair",
+      "trade": "Gutters",
+      "category": "Install / Repair",
+      "label": "Gutter Repair"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.handyman",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Handyman"
+    },
+    {
+      "id": "flooring.install.hardwood-floor-refinishing",
+      "trade": "Flooring",
+      "category": "Install",
+      "label": "Hardwood Floor Refinishing"
+    },
+    {
+      "id": "hvac.heating.heating-system-installation-or-replacement",
+      "trade": "HVAC",
+      "category": "Heating",
+      "label": "Heating System Installation or Replacement"
+    },
+    {
+      "id": "hvac.heating.heating-system-repair-or-maintenance",
+      "trade": "HVAC",
+      "category": "Heating",
+      "label": "Heating System Repair or Maintenance"
+    },
+    {
+      "id": "electrical.lighting-and-fans.holiday-lighting-installation-and-removal",
+      "trade": "Electrical",
+      "category": "Lighting & Fans",
+      "label": "Holiday Lighting Installation and Removal"
+    },
+    {
+      "id": "inspections.home-inspection.home-inspection",
+      "trade": "Inspections",
+      "category": "Home Inspection",
+      "label": "Home Inspection"
+    },
+    {
+      "id": "remodeling.accessibility.home-modification-for-accessibility",
+      "trade": "Remodeling",
+      "category": "Accessibility",
+      "label": "Home Modification for Accessibility"
+    },
+    {
+      "id": "remodeling.design.home-organizing",
+      "trade": "Remodeling",
+      "category": "Design",
+      "label": "Home Organizing"
+    },
+    {
+      "id": "appliance-repair-install.install.home-security-and-alarms-install",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Home Security and Alarms Install"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.home-security-system-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Home Security System Repair"
+    },
+    {
+      "id": "remodeling.design.home-staging",
+      "trade": "Remodeling",
+      "category": "Design",
+      "label": "Home Staging"
+    },
+    {
+      "id": "appliance-repair-install.install.home-theater-system-installation-or-replacement",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Home Theater System Installation or Replacement"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.home-theater-system-repair-or-service",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Home Theater System Repair or Service"
+    },
+    {
+      "id": "roofing.repair-maintenance.home-waterproofing",
+      "trade": "Roofing",
+      "category": "Repair / Maintenance",
+      "label": "Home Waterproofing"
+    },
+    {
+      "id": "plumbing.fixtures.hot-tub-and-spa-cleaning-and-maintenance",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Hot Tub and Spa Cleaning and Maintenance"
+    },
+    {
+      "id": "plumbing.fixtures.hot-tub-and-spa-installation",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Hot Tub and Spa Installation"
+    },
+    {
+      "id": "plumbing.fixtures.hot-tub-moving",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Hot Tub Moving"
+    },
+    {
+      "id": "cleaning-turnover.house-cleaning.house-cleaning",
+      "trade": "Cleaning / Turnover",
+      "category": "House Cleaning",
+      "label": "House Cleaning"
+    },
+    {
+      "id": "pool-spa.pool.in-ground-swimming-pool-construction",
+      "trade": "Pool / Spa",
+      "category": "Pool",
+      "label": "In-Ground Swimming Pool Construction"
+    },
+    {
+      "id": "appliance-repair-install.install.insulation-installation-or-upgrade",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Insulation Installation or Upgrade"
+    },
+    {
+      "id": "remodeling.design.interior-design",
+      "trade": "Remodeling",
+      "category": "Design",
+      "label": "Interior Design"
+    },
+    {
+      "id": "painting-and-drywall.painting.interior-painting",
+      "trade": "Painting & Drywall",
+      "category": "Painting",
+      "label": "Interior Painting"
+    },
+    {
+      "id": "cleaning-turnover.junk-removal.junk-removal",
+      "trade": "Cleaning / Turnover",
+      "category": "Junk Removal",
+      "label": "Junk Removal"
+    },
+    {
+      "id": "remodeling.kitchen.kitchen-remodel",
+      "trade": "Remodeling",
+      "category": "Kitchen",
+      "label": "Kitchen Remodel"
+    },
+    {
+      "id": "remodeling.site-prep.land-clearing",
+      "trade": "Remodeling",
+      "category": "Site Prep",
+      "label": "Land Clearing"
+    },
+    {
+      "id": "remodeling.site-prep.land-leveling-and-grading",
+      "trade": "Remodeling",
+      "category": "Site Prep",
+      "label": "Land Leveling & Grading"
+    },
+    {
+      "id": "remodeling.design.land-surveying",
+      "trade": "Remodeling",
+      "category": "Design",
+      "label": "Land Surveying"
+    },
+    {
+      "id": "landscaping-lawn.lawn-care.lawn-mower-repair",
+      "trade": "Landscaping / Lawn",
+      "category": "Lawn Care",
+      "label": "Lawn Mower Repair"
+    },
+    {
+      "id": "landscaping-lawn.lawn-care.lawn-mowing-and-trimming",
+      "trade": "Landscaping / Lawn",
+      "category": "Lawn Care",
+      "label": "Lawn Mowing and Trimming"
+    },
+    {
+      "id": "electrical.lighting-and-fans.lighting-installation",
+      "trade": "Electrical",
+      "category": "Lighting & Fans",
+      "label": "Lighting Installation"
+    },
+    {
+      "id": "cleaning-turnover.moving-and-delivery.local-moving-under-50-miles",
+      "trade": "Cleaning / Turnover",
+      "category": "Moving & Delivery",
+      "label": "Local Moving (under 50 miles)"
+    },
+    {
+      "id": "appliance-repair-install.install.lock-installation-and-repair",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Lock Installation and Repair"
+    },
+    {
+      "id": "handyman-general.carpentry.metalwork",
+      "trade": "Handyman / General",
+      "category": "Carpentry",
+      "label": "Metalwork"
+    },
+    {
+      "id": "mold-water-damage-environmental.mold.mold-inspection-and-removal",
+      "trade": "Mold / Water Damage / Environmental",
+      "category": "Mold",
+      "label": "Mold Inspection and Removal"
+    },
+    {
+      "id": "landscaping-lawn.lawn-care.mulching",
+      "trade": "Landscaping / Lawn",
+      "category": "Lawn Care",
+      "label": "Mulching"
+    },
+    {
+      "id": "remodeling.project-build.new-home-construction",
+      "trade": "Remodeling",
+      "category": "Project / Build",
+      "label": "New Home Construction"
+    },
+    {
+      "id": "mold-water-damage-environmental.odor.odor-removal",
+      "trade": "Mold / Water Damage / Environmental",
+      "category": "Odor",
+      "label": "Odor Removal"
+    },
+    {
+      "id": "landscaping-lawn.landscaping-design.outdoor-landscaping-and-design",
+      "trade": "Landscaping / Lawn",
+      "category": "Landscaping Design",
+      "label": "Outdoor Landscaping & Design"
+    },
+    {
+      "id": "pest-control.pest-control.outdoor-mosquito-control-services",
+      "trade": "Pest Control",
+      "category": "Pest Control",
+      "label": "Outdoor Mosquito Control Services"
+    },
+    {
+      "id": "pest-control.pest-control.outdoor-pesticide-application",
+      "trade": "Pest Control",
+      "category": "Pest Control",
+      "label": "Outdoor Pesticide Application"
+    },
+    {
+      "id": "painting-and-drywall.painting.paint-removal",
+      "trade": "Painting & Drywall",
+      "category": "Painting",
+      "label": "Paint Removal"
+    },
+    {
+      "id": "handyman-general.decks-and-patios.patio-cover-and-awning-services",
+      "trade": "Handyman / General",
+      "category": "Decks & Patios",
+      "label": "Patio Cover and Awning Services"
+    },
+    {
+      "id": "pest-control.pest-control.pest-inspection",
+      "trade": "Pest Control",
+      "category": "Pest Control",
+      "label": "Pest Inspection"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.phone-or-tablet-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Phone or Tablet Repair"
+    },
+    {
+      "id": "appliance-repair-install.install.picture-hanging-and-art-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Picture Hanging and Art Installation"
+    },
+    {
+      "id": "painting-and-drywall.drywall.plastering",
+      "trade": "Painting & Drywall",
+      "category": "Drywall",
+      "label": "Plastering"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.play-equipment-construction-and-assembly",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Play Equipment Construction and Assembly"
+    },
+    {
+      "id": "plumbing.drain-and-sewer.plumbing-drain-repair",
+      "trade": "Plumbing",
+      "category": "Drain & Sewer",
+      "label": "Plumbing Drain Repair"
+    },
+    {
+      "id": "inspections.plumbing-inspection.plumbing-inspection",
+      "trade": "Inspections",
+      "category": "Plumbing Inspection",
+      "label": "Plumbing Inspection"
+    },
+    {
+      "id": "appliance-repair-install.install.plumbing-pipe-installation-or-replacement",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Plumbing Pipe Installation or Replacement"
+    },
+    {
+      "id": "plumbing.leak-repair.plumbing-pipe-repair",
+      "trade": "Plumbing",
+      "category": "Leak / Repair",
+      "label": "Plumbing Pipe Repair"
+    },
+    {
+      "id": "pool-spa.pool.pool-table-moving",
+      "trade": "Pool / Spa",
+      "category": "Pool",
+      "label": "Pool Table Moving"
+    },
+    {
+      "id": "pool-spa.pool.pool-table-repair-services",
+      "trade": "Pool / Spa",
+      "category": "Pool",
+      "label": "Pool Table Repair Services"
+    },
+    {
+      "id": "painting-and-drywall.drywall.popcorn-texture-removal",
+      "trade": "Painting & Drywall",
+      "category": "Drywall",
+      "label": "Popcorn Texture Removal"
+    },
+    {
+      "id": "cleaning-turnover.pressure-washing.pressure-washing",
+      "trade": "Cleaning / Turnover",
+      "category": "Pressure Washing",
+      "label": "Pressure Washing"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.printer-and-copier-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Printer and Copier Repair"
+    },
+    {
+      "id": "mold-water-damage-environmental.radon-asbestos-lead.radon-mitigation",
+      "trade": "Mold / Water Damage / Environmental",
+      "category": "Radon / Asbestos / Lead",
+      "label": "Radon Mitigation"
+    },
+    {
+      "id": "appliance-repair-install.install.railing-installation-or-remodel",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Railing Installation or Remodel"
+    },
+    {
+      "id": "pest-control.pest-control.rodent-and-animal-removal",
+      "trade": "Pest Control",
+      "category": "Pest Control",
+      "label": "Rodent and Animal Removal"
+    },
+    {
+      "id": "roofing.cleaning.roof-cleaning",
+      "trade": "Roofing",
+      "category": "Cleaning",
+      "label": "Roof Cleaning"
+    },
+    {
+      "id": "roofing.inspection.roof-inspection",
+      "trade": "Roofing",
+      "category": "Inspection",
+      "label": "Roof Inspection"
+    },
+    {
+      "id": "roofing.repair-maintenance.roof-repair-or-maintenance",
+      "trade": "Roofing",
+      "category": "Repair / Maintenance",
+      "label": "Roof Repair or Maintenance"
+    },
+    {
+      "id": "remodeling.general-remodeling.room-remodel",
+      "trade": "Remodeling",
+      "category": "General Remodeling",
+      "label": "Room Remodel"
+    },
+    {
+      "id": "cleaning-turnover.carpet-and-upholstery.rug-cleaning",
+      "trade": "Cleaning / Turnover",
+      "category": "Carpet & Upholstery",
+      "label": "Rug Cleaning"
+    },
+    {
+      "id": "handyman-general.low-voltage-install.satellite-dish-services",
+      "trade": "Handyman / General",
+      "category": "Low Voltage / Install",
+      "label": "Satellite Dish Services"
+    },
+    {
+      "id": "appliance-repair-install.install.screen-installation-or-replacement",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Screen Installation or Replacement"
+    },
+    {
+      "id": "handyman-general.security.security-and-body-guard-services",
+      "trade": "Handyman / General",
+      "category": "Security",
+      "label": "Security and Body Guard Services"
+    },
+    {
+      "id": "plumbing.drain-and-sewer.septic-system-installation-or-replacement",
+      "trade": "Plumbing",
+      "category": "Drain & Sewer",
+      "label": "Septic System Installation or Replacement"
+    },
+    {
+      "id": "plumbing.drain-and-sewer.septic-system-repair-maintenance-or-inspection",
+      "trade": "Plumbing",
+      "category": "Drain & Sewer",
+      "label": "Septic System Repair, Maintenance or Inspection"
+    },
+    {
+      "id": "plumbing.fixtures.shower-and-bathtub-installation-or-replacement",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Shower and Bathtub Installation or Replacement"
+    },
+    {
+      "id": "plumbing.fixtures.shower-and-bathtub-repair",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Shower and Bathtub Repair"
+    },
+    {
+      "id": "tree-service.tree-stump.shrub-trimming-and-removal",
+      "trade": "Tree Service",
+      "category": "Tree / Stump",
+      "label": "Shrub Trimming and Removal"
+    },
+    {
+      "id": "appliance-repair-install.install.siding-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Siding Installation"
+    },
+    {
+      "id": "remodeling.exterior.siding-removal",
+      "trade": "Remodeling",
+      "category": "Exterior",
+      "label": "Siding Removal"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.siding-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Siding Repair"
+    },
+    {
+      "id": "plumbing.fixtures.sink-or-faucet-installation-or-replacement",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Sink or Faucet Installation or Replacement"
+    },
+    {
+      "id": "plumbing.fixtures.sink-or-faucet-repair",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Sink or Faucet Repair"
+    },
+    {
+      "id": "appliance-repair-install.install.smart-home-installation-or-repair",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Smart Home Installation or Repair"
+    },
+    {
+      "id": "landscaping-lawn.snow.snow-plowing",
+      "trade": "Landscaping / Lawn",
+      "category": "Snow",
+      "label": "Snow Plowing"
+    },
+    {
+      "id": "appliance-repair-install.install.sod-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Sod Installation"
+    },
+    {
+      "id": "electrical.panel-service.solar-panel-cleaning",
+      "trade": "Electrical",
+      "category": "Panel / Service",
+      "label": "Solar Panel Cleaning"
+    },
+    {
+      "id": "electrical.panel-service.solar-panel-installation-and-repair",
+      "trade": "Electrical",
+      "category": "Panel / Service",
+      "label": "Solar Panel Installation and Repair"
+    },
+    {
+      "id": "roofing.repair-maintenance.sound-proofing",
+      "trade": "Roofing",
+      "category": "Repair / Maintenance",
+      "label": "Sound Proofing"
+    },
+    {
+      "id": "appliance-repair-install.install.sprinkler-and-irrigation-system-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Sprinkler and Irrigation System Installation"
+    },
+    {
+      "id": "landscaping-lawn.lawn-care.sprinkler-and-irrigation-system-repair-and-maintenance",
+      "trade": "Landscaping / Lawn",
+      "category": "Lawn Care",
+      "label": "Sprinkler and Irrigation System Repair and Maintenance"
+    },
+    {
+      "id": "remodeling.design.structural-engineering",
+      "trade": "Remodeling",
+      "category": "Design",
+      "label": "Structural Engineering"
+    },
+    {
+      "id": "masonry-concrete-asphalt.masonry.stucco-application",
+      "trade": "Masonry / Concrete / Asphalt",
+      "category": "Masonry",
+      "label": "Stucco Application"
+    },
+    {
+      "id": "masonry-concrete-asphalt.masonry.stucco-repair",
+      "trade": "Masonry / Concrete / Asphalt",
+      "category": "Masonry",
+      "label": "Stucco Repair"
+    },
+    {
+      "id": "plumbing.leak-repair.sump-pump-installation-or-replacement",
+      "trade": "Plumbing",
+      "category": "Leak / Repair",
+      "label": "Sump Pump Installation or Replacement"
+    },
+    {
+      "id": "pool-spa.pool.swimming-pool-cleaning-maintenance-and-inspection",
+      "trade": "Pool / Spa",
+      "category": "Pool",
+      "label": "Swimming Pool Cleaning, Maintenance, and Inspection"
+    },
+    {
+      "id": "pool-spa.pool.swimming-pool-inspection",
+      "trade": "Pool / Spa",
+      "category": "Pool",
+      "label": "Swimming Pool Inspection"
+    },
+    {
+      "id": "pool-spa.pool.swimming-pool-removal",
+      "trade": "Pool / Spa",
+      "category": "Pool",
+      "label": "Swimming Pool Removal"
+    },
+    {
+      "id": "pool-spa.pool.swimming-pool-repair",
+      "trade": "Pool / Spa",
+      "category": "Pool",
+      "label": "Swimming Pool Repair"
+    },
+    {
+      "id": "electrical.outlet-switch.switch-and-outlet-installation",
+      "trade": "Electrical",
+      "category": "Outlet / Switch",
+      "label": "Switch and Outlet Installation"
+    },
+    {
+      "id": "electrical.outlet-switch.switch-and-outlet-repair",
+      "trade": "Electrical",
+      "category": "Outlet / Switch",
+      "label": "Switch and Outlet Repair"
+    },
+    {
+      "id": "pest-control.pest-control.termite-control-services",
+      "trade": "Pest Control",
+      "category": "Pest Control",
+      "label": "Termite Control Services"
+    },
+    {
+      "id": "pest-control.pest-control.termite-inspection",
+      "trade": "Pest Control",
+      "category": "Pest Control",
+      "label": "Termite Inspection"
+    },
+    {
+      "id": "hvac.thermostat.thermostat-installation-or-repair",
+      "trade": "HVAC",
+      "category": "Thermostat",
+      "label": "Thermostat Installation or Repair"
+    },
+    {
+      "id": "cleaning-turnover.specialty-cleaning.tile-and-grout-cleaning",
+      "trade": "Cleaning / Turnover",
+      "category": "Specialty Cleaning",
+      "label": "Tile & Grout Cleaning"
+    },
+    {
+      "id": "appliance-repair-install.install.tile-installation-and-replacement",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Tile Installation and Replacement"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.tile-repair",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Tile Repair"
+    },
+    {
+      "id": "plumbing.fixtures.toilet-installation-or-replacement",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Toilet Installation or Replacement"
+    },
+    {
+      "id": "plumbing.fixtures.toilet-repair",
+      "trade": "Plumbing",
+      "category": "Fixtures",
+      "label": "Toilet Repair"
+    },
+    {
+      "id": "tree-service.tree-stump.tree-planting",
+      "trade": "Tree Service",
+      "category": "Tree / Stump",
+      "label": "Tree Planting"
+    },
+    {
+      "id": "tree-service.tree-stump.tree-stump-grinding-and-removal",
+      "trade": "Tree Service",
+      "category": "Tree / Stump",
+      "label": "Tree Stump Grinding and Removal"
+    },
+    {
+      "id": "tree-service.tree-stump.tree-trimming-and-removal",
+      "trade": "Tree Service",
+      "category": "Tree / Stump",
+      "label": "Tree Trimming and Removal"
+    },
+    {
+      "id": "appliance-repair-install.install.trim-or-molding-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Trim or Molding Installation"
+    },
+    {
+      "id": "handyman-general.tv-mounting.tv-mounting",
+      "trade": "Handyman / General",
+      "category": "TV Mounting",
+      "label": "TV Mounting"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.tv-repair-services",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "TV Repair Services"
+    },
+    {
+      "id": "cleaning-turnover.carpet-and-upholstery.upholstery-and-furniture-cleaning",
+      "trade": "Cleaning / Turnover",
+      "category": "Carpet & Upholstery",
+      "label": "Upholstery and Furniture Cleaning"
+    },
+    {
+      "id": "cleaning-turnover.specialty-cleaning.virus-removal-services",
+      "trade": "Cleaning / Turnover",
+      "category": "Specialty Cleaning",
+      "label": "Virus Removal Services"
+    },
+    {
+      "id": "appliance-repair-install.install.wallpaper-installation-or-repair",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Wallpaper Installation or Repair"
+    },
+    {
+      "id": "painting-and-drywall.wallpaper.wallpaper-removal",
+      "trade": "Painting & Drywall",
+      "category": "Wallpaper",
+      "label": "Wallpaper Removal"
+    },
+    {
+      "id": "appliance-repair-install.install.water-feature-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Water Feature Installation"
+    },
+    {
+      "id": "plumbing.water-heater.water-heater-installation-or-replacement",
+      "trade": "Plumbing",
+      "category": "Water Heater",
+      "label": "Water Heater Installation or Replacement"
+    },
+    {
+      "id": "plumbing.water-heater.water-heater-repair-or-maintenance",
+      "trade": "Plumbing",
+      "category": "Water Heater",
+      "label": "Water Heater Repair or Maintenance"
+    },
+    {
+      "id": "handyman-general.assembly-small-repairs.water-treatment-repair-or-maintenance",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
+      "label": "Water Treatment Repair or Maintenance"
+    },
+    {
+      "id": "appliance-repair-install.install.water-treatment-system-installation-or-replacement",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Water Treatment System Installation or Replacement"
+    },
+    {
+      "id": "remodeling.weatherization.weatherization",
+      "trade": "Remodeling",
+      "category": "Weatherization",
+      "label": "Weatherization"
+    },
+    {
+      "id": "landscaping-lawn.gardening.weeding",
+      "trade": "Landscaping / Lawn",
+      "category": "Gardening",
+      "label": "Weeding"
+    },
+    {
+      "id": "plumbing.well-and-pump.well-system-work",
+      "trade": "Plumbing",
+      "category": "Well & Pump",
+      "label": "Well System Work"
+    },
+    {
+      "id": "cleaning-turnover.window-cleaning.window-cleaning",
+      "trade": "Cleaning / Turnover",
+      "category": "Window Cleaning",
+      "label": "Window Cleaning"
+    },
+    {
+      "id": "appliance-repair-install.install.window-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Window Installation"
+    },
+    {
+      "id": "windows-and-doors.windows.window-repair",
+      "trade": "Windows & Doors",
+      "category": "Windows",
+      "label": "Window Repair"
+    },
+    {
+      "id": "windows-and-doors.window-treatments.window-tinting",
+      "trade": "Windows & Doors",
+      "category": "Window Treatments",
+      "label": "Window Tinting"
+    },
+    {
+      "id": "appliance-repair-install.install.window-treatment-installation-or-repair",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Window Treatment Installation or Repair"
+    },
+    {
+      "id": "hvac.ac.window-wall-or-portable-ac-repair-or-maintenance",
+      "trade": "HVAC",
+      "category": "AC",
+      "label": "Window, Wall, or Portable AC Repair or Maintenance"
+    },
+    {
+      "id": "appliance-repair-install.install.wiring-installation",
+      "trade": "Appliance Repair/Install",
+      "category": "Install",
+      "label": "Wiring Installation"
+    }
+  ]
+}
