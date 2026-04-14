@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ArrowRight, Paperclip, SendHorizontal } from "lucide-react";
+import { ArrowRight, ArrowUp, Paperclip } from "lucide-react";
 
 import { Button, Input, Pill } from "@/components/ui";
 
@@ -253,16 +253,15 @@ export function AIWorkOrderIntakeCard(props: {
             onClick={async () => {
               if (!classifying && issue.trim()) await runAI();
             }}
-            className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hw-ink)] text-white shadow-sm hover:opacity-95 disabled:opacity-50"
+            className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hw-red)] text-white shadow-sm hover:opacity-95 disabled:opacity-50"
             disabled={classifying || !issue.trim()}
           >
-            <SendHorizontal className="h-4 w-4" />
+            <ArrowUp className="h-4 w-4" />
           </button>
         </div>
 
         <div className="mt-3 space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-xs font-medium text-[var(--hw-muted)]">Tap send to submit · (Desktop) Cmd/Ctrl + Enter</div>
+          <div className="flex items-center justify-end">
             <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
               {props.secondaryCta || "Browse marketplace"}
             </Link>
