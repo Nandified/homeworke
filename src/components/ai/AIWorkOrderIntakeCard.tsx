@@ -319,6 +319,16 @@ export function AIWorkOrderIntakeCard(props: {
     const text = issue.trim();
     // Prevent accidental double-submits (Enter key repeat, etc.)
     if (!text || classifying || assistantThinking || sendInFlightRef.current) return;
+
+    // Global commands (never classify these)
+    if (/^(start over|restart|reset|new request|new issue)$/i.test(text)) {
+      resetIntakeKeepDraft();
+      setAttachments([]);
+      setIssue("");
+      setTimeout(() => issueRef.current?.focus(), 0);
+      return;
+    }
+
     sendInFlightRef.current = true;
 
     try {
@@ -384,8 +394,10 @@ export function AIWorkOrderIntakeCard(props: {
         setAnswers([]);
         setQIndex(0);
         setRootIssue("");
+        setScheduleStage("idle");
         setCompactComposer(false);
         setManualOpen(true);
+        setIssue("");
 
         setAssistantThinking(true);
         window.setTimeout(() => {
