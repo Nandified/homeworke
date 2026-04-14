@@ -215,10 +215,10 @@ export function AIWorkOrderIntakeCard(props: {
               <div className="flex items-center justify-between gap-3">
                 <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Homeworke AI</div>
                 {classifying ? (
-                  <div className="flex items-center gap-1.5 text-xs text-[var(--hw-muted)]">
-                    <span className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--hw-muted)] [animation-delay:-0.2s]" />
-                    <span className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--hw-muted)] [animation-delay:-0.1s]" />
-                    <span className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--hw-muted)]" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--hw-muted)] animate-pulse" style={{ animationDelay: "0ms" }} />
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--hw-muted)] animate-pulse" style={{ animationDelay: "180ms" }} />
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--hw-muted)] animate-pulse" style={{ animationDelay: "360ms" }} />
                   </div>
                 ) : null}
               </div>
@@ -297,8 +297,12 @@ export function AIWorkOrderIntakeCard(props: {
                   )}
 
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <Button className="w-full sm:w-auto" onClick={continueToIntake}>
-                      {props.primaryCta || "Book repair"}
+                    <Button
+                      className="w-full sm:w-auto"
+                      onClick={continueToIntake}
+                      disabled={qna.length ? qna.some((x) => !x.answer.trim()) : false}
+                    >
+                      Book repair
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                     <button
@@ -360,10 +364,10 @@ export function AIWorkOrderIntakeCard(props: {
             aria-label="Describe your issue"
             rows={3}
             className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-3 pr-28 text-[17px] leading-7 border-0 outline-none"
-            style={{ minHeight: 140 }}
+            style={{ minHeight: lastPrompt ? 96 : 140 }}
           />
 
-          {!issue ? (
+          {!issue && !lastPrompt ? (
             <div
               aria-hidden
               className="pointer-events-none absolute left-4 top-[12px] flex items-baseline gap-1 text-[16px] leading-7 text-[var(--hw-muted)]"
