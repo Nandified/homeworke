@@ -64,6 +64,7 @@ export function AIWorkOrderIntakeCard(props: {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const issueRef = useRef<HTMLTextAreaElement | null>(null);
+  const sendInFlightRef = useRef(false);
 
   const [issue, setIssue] = useState(props.prefillIssue || "");
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -182,7 +183,11 @@ export function AIWorkOrderIntakeCard(props: {
 
   async function send() {
     const text = issue.trim();
-    if (!text || classifying) return;
+    // Prevent accidental double-submits (Enter key repeat, etc.)
+    if (!text || classifying || assistantThinking || sendInFlightRef.current) return;
+    sendInFlightRef.current = true;
+
+    try {
 
     // If we're in Q&A mode, treat send as the answer to the current question.
     if (awaitingAnswers) {
@@ -261,6 +266,9 @@ export function AIWorkOrderIntakeCard(props: {
     } finally {
       setClassifying(false);
     }
+  } finally {
+    sendInFlightRef.current = false;
+  }
   }
 
   function scheduleVisit() {
@@ -442,6 +450,8 @@ export function AIWorkOrderIntakeCard(props: {
             value={issue}
             onChange={(e) => setIssue(e.target.value)}
             onKeyDown={async (e) => {
+              if (e.key === "Enter" && (e as any).repeat) return;
+
               // Desktop: Enter to send, Shift+Enter for newline.
               if (e.key === "Enter" && isDesktop && !e.shiftKey && !e.altKey) {
                 e.preventDefault();
