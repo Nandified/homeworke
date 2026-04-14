@@ -132,11 +132,9 @@ export async function POST(req: Request) {
         text: {
           format: {
             type: "json_schema",
-            json_schema: {
-              name: "work_order_intake_classify",
-              schema,
-              strict: true,
-            },
+            name: "work_order_intake_classify",
+            schema,
+            strict: true,
           },
         },
         input: [
