@@ -407,61 +407,60 @@ export function AIWorkOrderIntakeCard(props: {
             </div>
 
             <div className="mt-3">
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                 <Link href="/marketplace/intake?trade=Plumbing" className="w-full">
                   <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Droplet className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    <Droplet className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                     Plumbing
                   </span>
                 </Link>
                 <Link href="/marketplace/intake?trade=Electrical" className="w-full">
                   <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Zap className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    <Zap className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                     Electrical
                   </span>
                 </Link>
                 <Link href="/marketplace/intake?trade=HVAC" className="w-full">
                   <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Wind className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    <Wind className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                     HVAC
                   </span>
                 </Link>
                 <Link href="/marketplace/intake?trade=Handyman%20%2F%20General" className="w-full">
                   <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Hammer className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    <Hammer className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                     Handyman
                   </span>
                 </Link>
                 <Link href="/marketplace/intake?trade=Cleaning%20%2F%20Turnover" className="w-full">
                   <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Sparkles className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    <Sparkles className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                     Cleaning
                   </span>
                 </Link>
 
                 <Link href="/marketplace/intake?trade=Remodeling" className="w-full">
                   <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Home className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    <Home className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                     Remodel
                   </span>
                 </Link>
                 <Link href="/marketplace/intake?trade=Roofing" className="w-full">
                   <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Shield className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    <Shield className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                     Roofing
                   </span>
                 </Link>
                 <Link href="/marketplace/intake?trade=Flooring" className="w-full">
                   <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Layers className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    <Layers className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                     Flooring
                   </span>
                 </Link>
-                <div aria-hidden />
                 <Link
                   href="/services"
                   title={props.secondaryCta || "Browse marketplace"}
-                  className="inline-flex w-full items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[10px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] whitespace-nowrap"
+                  className="col-span-2 inline-flex w-full items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-2 py-2 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] whitespace-nowrap sm:col-span-1"
                 >
                   Browse marketplace
                 </Link>

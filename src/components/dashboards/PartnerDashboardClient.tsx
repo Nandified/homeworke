@@ -144,8 +144,14 @@ function InstantEstimateCard({ basePath }: { basePath: string }) {
       className="relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7"
       style={{ boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}
     >
-      <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[var(--hw-red)]/20 blur-[60px]" />
-      <div aria-hidden className="pointer-events-none absolute -left-24 bottom-0 h-48 w-48 rounded-full bg-[var(--hw-red)]/10 blur-[70px]" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-24 -top-24 hidden h-64 w-64 rounded-full bg-[var(--hw-red)]/20 blur-[60px] sm:block"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-24 bottom-0 hidden h-48 w-48 rounded-full bg-[var(--hw-red)]/10 blur-[70px] sm:block"
+      />
 
       <div className="relative">
         <div className="flex items-start justify-between gap-3">
