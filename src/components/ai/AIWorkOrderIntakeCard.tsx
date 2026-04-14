@@ -238,7 +238,11 @@ export function AIWorkOrderIntakeCard(props: {
 
       const qs = (Array.isArray(j.clarifyingQuestions) ? j.clarifyingQuestions : []).filter(Boolean).slice(0, 3);
       // If model returns none, still keep 1 generic question for concierge feel.
-      const normalized = qs.length ? qs : ["Anything else to add (photos, room, timing)?"]; 
+      const normalized = qs.length
+        ? qs
+        : [
+            "Anything else that would help? For example: a photo/video, where in the home it is (kitchen/bathroom/etc), and when you’d like someone to come out.",
+          ];
 
       setQuestions(normalized);
       setAnswers(new Array(normalized.length).fill(""));
