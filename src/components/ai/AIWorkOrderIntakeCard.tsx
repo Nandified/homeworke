@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ArrowRight, ArrowUp, Paperclip, Droplet, Zap, Wind, Hammer } from "lucide-react";
+import { ArrowRight, ArrowUp, Paperclip, Droplet, Zap, Wind, Hammer, Sparkles, Home, Wrench } from "lucide-react";
 
 import { Button, Input, Pill } from "@/components/ui";
 
@@ -274,7 +274,7 @@ export function AIWorkOrderIntakeCard(props: {
               <div className="h-px flex-1 bg-[var(--hw-line)]" />
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="mt-3 flex flex-col gap-2">
               <div className="flex flex-wrap gap-2">
                 <Link href="/marketplace/intake?trade=Plumbing">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
@@ -300,11 +300,31 @@ export function AIWorkOrderIntakeCard(props: {
                     Handyman
                   </span>
                 </Link>
+                <Link href="/marketplace/intake?trade=Cleaning%20%2F%20Turnover">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                    <Sparkles className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    Cleaning
+                  </span>
+                </Link>
+                <Link href="/marketplace/intake?trade=Appliance%20Repair%2FInstall">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                    <Wrench className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    Appliances
+                  </span>
+                </Link>
+                <Link href="/marketplace/intake?trade=Remodeling">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                    <Home className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    Remodel
+                  </span>
+                </Link>
               </div>
 
-              <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
-                {props.secondaryCta || "Browse marketplace"}
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
+                  {props.secondaryCta || "Browse marketplace"}
+                </Link>
+              </div>
             </div>
           </div>
 
