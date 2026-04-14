@@ -9,18 +9,18 @@ import {
   ArrowUp,
   ChevronDown,
   ChevronUp,
-  Paperclip,
   Droplet,
-  Zap,
-  Wind,
   Hammer,
-  Sparkles,
   Home,
-  Shield,
   Layers,
+  Paperclip,
+  Shield,
+  Sparkles,
+  Wind,
+  Zap,
 } from "lucide-react";
 
-import { Button, Input, Pill } from "@/components/ui";
+import { Button, Pill } from "@/components/ui";
 
 type IntakeClassifyResult = {
   ok: boolean;
@@ -47,33 +47,45 @@ type PropertyLite = {
   zip?: string | null;
 };
 
+type Turn = {
+  role: "user" | "assistant";
+  text: string;
+};
+
 export function AIWorkOrderIntakeCard(props: {
   eyebrow?: string;
   title?: string;
   primaryCta?: string;
   secondaryCta?: string;
-  /** Prefill the issue box (e.g., when launched from a specific property). */
   prefillIssue?: string;
-  /** Show a small header pill (defaults true). */
   showServicingPill?: boolean;
 }) {
   const router = useRouter();
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const issueRef = useRef<HTMLTextAreaElement | null>(null);
+
   const [issue, setIssue] = useState(props.prefillIssue || "");
-  const [lastPrompt, setLastPrompt] = useState<string>("");
-  const [classifying, setClassifying] = useState(false);
-  const [classifyResult, setClassifyResult] = useState<IntakeClassifyResult | null>(null);
-  const [qna, setQna] = useState<Array<{ question: string; answer: string }>>([]);
-  const [classifyError, setClassifyError] = useState<string>("");
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   const [properties, setProperties] = useState<PropertyLite[] | null>(null);
   const [propertyId, setPropertyId] = useState<string>("");
 
-  const [manualOpen, setManualOpen] = useState(true);
-  const [refineMode, setRefineMode] = useState(false);
+  const [classifying, setClassifying] = useState(false);
+  const [classifyError, setClassifyError] = useState<string>("");
+  const [result, setResult] = useState<IntakeClassifyResult | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [attachments, setAttachments] = useState<File[]>([]);
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [questions, setQuestions] = useState<string[]>([]);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [qIndex, setQIndex] = useState<number>(0);
+
+  const [manualOpen, setManualOpen] = useState(true);
+
+  const started = turns.length > 0 || classifying || !!result?.ok || !!classifyError;
+  const currentQuestion = questions[qIndex] || "";
+  const awaitingAnswers = !!result?.ok && qIndex < questions.length;
+  const readyToSchedule = !!result?.ok && qIndex >= questions.length;
 
   const hints = useMemo(() => ["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"], []);
   const [demoIdx, setDemoIdx] = useState(0);
@@ -81,11 +93,9 @@ export function AIWorkOrderIntakeCard(props: {
   const demoPhase = useRef<"typing" | "pause" | "deleting">("typing");
   const pauseUntil = useRef<number>(0);
 
-  const issueRef = useRef<HTMLTextAreaElement | null>(null);
-
-  // Typewriter hints
+  // Typewriter hints (only before first send)
   useEffect(() => {
-    if (issue.trim()) return;
+    if (issue.trim() || started) return;
 
     const tick = () => {
       const now = Date.now();
@@ -117,7 +127,7 @@ export function AIWorkOrderIntakeCard(props: {
     const speed = demoPhase.current === "deleting" ? 26 : 34;
     const t = window.setInterval(tick, speed);
     return () => window.clearInterval(t);
-  }, [issue, demoIdx, demoText.length, hints]);
+  }, [issue, started, demoIdx, demoText.length, hints]);
 
   // Autogrow textarea
   useEffect(() => {
@@ -127,7 +137,7 @@ export function AIWorkOrderIntakeCard(props: {
     el.style.height = `${el.scrollHeight}px`;
   }, [issue]);
 
-  // Best-effort property list (for suggestion after chat)
+  // Best-effort property list
   useEffect(() => {
     const run = async () => {
       try {
@@ -144,16 +154,50 @@ export function AIWorkOrderIntakeCard(props: {
     run();
   }, []);
 
-  async function runAI() {
-    const text = issue.trim();
-    if (!text) return;
+  function resetIntakeKeepDraft() {
+    setClassifyError("");
+    setClassifying(false);
+    setResult(null);
+    setTurns([]);
+    setQuestions([]);
+    setAnswers([]);
+    setQIndex(0);
+    setManualOpen(true);
+  }
 
-    setLastPrompt(text);
-    setRefineMode(false);
+  async function send() {
+    const text = issue.trim();
+    if (!text || classifying) return;
+
+    // If we're in Q&A mode, treat send as the answer to the current question.
+    if (awaitingAnswers) {
+      const nextAnswers = answers.slice();
+      nextAnswers[qIndex] = text;
+      setAnswers(nextAnswers);
+
+      setTurns((prev) => [...prev, { role: "user", text }]);
+      setIssue("");
+
+      const nextIdx = qIndex + 1;
+      setQIndex(nextIdx);
+
+      if (nextIdx < questions.length) {
+        setTurns((prev) => [...prev, { role: "assistant", text: questions[nextIdx] }]);
+      }
+
+      return;
+    }
+
+    // Otherwise this is the initial issue description.
+    setManualOpen(false);
     setClassifyError("");
     setClassifying(true);
-    setClassifyResult(null);
-    setQna([]);
+    setResult(null);
+    setQuestions([]);
+    setAnswers([]);
+    setQIndex(0);
+
+    setTurns((prev) => [...prev, { role: "user", text }]);
 
     try {
       const res = await fetch("/api/work-orders/intake-classify", {
@@ -166,13 +210,25 @@ export function AIWorkOrderIntakeCard(props: {
         setClassifyError(j?.error || `classify_failed_${res.status}`);
         return;
       }
-      setClassifyResult(j);
-      const qs = Array.isArray(j.clarifyingQuestions) ? j.clarifyingQuestions : [];
-      setQna(qs.map((q) => ({ question: q, answer: "" })));
-      // Clear the composer after submitting (ChatGPT-like)
+
+      setResult(j);
+
+      const qs = (Array.isArray(j.clarifyingQuestions) ? j.clarifyingQuestions : []).filter(Boolean).slice(0, 3);
+      // If model returns none, still keep 1 generic question for concierge feel.
+      const normalized = qs.length ? qs : ["Anything else to add (photos, room, timing)?"]; 
+
+      setQuestions(normalized);
+      setAnswers(new Array(normalized.length).fill(""));
+      setQIndex(0);
+
+      // Assistant: suggested + first question
+      const suggestedLine = `Suggested: ${j.trade || ""}${j.subcategory ? ` · ${j.subcategory}` : ""}`.trim();
+      const confLine = typeof j.confidence === "number" ? `Confidence ${(j.confidence * 100).toFixed(0)}%` : "";
+      const header = [suggestedLine, confLine].filter(Boolean).join(" — ");
+
+      setTurns((prev) => [...prev, { role: "assistant", text: header || "Got it." }, { role: "assistant", text: normalized[0] }]);
+
       setIssue("");
-      // Collapse manual booking once user chooses AI
-      setManualOpen(false);
     } catch {
       setClassifyError("classify_fetch_error");
     } finally {
@@ -180,26 +236,34 @@ export function AIWorkOrderIntakeCard(props: {
     }
   }
 
-  function continueToIntake() {
-    const r = classifyResult;
-    const issueText = issue.trim();
-    const summary = (r?.aiSummary || issueText).trim();
-    const qnaJson = qna.length ? JSON.stringify(qna) : "";
+  function scheduleVisit() {
+    if (!result?.ok) return;
+    if (questions.length && answers.some((a) => !String(a || "").trim())) return;
+
+    const qnaJson = JSON.stringify(
+      questions.map((q, i) => ({ question: q, answer: answers[i] || "" }))
+    );
 
     router.push(
       `/marketplace/intake?` +
         new URLSearchParams({
-          issue: issueText,
-          trade: r?.trade || "",
-          category: r?.category || "",
-          subcategory: r?.subcategory || "",
-          serviceId: r?.serviceId || "",
-          aiSummary: summary,
+          issue: turns.findLast((t) => t.role === "user")?.text || "",
+          trade: result.trade || "",
+          category: result.category || "",
+          subcategory: result.subcategory || "",
+          serviceId: result.serviceId || "",
+          aiSummary: (result.aiSummary || "").trim(),
           qna: qnaJson,
           propertyId: propertyId || "",
         }).toString()
     );
   }
+
+  const sendDisabled =
+    classifying ||
+    !issue.trim() ||
+    // While in Q&A mode, force answers through the same composer (send is fine)
+    false;
 
   return (
     <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass">
@@ -217,55 +281,49 @@ export function AIWorkOrderIntakeCard(props: {
         </Pill>
       </div>
 
-      {/* Conversation */}
-      {lastPrompt || classifying || classifyResult?.ok || classifyError ? (
+      {/* Conversation area */}
+      {started ? (
         <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 p-4">
-          {/* User bubble */}
-          {lastPrompt ? (
-            <div className="flex justify-end">
-              <div className="max-w-[90%] rounded-2xl bg-[var(--hw-ink)] px-4 py-2.5 text-sm leading-6 text-white shadow-sm">
-                {lastPrompt}
+          <div className="grid gap-3">
+            {turns.map((t, idx) => (
+              <div key={idx} className={t.role === "user" ? "flex justify-end" : "flex justify-start"}>
+                <div
+                  className={
+                    t.role === "user"
+                      ? "max-w-[92%] rounded-2xl bg-[var(--hw-ink)] px-4 py-2.5 text-sm leading-6 text-white shadow-sm"
+                      : "max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm"
+                  }
+                >
+                  {t.text}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ))}
 
-          {/* Assistant bubble */}
-          <div className="mt-3 flex justify-start">
-            <div className="max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Homeworke AI</div>
-                {classifying ? (
+            {classifying ? (
+              <div className="flex justify-start">
+                <div className="rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 shadow-sm">
                   <div className="flex items-center gap-1.5">
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--hw-muted)] animate-pulse" style={{ animationDelay: "0ms" }} />
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--hw-muted)] animate-pulse" style={{ animationDelay: "180ms" }} />
                     <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--hw-muted)] animate-pulse" style={{ animationDelay: "360ms" }} />
                   </div>
-                ) : null}
+                </div>
               </div>
+            ) : null}
 
-              {classifyError ? (
-                <div className="mt-2 rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] px-3 py-2 text-xs font-semibold text-[var(--hw-red)]">
+            {classifyError ? (
+              <div className="flex justify-start">
+                <div className="rounded-2xl border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] px-4 py-3 text-sm font-semibold text-[var(--hw-red)]">
                   We couldn’t analyze that. Please try again.
                 </div>
-              ) : null}
+              </div>
+            ) : null}
 
-              {classifyResult?.ok ? (
-                <div className="mt-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="text-sm font-semibold">Suggested</div>
-                    <div className="text-xs text-[var(--hw-muted)]">
-                      {typeof classifyResult.confidence === "number"
-                        ? `Confidence ${(classifyResult.confidence * 100).toFixed(0)}%`
-                        : null}
-                    </div>
-                  </div>
-
-                  <div className="mt-2 text-sm">
-                    <span className="font-semibold">{classifyResult.trade}</span>
-                    {classifyResult.subcategory ? (
-                      <span className="text-[var(--hw-muted)]"> · {classifyResult.subcategory}</span>
-                    ) : null}
-                  </div>
+            {readyToSchedule ? (
+              <div className="flex justify-start">
+                <div className="max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+                  <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Next</div>
+                  <div className="mt-1">Ready to schedule a visit.</div>
 
                   {properties && properties.length ? (
                     <div className="mt-3">
@@ -290,78 +348,46 @@ export function AIWorkOrderIntakeCard(props: {
                     </div>
                   ) : null}
 
-                  {qna.length ? (
-                    <div className="mt-3 grid gap-3">
-                      {qna.map((qa, idx) => (
-                        <div key={idx}>
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Question</div>
-                            {idx === qna.length - 1 ? (
-                              <button
-                                type="button"
-                                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)]"
-                                onClick={() => fileInputRef.current?.click()}
-                                title="Add photos/videos"
-                              >
-                                <Paperclip className="h-3.5 w-3.5" />
-                                Add media
-                              </button>
-                            ) : null}
-                          </div>
-                          <div className="mt-1 text-sm">{qa.question}</div>
-                          <div className="mt-2">
-                            <Input
-                              value={qa.answer}
-                              onChange={(e) =>
-                                setQna((prev) => {
-                                  const next = prev.slice();
-                                  next[idx] = { ...next[idx], answer: e.target.value };
-                                  return next;
-                                })
-                              }
-                              placeholder={idx === qna.length - 1 ? "Add details here (and optionally attach photos/videos)…" : "Type your answer…"}
-                            />
-                          </div>
-                          {idx === qna.length - 1 && attachments.length ? (
-                            <div className="mt-2 text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="mt-2 text-sm text-[var(--hw-muted)]">Got it. If you want, add photos/videos for accuracy.</div>
-                  )}
-
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                     <Button
                       className="w-full sm:w-auto"
-                      onClick={continueToIntake}
-                      disabled={qna.length ? qna.some((x) => !x.answer.trim()) : false}
+                      onClick={scheduleVisit}
+                      disabled={questions.length ? answers.some((a) => !String(a || "").trim()) : false}
                     >
-                      Book repair
+                      {props.primaryCta || "Schedule visit"}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                     <button
                       type="button"
                       className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
                       onClick={() => {
-                        // Keep the conversation visible; just drop the user back into the composer.
-                        setRefineMode(true);
-                        setIssue(lastPrompt);
-                        setManualOpen(false);
+                        // Stay in-place; just reset intake state (keep attachments)
+                        resetIntakeKeepDraft();
+                        setIssue(turns.findLast((t) => t.role === "user")?.text || "");
                         setTimeout(() => issueRef.current?.focus(), 0);
                       }}
                     >
                       Refine
                     </button>
                   </div>
+
+                  {attachments.length ? (
+                    <div className="mt-3 text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
+                  ) : null}
+
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)]"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Paperclip className="h-3.5 w-3.5" />
+                      Add photos/videos
+                    </button>
+                  </div>
                 </div>
-              ) : classifying ? null : refineMode ? (
-                <div className="mt-2 text-sm text-[var(--hw-muted)]">Edit your message below, then tap send.</div>
-              ) : (
-                <div className="mt-2 text-sm text-[var(--hw-muted)]">Describe the issue and I’ll suggest the right service.</div>
-              )}
-            </div>
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -388,21 +414,19 @@ export function AIWorkOrderIntakeCard(props: {
             value={issue}
             onChange={(e) => setIssue(e.target.value)}
             onKeyDown={async (e) => {
-              // Match ChatGPT mobile feel: Enter adds a new line.
-              // Desktop power-user shortcut: Cmd/Ctrl + Enter sends.
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
-                if (!classifying && issue.trim()) await runAI();
+                await send();
               }
             }}
             placeholder=""
-            aria-label="Describe your issue"
-            rows={lastPrompt ? 1 : 3}
+            aria-label="Message"
+            rows={started ? 1 : 3}
             className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-3 pr-28 text-[17px] leading-7 border-0 outline-none"
-            style={{ minHeight: lastPrompt ? 64 : 140 }}
+            style={{ minHeight: started ? 64 : 140 }}
           />
 
-          {!issue && !lastPrompt ? (
+          {!issue && !started ? (
             <div
               aria-hidden
               className="pointer-events-none absolute left-4 top-[12px] flex items-baseline gap-1 text-[16px] leading-7 text-[var(--hw-muted)]"
@@ -426,33 +450,19 @@ export function AIWorkOrderIntakeCard(props: {
           <button
             type="button"
             aria-label="Send"
-            onClick={async () => {
-              if (!classifying && issue.trim()) await runAI();
-            }}
+            onClick={send}
             className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hw-red)] text-white shadow-sm hover:opacity-95 disabled:opacity-50"
-            disabled={
-              classifying ||
-              !issue.trim() ||
-              // If AI has returned follow-up questions, keep the user in that lane.
-              (classifyResult?.ok && qna.length > 0)
-            }
-            title={classifyResult?.ok && qna.length > 0 ? "Answer the questions above" : ""}
+            disabled={sendDisabled}
+            title={awaitingAnswers ? "Answer the question" : ""}
           >
             <ArrowUp className="h-4 w-4" />
           </button>
         </div>
 
         <div className="mt-2 space-y-2">
-          <div className="text-xs text-[var(--hw-muted)]">
-            Tip: Add as much information as possible so we can get you the right help.
-          </div>
+          <div className="text-xs text-[var(--hw-muted)]">Tip: Add as much information as possible so we can get you the right help.</div>
 
-          {classifyError ? (
-            <div className="mt-3 rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] px-3 py-2 text-xs font-semibold text-[var(--hw-red)]">
-              We couldn’t analyze that. Please try again.
-            </div>
-          ) : null}
-
+          {/* Manual booking collapses after AI starts, but remains accessible. */}
           <div className="mt-3">
             <button
               type="button"
@@ -468,79 +478,71 @@ export function AIWorkOrderIntakeCard(props: {
               <div className="h-px flex-1 bg-[var(--hw-line)]" />
             </button>
 
-            {manualOpen ? (
+            {manualOpen && !started ? (
               <div className="mt-3">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                <Link href="/marketplace/intake?trade=Plumbing" className="w-full">
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Droplet className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
-                    Plumbing
-                  </span>
-                </Link>
-                <Link href="/marketplace/intake?trade=Electrical" className="w-full">
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Zap className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
-                    Electrical
-                  </span>
-                </Link>
-                <Link href="/marketplace/intake?trade=HVAC" className="w-full">
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Wind className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
-                    HVAC
-                  </span>
-                </Link>
-                <Link href="/marketplace/intake?trade=Handyman%20%2F%20General" className="w-full">
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Hammer className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
-                    Handyman
-                  </span>
-                </Link>
-                <Link href="/marketplace/intake?trade=Cleaning%20%2F%20Turnover" className="w-full">
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Sparkles className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
-                    Cleaning
-                  </span>
-                </Link>
+                  <Link href="/marketplace/intake?trade=Plumbing" className="w-full">
+                    <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                      <Droplet className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
+                      Plumbing
+                    </span>
+                  </Link>
+                  <Link href="/marketplace/intake?trade=Electrical" className="w-full">
+                    <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                      <Zap className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
+                      Electrical
+                    </span>
+                  </Link>
+                  <Link href="/marketplace/intake?trade=HVAC" className="w-full">
+                    <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                      <Wind className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
+                      HVAC
+                    </span>
+                  </Link>
+                  <Link href="/marketplace/intake?trade=Handyman%20%2F%20General" className="w-full">
+                    <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                      <Hammer className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
+                      Handyman
+                    </span>
+                  </Link>
+                  <Link href="/marketplace/intake?trade=Cleaning%20%2F%20Turnover" className="w-full">
+                    <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                      <Sparkles className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
+                      Cleaning
+                    </span>
+                  </Link>
 
-                <Link href="/marketplace/intake?trade=Remodeling" className="w-full">
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Home className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
-                    Remodel
-                  </span>
-                </Link>
-                <Link href="/marketplace/intake?trade=Roofing" className="w-full">
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Shield className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
-                    Roofing
-                  </span>
-                </Link>
-                <Link href="/marketplace/intake?trade=Flooring" className="w-full">
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                    <Layers className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
-                    Flooring
-                  </span>
-                </Link>
-                <Link
-                  href="/services"
-                  title={props.secondaryCta || "Browse marketplace"}
-                  className="col-span-2 inline-flex w-full items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] whitespace-nowrap sm:col-span-2"
-                >
-                  Browse marketplace
-                </Link>
+                  <Link href="/marketplace/intake?trade=Remodeling" className="w-full">
+                    <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                      <Home className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
+                      Remodel
+                    </span>
+                  </Link>
+                  <Link href="/marketplace/intake?trade=Roofing" className="w-full">
+                    <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                      <Shield className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
+                      Roofing
+                    </span>
+                  </Link>
+                  <Link href="/marketplace/intake?trade=Flooring" className="w-full">
+                    <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                      <Layers className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
+                      Flooring
+                    </span>
+                  </Link>
+
+                  <Link
+                    href="/services"
+                    className="col-span-2 inline-flex w-full items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] whitespace-nowrap sm:col-span-2"
+                  >
+                    Browse marketplace
+                  </Link>
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
           </div>
-
-          {attachments.length ? (
-            <div className="text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
-          ) : null}
         </div>
-
-        {/* error is displayed above the manual booking section for visibility */}
       </div>
-
-      {/* AI results are rendered in the conversation area above the composer. */}
     </div>
   );
 }
