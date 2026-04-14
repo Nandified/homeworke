@@ -103,7 +103,8 @@ export async function POST(req: Request) {
       "Return STRICT JSON only (no markdown). " +
       "You must always provide all required fields. " +
       "If uncertain about urgency, choose 'this_week'. If there are no safety flags, return an empty array. " +
-      "If there are no clarifying questions needed, return an empty array.";
+      "Always include 1-3 clarifyingQuestions (aim for 2) to confirm scope/safety and improve routing. " +
+      "If you truly cannot think of any, ask: 'Anything else to add (photos, room, timing)?'";
 
     const schema = {
       type: "object",

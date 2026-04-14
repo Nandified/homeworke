@@ -151,6 +151,8 @@ export function AIWorkOrderIntakeCard(props: {
       setClassifyResult(j);
       const qs = Array.isArray(j.clarifyingQuestions) ? j.clarifyingQuestions : [];
       setQna(qs.map((q) => ({ question: q, answer: "" })));
+      // Clear the composer after submitting (ChatGPT-like)
+      setIssue("");
     } catch {
       setClassifyError("classify_fetch_error");
     } finally {
@@ -291,20 +293,27 @@ export function AIWorkOrderIntakeCard(props: {
                       ))}
                     </div>
                   ) : (
-                    <div className="mt-2 text-sm text-[var(--hw-muted)]">No follow-up questions—looks straightforward.</div>
+                    <div className="mt-2 text-sm text-[var(--hw-muted)]">Got it. If you want, add photos/videos for accuracy.</div>
                   )}
 
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                     <Button className="w-full sm:w-auto" onClick={continueToIntake}>
-                      {props.primaryCta || "Start a job request"}
+                      {props.primaryCta || "Book repair"}
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                     <button
                       type="button"
                       className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
-                      onClick={() => setClassifyResult(null)}
+                      onClick={() => {
+                        setIssue(lastPrompt);
+                        setClassifyResult(null);
+                        setQna([]);
+                        setClassifyError("");
+                        // focus
+                        setTimeout(() => issueRef.current?.focus(), 0);
+                      }}
                     >
-                      Edit
+                      Refine
                     </button>
                   </div>
                 </div>
