@@ -24,8 +24,8 @@
   "services": [
     {
       "id": "appliance-repair-install.install.above-ground-swimming-pool-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Pool / Spa",
+      "category": "Pool",
       "label": "Above Ground Swimming Pool Installation"
     },
     {
@@ -54,8 +54,8 @@
     },
     {
       "id": "appliance-repair-install.install.artificial-turf-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Landscaping / Lawn",
+      "category": "Landscaping Design",
       "label": "Artificial Turf Installation"
     },
     {
@@ -66,8 +66,8 @@
     },
     {
       "id": "appliance-repair-install.install.asphalt-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Masonry / Concrete / Asphalt",
+      "category": "Concrete",
       "label": "Asphalt Installation"
     },
     {
@@ -108,8 +108,8 @@
     },
     {
       "id": "appliance-repair-install.install.cabinet-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Handyman / General",
+      "category": "Cabinets & Countertops",
       "label": "Cabinet Installation"
     },
     {
@@ -180,8 +180,8 @@
     },
     {
       "id": "appliance-repair-install.install.closet-and-shelving-system-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Handyman / General",
+      "category": "Carpentry",
       "label": "Closet and Shelving System Installation"
     },
     {
@@ -210,8 +210,8 @@
     },
     {
       "id": "appliance-repair-install.install.concrete-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Masonry / Concrete / Asphalt",
+      "category": "Concrete",
       "label": "Concrete Installation"
     },
     {
@@ -228,8 +228,8 @@
     },
     {
       "id": "appliance-repair-install.install.countertop-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Handyman / General",
+      "category": "Cabinets & Countertops",
       "label": "Countertop Installation"
     },
     {
@@ -265,19 +265,19 @@
     {
       "id": "appliance-repair-install.repair.dishwasher-installation",
       "trade": "Appliance Repair/Install",
-      "category": "Repair",
+      "category": "Install",
       "label": "Dishwasher Installation"
     },
     {
       "id": "appliance-repair-install.install.dog-fence-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Remodeling",
+      "category": "Exterior",
       "label": "Dog Fence Installation"
     },
     {
       "id": "appliance-repair-install.install.door-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Windows & Doors",
+      "category": "Doors",
       "label": "Door Installation"
     },
     {
@@ -288,8 +288,8 @@
     },
     {
       "id": "appliance-repair-install.install.drywall-installation-and-hanging",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Painting & Drywall",
+      "category": "Drywall",
       "label": "Drywall Installation and Hanging"
     },
     {
@@ -390,8 +390,8 @@
     },
     {
       "id": "appliance-repair-install.install.fan-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Electrical",
+      "category": "Lighting & Fans",
       "label": "Fan Installation"
     },
     {
@@ -402,8 +402,8 @@
     },
     {
       "id": "appliance-repair-install.install.fence-and-gate-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Remodeling",
+      "category": "Exterior",
       "label": "Fence and Gate Installation"
     },
     {
@@ -426,8 +426,8 @@
     },
     {
       "id": "appliance-repair-install.install.fireplace-and-chimney-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Remodeling",
+      "category": "Exterior",
       "label": "Fireplace and Chimney Installation"
     },
     {
@@ -438,7 +438,7 @@
     },
     {
       "id": "appliance-repair-install.install.floor-installation-or-replacement",
-      "trade": "Appliance Repair/Install",
+      "trade": "Flooring",
       "category": "Install",
       "label": "Floor Installation or Replacement"
     },
@@ -492,8 +492,8 @@
     },
     {
       "id": "appliance-repair-install.install.garage-door-installation-or-replacement",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Remodeling",
+      "category": "Exterior",
       "label": "Garage Door Installation or Replacement"
     },
     {
@@ -528,14 +528,14 @@
     },
     {
       "id": "appliance-repair-install.install.gas-line-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Plumbing",
+      "category": "Fixtures",
       "label": "Gas Line Installation"
     },
     {
       "id": "appliance-repair-install.install.gazebo-installation-and-construction",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Handyman / General",
+      "category": "Decks & Patios",
       "label": "Gazebo Installation and Construction"
     },
     {
@@ -564,8 +564,8 @@
     },
     {
       "id": "appliance-repair-install.install.gutter-installation-or-replacement",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Gutters",
+      "category": "Install / Repair",
       "label": "Gutter Installation or Replacement"
     },
     {
@@ -624,8 +624,8 @@
     },
     {
       "id": "appliance-repair-install.install.home-security-and-alarms-install",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Handyman / General",
+      "category": "Security",
       "label": "Home Security and Alarms Install"
     },
     {
@@ -642,8 +642,8 @@
     },
     {
       "id": "appliance-repair-install.install.home-theater-system-installation-or-replacement",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Handyman / General",
+      "category": "Low Voltage / Install",
       "label": "Home Theater System Installation or Replacement"
     },
     {
@@ -690,8 +690,8 @@
     },
     {
       "id": "appliance-repair-install.install.insulation-installation-or-upgrade",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Remodeling",
+      "category": "Weatherization",
       "label": "Insulation Installation or Upgrade"
     },
     {
@@ -762,8 +762,8 @@
     },
     {
       "id": "appliance-repair-install.install.lock-installation-and-repair",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Handyman / General",
+      "category": "Assembly / Small Repairs",
       "label": "Lock Installation and Repair"
     },
     {
@@ -870,8 +870,8 @@
     },
     {
       "id": "appliance-repair-install.install.plumbing-pipe-installation-or-replacement",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Plumbing",
+      "category": "Leak / Repair",
       "label": "Plumbing Pipe Installation or Replacement"
     },
     {
@@ -918,8 +918,8 @@
     },
     {
       "id": "appliance-repair-install.install.railing-installation-or-remodel",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Handyman / General",
+      "category": "Carpentry",
       "label": "Railing Installation or Remodel"
     },
     {
@@ -966,8 +966,8 @@
     },
     {
       "id": "appliance-repair-install.install.screen-installation-or-replacement",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Windows & Doors",
+      "category": "Windows",
       "label": "Screen Installation or Replacement"
     },
     {
@@ -1008,8 +1008,8 @@
     },
     {
       "id": "appliance-repair-install.install.siding-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Remodeling",
+      "category": "Exterior",
       "label": "Siding Installation"
     },
     {
@@ -1038,8 +1038,8 @@
     },
     {
       "id": "appliance-repair-install.install.smart-home-installation-or-repair",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Handyman / General",
+      "category": "Low Voltage / Install",
       "label": "Smart Home Installation or Repair"
     },
     {
@@ -1050,8 +1050,8 @@
     },
     {
       "id": "appliance-repair-install.install.sod-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Landscaping / Lawn",
+      "category": "Lawn Care",
       "label": "Sod Installation"
     },
     {
@@ -1074,8 +1074,8 @@
     },
     {
       "id": "appliance-repair-install.install.sprinkler-and-irrigation-system-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Landscaping / Lawn",
+      "category": "Landscaping Design",
       "label": "Sprinkler and Irrigation System Installation"
     },
     {
@@ -1170,7 +1170,7 @@
     },
     {
       "id": "appliance-repair-install.install.tile-installation-and-replacement",
-      "trade": "Appliance Repair/Install",
+      "trade": "Flooring",
       "category": "Install",
       "label": "Tile Installation and Replacement"
     },
@@ -1212,8 +1212,8 @@
     },
     {
       "id": "appliance-repair-install.install.trim-or-molding-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Handyman / General",
+      "category": "Carpentry",
       "label": "Trim or Molding Installation"
     },
     {
@@ -1242,8 +1242,8 @@
     },
     {
       "id": "appliance-repair-install.install.wallpaper-installation-or-repair",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Painting & Drywall",
+      "category": "Wallpaper",
       "label": "Wallpaper Installation or Repair"
     },
     {
@@ -1254,8 +1254,8 @@
     },
     {
       "id": "appliance-repair-install.install.water-feature-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Landscaping / Lawn",
+      "category": "Landscaping Design",
       "label": "Water Feature Installation"
     },
     {
@@ -1278,8 +1278,8 @@
     },
     {
       "id": "appliance-repair-install.install.water-treatment-system-installation-or-replacement",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Plumbing",
+      "category": "Fixtures",
       "label": "Water Treatment System Installation or Replacement"
     },
     {
@@ -1308,8 +1308,8 @@
     },
     {
       "id": "appliance-repair-install.install.window-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Windows & Doors",
+      "category": "Windows",
       "label": "Window Installation"
     },
     {
@@ -1326,8 +1326,8 @@
     },
     {
       "id": "appliance-repair-install.install.window-treatment-installation-or-repair",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Windows & Doors",
+      "category": "Window Treatments",
       "label": "Window Treatment Installation or Repair"
     },
     {
@@ -1338,8 +1338,8 @@
     },
     {
       "id": "appliance-repair-install.install.wiring-installation",
-      "trade": "Appliance Repair/Install",
-      "category": "Install",
+      "trade": "Electrical",
+      "category": "Panel / Service",
       "label": "Wiring Installation"
     }
   ]
