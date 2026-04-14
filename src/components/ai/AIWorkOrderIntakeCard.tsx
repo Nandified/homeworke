@@ -179,8 +179,8 @@ export function AIWorkOrderIntakeCard(props: {
 
   return (
     <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
             {props.eyebrow || "Job work order"}
           </div>
@@ -188,7 +188,9 @@ export function AIWorkOrderIntakeCard(props: {
             {props.title || "What do you need help with?"}
           </div>
         </div>
-        <Pill className="bg-white">Homeworke AI</Pill>
+        <Pill className="bg-[rgba(229,57,53,.10)] text-[var(--hw-red)] border border-[rgba(229,57,53,.22)] self-start">
+          Homeworke AI
+        </Pill>
       </div>
 
       <div className="mt-4">
