@@ -80,6 +80,7 @@ export function AIWorkOrderIntakeCard(props: {
   const [questions, setQuestions] = useState<string[]>([]);
   const [answers, setAnswers] = useState<string[]>([]);
   const [qIndex, setQIndex] = useState<number>(0);
+  const [rootIssue, setRootIssue] = useState<string>("");
 
   const [manualOpen, setManualOpen] = useState(true);
   const [assistantThinking, setAssistantThinking] = useState(false);
@@ -177,6 +178,7 @@ export function AIWorkOrderIntakeCard(props: {
     setQuestions([]);
     setAnswers([]);
     setQIndex(0);
+    setRootIssue("");
     setManualOpen(true);
     setCompactComposer(false);
   }
@@ -188,6 +190,29 @@ export function AIWorkOrderIntakeCard(props: {
     sendInFlightRef.current = true;
 
     try {
+
+    // If intake is complete, treat chat input as confirmation ("book it", "schedule", etc.)
+    if (readyToSchedule) {
+      const confirm = text.toLowerCase();
+      const isYes = /(\byes\b|\byeah\b|\byep\b|\bok\b|\bokay\b|\bplease\b|\bdo it\b|\blet'?s\s+go\b|\bschedule\b|\bbook\b|\bbook it\b|\bset it up\b)/i.test(confirm);
+
+      setTurns((prev) => [...prev, { role: "user", text }]);
+      setIssue("");
+
+      if (isYes) {
+        scheduleVisit();
+      } else {
+        setTurns((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            text: "To continue, tap ‘Schedule a visit’. (Or type ‘yes’.)",
+          },
+        ]);
+      }
+
+      return;
+    }
 
     // If we're in Q&A mode, treat send as the answer to the current question.
     if (awaitingAnswers) {
@@ -225,6 +250,7 @@ export function AIWorkOrderIntakeCard(props: {
     setAnswers([]);
     setQIndex(0);
 
+    setRootIssue(text);
     setTurns((prev) => [...prev, { role: "user", text }]);
 
     try {
@@ -282,7 +308,7 @@ export function AIWorkOrderIntakeCard(props: {
     router.push(
       `/marketplace/intake?` +
         new URLSearchParams({
-          issue: turns.findLast((t) => t.role === "user")?.text || "",
+          issue: rootIssue || turns.find((t) => t.role === "user")?.text || "",
           trade: result.trade || "",
           category: result.category || "",
           subcategory: result.subcategory || "",
