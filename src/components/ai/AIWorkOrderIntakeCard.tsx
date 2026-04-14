@@ -326,8 +326,12 @@ export function AIWorkOrderIntakeCard(props: {
                   </span>
                 </Link>
                 <div aria-hidden />
-                <Link href="/services" className="inline-flex w-full items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] whitespace-nowrap">
-                  {props.secondaryCta || "Browse"}
+                <Link
+                  href="/services"
+                  title={props.secondaryCta || "Browse marketplace"}
+                  className="inline-flex w-full items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] whitespace-nowrap"
+                >
+                  Browse
                 </Link>
               </div>
             </div>
