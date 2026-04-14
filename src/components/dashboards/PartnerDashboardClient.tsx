@@ -144,13 +144,14 @@ function InstantEstimateCard({ basePath }: { basePath: string }) {
       className="relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7"
       style={{ boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}
     >
+      {/* Glow accents (kept on mobile but contained so they don't bleed past corners) */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-24 -top-24 hidden h-64 w-64 rounded-full bg-[var(--hw-red)]/20 blur-[60px] sm:block"
+        className="pointer-events-none absolute right-0 top-0 h-40 w-40 -translate-y-1/3 translate-x-1/3 rounded-full bg-[var(--hw-red)]/18 blur-[50px] sm:-right-24 sm:-top-24 sm:h-64 sm:w-64 sm:translate-x-0 sm:translate-y-0 sm:bg-[var(--hw-red)]/20 sm:blur-[60px]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-24 bottom-0 hidden h-48 w-48 rounded-full bg-[var(--hw-red)]/10 blur-[70px] sm:block"
+        className="pointer-events-none absolute left-0 bottom-0 h-32 w-32 -translate-x-1/3 translate-y-1/3 rounded-full bg-[var(--hw-red)]/10 blur-[55px] sm:-left-24 sm:h-48 sm:w-48 sm:translate-x-0 sm:translate-y-0 sm:blur-[70px]"
       />
 
       <div className="relative">
