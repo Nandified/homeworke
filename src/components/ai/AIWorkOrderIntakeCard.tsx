@@ -237,7 +237,8 @@ export function AIWorkOrderIntakeCard(props: {
 
           <button
             type="button"
-            aria-label="Attach photos or videos"
+            title="Add photos/videos"
+            aria-label="Add photos/videos"
             onClick={() => fileInputRef.current?.click()}
             className="absolute bottom-3 right-[54px] inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white text-[var(--hw-muted)] shadow-sm hover:bg-[var(--hw-soft)]"
           >
@@ -257,25 +258,20 @@ export function AIWorkOrderIntakeCard(props: {
           </button>
         </div>
 
-        <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-start">
-          <div className="space-y-1">
-            <div className="text-xs font-medium text-[var(--hw-muted)]">Enter to send · Shift+Enter for a new line</div>
-            <div className="text-xs text-[var(--hw-muted)]">
-              Tip: Add as much detail as possible (photos/videos, room, what you tried, timing). More info = faster, more accurate routing.
-            </div>
-            {attachments.length ? (
-              <div className="text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
-            ) : null}
+        <div className="mt-3 space-y-2">
+          <div className="text-xs font-medium text-[var(--hw-muted)]">Enter to send · Shift+Enter for a new line</div>
+
+          <div className="text-xs text-[var(--hw-muted)]">
+            Tip: Add as much information as possible so we can get you the right help.
           </div>
 
-          <div className="flex items-center justify-between gap-3 sm:justify-end">
-            <button
-              type="button"
-              className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Add photos/videos
-            </button>
+          <div className="flex items-center justify-between gap-3">
+            {attachments.length ? (
+              <div className="text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
+            ) : (
+              <div />
+            )}
+
             <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
               {props.secondaryCta || "Browse marketplace"}
             </Link>
