@@ -298,8 +298,8 @@ export function AIWorkOrderIntakeCard(props: {
     // If intake is complete, treat chat input as confirmation ("book it", "schedule", etc.)
     if (readyToSchedule) {
       const confirm = text.toLowerCase();
-      const isYes = /(\byes\b|\byeah\b|\byep\b|\bok\b|\bokay\b|\bplease\b|\bdo it\b|\blet'?s\s+go\b|\bschedule\b|\bbook\b|\bbook it\b|\bset it up\b)/i.test(confirm);
-      const isNo = /(\bno\b|\bnope\b|\bdon't\b|\bdo not\b|\bnot now\b|\bcancel\b|\bstop\b)/i.test(confirm);
+      const isYes = /(\byes\b|\byeah\b|\byep\b|\bok\b|\bokay\b|\bok\s+let'?s\s+do\s+it\b|\bplease\b|\bdo\s+it\b|\bgo\s+ahead\b|\blet'?s\s+go\b|\blet'?s\s+schedule\b|\bschedule(\s+it)?\b|\bbook(\s+it)?\b|\bset\s+it\s+up\b|\bconfirm\b|\bsubmit\b|\brequest\b|\brequest\s+it\b|\bstart\s+it\b|\bsounds\s+good\b)/i.test(confirm);
+      const isNo = /(\bno\b|\bnope\b|\bnah\b|\bdon't\b|\bdo\s+not\b|\bnot\s+now\b|\bnot\s+yet\b|\bcancel\b|\bstop\b|\bnever\s+mind\b|\bhold\s+on\b|\bwait\b)/i.test(confirm);
 
       setTurns((prev) => [...prev, { role: "user", text }]);
       setIssue("");
