@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ArrowRight, ArrowUp, Paperclip } from "lucide-react";
+import { ArrowRight, ArrowUp, Paperclip, Droplet, Zap, Wind, Hammer } from "lucide-react";
 
 import { Button, Input, Pill } from "@/components/ui";
 
@@ -267,33 +267,45 @@ export function AIWorkOrderIntakeCard(props: {
             Tip: Add as much information as possible so we can get you the right help.
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap gap-2">
-              <Link href="/marketplace/intake?trade=Plumbing">
-                <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                  Plumbing
-                </span>
-              </Link>
-              <Link href="/marketplace/intake?trade=Electrical">
-                <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                  Electrical
-                </span>
-              </Link>
-              <Link href="/marketplace/intake?trade=HVAC">
-                <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                  HVAC
-                </span>
-              </Link>
-              <Link href="/marketplace/intake?trade=Handyman%20%2F%20General">
-                <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                  Handyman
-                </span>
-              </Link>
+          <div className="mt-3">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-[var(--hw-line)]" />
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Or manually book it</div>
+              <div className="h-px flex-1 bg-[var(--hw-line)]" />
             </div>
 
-            <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
-              {props.secondaryCta || "Browse marketplace"}
-            </Link>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                <Link href="/marketplace/intake?trade=Plumbing">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                    <Droplet className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    Plumbing
+                  </span>
+                </Link>
+                <Link href="/marketplace/intake?trade=Electrical">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                    <Zap className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    Electrical
+                  </span>
+                </Link>
+                <Link href="/marketplace/intake?trade=HVAC">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                    <Wind className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    HVAC
+                  </span>
+                </Link>
+                <Link href="/marketplace/intake?trade=Handyman%20%2F%20General">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                    <Hammer className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    Handyman
+                  </span>
+                </Link>
+              </div>
+
+              <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
+                {props.secondaryCta || "Browse marketplace"}
+              </Link>
+            </div>
           </div>
 
           {attachments.length ? (
