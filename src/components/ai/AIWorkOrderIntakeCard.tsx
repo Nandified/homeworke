@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ArrowRight, Send } from "lucide-react";
+import { ArrowRight, Paperclip, Send } from "lucide-react";
 
 import { Button, Input, Pill } from "@/components/ui";
 
@@ -53,6 +53,9 @@ export function AIWorkOrderIntakeCard(props: {
 
   const [properties, setProperties] = useState<PropertyLite[] | null>(null);
   const [propertyId, setPropertyId] = useState<string>("");
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   const hints = useMemo(() => ["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"], []);
   const [demoIdx, setDemoIdx] = useState(0);
@@ -185,11 +188,25 @@ export function AIWorkOrderIntakeCard(props: {
             {props.title || "What do you need help with?"}
           </div>
         </div>
-        {props.showServicingPill === false ? null : <Pill className="bg-white">Homeworke AI</Pill>}
+        <Pill className="bg-white">Homeworke AI</Pill>
       </div>
 
       <div className="mt-4">
         <div className="relative rounded-[var(--hw-radius-lg)] hw-glass-field">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files || []);
+              if (!files.length) return;
+              setAttachments((prev) => [...prev, ...files].slice(0, 10));
+              e.target.value = "";
+            }}
+          />
+
           <textarea
             ref={issueRef}
             value={issue}
@@ -203,7 +220,7 @@ export function AIWorkOrderIntakeCard(props: {
             placeholder=""
             aria-label="Describe your issue"
             rows={3}
-            className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-3 pr-14 text-[17px] leading-7 border-0 outline-none"
+            className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-3 pr-28 text-[17px] leading-7 border-0 outline-none"
             style={{ minHeight: 140 }}
           />
 
@@ -220,6 +237,15 @@ export function AIWorkOrderIntakeCard(props: {
 
           <button
             type="button"
+            aria-label="Attach photos or videos"
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute bottom-3 right-[54px] inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white text-[var(--hw-muted)] shadow-sm hover:bg-[var(--hw-soft)]"
+          >
+            <Paperclip className="h-4 w-4" />
+          </button>
+
+          <button
+            type="button"
             aria-label="Send"
             onClick={async () => {
               if (!classifying && issue.trim()) await runAI();
@@ -231,12 +257,29 @@ export function AIWorkOrderIntakeCard(props: {
           </button>
         </div>
 
-        <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-xs font-medium text-[var(--hw-muted)]">Enter to send · Shift+Enter for a new line</div>
-          <div className="text-xs text-[var(--hw-muted)]">Tip: Include as many details as you can (photos, room, timing, urgency). More info = faster, more accurate routing.</div>
-          <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
-            {props.secondaryCta || "Browse all services"}
-          </Link>
+        <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-start">
+          <div className="space-y-1">
+            <div className="text-xs font-medium text-[var(--hw-muted)]">Enter to send · Shift+Enter for a new line</div>
+            <div className="text-xs text-[var(--hw-muted)]">
+              Tip: Add as much detail as possible (photos/videos, room, what you tried, timing). More info = faster, more accurate routing.
+            </div>
+            {attachments.length ? (
+              <div className="text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
+            ) : null}
+          </div>
+
+          <div className="flex items-center justify-between gap-3 sm:justify-end">
+            <button
+              type="button"
+              className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Add photos/videos
+            </button>
+            <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
+              {props.secondaryCta || "Browse marketplace"}
+            </Link>
+          </div>
         </div>
       </div>
 
