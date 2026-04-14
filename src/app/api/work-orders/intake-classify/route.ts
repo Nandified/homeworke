@@ -100,12 +100,25 @@ export async function POST(req: Request) {
     const sys =
       "You are Homeworke's Work Order Intake classifier. " +
       "Given a short description of a home issue, select the best matching service from the provided catalog. " +
-      "Return STRICT JSON only (no markdown).";
+      "Return STRICT JSON only (no markdown). " +
+      "You must always provide all required fields. " +
+      "If uncertain about urgency, choose 'this_week'. If there are no safety flags, return an empty array. " +
+      "If there are no clarifying questions needed, return an empty array.";
 
     const schema = {
       type: "object",
       additionalProperties: false,
-      required: ["serviceId", "trade", "category", "subcategory", "confidence", "aiSummary", "clarifyingQuestions"],
+      required: [
+        "serviceId",
+        "trade",
+        "category",
+        "subcategory",
+        "confidence",
+        "aiSummary",
+        "urgency",
+        "safetyFlags",
+        "clarifyingQuestions",
+      ],
       properties: {
         serviceId: { type: "string" },
         trade: { type: "string" },
