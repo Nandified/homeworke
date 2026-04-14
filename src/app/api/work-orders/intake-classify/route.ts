@@ -14,6 +14,33 @@ function safeJson(text: string) {
   }
 }
 
+function extractJsonObject(text: string): string | null {
+  const s = (text || "").trim();
+  if (!s) return null;
+  // Fast path
+  if (s.startsWith("{") && s.endsWith("}")) return s;
+  // Try to find the first {...} block
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  if (start >= 0 && end > start) return s.slice(start, end + 1);
+  return null;
+}
+
+function collectTextFromResponse(j: any): string {
+  const direct = typeof j?.output_text === "string" ? j.output_text : "";
+  if (direct.trim()) return direct;
+  const out = Array.isArray(j?.output) ? j.output : [];
+  const parts: string[] = [];
+  for (const item of out) {
+    const content = Array.isArray(item?.content) ? item.content : [];
+    for (const c of content) {
+      const txt = (c && typeof c.text === "string" ? c.text : "").trim();
+      if (txt) parts.push(txt);
+    }
+  }
+  return parts.join("\n").trim();
+}
+
 function pickFallback(text: string, services: TaxService[]) {
   const t = (text || "").toLowerCase();
   const has = (re: RegExp) => re.test(t);
@@ -100,7 +127,16 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         model: "gpt-5.4-mini",
-        max_output_tokens: 600,
+        max_output_tokens: 450,
+        // Enforce structured JSON output.
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "work_order_intake_classify",
+            schema,
+            strict: true,
+          },
+        },
         input: [
           { role: "system", content: sys },
           {
@@ -112,9 +148,7 @@ export async function POST(req: Request) {
                   "Catalog (choose exactly one):\n" +
                   JSON.stringify(catalog) +
                   "\n\nUser description:\n" +
-                  text.trim() +
-                  "\n\nOutput JSON matching this schema:\n" +
-                  JSON.stringify(schema),
+                  text.trim(),
               },
             ],
           },
@@ -131,11 +165,15 @@ export async function POST(req: Request) {
     }
 
     const j = safeJson(raw) || {};
-    const outText = typeof j?.output_text === "string" ? j.output_text : "";
-    const out = safeJson(outText) || null;
+    const outText = collectTextFromResponse(j);
+    const jsonBlob = extractJsonObject(outText) || outText;
+    const out = safeJson(jsonBlob) || null;
 
     if (!out || typeof out !== "object") {
-      return NextResponse.json({ ok: false, error: "bad_model_output", detail: (outText || raw).slice(0, 300) }, { status: 502 });
+      return NextResponse.json(
+        { ok: false, error: "bad_model_output", detail: (outText || raw).slice(0, 400) },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({ ok: true, used: "openai", ...out });
