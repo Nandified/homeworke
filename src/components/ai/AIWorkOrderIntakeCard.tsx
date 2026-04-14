@@ -84,6 +84,7 @@ export function AIWorkOrderIntakeCard(props: {
   const [assistantThinking, setAssistantThinking] = useState(false);
 
   const [isDesktop, setIsDesktop] = useState(false);
+  const [compactComposer, setCompactComposer] = useState(false);
 
   const started = turns.length > 0 || classifying || assistantThinking || !!result?.ok || !!classifyError;
   const currentQuestion = questions[qIndex] || "";
@@ -176,6 +177,7 @@ export function AIWorkOrderIntakeCard(props: {
     setAnswers([]);
     setQIndex(0);
     setManualOpen(true);
+    setCompactComposer(false);
   }
 
   async function send() {
@@ -184,6 +186,7 @@ export function AIWorkOrderIntakeCard(props: {
 
     // If we're in Q&A mode, treat send as the answer to the current question.
     if (awaitingAnswers) {
+      setCompactComposer(true);
       const nextAnswers = answers.slice();
       nextAnswers[qIndex] = text;
       setAnswers(nextAnswers);
@@ -207,6 +210,7 @@ export function AIWorkOrderIntakeCard(props: {
     }
 
     // Otherwise this is the initial issue description.
+    setCompactComposer(true);
     setManualOpen(false);
     setClassifyError("");
     setClassifying(true);
@@ -449,9 +453,9 @@ export function AIWorkOrderIntakeCard(props: {
             }}
             placeholder=""
             aria-label="Message"
-            rows={started ? 1 : 3}
+            rows={compactComposer ? 1 : 3}
             className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-3 pr-28 text-[17px] leading-7 border-0 outline-none"
-            style={{ minHeight: started ? 64 : 140 }}
+            style={{ minHeight: compactComposer ? 64 : 140 }}
           />
 
           {!issue && !started ? (
