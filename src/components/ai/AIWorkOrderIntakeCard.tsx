@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ArrowRight, Paperclip, Send } from "lucide-react";
+import { ArrowRight, Paperclip, SendHorizontal } from "lucide-react";
 
 import { Button, Input, Pill } from "@/components/ui";
 
@@ -212,7 +212,9 @@ export function AIWorkOrderIntakeCard(props: {
             value={issue}
             onChange={(e) => setIssue(e.target.value)}
             onKeyDown={async (e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
+              // Match ChatGPT mobile feel: Enter adds a new line.
+              // Desktop power-user shortcut: Cmd/Ctrl + Enter sends.
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
                 if (!classifying && issue.trim()) await runAI();
               }
@@ -251,31 +253,28 @@ export function AIWorkOrderIntakeCard(props: {
             onClick={async () => {
               if (!classifying && issue.trim()) await runAI();
             }}
-            className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hw-red)] text-white shadow-sm hover:opacity-95 disabled:opacity-50"
+            className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hw-ink)] text-white shadow-sm hover:opacity-95 disabled:opacity-50"
             disabled={classifying || !issue.trim()}
           >
-            <Send className="h-4 w-4" />
+            <SendHorizontal className="h-4 w-4" />
           </button>
         </div>
 
         <div className="mt-3 space-y-2">
-          <div className="text-xs font-medium text-[var(--hw-muted)]">Enter to send · Shift+Enter for a new line</div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-xs font-medium text-[var(--hw-muted)]">Tap send to submit · (Desktop) Cmd/Ctrl + Enter</div>
+            <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
+              {props.secondaryCta || "Browse marketplace"}
+            </Link>
+          </div>
 
           <div className="text-xs text-[var(--hw-muted)]">
             Tip: Add as much information as possible so we can get you the right help.
           </div>
 
-          <div className="flex items-center justify-between gap-3">
-            {attachments.length ? (
-              <div className="text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
-            ) : (
-              <div />
-            )}
-
-            <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
-              {props.secondaryCta || "Browse marketplace"}
-            </Link>
-          </div>
+          {attachments.length ? (
+            <div className="text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
+          ) : null}
         </div>
       </div>
 
