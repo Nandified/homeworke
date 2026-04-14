@@ -129,12 +129,14 @@ export async function POST(req: Request) {
         model: "gpt-5.4-mini",
         max_output_tokens: 450,
         // Enforce structured JSON output.
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "work_order_intake_classify",
-            schema,
-            strict: true,
+        text: {
+          format: {
+            type: "json_schema",
+            json_schema: {
+              name: "work_order_intake_classify",
+              schema,
+              strict: true,
+            },
           },
         },
         input: [
