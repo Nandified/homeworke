@@ -188,7 +188,7 @@ export function AIWorkOrderIntakeCard(props: {
             {props.title || "What do you need help with?"}
           </div>
         </div>
-        <Pill className="bg-[rgba(229,57,53,.10)] text-[var(--hw-red)] border border-[rgba(229,57,53,.22)] self-start whitespace-nowrap text-[10px] px-2 py-1">
+        <Pill className="self-start whitespace-nowrap text-[10px] px-2 py-1 border border-[rgba(229,57,53,.18)] text-white bg-gradient-to-r from-[rgba(229,57,53,.95)] via-[rgba(244,63,94,.92)] to-[rgba(168,85,247,.90)] shadow-sm">
           Homeworke AI
         </Pill>
       </div>
@@ -274,8 +274,8 @@ export function AIWorkOrderIntakeCard(props: {
               <div className="h-px flex-1 bg-[var(--hw-line)]" />
             </div>
 
-            <div className="mt-3 flex flex-col gap-2">
-              <div className="flex flex-wrap gap-2">
+            <div className="mt-3">
+              <div className="grid grid-cols-5 gap-2">
                 <Link href="/marketplace/intake?trade=Plumbing">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                     <Droplet className="h-3.5 w-3.5 text-[var(--hw-red)]" />
@@ -300,6 +300,9 @@ export function AIWorkOrderIntakeCard(props: {
                     Handyman
                   </span>
                 </Link>
+
+                {/* Spacer so "Browse marketplace" lands at the end of the second row */}
+                <div aria-hidden />
                 <Link href="/marketplace/intake?trade=Cleaning%20%2F%20Turnover">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                     <Sparkles className="h-3.5 w-3.5 text-[var(--hw-red)]" />
@@ -333,7 +336,7 @@ export function AIWorkOrderIntakeCard(props: {
                   </span>
                 </Link>
 
-                <Link href="/services" className="ml-auto text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
+                <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)] justify-self-end self-center whitespace-nowrap">
                   {props.secondaryCta || "Browse marketplace"}
                 </Link>
               </div>
@@ -344,11 +347,13 @@ export function AIWorkOrderIntakeCard(props: {
             <div className="text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
           ) : null}
         </div>
-      </div>
 
-      {classifyError ? (
-        <div className="mt-3 text-sm text-red-600">We couldn’t analyze that. Please try again.</div>
-      ) : null}
+        {classifyError ? (
+          <div className="mt-2 rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] px-3 py-2 text-xs font-semibold text-[var(--hw-red)]">
+            We couldn’t analyze that. Please try again.
+          </div>
+        ) : null}
+      </div>
 
       {classifyResult?.ok ? (
         <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
