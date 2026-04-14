@@ -321,10 +321,17 @@ export function AIWorkOrderIntakeCard(props: {
     if (!text || classifying || assistantThinking || sendInFlightRef.current) return;
 
     // Global commands (never classify these)
-    if (/^(start over|restart|reset|new request|new issue)$/i.test(text)) {
+    const cmd = text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (["start over", "restart", "reset", "new request", "new issue"].includes(cmd)) {
       resetIntakeKeepDraft();
       setAttachments([]);
       setIssue("");
+      setTurns([]);
       setTimeout(() => issueRef.current?.focus(), 0);
       return;
     }
