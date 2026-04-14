@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ArrowRight, MapPin } from "lucide-react";
@@ -11,6 +12,22 @@ import { iconFor } from "@/components/icons";
 import servicesData from "@/../spec/services.json";
 
 type Service = (typeof servicesData.services)[number];
+
+type IntakeClassifyResult = {
+  ok: boolean;
+  used?: "openai" | "fallback" | string;
+  serviceId?: string;
+  trade?: string;
+  category?: string;
+  subcategory?: string;
+  confidence?: number;
+  aiSummary?: string;
+  urgency?: "emergency" | "asap" | "this_week" | "flexible";
+  safetyFlags?: string[];
+  clarifyingQuestions?: string[];
+  error?: string;
+  detail?: string;
+};
 
 function classifyToServiceSlug(text: string, services: Service[]): string | null {
   const t = text.toLowerCase();
@@ -40,6 +57,8 @@ export function AIWorkOrderIntakeCard(props: {
   /** Show the “Now servicing …” pill in the header (defaults true). */
   showServicingPill?: boolean;
 }) {
+  const router = useRouter();
+
   const services = servicesData.services.slice(0, 6);
 
   const [issue, setIssue] = useState(props.prefillIssue || "");
@@ -47,6 +66,11 @@ export function AIWorkOrderIntakeCard(props: {
   const [city, setCity] = useState<string>("");
   const [state, setState] = useState<string>("");
   const [locLoading, setLocLoading] = useState(false);
+
+  const [classifying, setClassifying] = useState(false);
+  const [classifyResult, setClassifyResult] = useState<IntakeClassifyResult | null>(null);
+  const [qna, setQna] = useState<Array<{ question: string; answer: string }>>([]);
+  const [classifyError, setClassifyError] = useState<string>("");
 
   // Typewriter-style rotating hint
   const hints = useMemo(() => ["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"], []);
@@ -160,15 +184,59 @@ export function AIWorkOrderIntakeCard(props: {
     run();
   }, [zip]);
 
-  const suggestedSlug = useMemo(() => {
-    if (!issue.trim()) return null;
-    return classifyToServiceSlug(issue, servicesData.services);
-  }, [issue]);
+  // (AI suggestion is now produced by /api/work-orders/intake-classify)
 
-  const suggestedService = useMemo(() => {
-    if (!suggestedSlug) return null;
-    return servicesData.services.find((s) => s.slug === suggestedSlug) ?? null;
-  }, [suggestedSlug]);
+  async function runAI() {
+    const text = issue.trim();
+    if (!text) return;
+
+    setClassifyError("");
+    setClassifying(true);
+    setClassifyResult(null);
+    setQna([]);
+
+    try {
+      const res = await fetch("/api/work-orders/intake-classify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, zip: zip || undefined }),
+      });
+      const j = (await res.json().catch(() => null)) as IntakeClassifyResult | null;
+      if (!j || !j.ok) {
+        setClassifyError(j?.error || `classify_failed_${res.status}`);
+        return;
+      }
+      setClassifyResult(j);
+      const qs = Array.isArray(j.clarifyingQuestions) ? j.clarifyingQuestions : [];
+      setQna(qs.map((q) => ({ question: q, answer: "" })));
+    } catch {
+      setClassifyError("classify_fetch_error");
+    } finally {
+      setClassifying(false);
+    }
+  }
+
+  function continueToIntake() {
+    const r = classifyResult;
+    const issueText = issue.trim();
+    const summary = (r?.aiSummary || issueText).trim();
+
+    const qnaJson = qna.length ? JSON.stringify(qna) : "";
+
+    router.push(
+      `/marketplace/intake?` +
+        new URLSearchParams({
+          issue: issueText,
+          zip: zip || "",
+          trade: r?.trade || "",
+          category: r?.category || "",
+          subcategory: r?.subcategory || "",
+          serviceId: r?.serviceId || "",
+          aiSummary: summary,
+          qna: qnaJson,
+        }).toString()
+    );
+  }
 
   return (
     <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass">
@@ -289,27 +357,82 @@ export function AIWorkOrderIntakeCard(props: {
       </div>
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Link
-          href={{
-            pathname: "/marketplace/intake",
-            query: {
-              issue: issue.trim() || undefined,
-              zip: zip || undefined,
-              service: suggestedService?.slug || undefined,
-            },
+        <Button
+          className="w-full sm:w-auto"
+          onClick={async () => {
+            await runAI();
           }}
+          disabled={classifying || !issue.trim()}
         >
-          <Button className="w-full sm:w-auto">
-            {props.primaryCta || "Get an Instant Estimate"}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </Link>
+          {classifying ? "Thinking…" : props.primaryCta || "Continue"}
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+
         <Link href="/marketplace/intake" className="w-full sm:w-auto">
           <Button variant="secondary" className="w-full sm:w-auto">
-            {props.secondaryCta || "Browse marketplace"}
+            {props.secondaryCta || "Browse all services"}
           </Button>
         </Link>
       </div>
+
+      {classifyError ? (
+        <div className="mt-3 text-sm text-red-600">We couldn’t analyze that. Please try again.</div>
+      ) : null}
+
+      {classifyResult?.ok ? (
+        <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Suggested</div>
+            <div className="text-xs text-[var(--hw-muted)]">
+              {typeof classifyResult.confidence === "number" ? `Confidence ${(classifyResult.confidence * 100).toFixed(0)}%` : null}
+            </div>
+          </div>
+          <div className="mt-2 text-sm text-[var(--hw-ink)]">
+            <span className="font-semibold">{classifyResult.trade}</span>
+            {classifyResult.subcategory ? <span className="text-[var(--hw-muted)]"> · {classifyResult.subcategory}</span> : null}
+          </div>
+
+          {qna.length ? (
+            <div className="mt-3 grid gap-3">
+              {qna.map((qa, idx) => (
+                <div key={idx}>
+                  <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Question</div>
+                  <div className="mt-1 text-sm text-[var(--hw-ink)]">{qa.question}</div>
+                  <div className="mt-2">
+                    <Input
+                      value={qa.answer}
+                      onChange={(e) =>
+                        setQna((prev) => {
+                          const next = prev.slice();
+                          next[idx] = { ...next[idx], answer: e.target.value };
+                          return next;
+                        })
+                      }
+                      placeholder="Type your answer…"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-3 text-sm text-[var(--hw-muted)]">No follow-up questions—looks straightforward.</div>
+          )}
+
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button className="w-full sm:w-auto" onClick={continueToIntake}>
+              Continue to submit
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <button
+              type="button"
+              className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+              onClick={() => setClassifyResult(null)}
+            >
+              Edit issue
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

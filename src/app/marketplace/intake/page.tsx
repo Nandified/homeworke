@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { loadPartner } from "@/lib/partner-context";
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui";
 
 import spec from "@/../spec/intake_stepper_opus.json";
+import taxonomy from "@/content/homeworke_services_taxonomy.json";
 
 type StepKey = (typeof spec.steps)[number]["key"];
 
@@ -38,14 +39,7 @@ type IntakeDraft = {
   share_with_partner: boolean;
 };
 
-const SERVICE_OPTIONS = [
-  "Plumbing",
-  "Electrical",
-  "HVAC",
-  "Roofing",
-  "Drywall/Paint",
-  "General",
-];
+const SERVICE_OPTIONS = taxonomy.trades as string[];
 
 function draftKey() {
   return "hw_intake_draft_v1";
@@ -94,6 +88,33 @@ export default function Page() {
     } catch {}
     return d;
   });
+
+  // Prefill from query params (used by AI intake card)
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const trade = sp.get("trade") || "";
+      const subcategory = sp.get("subcategory") || "";
+      const issue = sp.get("aiSummary") || sp.get("issue") || "";
+      // zip is used later for pricing/routing; intake flow confirms full address.
+
+      if (trade || subcategory || issue) {
+        setDraft((prev) => {
+          const next: IntakeDraft = {
+            ...prev,
+            service_category: trade || prev.service_category,
+            service_subcategory: subcategory || prev.service_subcategory,
+            issue_description: issue || prev.issue_description,
+            // property address is confirmed later in the flow; ZIP is used only for pricing/routing.
+          };
+          saveDraft(next);
+          return next;
+        });
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const idx = useMemo(() => steps.findIndex((s) => s.key === step), [steps, step]);
 
