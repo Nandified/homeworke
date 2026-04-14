@@ -305,6 +305,22 @@ export function AIWorkOrderIntakeCard(props: {
       setIssue("");
 
       if (isYes) {
+        // If scheduling details aren't filled yet, guide the user instead of doing nothing.
+        if (!propertyId || !visitDate) {
+          setAssistantThinking(true);
+          window.setTimeout(() => {
+            setAssistantThinking(false);
+            setTurns((prev) => [
+              ...prev,
+              {
+                role: "assistant",
+                text: "Almost there — pick a property and preferred date below, then tap ‘Schedule a visit’.",
+              },
+            ]);
+          }, 500);
+          return;
+        }
+
         scheduleVisit();
         return;
       }
