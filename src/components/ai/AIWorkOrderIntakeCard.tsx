@@ -55,6 +55,8 @@ export function AIWorkOrderIntakeCard(props: {
   const [properties, setProperties] = useState<PropertyLite[] | null>(null);
   const [propertyId, setPropertyId] = useState<string>("");
 
+  const [manualOpen, setManualOpen] = useState(true);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
 
@@ -153,6 +155,8 @@ export function AIWorkOrderIntakeCard(props: {
       setQna(qs.map((q) => ({ question: q, answer: "" })));
       // Clear the composer after submitting (ChatGPT-like)
       setIssue("");
+      // Collapse manual booking once user chooses AI
+      setManualOpen(false);
     } catch {
       setClassifyError("classify_fetch_error");
     } finally {
@@ -411,14 +415,24 @@ export function AIWorkOrderIntakeCard(props: {
           ) : null}
 
           <div className="mt-3">
-            <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="flex w-full items-center gap-3"
+              onClick={() => setManualOpen((v) => !v)}
+            >
               <div className="h-px flex-1 bg-[var(--hw-line)]" />
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Or manually book it</div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                {manualOpen ? "Manual booking" : "Manual booking"}
+              </div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                {manualOpen ? "Hide" : "Show"}
+              </div>
               <div className="h-px flex-1 bg-[var(--hw-line)]" />
-            </div>
+            </button>
 
-            <div className="mt-3">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {manualOpen ? (
+              <div className="mt-3">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                 <Link href="/marketplace/intake?trade=Plumbing" className="w-full">
                   <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                     <Droplet className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
@@ -477,6 +491,7 @@ export function AIWorkOrderIntakeCard(props: {
                 </Link>
               </div>
             </div>
+          ) : null}
           </div>
 
           {attachments.length ? (
