@@ -188,7 +188,7 @@ export function AIWorkOrderIntakeCard(props: {
             {props.title || "What do you need help with?"}
           </div>
         </div>
-        <Pill className="bg-[rgba(229,57,53,.10)] text-[var(--hw-red)] border border-[rgba(229,57,53,.22)] self-start">
+        <Pill className="bg-[rgba(229,57,53,.10)] text-[var(--hw-red)] border border-[rgba(229,57,53,.22)] self-start whitespace-nowrap text-[10px] px-2 py-1">
           Homeworke AI
         </Pill>
       </div>
@@ -262,15 +262,38 @@ export function AIWorkOrderIntakeCard(props: {
           </button>
         </div>
 
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center justify-end">
+        <div className="mt-2 space-y-2">
+          <div className="text-xs text-[var(--hw-muted)]">
+            Tip: Add as much information as possible so we can get you the right help.
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Link href="/marketplace/intake?trade=Plumbing">
+                <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                  Plumbing
+                </span>
+              </Link>
+              <Link href="/marketplace/intake?trade=Electrical">
+                <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                  Electrical
+                </span>
+              </Link>
+              <Link href="/marketplace/intake?trade=HVAC">
+                <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                  HVAC
+                </span>
+              </Link>
+              <Link href="/marketplace/intake?trade=Handyman%20%2F%20General">
+                <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                  Handyman
+                </span>
+              </Link>
+            </div>
+
             <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
               {props.secondaryCta || "Browse marketplace"}
             </Link>
-          </div>
-
-          <div className="text-xs text-[var(--hw-muted)]">
-            Tip: Add as much information as possible so we can get you the right help.
           </div>
 
           {attachments.length ? (
