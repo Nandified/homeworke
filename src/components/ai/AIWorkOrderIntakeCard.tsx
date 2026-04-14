@@ -4,7 +4,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ArrowRight, ArrowUp, Paperclip, Droplet, Zap, Wind, Hammer, Sparkles, Home, Wrench, Shield, Layers } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUp,
+  ChevronDown,
+  ChevronUp,
+  Paperclip,
+  Droplet,
+  Zap,
+  Wind,
+  Hammer,
+  Sparkles,
+  Home,
+  Shield,
+  Layers,
+} from "lucide-react";
 
 import { Button, Input, Pill } from "@/components/ui";
 
@@ -56,6 +70,7 @@ export function AIWorkOrderIntakeCard(props: {
   const [propertyId, setPropertyId] = useState<string>("");
 
   const [manualOpen, setManualOpen] = useState(true);
+  const [refineMode, setRefineMode] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -134,6 +149,7 @@ export function AIWorkOrderIntakeCard(props: {
     if (!text) return;
 
     setLastPrompt(text);
+    setRefineMode(false);
     setClassifyError("");
     setClassifying(true);
     setClassifyResult(null);
@@ -278,7 +294,20 @@ export function AIWorkOrderIntakeCard(props: {
                     <div className="mt-3 grid gap-3">
                       {qna.map((qa, idx) => (
                         <div key={idx}>
-                          <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Question</div>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Question</div>
+                            {idx === qna.length - 1 ? (
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)]"
+                                onClick={() => fileInputRef.current?.click()}
+                                title="Add photos/videos"
+                              >
+                                <Paperclip className="h-3.5 w-3.5" />
+                                Add media
+                              </button>
+                            ) : null}
+                          </div>
                           <div className="mt-1 text-sm">{qa.question}</div>
                           <div className="mt-2">
                             <Input
@@ -290,9 +319,12 @@ export function AIWorkOrderIntakeCard(props: {
                                   return next;
                                 })
                               }
-                              placeholder="Type your answer…"
+                              placeholder={idx === qna.length - 1 ? "Add details here (and optionally attach photos/videos)…" : "Type your answer…"}
                             />
                           </div>
+                          {idx === qna.length - 1 && attachments.length ? (
+                            <div className="mt-2 text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
+                          ) : null}
                         </div>
                       ))}
                     </div>
@@ -313,11 +345,10 @@ export function AIWorkOrderIntakeCard(props: {
                       type="button"
                       className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
                       onClick={() => {
+                        // Keep the conversation visible; just drop the user back into the composer.
+                        setRefineMode(true);
                         setIssue(lastPrompt);
-                        setClassifyResult(null);
-                        setQna([]);
-                        setClassifyError("");
-                        // focus
+                        setManualOpen(false);
                         setTimeout(() => issueRef.current?.focus(), 0);
                       }}
                     >
@@ -325,7 +356,9 @@ export function AIWorkOrderIntakeCard(props: {
                     </button>
                   </div>
                 </div>
-              ) : classifying ? null : (
+              ) : classifying ? null : refineMode ? (
+                <div className="mt-2 text-sm text-[var(--hw-muted)]">Edit your message below, then tap send.</div>
+              ) : (
                 <div className="mt-2 text-sm text-[var(--hw-muted)]">Describe the issue and I’ll suggest the right service.</div>
               )}
             </div>
@@ -397,7 +430,13 @@ export function AIWorkOrderIntakeCard(props: {
               if (!classifying && issue.trim()) await runAI();
             }}
             className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hw-red)] text-white shadow-sm hover:opacity-95 disabled:opacity-50"
-            disabled={classifying || !issue.trim()}
+            disabled={
+              classifying ||
+              !issue.trim() ||
+              // If AI has returned follow-up questions, keep the user in that lane.
+              (classifyResult?.ok && qna.length > 0)
+            }
+            title={classifyResult?.ok && qna.length > 0 ? "Answer the questions above" : ""}
           >
             <ArrowUp className="h-4 w-4" />
           </button>
@@ -419,13 +458,12 @@ export function AIWorkOrderIntakeCard(props: {
               type="button"
               className="flex w-full items-center gap-3"
               onClick={() => setManualOpen((v) => !v)}
+              aria-expanded={manualOpen}
             >
               <div className="h-px flex-1 bg-[var(--hw-line)]" />
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                {manualOpen ? "Manual booking" : "Manual booking"}
-              </div>
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                {manualOpen ? "Hide" : "Show"}
+              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                Manual booking
+                {manualOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               </div>
               <div className="h-px flex-1 bg-[var(--hw-line)]" />
             </button>
