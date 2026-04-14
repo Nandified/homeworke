@@ -195,21 +195,48 @@ export function AIWorkOrderIntakeCard(props: {
     if (readyToSchedule) {
       const confirm = text.toLowerCase();
       const isYes = /(\byes\b|\byeah\b|\byep\b|\bok\b|\bokay\b|\bplease\b|\bdo it\b|\blet'?s\s+go\b|\bschedule\b|\bbook\b|\bbook it\b|\bset it up\b)/i.test(confirm);
+      const isNo = /(\bno\b|\bnope\b|\bdon't\b|\bdo not\b|\bnot now\b|\bcancel\b|\bstop\b)/i.test(confirm);
 
       setTurns((prev) => [...prev, { role: "user", text }]);
       setIssue("");
 
       if (isYes) {
         scheduleVisit();
-      } else {
-        setTurns((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            text: "To continue, tap ‘Schedule a visit’. (Or type ‘yes’.)",
-          },
-        ]);
+        return;
       }
+
+      if (isNo) {
+        // Exit the booking-confirmation lane and let them continue chatting naturally.
+        setResult(null);
+        setQuestions([]);
+        setAnswers([]);
+        setQIndex(0);
+        setRootIssue("");
+        setCompactComposer(false);
+        setManualOpen(true);
+
+        setAssistantThinking(true);
+        window.setTimeout(() => {
+          setAssistantThinking(false);
+          setTurns((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              text: "No problem. What would you like to do next—change the request, or start over?",
+            },
+          ]);
+        }, 700);
+
+        return;
+      }
+
+      setTurns((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: "To continue, tap ‘Schedule a visit’. (Or type ‘yes’.)",
+        },
+      ]);
 
       return;
     }
