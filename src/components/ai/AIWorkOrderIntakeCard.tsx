@@ -267,6 +267,12 @@ export function AIWorkOrderIntakeCard(props: {
             Tip: Add as much information as possible so we can get you the right help.
           </div>
 
+          {classifyError ? (
+            <div className="mt-3 rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] px-3 py-2 text-xs font-semibold text-[var(--hw-red)]">
+              We couldn’t analyze that. Please try again.
+            </div>
+          ) : null}
+
           <div className="mt-3">
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-[var(--hw-line)]" />
@@ -342,11 +348,7 @@ export function AIWorkOrderIntakeCard(props: {
           ) : null}
         </div>
 
-        {classifyError ? (
-          <div className="mt-2 rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] px-3 py-2 text-xs font-semibold text-[var(--hw-red)]">
-            We couldn’t analyze that. Please try again.
-          </div>
-        ) : null}
+        {/* error is displayed above the manual booking section for visibility */}
       </div>
 
       {classifyResult?.ok ? (
