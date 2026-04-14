@@ -46,6 +46,7 @@ export function AIWorkOrderIntakeCard(props: {
   const router = useRouter();
 
   const [issue, setIssue] = useState(props.prefillIssue || "");
+  const [lastPrompt, setLastPrompt] = useState<string>("");
   const [classifying, setClassifying] = useState(false);
   const [classifyResult, setClassifyResult] = useState<IntakeClassifyResult | null>(null);
   const [qna, setQna] = useState<Array<{ question: string; answer: string }>>([]);
@@ -130,6 +131,7 @@ export function AIWorkOrderIntakeCard(props: {
     const text = issue.trim();
     if (!text) return;
 
+    setLastPrompt(text);
     setClassifyError("");
     setClassifying(true);
     setClassifyResult(null);
@@ -193,6 +195,130 @@ export function AIWorkOrderIntakeCard(props: {
         </Pill>
       </div>
 
+      {/* Conversation */}
+      {lastPrompt || classifying || classifyResult?.ok || classifyError ? (
+        <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 p-4">
+          {/* User bubble */}
+          {lastPrompt ? (
+            <div className="flex justify-end">
+              <div className="max-w-[90%] rounded-2xl bg-[var(--hw-ink)] px-4 py-2.5 text-sm leading-6 text-white shadow-sm">
+                {lastPrompt}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Assistant bubble */}
+          <div className="mt-3 flex justify-start">
+            <div className="max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Homeworke AI</div>
+                {classifying ? (
+                  <div className="flex items-center gap-1.5 text-xs text-[var(--hw-muted)]">
+                    <span className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--hw-muted)] [animation-delay:-0.2s]" />
+                    <span className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--hw-muted)] [animation-delay:-0.1s]" />
+                    <span className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--hw-muted)]" />
+                  </div>
+                ) : null}
+              </div>
+
+              {classifyError ? (
+                <div className="mt-2 rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] px-3 py-2 text-xs font-semibold text-[var(--hw-red)]">
+                  We couldn’t analyze that. Please try again.
+                </div>
+              ) : null}
+
+              {classifyResult?.ok ? (
+                <div className="mt-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-sm font-semibold">Suggested</div>
+                    <div className="text-xs text-[var(--hw-muted)]">
+                      {typeof classifyResult.confidence === "number"
+                        ? `Confidence ${(classifyResult.confidence * 100).toFixed(0)}%`
+                        : null}
+                    </div>
+                  </div>
+
+                  <div className="mt-2 text-sm">
+                    <span className="font-semibold">{classifyResult.trade}</span>
+                    {classifyResult.subcategory ? (
+                      <span className="text-[var(--hw-muted)]"> · {classifyResult.subcategory}</span>
+                    ) : null}
+                  </div>
+
+                  {properties && properties.length ? (
+                    <div className="mt-3">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Property</div>
+                      <div className="mt-2">
+                        <select
+                          value={propertyId}
+                          onChange={(e) => setPropertyId(e.target.value)}
+                          className="w-full rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm"
+                        >
+                          <option value="">Select a property…</option>
+                          {properties.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {(p.nickname ? `${p.nickname} · ` : "") +
+                                p.address1 +
+                                (p.city ? `, ${p.city}` : "") +
+                                (p.state ? `, ${p.state}` : "")}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {qna.length ? (
+                    <div className="mt-3 grid gap-3">
+                      {qna.map((qa, idx) => (
+                        <div key={idx}>
+                          <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Question</div>
+                          <div className="mt-1 text-sm">{qa.question}</div>
+                          <div className="mt-2">
+                            <Input
+                              value={qa.answer}
+                              onChange={(e) =>
+                                setQna((prev) => {
+                                  const next = prev.slice();
+                                  next[idx] = { ...next[idx], answer: e.target.value };
+                                  return next;
+                                })
+                              }
+                              placeholder="Type your answer…"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-2 text-sm text-[var(--hw-muted)]">No follow-up questions—looks straightforward.</div>
+                  )}
+
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <Button className="w-full sm:w-auto" onClick={continueToIntake}>
+                      {props.primaryCta || "Start a job request"}
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                    <button
+                      type="button"
+                      className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                      onClick={() => setClassifyResult(null)}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              ) : classifying ? (
+                <div className="mt-2 text-sm text-[var(--hw-muted)]">Thinking…</div>
+              ) : (
+                <div className="mt-2 text-sm text-[var(--hw-muted)]">Describe the issue and I’ll suggest the right service.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Composer */}
       <div className="mt-4">
         <div className="relative rounded-[var(--hw-radius-lg)] hw-glass-field">
           <input
@@ -351,80 +477,7 @@ export function AIWorkOrderIntakeCard(props: {
         {/* error is displayed above the manual booking section for visibility */}
       </div>
 
-      {classifyResult?.ok ? (
-        <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">Suggested</div>
-            <div className="text-xs text-[var(--hw-muted)]">
-              {typeof classifyResult.confidence === "number" ? `Confidence ${(classifyResult.confidence * 100).toFixed(0)}%` : null}
-            </div>
-          </div>
-          <div className="mt-2 text-sm text-[var(--hw-ink)]">
-            <span className="font-semibold">{classifyResult.trade}</span>
-            {classifyResult.subcategory ? <span className="text-[var(--hw-muted)]"> · {classifyResult.subcategory}</span> : null}
-          </div>
-
-          {properties && properties.length ? (
-            <div className="mt-4">
-              <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Property</div>
-              <div className="mt-2">
-                <select
-                  value={propertyId}
-                  onChange={(e) => setPropertyId(e.target.value)}
-                  className="w-full rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm"
-                >
-                  <option value="">Select a property…</option>
-                  {properties.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {(p.nickname ? `${p.nickname} · ` : "") + p.address1 + (p.city ? `, ${p.city}` : "") + (p.state ? `, ${p.state}` : "")}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          ) : null}
-
-          {qna.length ? (
-            <div className="mt-4 grid gap-3">
-              {qna.map((qa, idx) => (
-                <div key={idx}>
-                  <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Question</div>
-                  <div className="mt-1 text-sm text-[var(--hw-ink)]">{qa.question}</div>
-                  <div className="mt-2">
-                    <Input
-                      value={qa.answer}
-                      onChange={(e) =>
-                        setQna((prev) => {
-                          const next = prev.slice();
-                          next[idx] = { ...next[idx], answer: e.target.value };
-                          return next;
-                        })
-                      }
-                      placeholder="Type your answer…"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-3 text-sm text-[var(--hw-muted)]">No follow-up questions—looks straightforward.</div>
-          )}
-
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Button className="w-full sm:w-auto" onClick={continueToIntake}>
-              {props.primaryCta || "Continue"}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            <button
-              type="button"
-              className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
-              onClick={() => setClassifyResult(null)}
-            >
-              Edit
-            </button>
-          </div>
-        </div>
-      ) : null}
+      {/* AI results are rendered in the conversation area above the composer. */}
     </div>
   );
 }
