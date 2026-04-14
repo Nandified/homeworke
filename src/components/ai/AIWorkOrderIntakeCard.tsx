@@ -20,7 +20,9 @@ import {
   Zap,
 } from "lucide-react";
 
-import { Button, Pill } from "@/components/ui";
+import { Button, Input, Label, Modal, Pill } from "@/components/ui";
+
+import { loadPartner } from "@/lib/partner-context";
 
 type IntakeClassifyResult = {
   ok: boolean;
@@ -52,6 +54,64 @@ type Turn = {
   text: string;
 };
 
+type StoredProperty = { id: string; createdAt: string; address: string; nickname?: string };
+
+type StoredClientProperty = {
+  id: string;
+  createdAt: string;
+  address: string;
+  nickname?: string;
+  propertyType?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
+};
+
+const STORAGE_KEYS = {
+  customProps: "hw_props_custom_v1",
+  clientProps: "hw_props_client_v1",
+} as const;
+
+function readCustomProperties(): StoredProperty[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEYS.customProps) || "[]";
+    const arr = JSON.parse(raw) as StoredProperty[];
+    return Array.isArray(arr) ? arr.filter((p) => p && typeof p.id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeCustomProperties(items: StoredProperty[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEYS.customProps, JSON.stringify(items.slice(0, 50)));
+  } catch {
+    // ignore
+  }
+}
+
+function readClientProperties(): StoredClientProperty[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEYS.clientProps) || "[]";
+    const arr = JSON.parse(raw) as StoredClientProperty[];
+    return Array.isArray(arr) ? arr.filter((p) => p && typeof p.id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeClientProperties(items: StoredClientProperty[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEYS.clientProps, JSON.stringify(items.slice(0, 200)));
+  } catch {
+    // ignore
+  }
+}
+
 export function AIWorkOrderIntakeCard(props: {
   eyebrow?: string;
   title?: string;
@@ -82,11 +142,28 @@ export function AIWorkOrderIntakeCard(props: {
   const [qIndex, setQIndex] = useState<number>(0);
   const [rootIssue, setRootIssue] = useState<string>("");
 
+  const [visitDate, setVisitDate] = useState<string>("");
+  const [visitWindow, setVisitWindow] = useState<"Morning" | "Midday" | "Afternoon">("Morning");
+  const [contactMethod, setContactMethod] = useState<"Text" | "Email">("Text");
+  const [submittingVisit, setSubmittingVisit] = useState(false);
+  const [submittedWorkOrderId, setSubmittedWorkOrderId] = useState<string>("");
+
   const [manualOpen, setManualOpen] = useState(true);
   const [assistantThinking, setAssistantThinking] = useState(false);
 
   const [isDesktop, setIsDesktop] = useState(false);
   const [compactComposer, setCompactComposer] = useState(false);
+
+  const [addPropOpen, setAddPropOpen] = useState(false);
+  const [addPropMode, setAddPropMode] = useState<"client" | "property">("client");
+  const [newAddress, setNewAddress] = useState("");
+  const [newNickname, setNewNickname] = useState("");
+  const [newPropertyType, setNewPropertyType] = useState("");
+  const [newClientFirstName, setNewClientFirstName] = useState("");
+  const [newClientLastName, setNewClientLastName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientPhone, setNewClientPhone] = useState("");
+  const [addTouched, setAddTouched] = useState(false);
 
   const started = turns.length > 0 || classifying || assistantThinking || !!result?.ok || !!classifyError;
   const currentQuestion = questions[qIndex] || "";
@@ -152,16 +229,37 @@ export function AIWorkOrderIntakeCard(props: {
     el.style.height = `${el.scrollHeight}px`;
   }, [issue]);
 
-  // Best-effort property list
+  // Best-effort property list (demo token for PRO portal until auth is wired)
   useEffect(() => {
     const run = async () => {
       try {
-        const res = await fetch("/api/properties");
+        const url = new URL("/api/properties", window.location.origin);
+        url.searchParams.set("token", "demo");
+        const res = await fetch(url);
         const j = await res.json().catch(() => null);
-        if (j?.ok && Array.isArray(j.properties)) {
-          setProperties(j.properties as PropertyLite[]);
-          if (j.properties.length === 1) setPropertyId(String(j.properties[0].id));
-        }
+        const base = j?.ok && Array.isArray(j.properties) ? (j.properties as PropertyLite[]) : [];
+
+        // Merge locally-created properties (same storage as ProPropertiesClient)
+        const custom = readCustomProperties().map<PropertyLite>((p) => ({
+          id: p.id,
+          nickname: p.nickname || null,
+          address1: p.address,
+          city: null,
+          state: null,
+          zip: null,
+        }));
+        const clients = readClientProperties().map<PropertyLite>((p) => ({
+          id: p.id,
+          nickname: p.nickname || null,
+          address1: p.address,
+          city: null,
+          state: null,
+          zip: null,
+        }));
+
+        const merged = [...clients, ...custom, ...base];
+        setProperties(merged);
+        if (merged.length === 1) setPropertyId(String(merged[0].id));
       } catch {
         // ignore
       }
@@ -179,6 +277,12 @@ export function AIWorkOrderIntakeCard(props: {
     setAnswers([]);
     setQIndex(0);
     setRootIssue("");
+    setVisitDate("");
+    setVisitWindow("Morning");
+    setContactMethod("Text");
+    setSubmittingVisit(false);
+    setSubmittedWorkOrderId("");
+
     setManualOpen(true);
     setCompactComposer(false);
   }
@@ -324,28 +428,92 @@ export function AIWorkOrderIntakeCard(props: {
   }
   }
 
-  function scheduleVisit() {
+  async function scheduleVisit() {
     if (!result?.ok) return;
+    if (submittingVisit) return;
+    if (!propertyId) return;
+    if (!visitDate) return;
     if (questions.length && answers.some((a) => !String(a || "").trim())) return;
 
-    const qnaJson = JSON.stringify(
-      questions.map((q, i) => ({ question: q, answer: answers[i] || "" }))
-    );
+    const prop = properties?.find((p) => String(p.id) === String(propertyId)) || null;
 
-    router.push(
-      `/marketplace/intake?` +
-        new URLSearchParams({
-          fromAI: "1",
-          issue: rootIssue || turns.find((t) => t.role === "user")?.text || "",
-          trade: result.trade || "",
-          category: result.category || "",
-          subcategory: result.subcategory || "",
-          serviceId: result.serviceId || "",
-          aiSummary: (result.aiSummary || "").trim(),
-          qna: qnaJson,
-          propertyId: propertyId || "",
-        }).toString()
-    );
+    const qnaLines = questions
+      .map((q, i) => ({ q, a: answers[i] || "" }))
+      .filter((x) => (x.q || "").trim() || (x.a || "").trim())
+      .map((x) => `- ${String(x.q).trim()} ${String(x.a).trim()}`.trim())
+      .join("\n");
+
+    const issueDescription =
+      (result.aiSummary || rootIssue || "").trim() +
+      (qnaLines ? `\n\nDetails from chat:\n${qnaLines}` : "");
+
+    let token = "demo";
+    try {
+      const raw = window.localStorage.getItem("hw_session_v1");
+      const j = raw ? JSON.parse(raw) : null;
+      if (j?.token) token = String(j.token);
+    } catch {}
+
+    let originPartnerId: string | null = null;
+    let shareWithPartner = true;
+    try {
+      const p = loadPartner();
+      if (p?.partnerId) originPartnerId = p.partnerId;
+    } catch {}
+
+    setSubmittingVisit(true);
+    try {
+      const res = await fetch("/api/work-orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          originPartnerId,
+          shareWithPartner,
+          intake: {
+            service_category: result.trade || "General",
+            service_subcategory: result.subcategory || "",
+            issue_description: issueDescription,
+            urgency_level: result.urgency || "this_week",
+            property_address: prop?.address1 || "",
+            property_type: "",
+            preferred_date: visitDate,
+            preferred_time_window: visitWindow,
+          },
+        }),
+      });
+
+      const j = await res.json().catch(() => null);
+      if (!res.ok || !j?.ok || !j?.workOrder?.id) {
+        setTurns((prev) => [
+          ...prev,
+          { role: "assistant", text: "Something went wrong submitting that. Please try again." },
+        ]);
+        return;
+      }
+
+      const id = String(j.workOrder.id);
+      setSubmittedWorkOrderId(id);
+
+      setTurns((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: "Submitted. A Home Guide will coordinate scheduling with our Project Manager and confirm shortly.",
+        },
+      ]);
+
+      // Collapse manual section; keep composer compact.
+      setManualOpen(false);
+      setCompactComposer(true);
+    } catch {
+      setTurns((prev) => [
+        ...prev,
+        { role: "assistant", text: "Something went wrong submitting that. Please try again." },
+      ]);
+    } finally {
+      setSubmittingVisit(false);
+    }
   }
 
   const sendDisabled =
@@ -414,38 +582,104 @@ export function AIWorkOrderIntakeCard(props: {
                   <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Next</div>
                   <div className="mt-1">Ready to schedule a visit.</div>
 
-                  {properties && properties.length ? (
-                    <div className="mt-3">
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between gap-2">
                       <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Property</div>
-                      <div className="mt-2">
-                        <select
-                          value={propertyId}
-                          onChange={(e) => setPropertyId(e.target.value)}
-                          className="w-full rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm"
-                        >
-                          <option value="">Select a property…</option>
-                          {properties.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {(p.nickname ? `${p.nickname} · ` : "") +
-                                p.address1 +
-                                (p.city ? `, ${p.city}` : "") +
-                                (p.state ? `, ${p.state}` : "")}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      <button
+                        type="button"
+                        className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
+                        onClick={() => {
+                          setAddTouched(false);
+                          setAddPropMode("client");
+                          setAddPropOpen(true);
+                        }}
+                      >
+                        Add property
+                      </button>
                     </div>
-                  ) : null}
+                    <div className="mt-2">
+                      <select
+                        value={propertyId}
+                        onChange={(e) => setPropertyId(e.target.value)}
+                        className="w-full rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm"
+                      >
+                        <option value="">Select a property…</option>
+                        {(properties || []).map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {(p.nickname ? `${p.nickname} · ` : "") +
+                              p.address1 +
+                              (p.city ? `, ${p.city}` : "") +
+                              (p.state ? `, ${p.state}` : "")}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
 
-                  <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <Button
-                      className="w-full sm:w-auto"
-                      onClick={scheduleVisit}
-                      disabled={questions.length ? answers.some((a) => !String(a || "").trim()) : false}
-                    >
-                      Schedule a visit
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
+                  <div className="mt-4">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Preferred date</div>
+                    <div className="mt-2">
+                      <Input value={visitDate} onChange={(e) => setVisitDate(e.target.value)} placeholder="YYYY-MM-DD" />
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Time window</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(["Morning", "Midday", "Afternoon"] as const).map((t) => (
+                        <Button
+                          key={t}
+                          type="button"
+                          variant={visitWindow === t ? "primary" : "secondary"}
+                          onClick={() => setVisitWindow(t)}
+                        >
+                          {t}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(["Text", "Email"] as const).map((m) => (
+                        <Button
+                          key={m}
+                          type="button"
+                          variant={contactMethod === m ? "primary" : "secondary"}
+                          onClick={() => setContactMethod(m)}
+                        >
+                          {m}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    {submittedWorkOrderId ? (
+                      <Button
+                        className="w-full sm:w-auto"
+                        type="button"
+                        onClick={() => {
+                          const path = window.location.pathname || "";
+                          const base = path.startsWith("/partner") ? "/partner" : path.startsWith("/pro") ? "/pro" : "/pro";
+                          router.push(`${base}/jobs/${encodeURIComponent(submittedWorkOrderId)}`);
+                        }}
+                      >
+                        View request
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        className="w-full sm:w-auto"
+                        onClick={scheduleVisit}
+                        disabled={!propertyId || !visitDate || submittingVisit}
+                      >
+                        Schedule a visit
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    )}
+
                     <button
                       type="button"
                       className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
@@ -643,6 +877,153 @@ export function AIWorkOrderIntakeCard(props: {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={addPropOpen}
+        onClose={() => setAddPropOpen(false)}
+        title="Add property"
+        mobilePlacement="center"
+        scrollKey={addPropMode}
+      >
+        <div className="grid gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setAddPropMode("client")}
+              className={
+                "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                (addPropMode === "client"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              Client property
+            </button>
+            <button
+              type="button"
+              onClick={() => setAddPropMode("property")}
+              className={
+                "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                (addPropMode === "property"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              My property
+            </button>
+          </div>
+
+          {addPropMode === "client" ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label className="text-xs">Client first name</Label>
+                  <Input value={newClientFirstName} onChange={(e) => setNewClientFirstName(e.target.value)} placeholder="Jane" />
+                </div>
+                <div className="grid gap-2">
+                  <Label className="text-xs">Client last name</Label>
+                  <Input value={newClientLastName} onChange={(e) => setNewClientLastName(e.target.value)} placeholder="Client" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label className="text-xs">Email</Label>
+                <Input value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} placeholder="jane@email.com" />
+              </div>
+              <div className="grid gap-2">
+                <Label className="text-xs">Phone</Label>
+                <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="(312) 555-0123" />
+              </div>
+            </>
+          ) : null}
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Address</Label>
+            <Input
+              value={newAddress}
+              onChange={(e) => setNewAddress(e.target.value)}
+              placeholder="123 Main St, Chicago, IL"
+              className={addTouched && !newAddress.trim() ? "ring-2 ring-[rgba(229,57,53,.30)]" : ""}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Nickname (optional)</Label>
+            <Input value={newNickname} onChange={(e) => setNewNickname(e.target.value)} placeholder="Lake Condo" />
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Type of property (optional)</Label>
+            <Input value={newPropertyType} onChange={(e) => setNewPropertyType(e.target.value)} placeholder="Condo / House / Multi-unit" />
+          </div>
+
+          <div className="mt-2 flex items-center justify-end gap-2">
+            <Button type="button" variant="secondary" onClick={() => setAddPropOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setAddTouched(true);
+                const address = newAddress.trim();
+                if (!address) return;
+
+                const id = `${addPropMode === "client" ? "prop_client" : "prop_local"}_${Math.random().toString(36).slice(2, 10)}`;
+                const createdAt = new Date().toISOString();
+
+                if (addPropMode === "client") {
+                  const clientName = `${newClientFirstName} ${newClientLastName}`.trim();
+                  if (!clientName) return;
+
+                  const nextStored: StoredClientProperty[] = [
+                    {
+                      id,
+                      createdAt,
+                      address,
+                      nickname: newNickname.trim() || undefined,
+                      propertyType: newPropertyType.trim() || undefined,
+                      clientName,
+                      clientEmail: newClientEmail.trim() || undefined,
+                      clientPhone: newClientPhone.trim() || undefined,
+                    },
+                    ...readClientProperties(),
+                  ];
+                  writeClientProperties(nextStored);
+                } else {
+                  const nextStored: StoredProperty[] = [
+                    { id, createdAt, address, nickname: newNickname.trim() || undefined },
+                    ...readCustomProperties(),
+                  ];
+                  writeCustomProperties(nextStored);
+                }
+
+                // Refresh local list and select it
+                const nextProp: PropertyLite = {
+                  id,
+                  nickname: newNickname.trim() || null,
+                  address1: address,
+                  city: null,
+                  state: null,
+                  zip: null,
+                };
+                setProperties((prev) => [nextProp, ...(prev || [])]);
+                setPropertyId(id);
+
+                setNewAddress("");
+                setNewNickname("");
+                setNewPropertyType("");
+                setNewClientFirstName("");
+                setNewClientLastName("");
+                setNewClientEmail("");
+                setNewClientPhone("");
+                setAddTouched(false);
+                setAddPropOpen(false);
+              }}
+            >
+              Add property
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
