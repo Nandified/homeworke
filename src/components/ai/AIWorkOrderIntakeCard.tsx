@@ -170,6 +170,10 @@ export function AIWorkOrderIntakeCard(props: {
   const awaitingAnswers = !!result?.ok && qIndex < questions.length;
   const readyToSchedule = !!result?.ok && qIndex >= questions.length;
 
+  const [scheduleStage, setScheduleStage] = useState<
+    "idle" | "ask" | "property" | "datetime" | "contact" | "done"
+  >("idle");
+
   const hints = useMemo(() => ["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"], []);
   const [demoIdx, setDemoIdx] = useState(0);
   const [demoText, setDemoText] = useState("");
@@ -267,6 +271,29 @@ export function AIWorkOrderIntakeCard(props: {
     run();
   }, []);
 
+  // Scheduling lane: advance step-by-step (so it feels concierge, not a lead form).
+  useEffect(() => {
+    if (!readyToSchedule) return;
+
+    if (scheduleStage === "idle") {
+      setScheduleStage("ask");
+      setTurns((prev) => [...prev, { role: "assistant", text: "Ready to schedule a visit?" }]);
+      return;
+    }
+
+    if (scheduleStage === "property" && propertyId) {
+      setScheduleStage("datetime");
+      setTurns((prev) => [...prev, { role: "assistant", text: "Great. What day works best?" }]);
+      return;
+    }
+
+    if (scheduleStage === "datetime" && visitDate) {
+      setScheduleStage("contact");
+      setTurns((prev) => [...prev, { role: "assistant", text: "Got it. What’s the best way to reach you?" }]);
+      return;
+    }
+  }, [readyToSchedule, scheduleStage, propertyId, visitDate]);
+
   function resetIntakeKeepDraft() {
     setClassifyError("");
     setClassifying(false);
@@ -282,6 +309,7 @@ export function AIWorkOrderIntakeCard(props: {
     setContactMethod("Text");
     setSubmittingVisit(false);
     setSubmittedWorkOrderId("");
+    setScheduleStage("idle");
 
     setManualOpen(true);
     setCompactComposer(false);
@@ -305,22 +333,46 @@ export function AIWorkOrderIntakeCard(props: {
       setIssue("");
 
       if (isYes) {
-        // If scheduling details aren't filled yet, guide the user instead of doing nothing.
-        if (!propertyId || !visitDate) {
+        // Move through the scheduling lane step-by-step.
+        if (scheduleStage === "ask" || scheduleStage === "idle") {
+          setScheduleStage("property");
           setAssistantThinking(true);
           window.setTimeout(() => {
             setAssistantThinking(false);
-            setTurns((prev) => [
-              ...prev,
-              {
-                role: "assistant",
-                text: "Almost there — pick a property and preferred date below, then tap ‘Schedule a visit’.",
-              },
-            ]);
+            setTurns((prev) => [...prev, { role: "assistant", text: "Great — which property is this for?" }]);
           }, 500);
           return;
         }
 
+        if (scheduleStage === "property") {
+          if (!propertyId) {
+            setTurns((prev) => [...prev, { role: "assistant", text: "Pick a property below (or add one)." }]);
+            return;
+          }
+          // Selecting a property auto-advances via effect.
+          return;
+        }
+
+        if (scheduleStage === "datetime") {
+          if (!visitDate) {
+            setTurns((prev) => [...prev, { role: "assistant", text: "Add a preferred date below." }]);
+            return;
+          }
+          // visitDate auto-advances via effect.
+          return;
+        }
+
+        if (scheduleStage === "contact") {
+          // They can confirm via button or by typing. If required fields exist, submit.
+          if (!propertyId || !visitDate) {
+            setTurns((prev) => [...prev, { role: "assistant", text: "Almost there — pick a property and preferred date." }]);
+            return;
+          }
+          scheduleVisit();
+          return;
+        }
+
+        // Fallback
         scheduleVisit();
         return;
       }
@@ -425,6 +477,7 @@ export function AIWorkOrderIntakeCard(props: {
       setQuestions(normalized);
       setAnswers(new Array(normalized.length).fill(""));
       setQIndex(0);
+      setScheduleStage("idle");
 
       // Assistant: suggested + first question
       const suggestedLine = `Suggested: ${j.trade || ""}${j.subcategory ? ` · ${j.subcategory}` : ""}`.trim();
@@ -596,120 +649,171 @@ export function AIWorkOrderIntakeCard(props: {
               <div className="flex justify-start">
                 <div className="max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
                   <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Next</div>
-                  <div className="mt-1">Ready to schedule a visit.</div>
+                  <div className="mt-1">
+                    {scheduleStage === "ask" || scheduleStage === "idle"
+                      ? "Ready to schedule a visit?"
+                      : scheduleStage === "property"
+                        ? "First, pick the property."
+                        : scheduleStage === "datetime"
+                          ? "Next, choose a preferred day and time window."
+                          : scheduleStage === "contact"
+                            ? "Last, confirm how we should reach you."
+                            : ""}
+                  </div>
 
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Property</div>
-                      <button
+                  {scheduleStage === "ask" ? (
+                    <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                      <Button
+                        className="w-full sm:w-auto"
                         type="button"
-                        className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
                         onClick={() => {
-                          setAddTouched(false);
-                          setAddPropMode("client");
-                          setAddPropOpen(true);
+                          setScheduleStage("property");
+                          setTurns((prev) => [...prev, { role: "assistant", text: "Great — which property is this for?" }]);
                         }}
                       >
-                        Add property
-                      </button>
-                    </div>
-                    <div className="mt-2">
-                      <select
-                        value={propertyId}
-                        onChange={(e) => setPropertyId(e.target.value)}
-                        className="w-full rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm"
+                        Yes
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        className="w-full sm:w-auto"
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          // Exit scheduling lane
+                          setResult(null);
+                          setQuestions([]);
+                          setAnswers([]);
+                          setQIndex(0);
+                          setRootIssue("");
+                          setCompactComposer(false);
+                          setManualOpen(true);
+                        }}
                       >
-                        <option value="">Select a property…</option>
-                        {(properties || []).map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {(p.nickname ? `${p.nickname} · ` : "") +
-                              p.address1 +
-                              (p.city ? `, ${p.city}` : "") +
-                              (p.state ? `, ${p.state}` : "")}
-                          </option>
+                        Not now
+                      </Button>
+                    </div>
+                  ) : null}
+
+                  {scheduleStage === "property" ? (
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Property</div>
+                        <button
+                          type="button"
+                          className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
+                          onClick={() => {
+                            setAddTouched(false);
+                            setAddPropMode("client");
+                            setAddPropOpen(true);
+                          }}
+                        >
+                          Add property
+                        </button>
+                      </div>
+                      <div className="mt-2">
+                        <select
+                          value={propertyId}
+                          onChange={(e) => setPropertyId(e.target.value)}
+                          className="w-full rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm"
+                        >
+                          <option value="">Select a property…</option>
+                          {(properties || []).map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {(p.nickname ? `${p.nickname} · ` : "") +
+                                p.address1 +
+                                (p.city ? `, ${p.city}` : "") +
+                                (p.state ? `, ${p.state}` : "")}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {scheduleStage === "datetime" ? (
+                    <div className="mt-4">
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Preferred date</div>
+                        <div className="mt-2">
+                          <Input value={visitDate} onChange={(e) => setVisitDate(e.target.value)} placeholder="YYYY-MM-DD" />
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Time window</div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {(["Morning", "Midday", "Afternoon"] as const).map((t) => (
+                            <Button
+                              key={t}
+                              type="button"
+                              variant={visitWindow === t ? "primary" : "secondary"}
+                              onClick={() => setVisitWindow(t)}
+                            >
+                              {t}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {scheduleStage === "contact" ? (
+                    <div className="mt-4">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact</div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(["Text", "Email"] as const).map((m) => (
+                          <Button
+                            key={m}
+                            type="button"
+                            variant={contactMethod === m ? "primary" : "secondary"}
+                            onClick={() => setContactMethod(m)}
+                          >
+                            {m}
+                          </Button>
                         ))}
-                      </select>
-                    </div>
-                  </div>
+                      </div>
 
-                  <div className="mt-4">
-                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Preferred date</div>
-                    <div className="mt-2">
-                      <Input value={visitDate} onChange={(e) => setVisitDate(e.target.value)} placeholder="YYYY-MM-DD" />
-                    </div>
-                  </div>
+                      <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
+                        {submittedWorkOrderId ? (
+                          <Button
+                            className="w-full sm:w-auto"
+                            type="button"
+                            onClick={() => {
+                              const path = window.location.pathname || "";
+                              const base = path.startsWith("/partner") ? "/partner" : path.startsWith("/pro") ? "/pro" : "/pro";
+                              router.push(`${base}/jobs/${encodeURIComponent(submittedWorkOrderId)}`);
+                            }}
+                          >
+                            View request
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            className="w-full sm:w-auto"
+                            onClick={scheduleVisit}
+                            disabled={!propertyId || !visitDate || submittingVisit}
+                          >
+                            Schedule a visit
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        )}
 
-                  <div className="mt-4">
-                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Time window</div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {(["Morning", "Midday", "Afternoon"] as const).map((t) => (
-                        <Button
-                          key={t}
+                        <button
                           type="button"
-                          variant={visitWindow === t ? "primary" : "secondary"}
-                          onClick={() => setVisitWindow(t)}
+                          className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                          onClick={() => {
+                            // True restart
+                            resetIntakeKeepDraft();
+                            setAttachments([]);
+                            setIssue("");
+                            setTimeout(() => issueRef.current?.focus(), 0);
+                          }}
                         >
-                          {t}
-                        </Button>
-                      ))}
+                          Start over
+                        </button>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="mt-4">
-                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact</div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {(["Text", "Email"] as const).map((m) => (
-                        <Button
-                          key={m}
-                          type="button"
-                          variant={contactMethod === m ? "primary" : "secondary"}
-                          onClick={() => setContactMethod(m)}
-                        >
-                          {m}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
-                    {submittedWorkOrderId ? (
-                      <Button
-                        className="w-full sm:w-auto"
-                        type="button"
-                        onClick={() => {
-                          const path = window.location.pathname || "";
-                          const base = path.startsWith("/partner") ? "/partner" : path.startsWith("/pro") ? "/pro" : "/pro";
-                          router.push(`${base}/jobs/${encodeURIComponent(submittedWorkOrderId)}`);
-                        }}
-                      >
-                        View request
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        className="w-full sm:w-auto"
-                        onClick={scheduleVisit}
-                        disabled={!propertyId || !visitDate || submittingVisit}
-                      >
-                        Schedule a visit
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    )}
-
-                    <button
-                      type="button"
-                      className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
-                      onClick={() => {
-                        // True restart
-                        resetIntakeKeepDraft();
-                        setAttachments([]);
-                        setIssue("");
-                        setTimeout(() => issueRef.current?.focus(), 0);
-                      }}
-                    >
-                      Start over
-                    </button>
-                  </div>
+                  ) : null}
 
                   {attachments.length ? (
                     <div className="mt-3 text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
