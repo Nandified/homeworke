@@ -321,9 +321,7 @@ export function AIWorkOrderIntakeCard(props: {
                     </button>
                   </div>
                 </div>
-              ) : classifying ? (
-                <div className="mt-2 text-sm text-[var(--hw-muted)]">Thinking…</div>
-              ) : (
+              ) : classifying ? null : (
                 <div className="mt-2 text-sm text-[var(--hw-muted)]">Describe the issue and I’ll suggest the right service.</div>
               )}
             </div>
@@ -362,9 +360,9 @@ export function AIWorkOrderIntakeCard(props: {
             }}
             placeholder=""
             aria-label="Describe your issue"
-            rows={3}
+            rows={lastPrompt ? 1 : 3}
             className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-3 pr-28 text-[17px] leading-7 border-0 outline-none"
-            style={{ minHeight: lastPrompt ? 96 : 140 }}
+            style={{ minHeight: lastPrompt ? 64 : 140 }}
           />
 
           {!issue && !lastPrompt ? (
