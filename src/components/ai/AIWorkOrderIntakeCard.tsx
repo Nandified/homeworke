@@ -83,6 +83,8 @@ export function AIWorkOrderIntakeCard(props: {
   const [manualOpen, setManualOpen] = useState(true);
   const [assistantThinking, setAssistantThinking] = useState(false);
 
+  const [isDesktop, setIsDesktop] = useState(false);
+
   const started = turns.length > 0 || classifying || assistantThinking || !!result?.ok || !!classifyError;
   const currentQuestion = questions[qIndex] || "";
   const awaitingAnswers = !!result?.ok && qIndex < questions.length;
@@ -129,6 +131,15 @@ export function AIWorkOrderIntakeCard(props: {
     const t = window.setInterval(tick, speed);
     return () => window.clearInterval(t);
   }, [issue, started, demoIdx, demoText.length, hints]);
+
+  // Desktop detection (coarse but effective): fine pointer + hover = desktop/laptop.
+  useEffect(() => {
+    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const apply = () => setIsDesktop(!!mq.matches);
+    apply();
+    mq.addEventListener?.("change", apply);
+    return () => mq.removeEventListener?.("change", apply);
+  }, []);
 
   // Autogrow textarea
   useEffect(() => {
@@ -423,6 +434,14 @@ export function AIWorkOrderIntakeCard(props: {
             value={issue}
             onChange={(e) => setIssue(e.target.value)}
             onKeyDown={async (e) => {
+              // Desktop: Enter to send, Shift+Enter for newline.
+              if (e.key === "Enter" && isDesktop && !e.shiftKey && !e.altKey) {
+                e.preventDefault();
+                await send();
+                return;
+              }
+
+              // Power-user shortcut (everywhere): Cmd/Ctrl+Enter to send.
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
                 await send();
