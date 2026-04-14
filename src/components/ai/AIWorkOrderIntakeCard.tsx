@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ArrowRight, ArrowUp, Paperclip, Droplet, Zap, Wind, Hammer, Sparkles, Home, Wrench } from "lucide-react";
+import { ArrowRight, ArrowUp, Paperclip, Droplet, Zap, Wind, Hammer, Sparkles, Home, Wrench, Shield, Layers } from "lucide-react";
 
 import { Button, Input, Pill } from "@/components/ui";
 
@@ -318,10 +318,22 @@ export function AIWorkOrderIntakeCard(props: {
                     Remodel
                   </span>
                 </Link>
-              </div>
 
-              <div className="flex items-center gap-3">
-                <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
+                <Link href="/marketplace/intake?trade=Roofing">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                    <Shield className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    Roofing
+                  </span>
+                </Link>
+
+                <Link href="/marketplace/intake?trade=Flooring">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
+                    <Layers className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                    Flooring
+                  </span>
+                </Link>
+
+                <Link href="/services" className="ml-auto text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
                   {props.secondaryCta || "Browse marketplace"}
                 </Link>
               </div>
