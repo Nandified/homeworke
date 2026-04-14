@@ -335,6 +335,7 @@ export function AIWorkOrderIntakeCard(props: {
     router.push(
       `/marketplace/intake?` +
         new URLSearchParams({
+          fromAI: "1",
           issue: rootIssue || turns.find((t) => t.role === "user")?.text || "",
           trade: result.trade || "",
           category: result.category || "",

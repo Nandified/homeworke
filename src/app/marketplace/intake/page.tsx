@@ -93,23 +93,44 @@ export default function Page() {
   useEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search);
+      const fromAI = sp.get("fromAI") === "1";
       const trade = sp.get("trade") || "";
       const subcategory = sp.get("subcategory") || "";
       const issue = sp.get("aiSummary") || sp.get("issue") || "";
-      // zip is used later for pricing/routing; intake flow confirms full address.
+      const qnaRaw = sp.get("qna") || "";
 
-      if (trade || subcategory || issue) {
+      let qnaText = "";
+      try {
+        const qna = qnaRaw ? (JSON.parse(qnaRaw) as Array<{ question: string; answer: string }>) : [];
+        if (Array.isArray(qna) && qna.length) {
+          qnaText =
+            "\n\nDetails from chat:\n" +
+            qna
+              .filter((x) => x && (x.question || x.answer))
+              .map((x) => `- ${String(x.question || "").trim()} ${String(x.answer || "").trim()}`.trim())
+              .join("\n");
+        }
+      } catch {
+        // ignore qna parse
+      }
+
+      if (trade || subcategory || issue || qnaText) {
         setDraft((prev) => {
           const next: IntakeDraft = {
             ...prev,
             service_category: trade || prev.service_category,
             service_subcategory: subcategory || prev.service_subcategory,
-            issue_description: issue || prev.issue_description,
+            issue_description: (issue || prev.issue_description) + (qnaText || ""),
             // property address is confirmed later in the flow; ZIP is used only for pricing/routing.
           };
           saveDraft(next);
           return next;
         });
+      }
+
+      // Concierge chat already captured service + details; start them at property/scheduling.
+      if (fromAI) {
+        setStep("property_details");
       }
     } catch {
       // ignore
