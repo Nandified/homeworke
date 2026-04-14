@@ -351,7 +351,7 @@ export function AIWorkOrderIntakeCard(props: {
                 <div
                   className={
                     t.role === "user"
-                      ? "max-w-[92%] rounded-2xl bg-[var(--hw-ink)] px-4 py-2.5 text-sm leading-6 text-white shadow-sm"
+                      ? "max-w-[92%] rounded-2xl bg-black px-4 py-2.5 text-sm leading-6 text-white shadow-sm"
                       : "max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm"
                   }
                 >
