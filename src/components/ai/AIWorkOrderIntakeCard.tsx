@@ -188,7 +188,7 @@ export function AIWorkOrderIntakeCard(props: {
             {props.title || "What do you need help with?"}
           </div>
         </div>
-        <Pill className="self-start whitespace-nowrap text-[10px] px-2 py-1 border border-[rgba(229,57,53,.18)] text-white bg-gradient-to-r from-[rgba(229,57,53,.95)] via-[rgba(244,63,94,.92)] to-[rgba(168,85,247,.90)] shadow-sm">
+        <Pill className="self-start whitespace-nowrap text-[10px] px-2 py-1 border border-[rgba(99,102,241,.25)] text-white bg-gradient-to-r from-[#6366F1] via-[#A855F7] to-[#EC4899] shadow-sm">
           Homeworke AI
         </Pill>
       </div>
@@ -300,15 +300,13 @@ export function AIWorkOrderIntakeCard(props: {
                     Handyman
                   </span>
                 </Link>
-
-                {/* Spacer so "Browse marketplace" lands at the end of the second row */}
-                <div aria-hidden />
                 <Link href="/marketplace/intake?trade=Cleaning%20%2F%20Turnover">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                     <Sparkles className="h-3.5 w-3.5 text-[var(--hw-red)]" />
                     Cleaning
                   </span>
                 </Link>
+
                 <Link href="/marketplace/intake?trade=Appliance%20Repair%2FInstall">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                     <Wrench className="h-3.5 w-3.5 text-[var(--hw-red)]" />
@@ -321,22 +319,19 @@ export function AIWorkOrderIntakeCard(props: {
                     Remodel
                   </span>
                 </Link>
-
                 <Link href="/marketplace/intake?trade=Roofing">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                     <Shield className="h-3.5 w-3.5 text-[var(--hw-red)]" />
                     Roofing
                   </span>
                 </Link>
-
                 <Link href="/marketplace/intake?trade=Flooring">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                     <Layers className="h-3.5 w-3.5 text-[var(--hw-red)]" />
                     Flooring
                   </span>
                 </Link>
-
-                <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)] justify-self-end self-center whitespace-nowrap">
+                <Link href="/services" className="inline-flex items-center justify-end text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)] whitespace-nowrap">
                   {props.secondaryCta || "Browse marketplace"}
                 </Link>
               </div>
