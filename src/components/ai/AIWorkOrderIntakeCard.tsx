@@ -185,7 +185,7 @@ export function AIWorkOrderIntakeCard(props: {
             {props.title || "What do you need help with?"}
           </div>
         </div>
-        {props.showServicingPill === false ? null : <Pill className="bg-white">Chat intake</Pill>}
+        {props.showServicingPill === false ? null : <Pill className="bg-white">Homeworke AI</Pill>}
       </div>
 
       <div className="mt-4">
@@ -231,8 +231,9 @@ export function AIWorkOrderIntakeCard(props: {
           </button>
         </div>
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-xs font-medium text-[var(--hw-muted)]">Enter to send · Shift+Enter for a new line</div>
+          <div className="text-xs text-[var(--hw-muted)]">Tip: Include as many details as you can (photos, room, timing, urgency). More info = faster, more accurate routing.</div>
           <Link href="/services" className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">
             {props.secondaryCta || "Browse all services"}
           </Link>
