@@ -931,7 +931,36 @@ export function AIWorkOrderIntakeCard(props: {
             onChange={(e) => {
               const files = Array.from(e.target.files || []);
               if (!files.length) return;
+
               setAttachments((prev) => [...prev, ...files].slice(0, 10));
+
+              // If we're currently answering a question and the assistant asked for photos/videos,
+              // treat attaching media as a valid "answer" and advance automatically.
+              const expectsMedia = /(upload|add)\s+(a\s+)?(photo|video|picture|image)|\bphoto\/video\b|\bphotos\b|\bvideos\b/i.test(
+                (questions[qIndex] || "") + " " + (turns[turns.length - 1]?.text || "")
+              );
+
+              if (awaitingAnswers && expectsMedia) {
+                const msg = `Uploaded ${files.length} attachment${files.length === 1 ? "" : "s"}.`;
+
+                setCompactComposer(true);
+                const nextAnswers = answers.slice();
+                nextAnswers[qIndex] = msg;
+                setAnswers(nextAnswers);
+
+                setTurns((prev) => [...prev, { role: "user", text: msg }]);
+
+                const nextIdx = qIndex + 1;
+                setAssistantThinking(true);
+                window.setTimeout(() => {
+                  setAssistantThinking(false);
+                  setQIndex(nextIdx);
+                  if (nextIdx < questions.length) {
+                    setTurns((prev) => [...prev, { role: "assistant", text: questions[nextIdx] }]);
+                  }
+                }, 600);
+              }
+
               e.target.value = "";
             }}
           />
@@ -998,6 +1027,9 @@ export function AIWorkOrderIntakeCard(props: {
 
         <div className="mt-2 space-y-2">
           <div className="text-xs text-[var(--hw-muted)]">Tip: Add as much information as possible so we can get you the right help.</div>
+          {attachments.length ? (
+            <div className="text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) ready to send</div>
+          ) : null}
 
           {/* Manual booking collapses after AI starts, but remains accessible. */}
           <div className="mt-3">
