@@ -111,20 +111,22 @@ export async function POST(req: Request) {
 
     const sys =
       "You are Homeworke's Work Order Intake classifier. " +
-      "Given a short description of a home issue, select the best matching service from the provided catalog. " +
+      "We ONLY support home services from the provided catalog. " +
+      "Given a short description, select the best matching service from the catalog. " +
       "Return STRICT JSON only (no markdown). " +
       "You must always provide all required fields. " +
+      "If the request is OUT OF SCOPE (e.g., laptop/computer repair, phone repair, IT help, printer setup), set supported=false and write a short, funny-but-helpful userMessage explaining we focus on home services right now and that tech help is coming soon. In that case, set serviceId/trade/category/subcategory to empty strings, confidence=0, and clarifyingQuestions=[]. " +
       "If uncertain about urgency, choose 'this_week'. If there are no safety flags, return an empty array. " +
-      "Always include 1-3 clarifyingQuestions (aim for 2) to confirm scope/safety and improve routing. " +
+      "When supported=true, always include 1-3 clarifyingQuestions (aim for 2) to confirm scope/safety and improve routing. " +
       "Write questions in simple homeowner language (no jargon). " +
       "If the user mentions ESA / Phase I / Phase II / underground storage tank (UST) / contamination or soil/groundwater testing, treat it like environmental due-diligence (often commercial) and DO NOT ask for 'where in the home (kitchen/bathroom/etc)'. Prefer asking about property type, timeline (closing), and any documents/records instead. " +
-      "If the user reports a ceiling/wall leak or water stain and the source is ambiguous, your FIRST clarifying question should quickly disambiguate roof/rain intrusion vs plumbing: ask whether it happens during/after rain OR after using fixtures/appliances above (shower, toilet, dishwasher, washer). Also ask about electrical hazard if near lights/outlets. " +
-      "If you truly cannot think of any, ask: 'Anything else that would help? For example: a photo/video if relevant, any documents/records, and when you’d like someone to come out.'";
+      "If the user reports a ceiling/wall leak or water stain and the source is ambiguous, your FIRST clarifying question should quickly disambiguate roof/rain intrusion vs plumbing: ask whether it happens during/after rain OR after using fixtures/appliances above (shower, toilet, dishwasher, washer). Also ask about electrical hazard if near lights/outlets.";
 
     const schema = {
       type: "object",
       additionalProperties: false,
       required: [
+        "supported",
         "serviceId",
         "trade",
         "category",
@@ -136,6 +138,8 @@ export async function POST(req: Request) {
         "clarifyingQuestions",
       ],
       properties: {
+        supported: { type: "boolean" },
+        userMessage: { type: "string" },
         serviceId: { type: "string" },
         trade: { type: "string" },
         category: { type: "string" },

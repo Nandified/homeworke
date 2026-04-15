@@ -30,6 +30,10 @@ import { loadPartner } from "@/lib/partner-context";
 type IntakeClassifyResult = {
   ok: boolean;
   used?: "openai" | "fallback" | string;
+  // If false, the request is out-of-scope for the currently supported service catalog.
+  supported?: boolean;
+  userMessage?: string;
+
   serviceId?: string;
   trade?: string;
   category?: string;
@@ -172,10 +176,11 @@ export function AIWorkOrderIntakeCard(props: {
 
   const started = turns.length > 0 || classifying || assistantThinking || !!result?.ok || !!classifyError;
   const currentQuestion = questions[qIndex] || "";
-  const awaitingAnswers = !!result?.ok && qIndex < questions.length;
+  const isSupported = result?.supported !== false;
+  const awaitingAnswers = !!result?.ok && isSupported && qIndex < questions.length;
   const currentQ = questions[qIndex] || "";
   const currentQWantsUpload = /(upload|add)\s+(a\s+)?(photo|video|picture|image)|\bphoto\/video\b|\bphotos\b|\bvideos\b/i.test(currentQ);
-  const readyToSchedule = !!result?.ok && qIndex >= questions.length;
+  const readyToSchedule = !!result?.ok && isSupported && qIndex >= questions.length;
 
   const [scheduleStage, setScheduleStage] = useState<
     "idle" | "ask" | "property" | "datetime" | "contact" | "done"
@@ -531,6 +536,19 @@ export function AIWorkOrderIntakeCard(props: {
 
       setResult(j);
 
+      // Out-of-scope guard (e.g. computer repair). Show a friendly message and stop.
+      if (j.supported === false) {
+        const msg =
+          j.userMessage ||
+          "That’s a good ask — but right now Homeworke is focused on home services (plumbing, electrical, HVAC, etc.). Tech support is coming soon.";
+        setTurns((prev) => [...prev, { role: "assistant", text: msg }]);
+        setQuestions([]);
+        setAnswers([]);
+        setQIndex(0);
+        setScheduleStage("idle");
+        return;
+      }
+
       const qs = (Array.isArray(j.clarifyingQuestions) ? j.clarifyingQuestions : []).filter(Boolean).slice(0, 3);
       // If model returns none, still keep 1 generic question for concierge feel.
       const normalized = qs.length
@@ -564,6 +582,7 @@ export function AIWorkOrderIntakeCard(props: {
 
   async function scheduleVisit() {
     if (!result?.ok) return;
+    if (result.supported === false) return;
     if (submittingVisit) return;
     if (!propertyId) return;
     if (!visitDate) return;
