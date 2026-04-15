@@ -184,6 +184,9 @@ function scoreService(inputText: string, tokens: string[], s: TaxService) {
   const hay = `${s.trade} ${s.category} ${s.label} ${s.id}`.toLowerCase();
   let score = 0;
 
+  const wantsFloor = /\bfloor\b|flooring|hardwood|tile|laminate|vinyl|carpet|refinish|resurface|restain|stain/.test(inputText);
+  const wantsCabinet = /cabinet|cabinetry/.test(inputText);
+
   // Strong phrase boosts
   const phrases: Array<[RegExp, number]> = [
     [/garage\s+door/, 8],
@@ -210,6 +213,12 @@ function scoreService(inputText: string, tokens: string[], s: TaxService) {
   for (const tok of tokens) {
     if (s.id.toLowerCase().includes(tok)) score += 1;
   }
+
+  // Disambiguation: if the user says floor/resurface and NOT cabinets, avoid cabinet refinishing.
+  const isCabinetService = /cabinet/.test(hay);
+  if (wantsFloor && !wantsCabinet && isCabinetService) score -= 6;
+  // Conversely, if they explicitly mention cabinets, boost cabinet services a bit.
+  if (wantsCabinet && isCabinetService) score += 4;
 
   return score;
 }
