@@ -87,47 +87,49 @@ function outOfScopeMessage(text: string) {
 
   const pro: Record<string, string[]> = {
     gaming: [
-      "Home services only for now (plumbing, electrical, HVAC, etc.). Gaming help is coming soon.",
-      "We handle home repairs right now — gaming/tech support is coming soon.",
+      "Home services only — we don’t do gaming help.",
+      "We handle home repairs (plumbing, electrical, HVAC, etc.) — not gaming support.",
     ],
     computer: [
-      "Home services only for now (plumbing, electrical, HVAC, etc.). Tech support is coming soon.",
-      "We handle home repairs right now — tech support is coming soon.",
+      "Home services only — we don’t do computer/IT support.",
+      "We handle home repairs (plumbing, electrical, HVAC, etc.) — not tech support.",
     ],
     printer: [
-      "Home services only for now — printer/IT help is coming soon.",
-      "We handle home repairs right now — tech support is coming soon.",
+      "Home services only — we don’t do printer/IT support.",
+      "We handle home repairs — not printer setup.",
     ],
     phone: [
-      "Home services only for now — mobile/tech support is coming soon.",
-      "We handle home repairs right now — tech support is coming soon.",
+      "Home services only — we don’t do phone/tablet support.",
+      "We handle home repairs — not mobile tech support.",
     ],
     tech: [
-      "Home services only for now — tech support is coming soon.",
-      "We handle home repairs right now — tech support is coming soon.",
+      "Home services only — we don’t do tech support.",
+      "We handle home repairs — not IT help.",
     ],
   };
 
   const playful: Record<string, string[]> = {
     gaming: [
-      "I can help with leaky pipes, not level-ups (yet). Home services only for now — gaming help is coming soon.",
-      "I’m great with roofs, not raids (yet). Home services only for now — gaming help is coming soon.",
+      "I can help with leaky pipes, not level-ups. Home services only.",
+      "I fix houses, not high scores. What’s going on at the property?",
+      "I’m great with roofs, not raids. Home services only.",
     ],
     computer: [
-      "I can help with outlets, not Outlook (yet). Home services only for now — tech support is coming soon.",
-      "I do plumbing, not PCs (yet). Home services only for now — tech support is coming soon.",
+      "I can help with outlets, not Outlook. Home services only.",
+      "I do plumbing, not PCs. Try me with a home repair.",
+      "I’m handy with hammers, not hardware drivers. Home services only.",
     ],
     printer: [
-      "I can fix a leak faster than a printer can print (yet). Home services only for now — tech help is coming soon.",
-      "I do drywall, not drivers (yet). Home services only for now — tech help is coming soon.",
+      "I can fix a leak faster than a printer can print. Home services only.",
+      "I do drywall, not drivers. Home services only.",
     ],
     phone: [
-      "I do HVAC, not iOS (yet). Home services only for now — tech help is coming soon.",
-      "I can help with water heaters, not screen protectors (yet). Home services only for now — tech help is coming soon.",
+      "I do HVAC, not iOS. Home services only.",
+      "I can help with water heaters, not screen protectors. Home services only.",
     ],
     tech: [
-      "I’m your home-fix sidekick, not your IT department (yet). Home services only for now — tech help is coming soon.",
-      "I can help with home repairs, not tech repairs (yet). Home services only for now — tech help is coming soon.",
+      "I’m your home-fix sidekick, not your IT department. Home services only.",
+      "I can help with home repairs, not tech repairs. What’s the home issue?",
     ],
   };
 
