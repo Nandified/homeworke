@@ -1,4 +1,5 @@
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
 export function Container(props: React.HTMLAttributes<HTMLDivElement>) {
@@ -157,55 +158,58 @@ export function Picker(props: {
           </span>
         </button>
 
-        {open && menuPos ? (
-          <div
-            role="listbox"
-            className="fixed z-[80] overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]"
-            style={{ top: menuPos.top, left: menuPos.left, width: menuPos.width }}
-          >
-            <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[var(--hw-red)]/10 blur-[40px]" />
+        {open && menuPos && typeof document !== "undefined"
+          ? createPortal(
+              <div
+                role="listbox"
+                className="fixed z-[80] overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]"
+                style={{ top: menuPos.top, left: menuPos.left, width: menuPos.width }}
+              >
+                <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[var(--hw-red)]/10 blur-[40px]" />
 
-            {props.searchable ? (
-              <div className="relative border-b border-[rgba(229,57,53,.14)] bg-white p-2">
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={props.searchPlaceholder || "Search…"}
-                  className="h-10 w-full rounded-[999px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 text-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
-                />
-              </div>
-            ) : null}
+                {props.searchable ? (
+                  <div className="relative border-b border-[rgba(229,57,53,.14)] bg-white p-2">
+                    <input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder={props.searchPlaceholder || "Search…"}
+                      className="h-10 w-full rounded-[999px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 text-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                    />
+                  </div>
+                ) : null}
 
-            <div className="relative max-h-64 overflow-auto p-1">
-              {filtered.length === 0 ? (
-                <div className="p-3 text-sm text-[var(--hw-muted)]">No matches.</div>
-              ) : null}
-              {filtered.map((o) => {
-                const selected = o.id === props.value;
-                return (
-                  <button
-                    key={o.id}
-                    type="button"
-                    role="option"
-                    aria-selected={selected}
-                    onClick={() => {
-                      props.onChange(o.id);
-                      setOpen(false);
-                      setQuery("");
-                    }}
-                    className={cn(
-                      "w-full rounded-[12px] px-3 py-2 text-left transition",
-                      selected ? "bg-[rgba(229,57,53,.08)] text-[var(--hw-ink)]" : "hover:bg-[var(--hw-soft)] text-[var(--hw-ink)]"
-                    )}
-                  >
-                    <div className="truncate text-sm font-medium">{o.label}</div>
-                    {o.sublabel ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{o.sublabel}</div> : null}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
+                <div className="relative max-h-64 overflow-auto p-1">
+                  {filtered.length === 0 ? <div className="p-3 text-sm text-[var(--hw-muted)]">No matches.</div> : null}
+                  {filtered.map((o) => {
+                    const selected = o.id === props.value;
+                    return (
+                      <button
+                        key={o.id}
+                        type="button"
+                        role="option"
+                        aria-selected={selected}
+                        onClick={() => {
+                          props.onChange(o.id);
+                          setOpen(false);
+                          setQuery("");
+                        }}
+                        className={cn(
+                          "w-full rounded-[12px] px-3 py-2 text-left transition",
+                          selected
+                            ? "bg-[rgba(229,57,53,.08)] text-[var(--hw-ink)]"
+                            : "hover:bg-[var(--hw-soft)] text-[var(--hw-ink)]"
+                        )}
+                      >
+                        <div className="truncate text-sm font-medium">{o.label}</div>
+                        {o.sublabel ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{o.sublabel}</div> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>,
+              document.body
+            )
+          : null}
       </div>
     </div>
   );

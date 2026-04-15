@@ -667,7 +667,7 @@ export function AIWorkOrderIntakeCard(props: {
 
             {readyToSchedule ? (
               <div className="flex justify-start">
-                <div className="max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+                <div className="w-full max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
                   {/* (removed "Next" label; redundant) */}
                   <div className="mt-1">
                     {scheduleStage === "ask" || scheduleStage === "idle"
