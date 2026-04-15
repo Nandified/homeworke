@@ -899,8 +899,11 @@ export function AIWorkOrderIntakeCard(props: {
 
             {classifyError ? (
               <div className="flex justify-start">
-                <div className="rounded-2xl border border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.06)] px-4 py-3 text-sm font-semibold text-[var(--hw-red)]">
-                  We couldn’t analyze that. Please try again.
+                <div className="max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] px-4 py-3 text-sm leading-6 text-[var(--hw-ink)]">
+                  I ran into a hiccup on my side — but we can still keep going.
+                  <div className="mt-2 text-xs text-[var(--hw-muted)]">
+                    Try rephrasing in one sentence and include where it is (room/area). Or tap send again.
+                  </div>
                 </div>
               </div>
             ) : null}
