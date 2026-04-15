@@ -390,29 +390,8 @@ export async function POST(req: Request) {
 
     const outOfScope = looksOutOfScope(text);
 
-    // Limits to prevent people from spamming random out-of-scope prompts.
-    // If we hit the limit, we return a local funny message without calling the model.
-    if (outOfScope) {
-      const key = (req.headers.get("x-forwarded-for") || "") + "|" + (req.headers.get("user-agent") || "");
-      const lim = rateLimit(key, 6, 60 * 60 * 1000); // 6/hour
-      if (!lim.ok) {
-        return NextResponse.json({
-          ok: true,
-          used: "rate_limited",
-          supported: false,
-          userMessage: pickOutOfScopeUserMessage(text),
-          serviceId: "",
-          trade: "",
-          category: "",
-          subcategory: "",
-          confidence: 0,
-          aiSummary: text.trim(),
-          urgency: "this_week",
-          safetyFlags: [],
-          clarifyingQuestions: [],
-        });
-      }
-    }
+    // Note: no local rate limiting here; rely on provider limits/quota.
+    // (We still keep graceful fallbacks on OpenAI failures.)
 
     const sys =
       "You are Homeworke's Work Order Intake classifier. " +
