@@ -63,6 +63,78 @@ type Turn = {
 
 type StoredProperty = { id: string; createdAt: string; address: string; nickname?: string };
 
+function isOutOfScope(text: string) {
+  const t = (text || "").toLowerCase();
+  return /xbox|playstation|ps5|ps4|nintendo|switch|steam|gaming|game\b|laptop|computer|pc\b|mac\b|printer|scanner|iphone|android|ipad|tablet|it\s+help|tech\s+support|wifi|router/.test(
+    t
+  );
+}
+
+function outOfScopeMessage(text: string) {
+  const t = (text || "").toLowerCase();
+  const vibe: "playful" | "pro" = Math.random() < 0.5 ? "playful" : "pro";
+
+  const bucket =
+    /xbox|playstation|ps5|ps4|nintendo|switch|steam|game|gaming/.test(t)
+      ? "gaming"
+      : /laptop|computer|pc\b|mac\b|windows|wifi|router|internet|bluetooth/.test(t)
+        ? "computer"
+        : /printer|scan|scanner|paper jam|toner|ink/.test(t)
+          ? "printer"
+          : /iphone|android|phone|ipad|tablet/.test(t)
+            ? "phone"
+            : "tech";
+
+  const pro: Record<string, string[]> = {
+    gaming: [
+      "Home services only for now (plumbing, electrical, HVAC, etc.). Gaming help is coming soon.",
+      "We handle home repairs right now — gaming/tech support is coming soon.",
+    ],
+    computer: [
+      "Home services only for now (plumbing, electrical, HVAC, etc.). Tech support is coming soon.",
+      "We handle home repairs right now — tech support is coming soon.",
+    ],
+    printer: [
+      "Home services only for now — printer/IT help is coming soon.",
+      "We handle home repairs right now — tech support is coming soon.",
+    ],
+    phone: [
+      "Home services only for now — mobile/tech support is coming soon.",
+      "We handle home repairs right now — tech support is coming soon.",
+    ],
+    tech: [
+      "Home services only for now — tech support is coming soon.",
+      "We handle home repairs right now — tech support is coming soon.",
+    ],
+  };
+
+  const playful: Record<string, string[]> = {
+    gaming: [
+      "I can help with leaky pipes, not level-ups (yet). Home services only for now — gaming help is coming soon.",
+      "I’m great with roofs, not raids (yet). Home services only for now — gaming help is coming soon.",
+    ],
+    computer: [
+      "I can help with outlets, not Outlook (yet). Home services only for now — tech support is coming soon.",
+      "I do plumbing, not PCs (yet). Home services only for now — tech support is coming soon.",
+    ],
+    printer: [
+      "I can fix a leak faster than a printer can print (yet). Home services only for now — tech help is coming soon.",
+      "I do drywall, not drivers (yet). Home services only for now — tech help is coming soon.",
+    ],
+    phone: [
+      "I do HVAC, not iOS (yet). Home services only for now — tech help is coming soon.",
+      "I can help with water heaters, not screen protectors (yet). Home services only for now — tech help is coming soon.",
+    ],
+    tech: [
+      "I’m your home-fix sidekick, not your IT department (yet). Home services only for now — tech help is coming soon.",
+      "I can help with home repairs, not tech repairs (yet). Home services only for now — tech help is coming soon.",
+    ],
+  };
+
+  const pool = (vibe === "playful" ? playful : pro)[bucket] || pro.tech;
+  return pool[Math.floor(Math.random() * pool.length)] || pro.tech[0];
+}
+
 type StoredClientProperty = {
   id: string;
   createdAt: string;
@@ -521,6 +593,13 @@ export function AIWorkOrderIntakeCard(props: {
     setTurns((prev) => [...prev, { role: "user", text }]);
     // Clear the composer immediately so it doesn't look "stuck" while we classify.
     setIssue("");
+
+    // Client-side out-of-scope guard (works even if the API/model fails).
+    if (isOutOfScope(text)) {
+      setClassifying(false);
+      setTurns((prev) => [...prev, { role: "assistant", text: outOfScopeMessage(text) }]);
+      return;
+    }
 
     try {
       const res = await fetch("/api/work-orders/intake-classify", {
