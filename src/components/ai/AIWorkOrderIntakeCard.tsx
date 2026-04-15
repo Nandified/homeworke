@@ -658,7 +658,7 @@ export function AIWorkOrderIntakeCard(props: {
     false;
 
   return (
-    <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass">
+    <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col" style={{ maxHeight: "82vh" }}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
@@ -675,10 +675,10 @@ export function AIWorkOrderIntakeCard(props: {
 
       {/* Conversation area */}
       {started ? (
-        <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 p-4">
+        <div className="mt-4 flex-1 min-h-0 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 p-4">
           <div
             ref={chatScrollRef}
-            className="flex max-h-[62vh] flex-col gap-3 overflow-y-auto pr-2"
+            className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto pr-2"
           >
             {turns.map((t, idx) => {
               const wantsUpload =
