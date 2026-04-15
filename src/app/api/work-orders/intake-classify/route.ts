@@ -144,12 +144,37 @@ const STOPWORDS = new Set(
   )
 );
 
+function normalizeToken(w: string) {
+  let x = (w || "").toLowerCase().trim();
+  // very light stemming
+  if (x.endsWith("ing") && x.length > 5) x = x.slice(0, -3);
+  else if (x.endsWith("ed") && x.length > 4) x = x.slice(0, -2);
+  else if (x.endsWith("es") && x.length > 4) x = x.slice(0, -2);
+  else if (x.endsWith("s") && x.length > 3) x = x.slice(0, -1);
+
+  const synonyms: Record<string, string> = {
+    resurface: "refinish",
+    resurfacing: "refinish",
+    refinish: "refinish",
+    refinishing: "refinish",
+    restain: "stain",
+    restaining: "stain",
+    stain: "stain",
+    hardwood: "hardwood",
+    floor: "floor",
+    flooring: "floor",
+    tiles: "tile",
+  };
+
+  return synonyms[x] || x;
+}
+
 function tokenize(text: string) {
   return (text || "")
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
-    .map((w) => w.trim())
+    .map((w) => normalizeToken(w))
     .filter(Boolean)
     .filter((w) => w.length >= 3)
     .filter((w) => !STOPWORDS.has(w));
@@ -167,7 +192,7 @@ function scoreService(inputText: string, tokens: string[], s: TaxService) {
     [/water\s+heater/, 7],
     [/sump\s+pump/, 7],
     [/circuit\s+breaker|electrical\s+panel/, 7],
-    [/hardwood\s+floor|floor\s+refinish|re\s*stain/, 7],
+    [/hardwood\s+floor|floor\s+refinish|re\s*stain|resurface\s+.*floor|floor\s+resurface/, 7],
   ];
   for (const [re, pts] of phrases) {
     if (re.test(inputText)) score += pts;
@@ -201,7 +226,7 @@ function pickFallback(text: string, services: TaxService[]) {
   }
 
   // Require at least a small signal; otherwise return null and ask a clarifying question.
-  if (!best || best.score < 4) return null;
+  if (!best || best.score < 2) return null;
   return best.s;
 }
 
@@ -387,7 +412,13 @@ export async function POST(req: Request) {
         });
       }
 
-      // If we can't even route heuristically, treat it as supported but ask to rephrase.
+      // If we can't even route heuristically, treat it as supported and ask a smart clarifier.
+      const t = text.toLowerCase();
+      const floorish = /floor|flooring|hardwood|tile|carpet|laminate|vinyl/.test(t);
+      const clarifier = floorish
+        ? "Got it — what kind of flooring is it (hardwood, tile, laminate, etc.), and is this repair, refinishing/resurfacing, or replacement?"
+        : "I’m having trouble routing that — can you rephrase in one sentence and include where in the home it is?";
+
       return NextResponse.json({
         ok: true,
         used: "fallback",
@@ -400,7 +431,7 @@ export async function POST(req: Request) {
         aiSummary: text.trim(),
         urgency: "this_week",
         safetyFlags: [],
-        clarifyingQuestions: ["I’m having trouble routing that — can you rephrase in one sentence and include where in the home it is?"],
+        clarifyingQuestions: [clarifier],
       });
     }
 
