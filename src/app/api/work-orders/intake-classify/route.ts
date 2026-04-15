@@ -138,45 +138,71 @@ function collectTextFromResponse(j: any): string {
   return parts.join("\n").trim();
 }
 
+const STOPWORDS = new Set(
+  "a an the and or but if then else is are was were be been being to of in on at for from with without about into over under my your our his her their this that these those it its i me we you they them he she".split(
+    /\s+/
+  )
+);
+
+function tokenize(text: string) {
+  return (text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .map((w) => w.trim())
+    .filter(Boolean)
+    .filter((w) => w.length >= 3)
+    .filter((w) => !STOPWORDS.has(w));
+}
+
+function scoreService(inputText: string, tokens: string[], s: TaxService) {
+  const hay = `${s.trade} ${s.category} ${s.label} ${s.id}`.toLowerCase();
+  let score = 0;
+
+  // Strong phrase boosts
+  const phrases: Array<[RegExp, number]> = [
+    [/garage\s+door/, 8],
+    [/tv\s+mount/, 8],
+    [/roof\s+replacement|replace\s+.*roof|new\s+roof|re\s*roof|reroof/, 8],
+    [/water\s+heater/, 7],
+    [/sump\s+pump/, 7],
+    [/circuit\s+breaker|electrical\s+panel/, 7],
+    [/hardwood\s+floor|floor\s+refinish|re\s*stain/, 7],
+  ];
+  for (const [re, pts] of phrases) {
+    if (re.test(inputText)) score += pts;
+  }
+
+  // Token overlap
+  for (const tok of tokens) {
+    if (!hay.includes(tok)) continue;
+    // Weight common trade tokens slightly less
+    if (/(repair|install|replacement|maintenance|service)/.test(tok)) score += 1;
+    else score += 2;
+  }
+
+  // Slight preference for closer namespace matches
+  for (const tok of tokens) {
+    if (s.id.toLowerCase().includes(tok)) score += 1;
+  }
+
+  return score;
+}
+
 function pickFallback(text: string, services: TaxService[]) {
-  const t = (text || "").toLowerCase();
-  const has = (re: RegExp) => re.test(t);
-  const find = (pred: (s: TaxService) => boolean) => services.find(pred) || null;
+  const input = (text || "").toLowerCase();
+  const tokens = tokenize(input);
+  if (!tokens.length) return null;
 
-  // Environmental / commercial diligence
-  if (has(/\besa\b|environmental\s+site\s+assessment|\bphase\s*i\b|\bphase\s*ii\b|phase\s*1|phase\s*2|\bust\b|underground\s+storage\s+tank|soil\s+(test|testing)|groundwater\s+(test|testing)|contaminat|brownfield/)) {
-    return find((s) => s.id === "mold-water-damage-environmental.environmental.esa-phase-i-ii") ||
-      find((s) => s.id.startsWith("mold-water-damage-environmental."));
+  let best: { s: TaxService; score: number } | null = null;
+  for (const s of services) {
+    const score = scoreService(input, tokens, s);
+    if (!best || score > best.score) best = { s, score };
   }
 
-  // Water intrusion can be plumbing OR roof. Use simple cues.
-  if (has(/\broof\b|shingle|shingles|reroof|re-roof|roof\s+replacement|replace\s+(my|the)?\s*roof|new\s+roof|tear\s*off/)) {
-    return (
-      find((s) => s.id === "roofing.repair-maintenance.roof-repair-or-maintenance") ||
-      find((s) => s.id.startsWith("roofing."))
-    );
-  }
-
-  if (has(/ceiling\s+leak|water\s+stain\s+on\s+ceiling|leaking\s+ceiling|water\s+coming\s+through\s+ceiling/)) {
-    if (has(/rain|roof|attic|storm|shingles|gutter/)) return find((s) => s.id.startsWith("roofing."));
-    return find((s) => s.id.startsWith("plumbing."));
-  }
-
-  if (has(/leak|clog|toilet|faucet|pipe|drain|sewer|garbage disposal/))
-    return find((s) => s.id.startsWith("plumbing."));
-  if (has(/outlet|breaker|electrical|wiring|switch|light fixture|ceiling fan|panel/))
-    return find((s) => s.id.startsWith("electrical."));
-  if (has(/ac\b|a\/c|air conditioner|no heat|no cool|furnace|hvac|thermostat|duct/))
-    return find((s) => s.id.startsWith("hvac."));
-  if (has(/hardwood|flooring|floor\b|refinish|refinishing|restain|re\s*stain|stain\b|sand(ing)?|polyurethane/))
-    return find((s) => s.id.startsWith("flooring."));
-
-  if (has(/washer|dryer|dishwasher|refrigerator|fridge|oven|range|microwave/))
-    return find((s) => s.id.startsWith("appliance-repair-install."));
-  if (has(/cleaning|deep clean|move out|move-out|turnover|carpet/))
-    return find((s) => s.id.startsWith("cleaning-turnover."));
-
-  return null;
+  // Require at least a small signal; otherwise return null and ask a clarifying question.
+  if (!best || best.score < 4) return null;
+  return best.s;
 }
 
 export async function POST(req: Request) {
