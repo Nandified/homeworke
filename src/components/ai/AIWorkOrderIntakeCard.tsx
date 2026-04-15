@@ -514,6 +514,8 @@ export function AIWorkOrderIntakeCard(props: {
 
     setRootIssue(text);
     setTurns((prev) => [...prev, { role: "user", text }]);
+    // Clear the composer immediately so it doesn't look "stuck" while we classify.
+    setIssue("");
 
     try {
       const res = await fetch("/api/work-orders/intake-classify", {
