@@ -436,6 +436,11 @@ export async function POST(req: Request) {
       },
     };
 
+    const model =
+      process.env.OPENAI_MODEL_WORK_ORDERS ||
+      process.env.OPENAI_MODEL ||
+      "gpt-4o-mini";
+
     const res = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -443,7 +448,7 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-5.4-mini",
+        model,
         max_output_tokens: outOfScope ? 180 : 450,
         // Enforce structured JSON output.
         text: {
