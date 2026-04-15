@@ -594,12 +594,8 @@ export function AIWorkOrderIntakeCard(props: {
     // Clear the composer immediately so it doesn't look "stuck" while we classify.
     setIssue("");
 
-    // Client-side out-of-scope guard (works even if the API/model fails).
-    if (isOutOfScope(text)) {
-      setClassifying(false);
-      setTurns((prev) => [...prev, { role: "assistant", text: outOfScopeMessage(text) }]);
-      return;
-    }
+    // If it's out-of-scope, still call the API so the LLM can generate a contextual funny reply.
+    // We'll only fall back to local copy if the request fails.
 
     try {
       const res = await fetch("/api/work-orders/intake-classify", {
@@ -650,7 +646,17 @@ export function AIWorkOrderIntakeCard(props: {
 
       setIssue("");
     } catch {
-      setClassifyError("classify_fetch_error");
+      // If API fails, avoid the red error for obvious out-of-scope prompts.
+      if (isOutOfScope(text)) {
+        setTurns((prev) => [...prev, { role: "assistant", text: outOfScopeMessage(text) }]);
+        setQuestions([]);
+        setAnswers([]);
+        setQIndex(0);
+        setScheduleStage("idle");
+        setClassifyError("");
+      } else {
+        setClassifyError("classify_fetch_error");
+      }
     } finally {
       setClassifying(false);
     }

@@ -71,6 +71,36 @@ function pickOutOfScopeUserMessage(inputText: string) {
   return pool[Math.floor(Math.random() * pool.length)] || proLines.tech[0];
 }
 
+type RateState = { windowStartMs: number; count: number };
+function rateLimit(key: string, limit: number, windowMs: number): { ok: true } | { ok: false; remainingMs: number } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const g = globalThis as any;
+  if (!g.__HW3_OOS_RATE__) g.__HW3_OOS_RATE__ = new Map<string, RateState>();
+  const m: Map<string, RateState> = g.__HW3_OOS_RATE__;
+
+  const now = Date.now();
+  const st = m.get(key);
+  if (!st || now - st.windowStartMs > windowMs) {
+    m.set(key, { windowStartMs: now, count: 1 });
+    return { ok: true };
+  }
+
+  if (st.count >= limit) {
+    return { ok: false, remainingMs: windowMs - (now - st.windowStartMs) };
+  }
+
+  st.count++;
+  m.set(key, st);
+  return { ok: true };
+}
+
+function looksOutOfScope(text: string) {
+  const t = (text || "").toLowerCase();
+  return /xbox|playstation|ps5|ps4|nintendo|switch|steam|gaming|game\b|laptop|computer|pc\b|mac\b|printer|scanner|iphone|android|ipad|tablet|it\s+help|tech\s+support|wifi|router/.test(
+    t
+  );
+}
+
 function safeJson(text: string) {
   try {
     return JSON.parse(text);
@@ -174,13 +204,39 @@ export async function POST(req: Request) {
       .map((s) => ({ serviceId: s.id, trade: s.trade, category: s.category, subcategory: s.label }))
       .slice(0, 2000);
 
+    const outOfScope = looksOutOfScope(text);
+
+    // Limits to prevent people from spamming random out-of-scope prompts.
+    // If we hit the limit, we return a local funny message without calling the model.
+    if (outOfScope) {
+      const key = (req.headers.get("x-forwarded-for") || "") + "|" + (req.headers.get("user-agent") || "");
+      const lim = rateLimit(key, 6, 60 * 60 * 1000); // 6/hour
+      if (!lim.ok) {
+        return NextResponse.json({
+          ok: true,
+          used: "rate_limited",
+          supported: false,
+          userMessage: pickOutOfScopeUserMessage(text),
+          serviceId: "",
+          trade: "",
+          category: "",
+          subcategory: "",
+          confidence: 0,
+          aiSummary: text.trim(),
+          urgency: "this_week",
+          safetyFlags: [],
+          clarifyingQuestions: [],
+        });
+      }
+    }
+
     const sys =
       "You are Homeworke's Work Order Intake classifier. " +
       "We ONLY support home services from the provided catalog. " +
       "Given a short description, select the best matching service from the catalog. " +
       "Return STRICT JSON only (no markdown). " +
       "You must always provide all required fields. " +
-      "If the request is OUT OF SCOPE (e.g., laptop/computer repair, phone repair, IT help, printer setup), set supported=false and write a short, funny-but-helpful userMessage explaining we focus on home services right now and that tech help is coming soon. In that case, set serviceId/trade/category/subcategory to empty strings, confidence=0, and clarifyingQuestions=[]. " +
+      "If the request is OUT OF SCOPE (e.g., gaming help, laptop/computer repair, phone repair, IT help, printer setup), set supported=false and write a short, funny-but-helpful userMessage that references what they asked for. Use a 50/50 vibe: sometimes playful, sometimes pro. In that case, set serviceId/trade/category/subcategory to empty strings, confidence=0, and clarifyingQuestions=[]. " +
       "If uncertain about urgency, choose 'this_week'. If there are no safety flags, return an empty array. " +
       "When supported=true, always include 1-3 clarifyingQuestions (aim for 2) to confirm scope/safety and improve routing. " +
       "Write questions in simple homeowner language (no jargon). " +
@@ -225,7 +281,7 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         model: "gpt-5.4-mini",
-        max_output_tokens: 450,
+        max_output_tokens: outOfScope ? 180 : 450,
         // Enforce structured JSON output.
         text: {
           format: {
