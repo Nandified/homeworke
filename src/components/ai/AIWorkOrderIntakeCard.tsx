@@ -658,7 +658,7 @@ export function AIWorkOrderIntakeCard(props: {
     false;
 
   return (
-    <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col overflow-hidden" style={{ maxHeight: "82vh" }}>
+    <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col overflow-hidden" style={{ height: "82vh" }}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
