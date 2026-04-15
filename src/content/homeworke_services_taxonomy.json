@@ -1,5 +1,5 @@
 {
-  "version": "2026-04-14",
+  "version": "2026-04-15",
   "trades": [
     "Appliance Repair/Install",
     "Cleaning / Turnover",
@@ -12,7 +12,8 @@
     "Landscaping / Lawn",
     "Masonry / Concrete / Asphalt",
     "Mold / Water Damage / Environmental",
-    "Painting & Drywall",
+    "Painting",
+    "Drywall",
     "Pest Control",
     "Plumbing",
     "Pool / Spa",
@@ -120,7 +121,7 @@
     },
     {
       "id": "painting-and-drywall.painting.cabinet-painting",
-      "trade": "Painting & Drywall",
+      "trade": "Painting",
       "category": "Painting",
       "label": "Cabinet Painting"
     },
@@ -294,7 +295,7 @@
     },
     {
       "id": "appliance-repair-install.install.drywall-installation-and-hanging",
-      "trade": "Painting & Drywall",
+      "trade": "Drywall",
       "category": "Drywall",
       "label": "Drywall Installation and Hanging"
     },
@@ -384,13 +385,13 @@
     },
     {
       "id": "painting-and-drywall.painting.exterior-painting",
-      "trade": "Painting & Drywall",
+      "trade": "Painting",
       "category": "Painting",
       "label": "Exterior Painting"
     },
     {
       "id": "painting-and-drywall.painting.face-painting",
-      "trade": "Painting & Drywall",
+      "trade": "Painting",
       "category": "Painting",
       "label": "Face Painting"
     },
@@ -402,7 +403,7 @@
     },
     {
       "id": "painting-and-drywall.painting.faux-finishing-or-painting",
-      "trade": "Painting & Drywall",
+      "trade": "Painting",
       "category": "Painting",
       "label": "Faux Finishing or Painting"
     },
@@ -414,7 +415,7 @@
     },
     {
       "id": "painting-and-drywall.painting.fence-painting",
-      "trade": "Painting & Drywall",
+      "trade": "Painting",
       "category": "Painting",
       "label": "Fence Painting"
     },
@@ -450,7 +451,7 @@
     },
     {
       "id": "painting-and-drywall.painting.floor-painting-or-coating",
-      "trade": "Painting & Drywall",
+      "trade": "Painting",
       "category": "Painting",
       "label": "Floor Painting or Coating"
     },
@@ -708,7 +709,7 @@
     },
     {
       "id": "painting-and-drywall.painting.interior-painting",
-      "trade": "Painting & Drywall",
+      "trade": "Painting",
       "category": "Painting",
       "label": "Interior Painting"
     },
@@ -822,7 +823,7 @@
     },
     {
       "id": "painting-and-drywall.painting.paint-removal",
-      "trade": "Painting & Drywall",
+      "trade": "Painting",
       "category": "Painting",
       "label": "Paint Removal"
     },
@@ -852,7 +853,7 @@
     },
     {
       "id": "painting-and-drywall.drywall.plastering",
-      "trade": "Painting & Drywall",
+      "trade": "Drywall",
       "category": "Drywall",
       "label": "Plastering"
     },
@@ -900,7 +901,7 @@
     },
     {
       "id": "painting-and-drywall.drywall.popcorn-texture-removal",
-      "trade": "Painting & Drywall",
+      "trade": "Drywall",
       "category": "Drywall",
       "label": "Popcorn Texture Removal"
     },
@@ -1248,13 +1249,13 @@
     },
     {
       "id": "appliance-repair-install.install.wallpaper-installation-or-repair",
-      "trade": "Painting & Drywall",
+      "trade": "Painting",
       "category": "Wallpaper",
       "label": "Wallpaper Installation or Repair"
     },
     {
       "id": "painting-and-drywall.wallpaper.wallpaper-removal",
-      "trade": "Painting & Drywall",
+      "trade": "Painting",
       "category": "Wallpaper",
       "label": "Wallpaper Removal"
     },
