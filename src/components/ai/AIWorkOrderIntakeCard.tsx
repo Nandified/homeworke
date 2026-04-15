@@ -147,6 +147,7 @@ export function AIWorkOrderIntakeCard(props: {
   const [visitDate, setVisitDate] = useState<string>("");
   const [visitWindow, setVisitWindow] = useState<"Morning" | "Midday" | "Afternoon" | "Evening">("Morning");
   const [contactMethod, setContactMethod] = useState<"Text" | "Email">("Text");
+  const [contactTouched, setContactTouched] = useState(false);
   const [submittingVisit, setSubmittingVisit] = useState(false);
   const [submittedWorkOrderId, setSubmittedWorkOrderId] = useState<string>("");
 
@@ -337,6 +338,7 @@ export function AIWorkOrderIntakeCard(props: {
     setVisitDate("");
     setVisitWindow("Morning");
     setContactMethod("Text");
+    setContactTouched(false);
     setSubmittingVisit(false);
     setSubmittedWorkOrderId("");
     setScheduleStage("idle");
@@ -987,18 +989,21 @@ export function AIWorkOrderIntakeCard(props: {
                   {scheduleStage === "contact" ? (
                     <div className="mt-4">
                       <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact</div>
-                      <div className="mt-2 flex flex-wrap gap-2">
+                      {!submittedWorkOrderId ? <div className="mt-2 flex flex-wrap gap-2">
                         {(["Text", "Email"] as const).map((m) => (
                           <Button
                             key={m}
                             type="button"
                             variant={contactMethod === m ? "primary" : "secondary"}
-                            onClick={() => setContactMethod(m)}
+                            onClick={() => {
+                              setContactMethod(m);
+                              setContactTouched(true);
+                            }}
                           >
                             {m}
                           </Button>
                         ))}
-                      </div>
+                      </div> : null}
 
                       <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
                         {submittedWorkOrderId ? (
@@ -1018,7 +1023,7 @@ export function AIWorkOrderIntakeCard(props: {
                           <Button
                             className="w-full sm:w-auto"
                             onClick={scheduleVisit}
-                            disabled={!propertyId || !visitDate || submittingVisit}
+                            disabled={!propertyId || !visitDate || submittingVisit || !contactTouched}
                           >
                             Schedule a visit
                             <ArrowRight className="h-4 w-4" />
