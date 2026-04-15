@@ -323,6 +323,13 @@ export async function POST(req: Request) {
     const jsonBlob = extractJsonObject(outText) || outText;
     const out = safeJson(jsonBlob) || null;
 
+    // Log token usage for cost monitoring (never returned to users)
+    try {
+      if (j?.usage) {
+        console.log("[intake-classify] usage", j.usage);
+      }
+    } catch {}
+
     if (!out || typeof out !== "object") {
       // If the model fails to return structured JSON, degrade gracefully with a friendly message.
       return NextResponse.json({
