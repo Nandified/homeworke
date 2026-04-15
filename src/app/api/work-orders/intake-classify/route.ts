@@ -354,7 +354,7 @@ export async function POST(req: Request) {
       if (!s) {
         return NextResponse.json({
           ok: true,
-          used: "fallback",
+          used: "fallback_no_key",
           supported: true,
           serviceId: "",
           trade: "",
@@ -369,7 +369,7 @@ export async function POST(req: Request) {
       }
       return NextResponse.json({
         ok: true,
-        used: "fallback",
+        used: "fallback_no_key",
         supported: true,
         serviceId: s.id,
         trade: s.trade,
@@ -475,12 +475,16 @@ export async function POST(req: Request) {
 
     const raw = await res.text().catch(() => "");
     if (!res.ok) {
+      try {
+        console.log("[intake-classify] openai_failed", res.status, (raw || "").slice(0, 200));
+      } catch {}
+
       // Degrade gracefully to heuristic routing so real home-service requests don't hard-fail.
       const s = pickFallback(text, services);
       if (s) {
         return NextResponse.json({
           ok: true,
-          used: "fallback",
+          used: `fallback_openai_failed_${res.status}`,
           supported: true,
           serviceId: s.id,
           trade: s.trade,
@@ -496,7 +500,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json({
         ok: true,
-        used: "fallback",
+        used: `fallback_openai_failed_${res.status}`,
         supported: true,
         serviceId: "",
         trade: "",
