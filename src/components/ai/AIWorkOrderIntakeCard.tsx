@@ -143,7 +143,7 @@ export function AIWorkOrderIntakeCard(props: {
   const [rootIssue, setRootIssue] = useState<string>("");
 
   const [visitDate, setVisitDate] = useState<string>("");
-  const [visitWindow, setVisitWindow] = useState<"Morning" | "Midday" | "Afternoon">("Morning");
+  const [visitWindow, setVisitWindow] = useState<"Morning" | "Midday" | "Afternoon" | "Evening">("Morning");
   const [contactMethod, setContactMethod] = useState<"Text" | "Email">("Text");
   const [submittingVisit, setSubmittingVisit] = useState(false);
   const [submittedWorkOrderId, setSubmittedWorkOrderId] = useState<string>("");
@@ -775,23 +775,66 @@ export function AIWorkOrderIntakeCard(props: {
                       <div>
                         <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Preferred date</div>
                         <div className="mt-2">
-                          <Input value={visitDate} onChange={(e) => setVisitDate(e.target.value)} placeholder="YYYY-MM-DD" />
+                          {(() => {
+                            const now = new Date();
+                            const min = new Date(now);
+                            // Block out the next 2 days so we have time to confirm.
+                            min.setDate(min.getDate() + 2);
+                            const minIso = new Date(min.getTime() - min.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+
+                            return (
+                              <Input
+                                type="date"
+                                value={visitDate}
+                                min={minIso}
+                                onChange={(e) => setVisitDate(e.target.value)}
+                                className="h-11 rounded-[999px]"
+                              />
+                            );
+                          })()}
                         </div>
+                        <div className="mt-2 text-xs text-[var(--hw-muted)]">Format: MM-DD-YYYY</div>
                       </div>
 
-                      <div className="mt-4">
+                      <div className="mt-5">
                         <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Time window</div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {(["Morning", "Midday", "Afternoon"] as const).map((t) => (
-                            <Button
-                              key={t}
-                              type="button"
-                              variant={visitWindow === t ? "primary" : "secondary"}
-                              onClick={() => setVisitWindow(t)}
-                            >
-                              {t}
-                            </Button>
-                          ))}
+                        <div className="mt-2 grid gap-2">
+                          {(
+                            [
+                              { id: "Morning", label: "Morning", range: "7:00 AM – 10:00 AM" },
+                              { id: "Midday", label: "Midday", range: "10:00 AM – 2:00 PM" },
+                              { id: "Afternoon", label: "Afternoon", range: "2:00 PM – 6:00 PM" },
+                              { id: "Evening", label: "Evening", range: "6:00 PM – 9:00 PM" },
+                            ] as const
+                          ).map((t) => {
+                            const selected = visitWindow === t.id;
+                            return (
+                              <button
+                                key={t.id}
+                                type="button"
+                                onClick={() => setVisitWindow(t.id)}
+                                className={
+                                  "flex w-full items-center justify-between gap-3 rounded-[18px] border px-4 py-3 text-left transition " +
+                                  (selected
+                                    ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.08)]"
+                                    : "border-[var(--hw-line)] bg-white hover:bg-[var(--hw-soft)]")
+                                }
+                              >
+                                <div className="min-w-0">
+                                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{t.label}</div>
+                                  <div className="mt-0.5 text-xs font-medium text-[var(--hw-muted)]">{t.range}</div>
+                                </div>
+                                <div
+                                  className={
+                                    "h-5 w-5 rounded-full border transition " +
+                                    (selected
+                                      ? "border-[var(--hw-red)] bg-[var(--hw-red)] shadow-[0_4px_14px_rgba(229,57,53,.25)]"
+                                      : "border-[var(--hw-line)] bg-white")
+                                  }
+                                />
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
