@@ -168,6 +168,8 @@ export function AIWorkOrderIntakeCard(props: {
   const started = turns.length > 0 || classifying || assistantThinking || !!result?.ok || !!classifyError;
   const currentQuestion = questions[qIndex] || "";
   const awaitingAnswers = !!result?.ok && qIndex < questions.length;
+  const currentQ = questions[qIndex] || "";
+  const currentQWantsUpload = /(upload|add)\s+(a\s+)?(photo|video|picture|image)|\bphoto\/video\b|\bphotos\b|\bvideos\b/i.test(currentQ);
   const readyToSchedule = !!result?.ok && qIndex >= questions.length;
 
   const [scheduleStage, setScheduleStage] = useState<
@@ -636,6 +638,10 @@ export function AIWorkOrderIntakeCard(props: {
                 t.role === "assistant" &&
                 /(upload|add)\s+(a\s+)?(photo|video|picture|image)|\bphoto\/video\b|\bphotos\b|\bvideos\b/i.test(t.text || "");
 
+              // Only show the CTA on the most recent assistant prompt while we're awaiting an answer.
+              const isLatestAssistant = t.role === "assistant" && idx === turns.length - 1;
+              const showUploadCtas = awaitingAnswers && isLatestAssistant && currentQWantsUpload;
+
               return (
                 <div key={idx} className={t.role === "user" ? "flex justify-end" : "flex justify-start"}>
                   <div
@@ -647,7 +653,42 @@ export function AIWorkOrderIntakeCard(props: {
                   >
                     <div>{t.text}</div>
 
-                    {wantsUpload ? (
+                    {showUploadCtas ? (
+                      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                        <button
+                          type="button"
+                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-ink)] hover:bg-[var(--hw-soft)] sm:w-auto"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Paperclip className="h-3.5 w-3.5" />
+                          Add photos/videos
+                        </button>
+
+                        <button
+                          type="button"
+                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[var(--hw-red)] px-3 py-2 text-xs font-semibold text-white shadow-sm hover:opacity-95 sm:w-auto"
+                          onClick={() => {
+                            // Advance without forcing a text reply.
+                            const nextAnswers = answers.slice();
+                            nextAnswers[qIndex] = nextAnswers[qIndex] || (attachments.length ? `${attachments.length} attachment(s) added.` : "No media provided.");
+                            setAnswers(nextAnswers);
+
+                            setAssistantThinking(true);
+                            window.setTimeout(() => {
+                              setAssistantThinking(false);
+                              const nextIdx = qIndex + 1;
+                              setQIndex(nextIdx);
+                              if (nextIdx < questions.length) {
+                                setTurns((prev) => [...prev, { role: "assistant", text: questions[nextIdx] }]);
+                              }
+                            }, 450);
+                          }}
+                        >
+                          Continue
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : wantsUpload ? (
                       <div className="mt-2">
                         <button
                           type="button"
@@ -940,25 +981,10 @@ export function AIWorkOrderIntakeCard(props: {
                 (questions[qIndex] || "") + " " + (turns[turns.length - 1]?.text || "")
               );
 
+              // With Option A (Add + Continue), don't auto-advance on upload.
+              // Users often add photos one-at-a-time.
               if (awaitingAnswers && expectsMedia) {
-                const msg = `Uploaded ${files.length} attachment${files.length === 1 ? "" : "s"}.`;
-
                 setCompactComposer(true);
-                const nextAnswers = answers.slice();
-                nextAnswers[qIndex] = msg;
-                setAnswers(nextAnswers);
-
-                setTurns((prev) => [...prev, { role: "user", text: msg }]);
-
-                const nextIdx = qIndex + 1;
-                setAssistantThinking(true);
-                window.setTimeout(() => {
-                  setAssistantThinking(false);
-                  setQIndex(nextIdx);
-                  if (nextIdx < questions.length) {
-                    setTurns((prev) => [...prev, { role: "assistant", text: questions[nextIdx] }]);
-                  }
-                }, 600);
               }
 
               e.target.value = "";
