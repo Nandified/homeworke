@@ -6,6 +6,71 @@ export const runtime = "nodejs";
 
 type TaxService = (typeof taxonomy.services)[number];
 
+function pickOutOfScopeUserMessage(inputText: string) {
+  const t = (inputText || "").toLowerCase();
+  const vibe: "playful" | "pro" = Math.random() < 0.5 ? "playful" : "pro";
+
+  const bucket =
+    /xbox|playstation|ps5|ps4|nintendo|switch|steam|game|gaming/.test(t)
+      ? "gaming"
+      : /laptop|computer|pc|mac|windows|linux|wifi|router|internet|bluetooth/.test(t)
+        ? "computer"
+        : /printer|scan|scanner|paper jam|toner|ink/.test(t)
+          ? "printer"
+          : /iphone|android|phone|ipad|tablet/.test(t)
+            ? "phone"
+            : "tech";
+
+  const proLines: Record<string, string[]> = {
+    gaming: [
+      "We’re focused on home services right now (plumbing, electrical, HVAC, etc.). Gaming help is coming soon.",
+      "Home services only for now — we’ll add gaming/tech support soon.",
+    ],
+    computer: [
+      "We’re focused on home services right now (plumbing, electrical, HVAC, etc.). Tech support is coming soon.",
+      "Home services only for now — computer/IT help is coming soon.",
+    ],
+    printer: [
+      "We’re focused on home services right now — printer/IT help is coming soon.",
+      "Home services only for now — tech support is coming soon.",
+    ],
+    phone: [
+      "We’re focused on home services right now — mobile/tech support is coming soon.",
+      "Home services only for now — tech support is coming soon.",
+    ],
+    tech: [
+      "We’re focused on home services right now — tech support is coming soon.",
+      "Home services only for now — tech support is coming soon.",
+    ],
+  };
+
+  const playfulLines: Record<string, string[]> = {
+    gaming: [
+      "I can help with leaky pipes, not level-ups (yet). Home services only for now — gaming help is coming soon.",
+      "I’m great with roofs, not raids (yet). Home services only for now — gaming help is coming soon.",
+    ],
+    computer: [
+      "I can help with outlets, not Outlook (yet). Home services only for now — tech support is coming soon.",
+      "I do plumbing, not PCs (yet). Home services only for now — tech support is coming soon.",
+    ],
+    printer: [
+      "I can fix a leak faster than a printer can print (yet). Home services only for now — tech help is coming soon.",
+      "I do drywall, not drivers (yet). Home services only for now — tech help is coming soon.",
+    ],
+    phone: [
+      "I can help with water heaters, not screen protectors (yet). Home services only for now — tech help is coming soon.",
+      "I do HVAC, not iOS (yet). Home services only for now — tech help is coming soon.",
+    ],
+    tech: [
+      "I can help with home repairs, not tech repairs (yet). Home services only for now — tech help is coming soon.",
+      "I’m your home-fix sidekick, not your IT department (yet). Home services only for now — tech help is coming soon.",
+    ],
+  };
+
+  const pool = (vibe === "playful" ? playfulLines : proLines)[bucket] || (vibe === "playful" ? playfulLines.tech : proLines.tech);
+  return pool[Math.floor(Math.random() * pool.length)] || proLines.tech[0];
+}
+
 function safeJson(text: string) {
   try {
     return JSON.parse(text);
@@ -208,8 +273,7 @@ export async function POST(req: Request) {
         ok: true,
         used: "openai",
         supported: false,
-        userMessage:
-          "I can help with leaky pipes, not level-ups (yet). Right now Homeworke handles home services only — tech support/gaming help is coming soon.",
+        userMessage: pickOutOfScopeUserMessage(text),
         serviceId: "",
         trade: "",
         category: "",
@@ -220,6 +284,11 @@ export async function POST(req: Request) {
         safetyFlags: [],
         clarifyingQuestions: [],
       });
+    }
+
+    // Ensure out-of-scope replies always have a friendly message.
+    if ((out as any).supported === false && !(out as any).userMessage) {
+      (out as any).userMessage = pickOutOfScopeUserMessage(text);
     }
 
     return NextResponse.json({ ok: true, used: "openai", ...out });
