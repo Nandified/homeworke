@@ -46,6 +46,12 @@ function pickFallback(text: string, services: TaxService[]) {
   const has = (re: RegExp) => re.test(t);
   const find = (pred: (s: TaxService) => boolean) => services.find(pred) || null;
 
+  // Environmental / commercial diligence
+  if (has(/\besa\b|environmental\s+site\s+assessment|\bphase\s*i\b|\bphase\s*ii\b|phase\s*1|phase\s*2|\bust\b|underground\s+storage\s+tank|soil\s+(test|testing)|groundwater\s+(test|testing)|contaminat|brownfield/)) {
+    return find((s) => s.id === "mold-water-damage-environmental.environmental.esa-phase-i-ii") ||
+      find((s) => s.id.startsWith("mold-water-damage-environmental."));
+  }
+
   if (has(/leak|clog|toilet|faucet|pipe|drain|sewer|garbage disposal/))
     return find((s) => s.id.startsWith("plumbing."));
   if (has(/outlet|breaker|electrical|wiring|switch|light fixture|ceiling fan|panel/))
@@ -105,7 +111,8 @@ export async function POST(req: Request) {
       "If uncertain about urgency, choose 'this_week'. If there are no safety flags, return an empty array. " +
       "Always include 1-3 clarifyingQuestions (aim for 2) to confirm scope/safety and improve routing. " +
       "Write questions in simple homeowner language (no jargon). " +
-      "If you truly cannot think of any, ask: 'Anything else that would help? For example: a photo/video, where in the home it is (kitchen/bathroom/etc), and when you’d like someone to come out.'";
+      "If the user mentions ESA / Phase I / Phase II / underground storage tank (UST) / contamination or soil/groundwater testing, treat it like environmental due-diligence (often commercial) and DO NOT ask for 'where in the home (kitchen/bathroom/etc)'. Prefer asking about property type, timeline (closing), and any documents/records instead. " +
+      "If you truly cannot think of any, ask: 'Anything else that would help? For example: a photo/video if relevant, any documents/records, and when you’d like someone to come out.'";
 
     const schema = {
       type: "object",

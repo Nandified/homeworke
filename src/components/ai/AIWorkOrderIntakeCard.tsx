@@ -631,19 +631,38 @@ export function AIWorkOrderIntakeCard(props: {
       {started ? (
         <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 p-4">
           <div className="grid gap-3">
-            {turns.map((t, idx) => (
-              <div key={idx} className={t.role === "user" ? "flex justify-end" : "flex justify-start"}>
-                <div
-                  className={
-                    t.role === "user"
-                      ? "max-w-[92%] rounded-2xl bg-black px-4 py-2.5 text-sm leading-6 text-white shadow-sm"
-                      : "max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm"
-                  }
-                >
-                  {t.text}
+            {turns.map((t, idx) => {
+              const wantsUpload =
+                t.role === "assistant" &&
+                /(upload|add)\s+(a\s+)?(photo|video|picture|image)|\bphoto\/video\b|\bphotos\b|\bvideos\b/i.test(t.text || "");
+
+              return (
+                <div key={idx} className={t.role === "user" ? "flex justify-end" : "flex justify-start"}>
+                  <div
+                    className={
+                      t.role === "user"
+                        ? "max-w-[92%] rounded-2xl bg-black px-4 py-2.5 text-sm leading-6 text-white shadow-sm"
+                        : "max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm"
+                    }
+                  >
+                    <div>{t.text}</div>
+
+                    {wantsUpload ? (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)]"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Paperclip className="h-3.5 w-3.5" />
+                          Add photos/videos
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {classifying || assistantThinking ? (
               <div className="flex justify-start">

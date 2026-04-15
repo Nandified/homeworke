@@ -35,6 +35,12 @@
       "label": "Air Quality and Environmental Testing"
     },
     {
+      "id": "mold-water-damage-environmental.environmental.esa-phase-i-ii",
+      "trade": "Mold / Water Damage / Environmental",
+      "category": "Environmental",
+      "label": "Environmental Site Assessment (ESA Phase I / II)"
+    },
+    {
       "id": "appliance-repair-install.install.appliance-installation",
       "trade": "Appliance Repair/Install",
       "category": "Install",
