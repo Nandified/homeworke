@@ -20,6 +20,7 @@
     "Remodeling",
     "Roofing",
     "Tree Service",
+    "Garage Doors",
     "Windows & Doors"
   ],
   "services": [
@@ -499,14 +500,14 @@
     },
     {
       "id": "appliance-repair-install.install.garage-door-installation-or-replacement",
-      "trade": "Remodeling",
-      "category": "Exterior",
+      "trade": "Garage Doors",
+      "category": "Install",
       "label": "Garage Door Installation or Replacement"
     },
     {
       "id": "windows-and-doors.doors.garage-door-repair",
-      "trade": "Windows & Doors",
-      "category": "Doors",
+      "trade": "Garage Doors",
+      "category": "Repair",
       "label": "Garage Door Repair"
     },
     {
