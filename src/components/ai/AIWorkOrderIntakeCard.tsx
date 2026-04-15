@@ -20,7 +20,7 @@ import {
   Zap,
 } from "lucide-react";
 
-import { Button, Input, Label, Modal, Pill } from "@/components/ui";
+import { Button, Input, Label, Modal, Picker, Pill } from "@/components/ui";
 
 import { loadPartner } from "@/lib/partner-context";
 
@@ -276,8 +276,9 @@ export function AIWorkOrderIntakeCard(props: {
     if (!readyToSchedule) return;
 
     if (scheduleStage === "idle") {
+      // Show the scheduling card prompt (rendered below). No need to also push a chat turn,
+      // otherwise "Ready to schedule a visit?" appears twice.
       setScheduleStage("ask");
-      setTurns((prev) => [...prev, { role: "assistant", text: "Ready to schedule a visit?" }]);
       return;
     }
 
@@ -730,21 +731,22 @@ export function AIWorkOrderIntakeCard(props: {
                         </button>
                       </div>
                       <div className="mt-2">
-                        <select
+                        <Picker
+                          searchable
+                          searchPlaceholder="Search properties…"
                           value={propertyId}
-                          onChange={(e) => setPropertyId(e.target.value)}
-                          className="w-full rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm"
-                        >
-                          <option value="">Select a property…</option>
-                          {(properties || []).map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {(p.nickname ? `${p.nickname} · ` : "") +
-                                p.address1 +
-                                (p.city ? `, ${p.city}` : "") +
-                                (p.state ? `, ${p.state}` : "")}
-                            </option>
-                          ))}
-                        </select>
+                          placeholder="Select a property…"
+                          options={(properties || []).map((p) => ({
+                            id: String(p.id),
+                            label:
+                              (p.nickname ? `${p.nickname} · ` : "") +
+                              p.address1 +
+                              (p.city ? `, ${p.city}` : "") +
+                              (p.state ? `, ${p.state}` : ""),
+                            sublabel: p.zip ? String(p.zip) : undefined,
+                          }))}
+                          onChange={(id) => setPropertyId(String(id || ""))}
+                        />
                       </div>
                     </div>
                   ) : null}
