@@ -127,6 +127,7 @@ export function AIWorkOrderIntakeCard(props: {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const issueRef = useRef<HTMLTextAreaElement | null>(null);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const sendInFlightRef = useRef(false);
 
   const [issue, setIssue] = useState(props.prefillIssue || "");
@@ -210,6 +211,16 @@ export function AIWorkOrderIntakeCard(props: {
   const [demoText, setDemoText] = useState("");
   const demoPhase = useRef<"typing" | "pause" | "deleting">("typing");
   const pauseUntil = useRef<number>(0);
+
+  // Auto-scroll chat to bottom on new messages / stage changes
+  useEffect(() => {
+    const el = chatScrollRef.current;
+    if (!el) return;
+    const t = window.setTimeout(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [turns.length, assistantThinking, classifying, classifyError, scheduleStage]);
 
   // Typewriter hints (only before first send)
   useEffect(() => {
@@ -663,7 +674,11 @@ export function AIWorkOrderIntakeCard(props: {
       {/* Conversation area */}
       {started ? (
         <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 p-4">
-          <div className="grid gap-3">
+          <div
+            ref={chatScrollRef}
+            className="grid gap-3 overflow-y-auto pr-2"
+            style={{ maxHeight: "62vh" }}
+          >
             {turns.map((t, idx) => {
               const wantsUpload =
                 t.role === "assistant" &&
