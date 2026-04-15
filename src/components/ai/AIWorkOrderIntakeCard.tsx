@@ -65,7 +65,7 @@ type StoredProperty = { id: string; createdAt: string; address: string; nickname
 
 function isOutOfScope(text: string) {
   const t = (text || "").toLowerCase();
-  return /xbox|playstation|ps5|ps4|nintendo|switch|steam|gaming|game\b|laptop|computer|pc\b|mac\b|printer|scanner|iphone|android|ipad|tablet|it\s+help|tech\s+support|wifi|router/.test(
+  return /xbox|playstation|ps5|ps4|nintendo|switch|steam|gaming|game\b|laptop|computer|pc\b|mac\b|printer|scanner|iphone|android|ipad|tablet|it\s+help|tech\s+support|wifi|router|massage|therap(y|ist)|counsel(or|ing)|chiropract|dentist|doctor|lawyer|attorney|babysit|nanny|pet\s*sit|dog\s*walk|tutor|lessons|guitar\s+lesson|piano\s+lesson/.test(
     t
   );
 }
@@ -77,18 +77,24 @@ function outOfScopeMessage(text: string) {
   const bucket =
     /xbox|playstation|ps5|ps4|nintendo|switch|steam|game|gaming/.test(t)
       ? "gaming"
-      : /laptop|computer|pc\b|mac\b|windows|wifi|router|internet|bluetooth/.test(t)
-        ? "computer"
-        : /printer|scan|scanner|paper jam|toner|ink/.test(t)
-          ? "printer"
-          : /iphone|android|phone|ipad|tablet/.test(t)
-            ? "phone"
-            : "tech";
+      : /massage|therap(y|ist)|counsel(or|ing)|chiropract|dentist|doctor|lawyer|attorney/.test(t)
+        ? "services"
+        : /laptop|computer|pc\b|mac\b|windows|wifi|router|internet|bluetooth/.test(t)
+          ? "computer"
+          : /printer|scan|scanner|paper jam|toner|ink/.test(t)
+            ? "printer"
+            : /iphone|android|phone|ipad|tablet/.test(t)
+              ? "phone"
+              : "tech";
 
   const pro: Record<string, string[]> = {
     gaming: [
       "Home services only — we don’t do gaming help.",
       "We handle home repairs (plumbing, electrical, HVAC, etc.) — not gaming support.",
+    ],
+    services: [
+      "We’re focused on home repairs — not personal services like massage.",
+      "Home services only (repairs/maintenance) — not appointments like massage.",
     ],
     computer: [
       "Home services only — we don’t do computer/IT support.",
@@ -113,6 +119,10 @@ function outOfScopeMessage(text: string) {
       "I can help with leaky pipes, not level-ups. Home services only.",
       "I fix houses, not high scores. What’s going on at the property?",
       "I’m great with roofs, not raids. Home services only.",
+    ],
+    services: [
+      "I’m more ‘fix the house’ than ‘spa day’. Home services only.",
+      "I can book a plumber faster than I can book a masseuse. Home services only.",
     ],
     computer: [
       "I can help with outlets, not Outlook. Home services only.",
@@ -780,7 +790,7 @@ export function AIWorkOrderIntakeCard(props: {
         "rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col " +
         (started ? "overflow-hidden" : "")
       }
-      style={started ? { height: "min(44vh, 560px)" } : undefined}
+      style={started ? { height: "min(50vh, 680px)" } : undefined}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
