@@ -604,7 +604,18 @@ export function AIWorkOrderIntakeCard(props: {
         body: JSON.stringify({ text }),
       });
       const j = (await res.json().catch(() => null)) as IntakeClassifyResult | null;
-      if (!j || !j.ok) {
+      if (!res.ok || !j || !j.ok) {
+        // For out-of-scope prompts, never show the red "couldn't analyze" error.
+        if (isOutOfScope(text)) {
+          setTurns((prev) => [...prev, { role: "assistant", text: outOfScopeMessage(text) }]);
+          setQuestions([]);
+          setAnswers([]);
+          setQIndex(0);
+          setScheduleStage("idle");
+          setClassifyError("");
+          return;
+        }
+
         setClassifyError(j?.error || `classify_failed_${res.status}`);
         return;
       }
