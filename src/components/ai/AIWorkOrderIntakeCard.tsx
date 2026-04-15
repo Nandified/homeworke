@@ -24,6 +24,7 @@ import {
 
 import { Button, Input, Label, Modal, Picker, Pill } from "@/components/ui";
 
+import { ensureDemoPartnerContext, isDemoMode, withDemo } from "@/lib/demo";
 import { loadPartner } from "@/lib/partner-context";
 
 type IntakeClassifyResult = {
@@ -575,8 +576,9 @@ export function AIWorkOrderIntakeCard(props: {
     } catch {}
 
     let originPartnerId: string | null = null;
-    let shareWithPartner = true;
+    const shareWithPartner = true;
     try {
+      if (isDemoMode()) ensureDemoPartnerContext();
       const p = loadPartner();
       if (p?.partnerId) originPartnerId = p.partnerId;
     } catch {}
@@ -1013,7 +1015,7 @@ export function AIWorkOrderIntakeCard(props: {
                             onClick={() => {
                               const path = window.location.pathname || "";
                               const base = path.startsWith("/partner") ? "/partner" : path.startsWith("/pro") ? "/pro" : "/pro";
-                              router.push(`${base}/jobs/${encodeURIComponent(submittedWorkOrderId)}`);
+                              router.push(withDemo(`${base}/jobs/${encodeURIComponent(submittedWorkOrderId)}`));
                             }}
                           >
                             View request
