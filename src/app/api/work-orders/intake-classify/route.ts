@@ -52,6 +52,12 @@ function pickFallback(text: string, services: TaxService[]) {
       find((s) => s.id.startsWith("mold-water-damage-environmental."));
   }
 
+  // Water intrusion can be plumbing OR roof. Use simple cues.
+  if (has(/ceiling\s+leak|water\s+stain\s+on\s+ceiling|leaking\s+ceiling|water\s+coming\s+through\s+ceiling/)) {
+    if (has(/rain|roof|attic|storm|shingles|gutter/)) return find((s) => s.id.startsWith("roofing."));
+    return find((s) => s.id.startsWith("plumbing."));
+  }
+
   if (has(/leak|clog|toilet|faucet|pipe|drain|sewer|garbage disposal/))
     return find((s) => s.id.startsWith("plumbing."));
   if (has(/outlet|breaker|electrical|wiring|switch|light fixture|ceiling fan|panel/))
@@ -112,6 +118,7 @@ export async function POST(req: Request) {
       "Always include 1-3 clarifyingQuestions (aim for 2) to confirm scope/safety and improve routing. " +
       "Write questions in simple homeowner language (no jargon). " +
       "If the user mentions ESA / Phase I / Phase II / underground storage tank (UST) / contamination or soil/groundwater testing, treat it like environmental due-diligence (often commercial) and DO NOT ask for 'where in the home (kitchen/bathroom/etc)'. Prefer asking about property type, timeline (closing), and any documents/records instead. " +
+      "If the user reports a ceiling/wall leak or water stain and the source is ambiguous, your FIRST clarifying question should quickly disambiguate roof/rain intrusion vs plumbing: ask whether it happens during/after rain OR after using fixtures/appliances above (shower, toilet, dishwasher, washer). Also ask about electrical hazard if near lights/outlets. " +
       "If you truly cannot think of any, ask: 'Anything else that would help? For example: a photo/video if relevant, any documents/records, and when you’d like someone to come out.'";
 
     const schema = {
