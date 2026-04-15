@@ -186,18 +186,34 @@ export async function POST(req: Request) {
     if (!apiKey) {
       const s = pickFallback(text, services);
       if (!s) {
-        return NextResponse.json({ ok: true, used: "fallback", confidence: 0.2, aiSummary: text.trim() });
+        return NextResponse.json({
+          ok: true,
+          used: "fallback",
+          supported: true,
+          serviceId: "",
+          trade: "",
+          category: "",
+          subcategory: "",
+          confidence: 0.2,
+          aiSummary: text.trim(),
+          urgency: "this_week",
+          safetyFlags: [],
+          clarifyingQuestions: ["Got it — can you share one more detail so I route this correctly? What exactly needs help and where is it (room/area)?"],
+        });
       }
       return NextResponse.json({
         ok: true,
         used: "fallback",
+        supported: true,
         serviceId: s.id,
         trade: s.trade,
         category: s.category,
         subcategory: s.label,
         confidence: 0.35,
         aiSummary: text.trim(),
-        clarifyingQuestions: [],
+        urgency: "this_week",
+        safetyFlags: [],
+        clarifyingQuestions: ["Any details that would help? For example: what exactly needs to be done, and when you’d like someone to come out."],
       });
     }
 
@@ -314,10 +330,42 @@ export async function POST(req: Request) {
 
     const raw = await res.text().catch(() => "");
     if (!res.ok) {
-      return NextResponse.json(
-        { ok: false, error: `openai_failed_${res.status}`, detail: (raw || "").slice(0, 400) },
-        { status: 502 }
-      );
+      // Degrade gracefully to heuristic routing so real home-service requests don't hard-fail.
+      const s = pickFallback(text, services);
+      if (s) {
+        return NextResponse.json({
+          ok: true,
+          used: "fallback",
+          supported: true,
+          serviceId: s.id,
+          trade: s.trade,
+          category: s.category,
+          subcategory: s.label,
+          confidence: 0.22,
+          aiSummary: text.trim(),
+          urgency: "this_week",
+          safetyFlags: [],
+          clarifyingQuestions: [
+            "Got it — quick detail so we send the right pro: where is it (room/area) and what’s the main goal?",
+          ],
+        });
+      }
+
+      // If we can't even route heuristically, treat it as supported but ask to rephrase.
+      return NextResponse.json({
+        ok: true,
+        used: "fallback",
+        supported: true,
+        serviceId: "",
+        trade: "",
+        category: "",
+        subcategory: "",
+        confidence: 0.1,
+        aiSummary: text.trim(),
+        urgency: "this_week",
+        safetyFlags: [],
+        clarifyingQuestions: ["I’m having trouble routing that — can you rephrase in one sentence and include where in the home it is?"],
+      });
     }
 
     const j = safeJson(raw) || {};
