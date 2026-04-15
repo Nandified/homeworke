@@ -658,7 +658,7 @@ export function AIWorkOrderIntakeCard(props: {
     false;
 
   return (
-    <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col" style={{ maxHeight: "82vh" }}>
+    <div className="rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col overflow-hidden" style={{ maxHeight: "82vh" }}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
@@ -675,7 +675,7 @@ export function AIWorkOrderIntakeCard(props: {
 
       {/* Conversation area */}
       {started ? (
-        <div className="mt-4 flex-1 min-h-0 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 p-4">
+        <div className="mt-4 flex-1 min-h-0 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 p-4">
           <div
             ref={chatScrollRef}
             className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto pr-2"
@@ -1087,7 +1087,7 @@ export function AIWorkOrderIntakeCard(props: {
       ) : null}
 
       {/* Composer */}
-      <div className="mt-4">
+      <div className="mt-4 flex-none">
         <div className="relative rounded-[var(--hw-radius-lg)] hw-glass-field">
           <input
             ref={fileInputRef}
