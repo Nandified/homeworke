@@ -230,6 +230,102 @@ function pickFallback(text: string, services: TaxService[]) {
   return best.s;
 }
 
+function fallbackQuestions(inputText: string, s: TaxService | null): string[] {
+  const t = (inputText || "").toLowerCase();
+
+  // Always ask 2-3 to keep the concierge flow even when the LLM is down.
+  if (!s) {
+    return [
+      "Quick detail so I route this right: what exactly needs help?",
+      "Where is it (room/area)?",
+      "Anything time-sensitive or safety-related (active leak, sparks, smell of gas)?",
+    ];
+  }
+
+  // Trade-specific prompts (simple, homeowner language)
+  const trade = (s.trade || "").toLowerCase();
+
+  if (trade.includes("roof")) {
+    return [
+      "Is this repair/maintenance, or a full replacement?",
+      "Any active leaks or interior water staining?",
+      "Is it a house, townhouse, or multi-unit building?",
+    ];
+  }
+
+  if (trade.includes("plumb")) {
+    return [
+      "Is there an active leak right now?",
+      "Where is it (kitchen, bathroom, basement, etc.)?",
+      "Do you know the fixture (toilet, faucet, water heater, pipe, drain)?",
+    ];
+  }
+
+  if (trade.includes("electrical")) {
+    return [
+      "What’s happening (no power, tripping breaker, flickering, outlet not working)?",
+      "Any burning smell/heat/sparks?",
+      "Which area of the home is affected?",
+    ];
+  }
+
+  if (trade.includes("hvac")) {
+    return [
+      "Is this AC, heat, or airflow/duct issue?",
+      "Any error code on the thermostat or unusual noise?",
+      "When did it start — suddenly or getting worse over time?",
+    ];
+  }
+
+  if (trade.includes("floor")) {
+    return [
+      "What kind of flooring is it (hardwood, tile, laminate, vinyl, carpet)?",
+      "Is this repair, refinishing/resurfacing, or replacement?",
+      "Roughly how many rooms or square feet?",
+    ];
+  }
+
+  if (trade.includes("paint")) {
+    return [
+      "Is this interior or exterior?",
+      "Are we painting everything or just touch-ups/trim?",
+      "Any peeling, water damage, or repairs needed first?",
+    ];
+  }
+
+  if (trade.includes("handyman")) {
+    // Special-case TV mounting
+    if (/tv\s+mount/.test(t) || (s.category || "").toLowerCase().includes("tv")) {
+      return [
+        "What size TV is it (approx.) and what type of wall (drywall, brick, concrete)?",
+        "Do you want the mount installed too, or do you already have one?",
+        "Any cable concealment needed?",
+      ];
+    }
+
+    return [
+      "What exactly needs to be done?",
+      "Where is it (room/area)?",
+      "Do you have any photos/videos that show the issue?",
+    ];
+  }
+
+  if (trade.includes("garage doors")) {
+    return [
+      "Is the door stuck open/closed, or moving but not fully?",
+      "Do you hear the motor running or clicking when you try to open it?",
+      "Any obvious broken spring/cable/roller?",
+    ];
+  }
+
+  // Default
+  return [
+    "What’s the main goal (repair, replace, install, or diagnose)?",
+    "Where in the home is it?",
+    "When would you like someone to come out?",
+  ];
+}
+
 export async function POST(req: Request) {
   try {
     const apiKey = process.env.OPENAI_API_KEY_WORK_ORDERS || process.env.OPENAI_API_KEY || "";
@@ -259,7 +355,7 @@ export async function POST(req: Request) {
           aiSummary: text.trim(),
           urgency: "this_week",
           safetyFlags: [],
-          clarifyingQuestions: ["Got it — can you share one more detail so I route this correctly? What exactly needs help and where is it (room/area)?"],
+          clarifyingQuestions: fallbackQuestions(text, null).slice(0, 3),
         });
       }
       return NextResponse.json({
@@ -274,7 +370,7 @@ export async function POST(req: Request) {
         aiSummary: text.trim(),
         urgency: "this_week",
         safetyFlags: [],
-        clarifyingQuestions: ["Any details that would help? For example: what exactly needs to be done, and when you’d like someone to come out."],
+        clarifyingQuestions: fallbackQuestions(text, s).slice(0, 3),
       });
     }
 
@@ -406,18 +502,9 @@ export async function POST(req: Request) {
           aiSummary: text.trim(),
           urgency: "this_week",
           safetyFlags: [],
-          clarifyingQuestions: [
-            "Got it — quick detail so we send the right pro: where is it (room/area) and what’s the main goal?",
-          ],
+          clarifyingQuestions: fallbackQuestions(text, s).slice(0, 3),
         });
       }
-
-      // If we can't even route heuristically, treat it as supported and ask a smart clarifier.
-      const t = text.toLowerCase();
-      const floorish = /floor|flooring|hardwood|tile|carpet|laminate|vinyl/.test(t);
-      const clarifier = floorish
-        ? "Got it — what kind of flooring is it (hardwood, tile, laminate, etc.), and is this repair, refinishing/resurfacing, or replacement?"
-        : "I’m having trouble routing that — can you rephrase in one sentence and include where in the home it is?";
 
       return NextResponse.json({
         ok: true,
@@ -431,7 +518,7 @@ export async function POST(req: Request) {
         aiSummary: text.trim(),
         urgency: "this_week",
         safetyFlags: [],
-        clarifyingQuestions: [clarifier],
+        clarifyingQuestions: fallbackQuestions(text, null).slice(0, 3),
       });
     }
 
