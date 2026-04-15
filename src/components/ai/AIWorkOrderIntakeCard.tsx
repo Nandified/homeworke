@@ -8,6 +8,8 @@ import {
   ArrowRight,
   ArrowUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   Droplet,
   Hammer,
@@ -175,6 +177,31 @@ export function AIWorkOrderIntakeCard(props: {
   const [scheduleStage, setScheduleStage] = useState<
     "idle" | "ask" | "property" | "datetime" | "contact" | "done"
   >("idle");
+
+  // Calendar UI (preferred date)
+  const minVisitIso = useMemo(() => {
+    const now = new Date();
+    const min = new Date(now);
+    // Block out the next 2 days so we have time to confirm.
+    min.setDate(min.getDate() + 2);
+    return new Date(min.getTime() - min.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }, []);
+
+  const minVisitDate = useMemo(() => {
+    const [yy, mm, dd] = (minVisitIso || "").split("-").map((x) => Number(x));
+    return new Date(yy, (mm || 1) - 1, dd || 1);
+  }, [minVisitIso]);
+
+  const [calMonth, setCalMonth] = useState<Date>(() => {
+    const base = minVisitDate;
+    return new Date(base.getFullYear(), base.getMonth(), 1);
+  });
+
+  // Keep calendar month aligned with selected date (or min date).
+  useEffect(() => {
+    const base = visitDate ? new Date(visitDate + "T00:00:00") : minVisitDate;
+    setCalMonth(new Date(base.getFullYear(), base.getMonth(), 1));
+  }, [visitDate, minVisitDate]);
 
   const hints = useMemo(() => ["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"], []);
   const [demoIdx, setDemoIdx] = useState(0);
@@ -735,7 +762,7 @@ export function AIWorkOrderIntakeCard(props: {
                       : scheduleStage === "property"
                         ? "First, pick the property."
                         : scheduleStage === "datetime"
-                          ? "Next, choose a preferred day and time window."
+                          ? "Choose a preferred day and time window."
                           : scheduleStage === "contact"
                             ? "Last, confirm how we should reach you."
                             : ""}
@@ -815,26 +842,102 @@ export function AIWorkOrderIntakeCard(props: {
                     <div className="mt-4">
                       <div>
                         <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Preferred date</div>
-                        <div className="mt-2">
+                        <div className="mt-3">
                           {(() => {
-                            const now = new Date();
-                            const min = new Date(now);
-                            // Block out the next 2 days so we have time to confirm.
-                            min.setDate(min.getDate() + 2);
-                            const minIso = new Date(min.getTime() - min.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                            const selected = visitDate ? new Date(visitDate + "T00:00:00") : null;
+                            const monthLabel = (d: Date) => d.toLocaleString(undefined, { month: "long", year: "numeric" });
+                            const startOfMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1);
+                            const endOfMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth() + 1, 0);
+                            const sameDay = (a: Date, b: Date) =>
+                              a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+                            const first = startOfMonth(calMonth);
+                            const last = endOfMonth(calMonth);
+                            const startWeekday = first.getDay();
+                            const daysInMonth = last.getDate();
+
+                            const isBeforeMin = (d: Date) => d.getTime() < minVisitDate.getTime();
+
+                            const days: Array<{ date: Date | null; disabled?: boolean }> = [];
+                            for (let i = 0; i < startWeekday; i++) days.push({ date: null });
+                            for (let day = 1; day <= daysInMonth; day++) {
+                              const d = new Date(calMonth.getFullYear(), calMonth.getMonth(), day);
+                              days.push({ date: d, disabled: isBeforeMin(d) });
+                            }
+                            while (days.length % 7 !== 0) days.push({ date: null });
+
+                            const goMonth = (delta: number) => {
+                              const next = new Date(calMonth.getFullYear(), calMonth.getMonth() + delta, 1);
+                              setCalMonth(next);
+                            };
+
+                            const prevMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1);
+                            const canGoPrev = endOfMonth(prevMonth).getTime() >= minVisitDate.getTime();
 
                             return (
-                              <Input
-                                type="date"
-                                value={visitDate}
-                                min={minIso}
-                                onChange={(e) => setVisitDate(e.target.value)}
-                                className="h-11 rounded-[999px]"
-                              />
+                              <div className="w-full rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.04)] p-4">
+                                <div className="flex items-center justify-between">
+                                  <button
+                                    type="button"
+                                    disabled={!canGoPrev}
+                                    onClick={() => canGoPrev && goMonth(-1)}
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(229,57,53,.20)] bg-white text-[var(--hw-ink)] shadow-sm disabled:opacity-40"
+                                    aria-label="Previous month"
+                                  >
+                                    <ChevronLeft className="h-4 w-4" />
+                                  </button>
+
+                                  <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">{monthLabel(calMonth)}</div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => goMonth(1)}
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(229,57,53,.20)] bg-white text-[var(--hw-ink)] shadow-sm"
+                                    aria-label="Next month"
+                                  >
+                                    <ChevronRight className="h-4 w-4" />
+                                  </button>
+                                </div>
+
+                                <div className="mt-4 grid grid-cols-7 gap-2 text-center text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((w) => (
+                                    <div key={w} className="py-1">{w}</div>
+                                  ))}
+                                </div>
+
+                                <div className="mt-1 grid grid-cols-7 gap-2">
+                                  {days.map((cell, i) => {
+                                    if (!cell.date) return <div key={i} className="h-11" />;
+                                    const d = cell.date;
+                                    const disabled = !!cell.disabled;
+                                    const selectedDay = selected ? sameDay(selected, d) : false;
+                                    return (
+                                      <button
+                                        key={i}
+                                        type="button"
+                                        disabled={disabled}
+                                        onClick={() => {
+                                          const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                                          setVisitDate(iso);
+                                        }}
+                                        className={
+                                          "h-11 w-full rounded-[14px] text-sm font-semibold transition " +
+                                          (selectedDay
+                                            ? "bg-[var(--hw-red)] text-white shadow-[0_10px_22px_rgba(229,57,53,.28)]"
+                                            : disabled
+                                              ? "bg-white/60 text-[var(--hw-muted)] opacity-60"
+                                              : "bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                                        }
+                                      >
+                                        {d.getDate()}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
                             );
                           })()}
                         </div>
-                        <div className="mt-2 text-xs text-[var(--hw-muted)]">Format: MM-DD-YYYY</div>
                       </div>
 
                       <div className="mt-5">
