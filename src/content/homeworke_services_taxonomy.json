@@ -211,12 +211,6 @@
       "label": "Commercial Cleaning"
     },
     {
-      "id": "handyman-general.assembly-small-repairs.computer-repair",
-      "trade": "Handyman / General",
-      "category": "Assembly / Small Repairs",
-      "label": "Computer Repair"
-    },
-    {
       "id": "appliance-repair-install.install.concrete-installation",
       "trade": "Masonry / Concrete / Asphalt",
       "category": "Concrete",

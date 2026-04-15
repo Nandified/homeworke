@@ -203,10 +203,23 @@ export async function POST(req: Request) {
     const out = safeJson(jsonBlob) || null;
 
     if (!out || typeof out !== "object") {
-      return NextResponse.json(
-        { ok: false, error: "bad_model_output", detail: (outText || raw).slice(0, 400) },
-        { status: 502 }
-      );
+      // If the model fails to return structured JSON, degrade gracefully with a friendly message.
+      return NextResponse.json({
+        ok: true,
+        used: "openai",
+        supported: false,
+        userMessage:
+          "I can help with leaky pipes, not level-ups (yet). Right now Homeworke handles home services only — tech support/gaming help is coming soon.",
+        serviceId: "",
+        trade: "",
+        category: "",
+        subcategory: "",
+        confidence: 0,
+        aiSummary: text.trim(),
+        urgency: "this_week",
+        safetyFlags: [],
+        clarifyingQuestions: [],
+      });
     }
 
     return NextResponse.json({ ok: true, used: "openai", ...out });
