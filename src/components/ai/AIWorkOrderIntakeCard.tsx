@@ -678,8 +678,7 @@ export function AIWorkOrderIntakeCard(props: {
         <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 p-4">
           <div
             ref={chatScrollRef}
-            className="grid gap-3 overflow-y-auto pr-2"
-            style={{ maxHeight: "62vh" }}
+            className="flex max-h-[62vh] flex-col gap-3 overflow-y-auto pr-2"
           >
             {turns.map((t, idx) => {
               const wantsUpload =
