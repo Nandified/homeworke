@@ -161,6 +161,9 @@ function pickFallback(text: string, services: TaxService[]) {
     return find((s) => s.id.startsWith("electrical."));
   if (has(/ac\b|a\/c|air conditioner|no heat|no cool|furnace|hvac|thermostat|duct/))
     return find((s) => s.id.startsWith("hvac."));
+  if (has(/hardwood|flooring|floor\b|refinish|refinishing|restain|re\s*stain|stain\b|sand(ing)?|polyurethane/))
+    return find((s) => s.id.startsWith("flooring."));
+
   if (has(/washer|dryer|dishwasher|refrigerator|fridge|oven|range|microwave/))
     return find((s) => s.id.startsWith("appliance-repair-install."));
   if (has(/cleaning|deep clean|move out|move-out|turnover|carpet/))
