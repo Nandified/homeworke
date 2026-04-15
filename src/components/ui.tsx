@@ -77,6 +77,7 @@ export function Picker(props: {
   const [query, setQuery] = React.useState("");
   const wrapRef = React.useRef<HTMLDivElement | null>(null);
   const buttonRef = React.useRef<HTMLButtonElement | null>(null);
+  const menuRef = React.useRef<HTMLDivElement | null>(null);
   const [menuPos, setMenuPos] = React.useState<{ top: number; left: number; width: number } | null>(null);
 
   const active = props.options.find((o) => o.id === props.value) || null;
@@ -93,9 +94,15 @@ export function Picker(props: {
 
   React.useEffect(() => {
     function onDocClick(e: MouseEvent) {
-      const el = wrapRef.current;
-      if (!el) return;
-      if (el.contains(e.target as Node)) return;
+      const wrap = wrapRef.current;
+      const menu = menuRef.current;
+      const target = e.target as Node;
+
+      // Click inside trigger area
+      if (wrap && wrap.contains(target)) return;
+      // Click inside portaled menu
+      if (menu && menu.contains(target)) return;
+
       setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
@@ -161,6 +168,7 @@ export function Picker(props: {
         {open && menuPos && typeof document !== "undefined"
           ? createPortal(
               <div
+                ref={menuRef}
                 role="listbox"
                 className="fixed z-[80] overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]"
                 style={{ top: menuPos.top, left: menuPos.left, width: menuPos.width }}
