@@ -150,6 +150,13 @@ function pickFallback(text: string, services: TaxService[]) {
   }
 
   // Water intrusion can be plumbing OR roof. Use simple cues.
+  if (has(/\broof\b|shingle|shingles|reroof|re-roof|roof\s+replacement|replace\s+(my|the)?\s*roof|new\s+roof|tear\s*off/)) {
+    return (
+      find((s) => s.id === "roofing.repair-maintenance.roof-repair-or-maintenance") ||
+      find((s) => s.id.startsWith("roofing."))
+    );
+  }
+
   if (has(/ceiling\s+leak|water\s+stain\s+on\s+ceiling|leaking\s+ceiling|water\s+coming\s+through\s+ceiling/)) {
     if (has(/rain|roof|attic|storm|shingles|gutter/)) return find((s) => s.id.startsWith("roofing."));
     return find((s) => s.id.startsWith("plumbing."));
