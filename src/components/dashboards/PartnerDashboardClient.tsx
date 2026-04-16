@@ -141,7 +141,7 @@ function InstantEstimateCard({ basePath }: { basePath: string }) {
 
   return (
     <Card
-      className="relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7"
+      className="relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7 h-full"
       style={{ boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}
     >
       {/* Glow accents (kept on mobile but contained so they don't bleed past corners) */}
@@ -521,7 +521,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             <Link
               key={m.id}
               href={href}
-              className="block max-w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white px-3 py-2 transition hover:bg-[var(--hw-soft)]"
+              className="block max-w-full overflow-hidden rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-white px-3 py-2 transition hover:bg-[var(--hw-soft)]"
             >
               <div className="flex min-w-0 items-start gap-2">
                 {m.unread ? <span className="mt-[3px] h-2 w-2 shrink-0 rounded-full bg-[rgb(229,57,53)]" /> : null}
@@ -586,7 +586,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
         {/* Desktop: keep layout full but not stretched (2-column row) */}
         <div className="grid gap-6 lg:grid-cols-12 lg:items-stretch">
-          <div className="hidden lg:block lg:col-span-8">
+          <div className="hidden lg:block lg:col-span-8 h-full">
             <InstantEstimateCard basePath={basePath} />
           </div>
 
