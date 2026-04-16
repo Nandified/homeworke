@@ -146,6 +146,7 @@ const STOPWORDS = new Set(
 
 function normalizeToken(w: string) {
   let x = (w || "").toLowerCase().trim();
+  if (x === "ac" || x === "a/c") x = "hvac";
   // very light stemming
   if (x.endsWith("ing") && x.length > 5) x = x.slice(0, -3);
   else if (x.endsWith("ed") && x.length > 4) x = x.slice(0, -2);
@@ -176,7 +177,7 @@ function tokenize(text: string) {
     .split(/\s+/)
     .map((w) => normalizeToken(w))
     .filter(Boolean)
-    .filter((w) => w.length >= 3)
+    .filter((w) => w.length >= 2)
     .filter((w) => !STOPWORDS.has(w));
 }
 
@@ -507,6 +508,30 @@ export async function POST(req: Request) {
         urgency: "this_week",
         safetyFlags: [],
         clarifyingQuestions: [],
+      });
+    }
+
+    // Guardrail: never mark common in-scope home issues as out-of-scope.
+    const inScopeHint = /(\bac\b|a\/c|air\s+conditioner|hvac|furnace|thermostat|no\s+heat|no\s+cool|plumb|leak|toilet|drain|electrical|breaker|outlet|roof|shingle|garage\s+door|floor|hardwood|drywall|paint)/i.test(
+      text
+    );
+
+    if ((out as any).supported === false && inScopeHint) {
+      // Force to supported + route using deterministic fallback (keeps UX moving)
+      const s = pickFallback(text, services);
+      return NextResponse.json({
+        ok: true,
+        used: "openai_override_in_scope",
+        supported: true,
+        serviceId: s?.id || "",
+        trade: s?.trade || "",
+        category: s?.category || "",
+        subcategory: s?.label || "",
+        confidence: Math.max(0.35, Number((out as any).confidence || 0) || 0.35),
+        aiSummary: (out as any).aiSummary || text.trim(),
+        urgency: (out as any).urgency || "this_week",
+        safetyFlags: Array.isArray((out as any).safetyFlags) ? (out as any).safetyFlags : [],
+        clarifyingQuestions: fallbackQuestions(text, s || null).slice(0, 3),
       });
     }
 
