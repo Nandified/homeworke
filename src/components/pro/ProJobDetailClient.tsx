@@ -128,16 +128,45 @@ export function ProJobDetailClient(props: { id: string }) {
       }
     };
 
-    const mapWorkOrderToApi = (wo: any): ApiWorkOrder => {
+    const normalizeAddress = (s: string) =>
+      (s || "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .replace(/\s*,\s*/g, ", ")
+        .trim();
+
+    const resolveOwnerName = async (token: string, addr: string): Promise<string | null> => {
+      const target = normalizeAddress(addr);
+      if (!target) return null;
+      try {
+        const url = new URL("/api/properties", window.location.origin);
+        url.searchParams.set("token", token);
+        if (isDemoMode()) url.searchParams.set("demo", "1");
+
+        const res = await fetch(url);
+        const json = (await res.json().catch(() => null)) as any;
+        const props = Array.isArray(json?.properties) ? json.properties : [];
+
+        const match = props.find((p: any) => normalizeAddress(String(p?.address || "")) === target) || null;
+        const owner = match?.ownerName ? String(match.ownerName) : null;
+        return owner && owner.trim() ? owner.trim() : null;
+      } catch {
+        return null;
+      }
+    };
+
+    const mapWorkOrderToApi = (wo: any, ownerName?: string | null): ApiWorkOrder => {
       const title = (wo?.serviceSubcategory || wo?.serviceCategory || wo?.title || "Job").toString();
       const address = (wo?.propertyAddress || wo?.address || "").toString();
       const status = (wo?.status || "pending").toString();
+      const clientName = ownerName || (wo?.clientName ? String(wo.clientName) : "");
+
       return {
         id: String(wo?.id || props.id),
         title,
         address,
         status,
-        clientName: wo?.clientName ? String(wo.clientName) : "Fernando Rocha Jr",
+        clientName: clientName || undefined,
         createdAt: wo?.createdAt ? String(wo.createdAt) : undefined,
         updatedAt: wo?.updatedAt ? String(wo.updatedAt) : undefined,
       };
@@ -156,8 +185,11 @@ export function ProJobDetailClient(props: { id: string }) {
           const res = await fetch(url);
           const json = (await res.json().catch(() => null)) as any;
           if (res.ok && json?.ok && json?.workOrder) {
+            const wo = json.workOrder;
+            const addr = String(wo?.propertyAddress || wo?.address || "");
+            const owner = addr ? await resolveOwnerName(token, addr) : null;
             if (!cancelled) {
-              setItem(mapWorkOrderToApi(json.workOrder));
+              setItem(mapWorkOrderToApi(wo, owner));
               setLoading(false);
             }
             return;
@@ -173,9 +205,13 @@ export function ProJobDetailClient(props: { id: string }) {
         const arr = JSON.parse(raw);
         const list = Array.isArray(arr) ? arr : [];
         const foundLocal = list.find((w: any) => String(w?.id || "") === String(props.id));
-        if (foundLocal && !cancelled) {
-          setItem(mapWorkOrderToApi(foundLocal));
-          setLoading(false);
+        if (foundLocal) {
+          const addr = String(foundLocal?.propertyAddress || foundLocal?.address || "");
+          const owner = token && addr ? await resolveOwnerName(token, addr) : null;
+          if (!cancelled) {
+            setItem(mapWorkOrderToApi(foundLocal, owner));
+            setLoading(false);
+          }
           return;
         }
       } catch {}
