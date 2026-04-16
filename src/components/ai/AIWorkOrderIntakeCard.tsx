@@ -1152,7 +1152,7 @@ export function AIWorkOrderIntakeCard(props: {
                           : scheduleStage === "contact"
                             ? submittedWorkOrderId
                               ? "Submitted."
-                              : "We have everything we need to get your home serviced. After you schedule this visit, we’ll confirm the exact day and time for a Project Manager to come out."
+                              : "Contact preference"
                             : ""}
                   </div>
 
@@ -1381,7 +1381,13 @@ export function AIWorkOrderIntakeCard(props: {
                             className="w-full sm:w-auto"
                             onClick={() => {
                               setScheduleStage("contact");
-                              setTurns((prev) => [...prev, { role: "assistant", text: "Got it. What’s the best way to reach you?" }]);
+                              setTurns((prev) => [
+                                ...prev,
+                                {
+                                  role: "assistant",
+                                  text: "We have everything we need to get your home serviced. After you schedule this visit, you’ll receive confirmation with the exact day and time to get our Project Manager out to the property.",
+                                },
+                              ]);
                             }}
                           >
                             Next
@@ -1399,16 +1405,11 @@ export function AIWorkOrderIntakeCard(props: {
                           Work order #{submittedWorkOrderId}
                         </div>
                       ) : (
-                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact preference</div>
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">CONTACT PREFERENCE</div>
                       )}
 
                       {!submittedWorkOrderId ? (
-                        <div className="mt-2">
-                          <div className="text-sm text-[var(--hw-muted)]">
-                            We have everything we need to get your home serviced. After you schedule this visit, you’ll receive confirmation with the exact day and time to get our Project Manager out to the property.
-                          </div>
-
-                          <div className="mt-3 flex flex-wrap gap-2">
+                        <div className="mt-2 flex flex-wrap gap-2">
                           {(["Any", "Text", "Call", "Email"] as const).map((m) => (
                             <Button
                               key={m}
@@ -1422,7 +1423,6 @@ export function AIWorkOrderIntakeCard(props: {
                               {m}
                             </Button>
                           ))}
-                          </div>
                         </div>
                       ) : null}
 
