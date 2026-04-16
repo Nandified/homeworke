@@ -126,7 +126,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
   );
 }
 
-const DASH_CARD_MATCH_HEIGHT = "lg:h-[360px]";
+const DASH_CARD_MATCH_HEIGHT = "lg:h-[340px]";
 
 function InstantEstimateCard({ basePath }: { basePath: string }) {
   const router = useRouter();
@@ -607,7 +607,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               </Link>
               </div>
 
-              <div className="mt-4 grid gap-4 flex-1 overflow-y-auto pr-1">
+              <div className="mt-4 grid gap-4 flex-1 overflow-hidden">
               <div className="relative rounded-[var(--hw-radius-lg)] border-2 border-[var(--hw-line)] bg-white px-3 py-3 overflow-hidden">
                 {/* Scrollable link text */}
                 <div className="pr-[172px]">
@@ -679,7 +679,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               </div>
 
               {inviteExpanded ? (
-                <div className="grid gap-3 animate-[fadeScaleIn_150ms_ease-out]">
+                <div className="grid gap-3 animate-[fadeScaleIn_150ms_ease-out] max-h-[170px] overflow-y-auto pr-1">
                   <div>
                     <Label htmlFor="invite-email">Client email</Label>
                     <Input
