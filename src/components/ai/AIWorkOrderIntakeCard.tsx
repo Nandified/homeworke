@@ -790,7 +790,7 @@ export function AIWorkOrderIntakeCard(props: {
         "rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col " +
         (started ? "overflow-hidden" : "")
       }
-      style={started ? { height: isDesktop ? "min(52vh, 720px)" : "min(58vh, 760px)" } : undefined}
+      style={started ? { height: isDesktop ? "min(52vh, 720px)" : "min(68vh, 880px)" } : undefined}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
