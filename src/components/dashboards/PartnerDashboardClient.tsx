@@ -126,7 +126,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
   );
 }
 
-const DASH_CARD_MATCH_HEIGHT = "lg:min-h-[360px]";
+const DASH_CARD_MATCH_HEIGHT = "lg:h-[360px]";
 
 function InstantEstimateCard({ basePath }: { basePath: string }) {
   const router = useRouter();
@@ -156,7 +156,7 @@ function InstantEstimateCard({ basePath }: { basePath: string }) {
         className="pointer-events-none absolute left-0 bottom-0 h-32 w-32 -translate-x-1/3 translate-y-1/3 rounded-full bg-[var(--hw-red)]/10 blur-[55px] sm:-left-24 sm:h-48 sm:w-48 sm:translate-x-0 sm:translate-y-0 sm:blur-[70px]"
       />
 
-      <div className="relative">
+      <div className="relative flex h-full flex-col">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
@@ -176,7 +176,7 @@ function InstantEstimateCard({ basePath }: { basePath: string }) {
           Help clients currently buying or selling a Home. Submit a <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span>, <span className="font-semibold text-[var(--hw-ink)]">Village Inspection</span>, or <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report to get a <span className="font-semibold text-[var(--hw-ink)]">Free Instant Express Estimate</span> of repair costs.
         </div>
 
-        <div className="mt-5">
+        <div className="mt-5 flex-1">
           <label
             className="block cursor-pointer rounded-[var(--hw-radius-lg)] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] p-4 hover:bg-white"
             onDragEnter={(e) => {
@@ -596,7 +596,8 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
           {/* Invite */}
           <Card className={`p-5 lg:col-span-4 ${DASH_CARD_MATCH_HEIGHT}`}>
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex h-full flex-col">
+              <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>
                 <div className="mt-1 text-sm text-[var(--hw-muted)]">Share this with clients to connect clients and projects to your dashboard.</div>
@@ -604,9 +605,9 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               <Link href={`${basePath}/clients`} className="shrink-0">
                 <Button size="sm" variant="secondary">View clients</Button>
               </Link>
-            </div>
+              </div>
 
-            <div className="mt-4 grid gap-4">
+              <div className="mt-4 grid gap-4 flex-1 overflow-y-auto pr-1">
               <div className="relative rounded-[var(--hw-radius-lg)] border-2 border-[var(--hw-line)] bg-white px-3 py-3 overflow-hidden">
                 {/* Scrollable link text */}
                 <div className="pr-[172px]">
@@ -794,6 +795,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                 </div>
               ) : null}
             </div>
+          </div>
         </Card>
         </div>
 
