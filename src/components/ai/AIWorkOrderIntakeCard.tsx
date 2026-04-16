@@ -334,6 +334,7 @@ export function AIWorkOrderIntakeCard(props: {
   const issueRef = useRef<HTMLTextAreaElement | null>(null);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const scheduleDateNudgeRef = useRef<string>("");
   const datetimeAnchorRef = useRef<HTMLDivElement | null>(null);
   const sendInFlightRef = useRef(false);
 
@@ -461,6 +462,22 @@ export function AIWorkOrderIntakeCard(props: {
     }, 0);
     return () => window.clearTimeout(t);
   }, [scheduleStage]);
+
+  // Separate the scheduling step into two conversational beats:
+  // 1) pick a date
+  // 2) then pick a time window
+  useEffect(() => {
+    if (scheduleStage !== "datetime") {
+      scheduleDateNudgeRef.current = "";
+      return;
+    }
+
+    if (!visitDate) return;
+    if (scheduleDateNudgeRef.current === visitDate) return;
+
+    scheduleDateNudgeRef.current = visitDate;
+    setTurns((prev) => [...prev, { role: "assistant", text: "Great — now pick a time window." }]);
+  }, [scheduleStage, visitDate]);
 
   // Typewriter hints (only before first send)
   useEffect(() => {
@@ -594,6 +611,7 @@ export function AIWorkOrderIntakeCard(props: {
     setSubmittingVisit(false);
     setSubmittedWorkOrderId("");
     setScheduleStage("idle");
+    scheduleDateNudgeRef.current = "";
 
     setManualOpen(true);
     setCompactComposer(false);
@@ -1093,7 +1111,7 @@ export function AIWorkOrderIntakeCard(props: {
                       : scheduleStage === "property"
                         ? "First, pick the property."
                         : scheduleStage === "datetime"
-                          ? "Choose a preferred day and time window."
+                          ? "Choose a preferred day."
                           : scheduleStage === "contact"
                             ? "Last, confirm how we should reach you."
                             : ""}
@@ -1206,7 +1224,7 @@ export function AIWorkOrderIntakeCard(props: {
                             const canGoPrev = endOfMonth(prevMonth).getTime() >= minVisitDate.getTime();
 
                             return (
-                              <div className="w-full rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.04)] p-3">
+                              <div className="w-full rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.04)] p-2.5">
                                 <div className="flex items-center justify-between">
                                   <button
                                     type="button"
@@ -1230,15 +1248,15 @@ export function AIWorkOrderIntakeCard(props: {
                                   </button>
                                 </div>
 
-                                <div className="mt-3 grid grid-cols-7 gap-1.5 text-center text-[10px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                                <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
                                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((w) => (
                                     <div key={w} className="py-1">{w}</div>
                                   ))}
                                 </div>
 
-                                <div className="mt-1 grid grid-cols-7 gap-1.5">
+                                <div className="mt-1 grid grid-cols-7 gap-1">
                                   {days.map((cell, i) => {
-                                    if (!cell.date) return <div key={i} className="h-10" />;
+                                    if (!cell.date) return <div key={i} className="h-9" />;
                                     const d = cell.date;
                                     const disabled = !!cell.disabled;
                                     const selectedDay = selected ? sameDay(selected, d) : false;
@@ -1254,7 +1272,7 @@ export function AIWorkOrderIntakeCard(props: {
                                           setVisitDate(iso);
                                         }}
                                         className={
-                                          "h-10 w-full rounded-[12px] text-sm font-semibold transition " +
+                                          "h-9 w-full rounded-[11px] text-sm font-semibold transition " +
                                           (selectedDay
                                             ? "bg-[var(--hw-red)] text-white shadow-[0_10px_22px_rgba(229,57,53,.28)]"
                                             : disabled
