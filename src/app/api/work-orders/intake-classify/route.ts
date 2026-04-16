@@ -187,18 +187,23 @@ function scoreService(inputText: string, tokens: string[], s: TaxService) {
   const wantsFloor = /\bfloor\b|flooring|hardwood|tile|laminate|vinyl|carpet|refinish|resurface|restain|stain/.test(inputText);
   const wantsCabinet = /cabinet|cabinetry/.test(inputText);
 
-  // Strong phrase boosts
-  const phrases: Array<[RegExp, number]> = [
-    [/garage\s+door/, 8],
-    [/tv\s+mount/, 8],
-    [/roof\s+replacement|replace\s+.*roof|new\s+roof|re\s*roof|reroof/, 8],
-    [/water\s+heater/, 7],
-    [/sump\s+pump/, 7],
-    [/circuit\s+breaker|electrical\s+panel/, 7],
-    [/hardwood\s+floor|floor\s+refinish|re\s*stain|resurface\s+.*floor|floor\s+resurface/, 7],
+  // Strong phrase boosts (only when the service itself is relevant)
+  const phrases: Array<{ re: RegExp; pts: number; serviceHint: RegExp }> = [
+    { re: /garage\s+door/, pts: 8, serviceHint: /garage\s+door|garage-door|garage\s*doors/ },
+    { re: /tv\s+mount/, pts: 8, serviceHint: /tv\s+mount|tv-mount/ },
+    { re: /roof\s+replacement|replace\s+.*roof|new\s+roof|re\s*roof|reroof/, pts: 8, serviceHint: /\broof\b|roofing/ },
+    { re: /water\s+heater/, pts: 7, serviceHint: /water\s+heater|water-heater/ },
+    { re: /sump\s+pump/, pts: 7, serviceHint: /sump\s+pump|sump-pump/ },
+    { re: /circuit\s+breaker|electrical\s+panel/, pts: 7, serviceHint: /electrical|panel|breaker/ },
+    {
+      re: /hardwood\s+floor|floor\s+refinish|re\s*stain|resurface\s+.*floor|floor\s+resurface/,
+      pts: 7,
+      serviceHint: /\bfloor\b|flooring|hardwood|refinish|stain/,
+    },
   ];
-  for (const [re, pts] of phrases) {
-    if (re.test(inputText)) score += pts;
+  for (const p of phrases) {
+    if (!p.re.test(inputText)) continue;
+    if (p.serviceHint.test(hay)) score += p.pts;
   }
 
   // Token overlap
