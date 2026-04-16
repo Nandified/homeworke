@@ -78,7 +78,7 @@ export function Picker(props: {
   const wrapRef = React.useRef<HTMLDivElement | null>(null);
   const buttonRef = React.useRef<HTMLButtonElement | null>(null);
   const menuRef = React.useRef<HTMLDivElement | null>(null);
-  const [menuPos, setMenuPos] = React.useState<{ top: number; left: number; width: number } | null>(null);
+  const [menuPos, setMenuPos] = React.useState<{ top: number; left: number; width: number; maxHeight: number } | null>(null);
 
   const active = props.options.find((o) => o.id === props.value) || null;
 
@@ -127,28 +127,35 @@ export function Picker(props: {
       if (!btn) return;
       const r = btn.getBoundingClientRect();
 
-      // Estimate menu height (search bar + list). Used for flip-to-top on small viewports.
-      const approxMenuH = props.searchable ? 360 : 300;
       const margin = 12;
       const spaceBelow = window.innerHeight - r.bottom;
+      const spaceAbove = r.top;
 
-      // Default: open below
+      // Prefer opening below (feels attached). Only flip above if there's truly no room.
+      const shouldFlip = spaceBelow < 220 && spaceAbove > spaceBelow;
+
       let top = r.bottom + 8;
-
-      // If it would overflow the viewport, open above.
-      if (spaceBelow < approxMenuH + margin) {
-        top = Math.max(margin, r.top - 8 - approxMenuH);
+      if (shouldFlip) {
+        // Open above; we'll still cap height.
+        top = margin;
       }
 
-      // Make the menu a bit wider than the trigger on mobile so labels are readable.
-      const desiredW = Math.max(r.width, 320);
-      const maxW = Math.max(240, window.innerWidth - margin * 2);
-      const width = Math.min(desiredW, maxW);
+      // Keep width aligned with the trigger (feels natural on mobile).
+      const width = Math.min(r.width, window.innerWidth - margin * 2);
 
       // Clamp left so it doesn't fall off-screen
       const left = Math.max(margin, Math.min(r.left, window.innerWidth - width - margin));
 
-      setMenuPos({ top, left, width });
+      // Dynamic list height so it doesn't run off-screen.
+      const available = shouldFlip ? spaceAbove - margin * 2 : spaceBelow - margin * 2;
+      const maxHeight = Math.max(180, Math.min(320, available));
+
+      // If flipped, position the menu so its bottom hugs the trigger.
+      if (shouldFlip) {
+        top = Math.max(margin, r.top - 8 - maxHeight - (props.searchable ? 52 : 0));
+      }
+
+      setMenuPos({ top, left, width, maxHeight });
     }
 
     compute();
@@ -208,7 +215,7 @@ export function Picker(props: {
                   </div>
                 ) : null}
 
-                <div className="relative max-h-64 overflow-auto p-1">
+                <div className="relative overflow-auto p-1" style={{ maxHeight: menuPos.maxHeight }}>
                   {filtered.length === 0 ? <div className="p-3 text-sm text-[var(--hw-muted)]">No matches.</div> : null}
                   {filtered.map((o) => {
                     const selected = o.id === props.value;
