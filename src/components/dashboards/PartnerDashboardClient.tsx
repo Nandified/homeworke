@@ -541,7 +541,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
       <div className="grid gap-6">
         {/* Top row: AI intake (left) + KPIs (right, 2x2) + Messages (under tiles) */}
         <div className="grid items-start gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-8">
             <AIWorkOrderIntakeCard
               eyebrow="Job Work Order"
               title={partner?.partnerName ? `Hey ${partner.partnerName.split(" ")[0]}, what do you need help with?` : "What do you need help with?"}
@@ -555,7 +555,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
               <InstantEstimateCard basePath={basePath} />
             </div>
           </div>
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-4">
             <div className="grid grid-cols-2 gap-4 auto-rows-fr">
               <StatTile label="Active" value={String(activeCount)} note="In progress" className="h-full" />
               <StatTile label="Pending" value={String(pendingCount)} note="Not started" className="h-full" />
@@ -573,12 +573,12 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
 
         {/* Desktop: keep layout full but not stretched (2-column row) */}
         <div className="grid gap-6 lg:grid-cols-12 lg:items-stretch">
-          <div className="hidden lg:block lg:col-span-7">
+          <div className="hidden lg:block lg:col-span-8">
             <InstantEstimateCard basePath={basePath} />
           </div>
 
           {/* Invite */}
-          <Card className="p-5 lg:col-span-5">
+          <Card className="p-5 lg:col-span-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>

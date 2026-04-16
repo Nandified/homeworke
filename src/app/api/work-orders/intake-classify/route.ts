@@ -411,36 +411,6 @@ export async function POST(req: Request) {
       "If the user mentions ESA / Phase I / Phase II / underground storage tank (UST) / contamination or soil/groundwater testing, treat it like environmental due-diligence (often commercial) and DO NOT ask for 'where in the home (kitchen/bathroom/etc)'. Prefer asking about property type, timeline (closing), and any documents/records instead. " +
       "If the user reports a ceiling/wall leak or water stain and the source is ambiguous, your FIRST clarifying question should quickly disambiguate roof/rain intrusion vs plumbing: ask whether it happens during/after rain OR after using fixtures/appliances above (shower, toilet, dishwasher, washer). Also ask about electrical hazard if near lights/outlets.";
 
-    const schema = {
-      type: "object",
-      additionalProperties: false,
-      required: [
-        "supported",
-        "serviceId",
-        "trade",
-        "category",
-        "subcategory",
-        "confidence",
-        "aiSummary",
-        "urgency",
-        "safetyFlags",
-        "clarifyingQuestions",
-      ],
-      properties: {
-        supported: { type: "boolean" },
-        userMessage: { type: "string" },
-        serviceId: { type: "string" },
-        trade: { type: "string" },
-        category: { type: "string" },
-        subcategory: { type: "string" },
-        confidence: { type: "number", minimum: 0, maximum: 1 },
-        aiSummary: { type: "string" },
-        urgency: { type: "string", enum: ["emergency", "asap", "this_week", "flexible"] },
-        safetyFlags: { type: "array", items: { type: "string" } },
-        clarifyingQuestions: { type: "array", items: { type: "string" }, maxItems: 3 },
-      },
-    };
-
     const model =
       process.env.OPENAI_MODEL_WORK_ORDERS ||
       process.env.OPENAI_MODEL ||
@@ -455,15 +425,6 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         model,
         max_output_tokens: outOfScope ? 180 : 450,
-        // Enforce structured JSON output.
-        text: {
-          format: {
-            type: "json_schema",
-            name: "work_order_intake_classify",
-            schema,
-            strict: true,
-          },
-        },
         input: [
           { role: "system", content: sys },
           {
