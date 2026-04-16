@@ -346,16 +346,57 @@ export async function POST(req: Request) {
     const apiKey = process.env.OPENAI_API_KEY_WORK_ORDERS || process.env.OPENAI_API_KEY || "";
 
     const body = await req.json().catch(() => null);
-    const text = (body?.text ?? body?.input?.text ?? "").toString();
+    const bodyObj: Record<string, unknown> = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+    const inputObj = bodyObj.input && typeof bodyObj.input === "object" ? (bodyObj.input as Record<string, unknown>) : {};
+    const text = (bodyObj.text ?? inputObj.text ?? "").toString();
+    const attachmentsRaw: unknown[] = Array.isArray(bodyObj.attachments) ? (bodyObj.attachments as unknown[]) : [];
 
-    if (!text.trim()) {
-      return NextResponse.json({ ok: false, error: "missing_text" }, { status: 400 });
+    const asString = (v: unknown) => (v == null ? "" : typeof v === "string" ? v : String(v));
+    const isImageDataUrl = (s: string) => s.startsWith("data:image/");
+
+    const attachments = attachmentsRaw
+      .map((a: unknown) => {
+        const x = (a && typeof a === "object" ? (a as Record<string, unknown>) : {}) as Record<string, unknown>;
+        return {
+          type: asString(x.type),
+          dataUrl: asString(x.dataUrl),
+          filename: asString(x.filename),
+          contentType: asString(x.contentType),
+          originalType: asString(x.originalType),
+        };
+      })
+      .filter((a) => a.type === "image" && isImageDataUrl(a.dataUrl))
+      .slice(0, 3);
+
+    if (!text.trim() && !attachments.length) {
+      return NextResponse.json({ ok: false, error: "missing_text_or_attachments" }, { status: 400 });
     }
 
     const services = taxonomy.services as TaxService[];
 
     // If no OpenAI key (e.g. local/dev), return a lightweight heuristic fallback.
     if (!apiKey) {
+      if (!text.trim() && attachments.length) {
+        return NextResponse.json({
+          ok: true,
+          used: "fallback_no_key_media_only",
+          supported: true,
+          serviceId: "",
+          trade: "General",
+          category: "",
+          subcategory: "",
+          confidence: 0.25,
+          aiSummary: "User uploaded photo/video.",
+          urgency: "this_week",
+          safetyFlags: [],
+          clarifyingQuestions: [
+            "What are we looking at (what’s wrong / what happened)?",
+            "What room/area is this in (kitchen, bathroom, exterior, etc.)?",
+            "Is it actively leaking/sparking/smoking right now?",
+          ].slice(0, 3),
+        });
+      }
+
       const s = pickFallback(text, services);
       if (!s) {
         return NextResponse.json({
@@ -402,13 +443,15 @@ export async function POST(req: Request) {
     const sys =
       "You are Homeworke's Work Order Intake classifier. " +
       "We ONLY support home services from the provided catalog. " +
-      "Given a short description, select the best matching service from the catalog. " +
+      "You may be given one or more images (photos or video frames). Use them to infer the likely issue and pick the best matching service from the catalog. " +
+      "Given a short description (and optional images), select the best matching service from the catalog. " +
       "Return STRICT JSON only (no markdown). " +
       "You must always provide all required fields. " +
       "If the request is OUT OF SCOPE (e.g., gaming help, laptop/computer repair, phone repair, IT help, printer setup), set supported=false and write a short, funny-but-helpful userMessage that references what they asked for. Use a 50/50 vibe: sometimes playful, sometimes pro. In that case, set serviceId/trade/category/subcategory to empty strings, confidence=0, and clarifyingQuestions=[]. " +
       "If uncertain about urgency, choose 'this_week'. If there are no safety flags, return an empty array. " +
       "When supported=true, always include 1-3 clarifyingQuestions (aim for 2) to confirm scope/safety and improve routing. " +
       "Write questions in simple homeowner language (no jargon). " +
+      "If the user provides only an image and little/no text, ask at most 2 clarifyingQuestions to confirm context (where/when/active leak) and then proceed. " +
       "If the user mentions ESA / Phase I / Phase II / underground storage tank (UST) / contamination or soil/groundwater testing, treat it like environmental due-diligence (often commercial) and DO NOT ask for 'where in the home (kitchen/bathroom/etc)'. Prefer asking about property type, timeline (closing), and any documents/records instead. " +
       "If the user reports a ceiling/wall leak or water stain and the source is ambiguous, your FIRST clarifying question should quickly disambiguate roof/rain intrusion vs plumbing: ask whether it happens during/after rain OR after using fixtures/appliances above (shower, toilet, dishwasher, washer). Also ask about electrical hazard if near lights/outlets.";
 
@@ -417,8 +460,21 @@ export async function POST(req: Request) {
       process.env.OPENAI_MODEL ||
       "gpt-4o-mini";
 
-    const prompt =
-      "Catalog (choose exactly one):\n" + JSON.stringify(catalog) + "\n\nUser description:\n" + text.trim();
+    const promptText =
+      "Catalog (choose exactly one):\n" +
+      JSON.stringify(catalog) +
+      "\n\nUser description:\n" +
+      (text.trim() || "(No text provided; user uploaded media.)") +
+      (attachments.length ? `\n\nMedia provided: ${attachments.length} image(s).` : "");
+
+    const userContent: Array<
+      | { type: "text"; text: string }
+      | { type: "image_url"; image_url: { url: string } }
+    > = [{ type: "text", text: promptText }];
+
+    for (const a of attachments) {
+      userContent.push({ type: "image_url", image_url: { url: a.dataUrl } });
+    }
 
     // Use Chat Completions for maximum compatibility/reliability.
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -434,7 +490,7 @@ export async function POST(req: Request) {
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: sys },
-          { role: "user", content: prompt },
+          { role: "user", content: userContent },
         ],
       }),
     });

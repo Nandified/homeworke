@@ -203,6 +203,123 @@ function writeClientProperties(items: StoredClientProperty[]) {
   }
 }
 
+type IntakeAttachment = {
+  type: "image";
+  filename?: string;
+  contentType?: string;
+  dataUrl: string; // compressed data URL for OpenAI vision
+  originalType?: string;
+};
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("file_read_failed"));
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function imageFileToCompressedDataUrl(file: File, opts?: { maxEdge?: number; quality?: number }): Promise<string> {
+  const maxEdge = opts?.maxEdge ?? 1600;
+  const quality = opts?.quality ?? 0.78;
+
+  const dataUrl = await fileToDataUrl(file);
+  const img = new Image();
+  img.src = dataUrl;
+
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error("image_load_failed"));
+  });
+
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+  const scale = Math.min(1, maxEdge / Math.max(w, h));
+  const outW = Math.max(1, Math.round(w * scale));
+  const outH = Math.max(1, Math.round(h * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = outW;
+  canvas.height = outH;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl;
+
+  ctx.drawImage(img, 0, 0, outW, outH);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+async function videoFileToPosterFrameDataUrl(file: File, opts?: { maxEdge?: number; quality?: number; seekSeconds?: number }): Promise<string> {
+  const maxEdge = opts?.maxEdge ?? 1280;
+  const quality = opts?.quality ?? 0.78;
+  const seekSeconds = opts?.seekSeconds ?? 0.75;
+
+  const url = URL.createObjectURL(file);
+  try {
+    const video = document.createElement("video");
+    video.src = url;
+    video.muted = true;
+    video.playsInline = true;
+
+    await new Promise<void>((resolve, reject) => {
+      video.onloadedmetadata = () => resolve();
+      video.onerror = () => reject(new Error("video_metadata_failed"));
+    });
+
+    const dur = Number.isFinite(video.duration) ? video.duration : 0;
+    const t = dur > 0 ? Math.min(Math.max(0.0, seekSeconds), Math.max(0.0, dur - 0.05)) : 0;
+    video.currentTime = t;
+
+    await new Promise<void>((resolve, reject) => {
+      video.onseeked = () => resolve();
+      video.onerror = () => reject(new Error("video_seek_failed"));
+    });
+
+    const w = video.videoWidth || 1280;
+    const h = video.videoHeight || 720;
+    const scale = Math.min(1, maxEdge / Math.max(w, h));
+    const outW = Math.max(1, Math.round(w * scale));
+    const outH = Math.max(1, Math.round(h * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = outW;
+    canvas.height = outH;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return "";
+
+    ctx.drawImage(video, 0, 0, outW, outH);
+    return canvas.toDataURL("image/jpeg", quality);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+async function filesToIntakeAttachments(files: File[]): Promise<IntakeAttachment[]> {
+  // Keep model input small + cheap.
+  const picked = (files || []).slice(0, 6);
+  const out: IntakeAttachment[] = [];
+
+  for (const f of picked) {
+    const t = (f.type || "").toLowerCase();
+    const name = f.name || "";
+
+    if (t.startsWith("image/")) {
+      const dataUrl = await imageFileToCompressedDataUrl(f, { maxEdge: 1600, quality: 0.78 });
+      out.push({ type: "image", filename: name, contentType: "image/jpeg", dataUrl, originalType: t });
+      continue;
+    }
+
+    if (t.startsWith("video/")) {
+      // For now: use a single poster frame for “video understanding”.
+      const frame = await videoFileToPosterFrameDataUrl(f, { maxEdge: 1280, quality: 0.78, seekSeconds: 0.75 });
+      if (frame) out.push({ type: "image", filename: name || "video-frame.jpg", contentType: "image/jpeg", dataUrl: frame, originalType: t });
+      continue;
+    }
+  }
+
+  return out.slice(0, 3);
+}
+
 export function AIWorkOrderIntakeCard(props: {
   eyebrow?: string;
   title?: string;
@@ -464,8 +581,9 @@ export function AIWorkOrderIntakeCard(props: {
 
   async function send() {
     const text = issue.trim();
+    const hasMedia = attachments.length > 0;
     // Prevent accidental double-submits (Enter key repeat, etc.)
-    if (!text || classifying || assistantThinking || sendInFlightRef.current) return;
+    if ((!text && !hasMedia) || classifying || assistantThinking || sendInFlightRef.current) return;
 
     // Global commands (never classify these)
     const cmd = text
@@ -582,12 +700,17 @@ export function AIWorkOrderIntakeCard(props: {
     // If we're in Q&A mode, treat send as the answer to the current question.
     if (awaitingAnswers) {
       setCompactComposer(true);
+      const answerLine = text || (hasMedia ? `Uploaded ${attachments.length} photo/video file(s).` : "");
+
       const nextAnswers = answers.slice();
-      nextAnswers[qIndex] = text;
+      nextAnswers[qIndex] = answerLine;
       setAnswers(nextAnswers);
 
-      setTurns((prev) => [...prev, { role: "user", text }]);
+      setTurns((prev) => [...prev, { role: "user", text: answerLine }]);
       setIssue("");
+
+      // Note: for Q&A media uploads we keep attachments selected until intake submission.
+      // (We can wire this into the final work order payload later.)
 
       const nextIdx = qIndex + 1;
 
@@ -615,8 +738,10 @@ export function AIWorkOrderIntakeCard(props: {
     setAnswers([]);
     setQIndex(0);
 
-    setRootIssue(text);
-    setTurns((prev) => [...prev, { role: "user", text }]);
+    const userLine = text || (hasMedia ? `Uploaded ${attachments.length} photo/video file(s).` : "");
+    setRootIssue(text || (hasMedia ? "User uploaded photo/video of the issue." : ""));
+    setTurns((prev) => [...prev, { role: "user", text: userLine }]);
+
     // Clear the composer immediately so it doesn't look "stuck" while we classify.
     setIssue("");
 
@@ -624,10 +749,14 @@ export function AIWorkOrderIntakeCard(props: {
     // We'll only fall back to local copy if the request fails.
 
     try {
+      const intakeAttachments = hasMedia ? await filesToIntakeAttachments(attachments) : [];
+      // Once we’ve captured media for the request, clear local selection.
+      if (hasMedia) setAttachments([]);
+
       const res = await fetch("/api/work-orders/intake-classify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, attachments: intakeAttachments }),
       });
       const j = (await res.json().catch(() => null)) as IntakeClassifyResult | null;
       if (!res.ok || !j || !j.ok) {
@@ -1336,7 +1465,7 @@ export function AIWorkOrderIntakeCard(props: {
         </div>
 
         <div className="mt-2 space-y-2">
-          <div className="text-xs text-[var(--hw-muted)]">Tip: Add as much information as possible so we can get you the right help.</div>
+          <div className="text-xs text-[var(--hw-muted)]">Tip: Add as much detail as you can (what happened, when it started, anything you tried). If possible, upload a photo or short video.</div>
           {attachments.length ? (
             <div className="text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) ready to send</div>
           ) : null}
