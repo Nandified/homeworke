@@ -126,6 +126,8 @@ function ProgressRail({ status }: { status: StatusGroup }) {
   );
 }
 
+const DASH_CARD_MATCH_HEIGHT = "lg:min-h-[360px]";
+
 function InstantEstimateCard({ basePath }: { basePath: string }) {
   const router = useRouter();
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
@@ -141,7 +143,7 @@ function InstantEstimateCard({ basePath }: { basePath: string }) {
 
   return (
     <Card
-      className="relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7"
+      className={`relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7 ${DASH_CARD_MATCH_HEIGHT}`}
       style={{ boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}
     >
       {/* Glow accents (kept on mobile but contained so they don't bleed past corners) */}
@@ -591,7 +593,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           </div>
 
           {/* Invite */}
-          <Card className="p-5 lg:col-span-4">
+          <Card className={`p-5 lg:col-span-4 ${DASH_CARD_MATCH_HEIGHT}`}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Your Client Invite Link</div>
