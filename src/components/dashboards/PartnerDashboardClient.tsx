@@ -607,7 +607,7 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             </div>
 
             <div className="mt-4 grid gap-4">
-              <div className="relative rounded-[var(--hw-radius-lg)] border-2 border-[var(--hw-line)] bg-white px-3 py-3 overflow-hidden">
+              <div className="relative flex min-h-[44px] items-center rounded-[var(--hw-radius-lg)] border-2 border-[var(--hw-line)] bg-white px-3 py-3 overflow-hidden">
                 {/* Scrollable link text */}
                 <div className="pr-[172px]">
                   <div className="text-xs font-semibold text-[var(--hw-ink)] whitespace-nowrap overflow-x-auto">
