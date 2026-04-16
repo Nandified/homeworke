@@ -126,7 +126,29 @@ export function Picker(props: {
       const btn = buttonRef.current;
       if (!btn) return;
       const r = btn.getBoundingClientRect();
-      setMenuPos({ top: r.bottom + 8, left: r.left, width: r.width });
+
+      // Estimate menu height (search bar + list). Used for flip-to-top on small viewports.
+      const approxMenuH = props.searchable ? 360 : 300;
+      const margin = 12;
+      const spaceBelow = window.innerHeight - r.bottom;
+
+      // Default: open below
+      let top = r.bottom + 8;
+
+      // If it would overflow the viewport, open above.
+      if (spaceBelow < approxMenuH + margin) {
+        top = Math.max(margin, r.top - 8 - approxMenuH);
+      }
+
+      // Make the menu a bit wider than the trigger on mobile so labels are readable.
+      const desiredW = Math.max(r.width, 320);
+      const maxW = Math.max(240, window.innerWidth - margin * 2);
+      const width = Math.min(desiredW, maxW);
+
+      // Clamp left so it doesn't fall off-screen
+      const left = Math.max(margin, Math.min(r.left, window.innerWidth - width - margin));
+
+      setMenuPos({ top, left, width });
     }
 
     compute();
@@ -170,7 +192,7 @@ export function Picker(props: {
               <div
                 ref={menuRef}
                 role="listbox"
-                className="fixed z-[80] overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]"
+                className="fixed z-[80] isolate overflow-hidden rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white shadow-[0_14px_40px_rgba(17,24,39,.12)]"
                 style={{ top: menuPos.top, left: menuPos.left, width: menuPos.width }}
               >
                 <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[var(--hw-red)]/10 blur-[40px]" />
@@ -355,7 +377,8 @@ export function Modal(props: {
 
   const panelStyle: React.CSSProperties = {
     // Use dynamic viewport units so iOS Safari address bar doesn't clip the modal.
-    maxHeight: "calc(100dvh - 1.5rem)",
+    // Give centered modals more breathing room so they don't feel "pinned" to top/bottom.
+    maxHeight: placement === "center" ? "calc(100dvh - 6rem)" : "calc(100dvh - 1.5rem)",
   };
 
   return (
