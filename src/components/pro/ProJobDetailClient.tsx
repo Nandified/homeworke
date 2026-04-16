@@ -111,10 +111,18 @@ export function ProJobDetailClient(props: { id: string }) {
     let cancelled = false;
 
     const loadSessionToken = () => {
+      // Prefer localStorage session token.
       try {
         const raw = window.localStorage.getItem("hw_session_v1");
         const j = raw ? JSON.parse(raw) : null;
-        return j?.token ? String(j.token) : null;
+        if (j?.token) return String(j.token);
+      } catch {}
+
+      // Fallback: allow token to be passed via query string (useful in embedded/webview contexts).
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get("token");
+        return t ? String(t) : null;
       } catch {
         return null;
       }

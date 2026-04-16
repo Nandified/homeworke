@@ -357,7 +357,7 @@ export function AIWorkOrderIntakeCard(props: {
 
   const [visitDate, setVisitDate] = useState<string>("");
   const [visitWindow, setVisitWindow] = useState<"" | "Morning" | "Midday" | "Afternoon" | "Evening">("");
-  const [contactMethod, setContactMethod] = useState<"Text" | "Email" | "Call">("Text");
+  const [contactMethod, setContactMethod] = useState<"" | "Text" | "Email" | "Call">("");
   const [contactTouched, setContactTouched] = useState(false);
   const [submittingVisit, setSubmittingVisit] = useState(false);
   const [submittedWorkOrderId, setSubmittedWorkOrderId] = useState<string>("");
@@ -624,7 +624,7 @@ export function AIWorkOrderIntakeCard(props: {
     setRootIssue("");
     setVisitDate("");
     setVisitWindow("");
-    setContactMethod("Text");
+    setContactMethod("");
     setContactTouched(false);
     setSubmittingVisit(false);
     setSubmittedWorkOrderId("");
@@ -1131,7 +1131,9 @@ export function AIWorkOrderIntakeCard(props: {
                         : scheduleStage === "datetime"
                           ? "Choose a preferred day."
                           : scheduleStage === "contact"
-                            ? "Last, confirm how we should reach you."
+                            ? submittedWorkOrderId
+                              ? "Submitted."
+                              : "Last, confirm how we should reach you."
                             : ""}
                   </div>
 
@@ -1374,21 +1376,23 @@ export function AIWorkOrderIntakeCard(props: {
                   {scheduleStage === "contact" ? (
                     <div className="mt-4">
                       <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact</div>
-                      {!submittedWorkOrderId ? <div className="mt-2 flex flex-wrap gap-2">
-                        {(["Text", "Call", "Email"] as const).map((m) => (
-                          <Button
-                            key={m}
-                            type="button"
-                            variant={contactMethod === m ? "primary" : "secondary"}
-                            onClick={() => {
-                              setContactMethod(m);
-                              setContactTouched(true);
-                            }}
-                          >
-                            {m}
-                          </Button>
-                        ))}
-                      </div> : null}
+                      {!submittedWorkOrderId ? (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {(["Text", "Call", "Email"] as const).map((m) => (
+                            <Button
+                              key={m}
+                              type="button"
+                              variant={contactMethod === m ? "primary" : "secondary"}
+                              onClick={() => {
+                                setContactMethod(m);
+                                setContactTouched(true);
+                              }}
+                            >
+                              {m}
+                            </Button>
+                          ))}
+                        </div>
+                      ) : null}
 
                       <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
                         {submittedWorkOrderId ? (
@@ -1408,7 +1412,7 @@ export function AIWorkOrderIntakeCard(props: {
                           <Button
                             className="w-full sm:w-auto"
                             onClick={scheduleVisit}
-                            disabled={!propertyId || !visitDate || submittingVisit || !contactTouched}
+                            disabled={!propertyId || !visitDate || submittingVisit || !contactMethod}
                           >
                             Schedule a visit
                             <ArrowRight className="h-4 w-4" />
