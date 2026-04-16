@@ -347,11 +347,16 @@ export function Modal(props: {
   const placement = props.mobilePlacement ?? "bottom";
 
   const panelClass = cn(
-    "w-full max-w-xl animate-[fadeScaleIn_150ms_ease-out] overflow-hidden border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.15)] max-h-[calc(100vh-1.5rem)]",
+    "w-full max-w-xl animate-[fadeScaleIn_150ms_ease-out] overflow-hidden border border-[var(--hw-line)] bg-white shadow-[0_20px_60px_rgba(0,0,0,.15)]",
     placement === "bottom"
       ? "rounded-t-[var(--hw-radius-lg)] sm:rounded-[var(--hw-radius-lg)]"
       : "rounded-[var(--hw-radius-lg)]"
   );
+
+  const panelStyle: React.CSSProperties = {
+    // Use dynamic viewport units so iOS Safari address bar doesn't clip the modal.
+    maxHeight: "calc(100dvh - 1.5rem)",
+  };
 
   return (
     <div
@@ -359,8 +364,12 @@ export function Modal(props: {
         "fixed inset-0 z-50 flex justify-center bg-black/50 p-3 backdrop-blur-sm sm:items-center sm:p-5",
         placement === "bottom" ? "items-end" : "items-center"
       )}
+      style={{
+        paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+        paddingTop: "calc(0.75rem + env(safe-area-inset-top))",
+      }}
     >
-      <div className={panelClass}>
+      <div className={panelClass} style={panelStyle}>
         <div className="flex items-center justify-between border-b border-[var(--hw-line)] px-4 py-3 sm:px-6 sm:py-4">
           <div className="text-sm font-semibold text-[var(--hw-ink)]">{props.title}</div>
           <Button variant="ghost" onClick={props.onClose} aria-label="Close modal">
@@ -369,8 +378,8 @@ export function Modal(props: {
         </div>
         <div
           ref={bodyRef}
-          className="max-h-[calc(100vh-8rem)] overflow-y-auto p-4 sm:p-6 overscroll-contain"
-          style={{ WebkitOverflowScrolling: "touch" }}
+          className="overflow-y-auto p-4 sm:p-6 overscroll-contain"
+          style={{ WebkitOverflowScrolling: "touch", maxHeight: "calc(100dvh - 8rem)" }}
         >
           {props.children}
         </div>
