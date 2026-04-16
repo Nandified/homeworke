@@ -935,7 +935,7 @@ export function AIWorkOrderIntakeCard(props: {
         "rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col " +
         (started ? "overflow-hidden" : "")
       }
-      style={started ? { height: isDesktop ? "min(52vh, 720px)" : "min(68vh, 880px)" } : undefined}
+      style={started ? { height: isDesktop ? "min(70vh, 920px)" : "min(68vh, 880px)" } : undefined}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -1428,9 +1428,9 @@ export function AIWorkOrderIntakeCard(props: {
             }}
             placeholder=""
             aria-label="Message"
-            rows={compactComposer ? 1 : isDesktop ? (turns.length ? 7 : 3) : 3}
+            rows={compactComposer ? 1 : isDesktop ? (turns.length ? 4 : 3) : 3}
             className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-3 pr-28 text-[17px] leading-7 border-0 outline-none"
-            style={{ minHeight: compactComposer ? 64 : isDesktop ? (turns.length ? "60vh" : 140) : 140 }}
+            style={{ minHeight: compactComposer ? 64 : isDesktop ? (turns.length ? 180 : 140) : 140 }}
           />
 
           {!issue && !started ? (
