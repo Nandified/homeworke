@@ -1252,9 +1252,9 @@ export function AIWorkOrderIntakeCard(props: {
                                   ))}
                                 </div>
 
-                                <div className="mt-1 grid grid-cols-7 gap-1">
+                                <div className="mt-1 grid grid-cols-7 gap-[3px]">
                                   {days.map((cell, i) => {
-                                    if (!cell.date) return <div key={i} className="h-9" />;
+                                    if (!cell.date) return <div key={i} className="h-8.5" />;
                                     const d = cell.date;
                                     const disabled = !!cell.disabled;
                                     const selectedDay = selected ? sameDay(selected, d) : false;
@@ -1270,7 +1270,7 @@ export function AIWorkOrderIntakeCard(props: {
                                           setVisitDate(iso);
                                         }}
                                         className={
-                                          "h-9 w-full rounded-[11px] text-sm font-semibold transition " +
+                                          "h-8.5 w-full rounded-[11px] text-sm font-semibold transition " +
                                           (selectedDay
                                             ? "bg-[var(--hw-red)] text-white shadow-[0_10px_22px_rgba(229,57,53,.28)]"
                                             : disabled
@@ -1527,7 +1527,7 @@ export function AIWorkOrderIntakeCard(props: {
         </div>
 
         <div className="mt-2 space-y-2">
-          <div className="text-xs text-[var(--hw-muted)]">Tip: Add as much detail as you can (what happened, when it started, anything you tried). If possible, upload a photo or short video.</div>
+          <div className="text-xs text-[var(--hw-muted)]">Tip: Add as much detail as you can. If possible, upload a photo or short video.</div>
           {attachments.length ? (
             <div className="text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) ready to send</div>
           ) : null}
