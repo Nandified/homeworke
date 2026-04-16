@@ -357,7 +357,7 @@ export function AIWorkOrderIntakeCard(props: {
 
   const [visitDate, setVisitDate] = useState<string>("");
   const [visitWindow, setVisitWindow] = useState<"" | "Morning" | "Midday" | "Afternoon" | "Evening">("");
-  const [contactMethod, setContactMethod] = useState<"" | "Text" | "Email" | "Call">("");
+  const [contactMethod, setContactMethod] = useState<"" | "Any" | "Text" | "Email" | "Call">("");
   const [contactTouched, setContactTouched] = useState(false);
   const [submittingVisit, setSubmittingVisit] = useState(false);
   const [submittedWorkOrderId, setSubmittedWorkOrderId] = useState<string>("");
@@ -1385,7 +1385,7 @@ export function AIWorkOrderIntakeCard(props: {
 
                       {!submittedWorkOrderId ? (
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {(["Text", "Call", "Email"] as const).map((m) => (
+                          {(["Any", "Text", "Call", "Email"] as const).map((m) => (
                             <Button
                               key={m}
                               type="button"
@@ -1421,8 +1421,7 @@ export function AIWorkOrderIntakeCard(props: {
                             onClick={scheduleVisit}
                             disabled={!propertyId || !visitDate || submittingVisit || !contactMethod}
                           >
-                            Schedule a visit
-                            <ArrowRight className="h-4 w-4" />
+                            Confirm visit
                           </Button>
                         )}
 
@@ -1581,7 +1580,7 @@ export function AIWorkOrderIntakeCard(props: {
               <div className="h-px flex-1 bg-[var(--hw-line)]" />
             </button>
 
-            {manualOpen && !started ? (
+            {manualOpen ? (
               <div className="mt-3">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                   <Link href="/marketplace/intake?trade=Plumbing" className="w-full">
