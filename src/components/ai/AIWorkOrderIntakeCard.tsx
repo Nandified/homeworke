@@ -699,8 +699,8 @@ export function AIWorkOrderIntakeCard(props: {
 
     // If we're in Q&A mode, treat send as the answer to the current question.
     if (awaitingAnswers) {
-      // On desktop, keep the composer roomy (mobile stays compact).
-      setCompactComposer(!isDesktop);
+      // Keep the composer compact after submit; it can auto-grow as the user types.
+      setCompactComposer(true);
       const answerLine = text || (hasMedia ? `Uploaded ${attachments.length} photo/video file(s).` : "");
 
       const nextAnswers = answers.slice();
@@ -709,6 +709,8 @@ export function AIWorkOrderIntakeCard(props: {
 
       setTurns((prev) => [...prev, { role: "user", text: answerLine }]);
       setIssue("");
+      // Reset textarea height back to 1 row.
+      if (issueRef.current) issueRef.current.style.height = "64px";
 
       // Note: for Q&A media uploads we keep attachments selected until intake submission.
       // (We can wire this into the final work order payload later.)
@@ -729,8 +731,8 @@ export function AIWorkOrderIntakeCard(props: {
     }
 
     // Otherwise this is the initial issue description.
-    // On desktop, keep the composer roomy (mobile stays compact).
-    setCompactComposer(!isDesktop);
+    // Keep the composer compact after submit; it can auto-grow as the user types.
+    setCompactComposer(true);
     setManualOpen(false);
     setClassifyError("");
     setClassifying(true);
@@ -746,6 +748,8 @@ export function AIWorkOrderIntakeCard(props: {
 
     // Clear the composer immediately so it doesn't look "stuck" while we classify.
     setIssue("");
+    // Reset textarea height back to 1 row.
+    if (issueRef.current) issueRef.current.style.height = "64px";
 
     // If it's out-of-scope, still call the API so the LLM can generate a contextual funny reply.
     // We'll only fall back to local copy if the request fails.
@@ -910,9 +914,9 @@ export function AIWorkOrderIntakeCard(props: {
         },
       ]);
 
-      // Collapse manual section; keep composer compact on mobile.
+      // Collapse manual section; keep composer compact after submit.
       setManualOpen(false);
-      setCompactComposer(!isDesktop);
+      setCompactComposer(true);
     } catch {
       setTurns((prev) => [
         ...prev,
@@ -1409,7 +1413,16 @@ export function AIWorkOrderIntakeCard(props: {
           <textarea
             ref={issueRef}
             value={issue}
-            onChange={(e) => setIssue(e.target.value)}
+            onChange={(e) => {
+              setIssue(e.target.value);
+              // Auto-grow textarea while typing (up to a cap), but stay compact when empty.
+              const el = issueRef.current;
+              if (el) {
+                el.style.height = "auto";
+                const maxPx = isDesktop ? 220 : 160;
+                el.style.height = Math.min(el.scrollHeight, maxPx) + "px";
+              }
+            }}
             onKeyDown={async (e) => {
               if (e.key === "Enter" && (e as any).repeat) return;
 
@@ -1428,9 +1441,9 @@ export function AIWorkOrderIntakeCard(props: {
             }}
             placeholder=""
             aria-label="Message"
-            rows={compactComposer ? 1 : isDesktop ? (turns.length ? 4 : 3) : 3}
+            rows={1}
             className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-3 pr-28 text-[17px] leading-7 border-0 outline-none"
-            style={{ minHeight: compactComposer ? 64 : isDesktop ? (turns.length ? 180 : 140) : 140 }}
+            style={{ minHeight: 64, height: 64 }}
           />
 
           {!issue && !started ? (
