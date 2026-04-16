@@ -356,7 +356,7 @@ export function AIWorkOrderIntakeCard(props: {
 
   const [visitDate, setVisitDate] = useState<string>("");
   const [visitWindow, setVisitWindow] = useState<"" | "Morning" | "Midday" | "Afternoon" | "Evening">("");
-  const [contactMethod, setContactMethod] = useState<"Text" | "Email">("Text");
+  const [contactMethod, setContactMethod] = useState<"Text" | "Email" | "Call">("Text");
   const [contactTouched, setContactTouched] = useState(false);
   const [submittingVisit, setSubmittingVisit] = useState(false);
   const [submittedWorkOrderId, setSubmittedWorkOrderId] = useState<string>("");
@@ -587,11 +587,9 @@ export function AIWorkOrderIntakeCard(props: {
       return;
     }
 
-    if (scheduleStage === "datetime" && visitDate && visitWindow) {
-      setScheduleStage("contact");
-      setTurns((prev) => [...prev, { role: "assistant", text: "Got it. What’s the best way to reach you?" }]);
-      return;
-    }
+    // NOTE: Do not auto-advance from date/time → contact.
+    // Users may want to adjust the selected date/time before moving on.
+    // We show a "Next" button in the Time window block instead.
   }, [readyToSchedule, scheduleStage, propertyId, visitDate, visitWindow]);
 
   function resetIntakeKeepDraft() {
@@ -1357,7 +1355,7 @@ export function AIWorkOrderIntakeCard(props: {
                     <div className="mt-4">
                       <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact</div>
                       {!submittedWorkOrderId ? <div className="mt-2 flex flex-wrap gap-2">
-                        {(["Text", "Email"] as const).map((m) => (
+                        {(["Text", "Call", "Email"] as const).map((m) => (
                           <Button
                             key={m}
                             type="button"
