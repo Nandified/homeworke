@@ -555,15 +555,17 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     >
       <div className="grid gap-6">
         {/* Top row: AI intake (left) + KPIs (right, 2x2) + Messages (under tiles) */}
-        <div className="grid items-start gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-8">
-            <AIWorkOrderIntakeCard
+        <div className="grid items-start gap-6 lg:grid-cols-12 lg:items-stretch">
+          <div className="lg:col-span-8 h-full flex flex-col">
+            <div className="h-full">
+              <AIWorkOrderIntakeCard
               eyebrow="Job Work Order"
               title={partner?.partnerName ? `Hey ${partner.partnerName.split(" ")[0]}, what do you need help with?` : "What do you need help with?"}
               primaryCta="Schedule a visit"
               secondaryCta="Browse marketplace"
               showServicingPill={false}
-            />
+              />
+            </div>
 
             {/* Mobile: move Instant Estimate directly under Job Work Order */}
             <div className="mt-6 lg:hidden">
