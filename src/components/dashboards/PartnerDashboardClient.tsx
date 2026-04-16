@@ -296,6 +296,19 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     setPartner(null);
   }, []);
 
+  // If someone opens /pro/* without a partner link, default to demo so they can see the product.
+  useEffect(() => {
+    if (partner !== null) return;
+    if (isDemoMode()) return;
+    if (basePath !== "/pro") return;
+
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set("demo", "1");
+      window.location.replace(u.toString());
+    } catch {}
+  }, [partner, basePath]);
+
   // Fetch work orders + messages
   useEffect(() => {
     if (!partner?.partnerId) return;
