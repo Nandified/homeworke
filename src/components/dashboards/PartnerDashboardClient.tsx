@@ -141,7 +141,7 @@ function InstantEstimateCard({ basePath }: { basePath: string }) {
 
   return (
     <Card
-      className="relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7 h-full"
+      className="relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7"
       style={{ boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}
     >
       {/* Glow accents (kept on mobile but contained so they don't bleed past corners) */}
@@ -584,9 +584,9 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
           <div className="lg:hidden">{MessagesCard}</div>
         </div>
 
-        {/* Desktop: keep layout full but not stretched (2-column row) */}
-        <div className="grid gap-6 lg:grid-cols-12 lg:items-stretch">
-          <div className="hidden lg:block lg:col-span-8 h-full">
+        {/* Desktop: 2-column row (don't stretch left card when invite expands) */}
+        <div className="grid gap-6 lg:grid-cols-12 lg:items-start">
+          <div className="hidden lg:block lg:col-span-8">
             <InstantEstimateCard basePath={basePath} />
           </div>
 
