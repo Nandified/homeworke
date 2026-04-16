@@ -216,6 +216,7 @@ export function AIWorkOrderIntakeCard(props: {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const issueRef = useRef<HTMLTextAreaElement | null>(null);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
+  const datetimeAnchorRef = useRef<HTMLDivElement | null>(null);
   const sendInFlightRef = useRef(false);
 
   const [issue, setIssue] = useState(props.prefillIssue || "");
@@ -235,7 +236,7 @@ export function AIWorkOrderIntakeCard(props: {
   const [rootIssue, setRootIssue] = useState<string>("");
 
   const [visitDate, setVisitDate] = useState<string>("");
-  const [visitWindow, setVisitWindow] = useState<"Morning" | "Midday" | "Afternoon" | "Evening">("Morning");
+  const [visitWindow, setVisitWindow] = useState<"" | "Morning" | "Midday" | "Afternoon" | "Evening">("");
   const [contactMethod, setContactMethod] = useState<"Text" | "Email">("Text");
   const [contactTouched, setContactTouched] = useState(false);
   const [submittingVisit, setSubmittingVisit] = useState(false);
@@ -309,7 +310,20 @@ export function AIWorkOrderIntakeCard(props: {
       el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     }, 0);
     return () => window.clearTimeout(t);
-  }, [turns.length, assistantThinking, classifying, classifyError, scheduleStage]);
+  }, [turns.length, assistantThinking, classifying, classifyError]);
+
+  // When entering the datetime stage, keep the calendar in view (avoid jumping to the bottom of the schedule card).
+  useEffect(() => {
+    if (scheduleStage !== "datetime") return;
+    const el = datetimeAnchorRef.current;
+    if (!el) return;
+    const t = window.setTimeout(() => {
+      try {
+        el.scrollIntoView({ block: "start", behavior: "smooth" });
+      } catch {}
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [scheduleStage]);
 
   // Typewriter hints (only before first send)
   useEffect(() => {
@@ -419,7 +433,7 @@ export function AIWorkOrderIntakeCard(props: {
       return;
     }
 
-    if (scheduleStage === "datetime" && visitDate) {
+    if (scheduleStage === "datetime" && visitDate && visitWindow) {
       setScheduleStage("contact");
       setTurns((prev) => [...prev, { role: "assistant", text: "Got it. What’s the best way to reach you?" }]);
       return;
@@ -437,7 +451,7 @@ export function AIWorkOrderIntakeCard(props: {
     setQIndex(0);
     setRootIssue("");
     setVisitDate("");
-    setVisitWindow("Morning");
+    setVisitWindow("");
     setContactMethod("Text");
     setContactTouched(false);
     setSubmittingVisit(false);
@@ -995,7 +1009,7 @@ export function AIWorkOrderIntakeCard(props: {
                   ) : null}
 
                   {scheduleStage === "datetime" ? (
-                    <div className="mt-4">
+                    <div className="mt-4" ref={datetimeAnchorRef}>
                       <div>
                         <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Preferred date</div>
                         <div className="mt-3">
@@ -1074,6 +1088,8 @@ export function AIWorkOrderIntakeCard(props: {
                                         disabled={disabled}
                                         onClick={() => {
                                           const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                                          // Changing the date should not silently keep the previous time window.
+                                          setVisitWindow("");
                                           setVisitDate(iso);
                                         }}
                                         className={
@@ -1098,44 +1114,50 @@ export function AIWorkOrderIntakeCard(props: {
 
                       <div className="mt-5">
                         <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Time window</div>
-                        <div className="mt-2 grid gap-2">
-                          {(
-                            [
-                              { id: "Morning", label: "Morning", range: "7:00 AM – 10:00 AM" },
-                              { id: "Midday", label: "Midday", range: "10:00 AM – 2:00 PM" },
-                              { id: "Afternoon", label: "Afternoon", range: "2:00 PM – 6:00 PM" },
-                              { id: "Evening", label: "Evening", range: "6:00 PM – 9:00 PM" },
-                            ] as const
-                          ).map((t) => {
-                            const selected = visitWindow === t.id;
-                            return (
-                              <button
-                                key={t.id}
-                                type="button"
-                                onClick={() => setVisitWindow(t.id)}
-                                className={
-                                  "flex w-full items-center justify-between gap-3 rounded-[18px] border px-4 py-3 text-left transition " +
-                                  (selected
-                                    ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.08)]"
-                                    : "border-[var(--hw-line)] bg-white hover:bg-[var(--hw-soft)]")
-                                }
-                              >
-                                <div className="min-w-0">
-                                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{t.label}</div>
-                                  <div className="mt-0.5 text-xs font-medium text-[var(--hw-muted)]">{t.range}</div>
-                                </div>
-                                <div
+                        {!visitDate ? (
+                          <div className="mt-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3 text-sm text-[var(--hw-muted)]">
+                            Select a date first to see available time windows.
+                          </div>
+                        ) : (
+                          <div className="mt-2 grid gap-2">
+                            {(
+                              [
+                                { id: "Morning", label: "Morning", range: "7:00 AM – 10:00 AM" },
+                                { id: "Midday", label: "Midday", range: "10:00 AM – 2:00 PM" },
+                                { id: "Afternoon", label: "Afternoon", range: "2:00 PM – 6:00 PM" },
+                                { id: "Evening", label: "Evening", range: "6:00 PM – 9:00 PM" },
+                              ] as const
+                            ).map((t) => {
+                              const selected = visitWindow === t.id;
+                              return (
+                                <button
+                                  key={t.id}
+                                  type="button"
+                                  onClick={() => setVisitWindow(t.id)}
                                   className={
-                                    "h-5 w-5 rounded-full border transition " +
+                                    "flex w-full items-center justify-between gap-3 rounded-[18px] border px-4 py-3 text-left transition " +
                                     (selected
-                                      ? "border-[var(--hw-red)] bg-[var(--hw-red)] shadow-[0_4px_14px_rgba(229,57,53,.25)]"
-                                      : "border-[var(--hw-line)] bg-white")
+                                      ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.08)]"
+                                      : "border-[var(--hw-line)] bg-white hover:bg-[var(--hw-soft)]")
                                   }
-                                />
-                              </button>
-                            );
-                          })}
-                        </div>
+                                >
+                                  <div className="min-w-0">
+                                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{t.label}</div>
+                                    <div className="mt-0.5 text-xs font-medium text-[var(--hw-muted)]">{t.range}</div>
+                                  </div>
+                                  <div
+                                    className={
+                                      "h-5 w-5 rounded-full border transition " +
+                                      (selected
+                                        ? "border-[var(--hw-red)] bg-[var(--hw-red)] shadow-[0_4px_14px_rgba(229,57,53,.25)]"
+                                        : "border-[var(--hw-line)] bg-white")
+                                    }
+                                  />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : null}
