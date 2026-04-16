@@ -592,7 +592,7 @@ export function AIWorkOrderIntakeCard(props: {
       setTurns((prev) => [...prev, { role: "assistant", text: "Got it. What’s the best way to reach you?" }]);
       return;
     }
-  }, [readyToSchedule, scheduleStage, propertyId, visitDate]);
+  }, [readyToSchedule, scheduleStage, propertyId, visitDate, visitWindow]);
 
   function resetIntakeKeepDraft() {
     setClassifyError("");
@@ -1334,6 +1334,22 @@ export function AIWorkOrderIntakeCard(props: {
                           );
                         })}
                       </div>
+
+                      {visitWindow ? (
+                        <div className="mt-3 flex justify-end">
+                          <Button
+                            type="button"
+                            className="w-full sm:w-auto"
+                            onClick={() => {
+                              setScheduleStage("contact");
+                              setTurns((prev) => [...prev, { role: "assistant", text: "Got it. What’s the best way to reach you?" }]);
+                            }}
+                          >
+                            Next
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
 
