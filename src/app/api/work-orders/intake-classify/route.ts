@@ -416,7 +416,11 @@ export async function POST(req: Request) {
       process.env.OPENAI_MODEL ||
       "gpt-4o-mini";
 
-    const res = await fetch("https://api.openai.com/v1/responses", {
+    const prompt =
+      "Catalog (choose exactly one):\n" + JSON.stringify(catalog) + "\n\nUser description:\n" + text.trim();
+
+    // Use Chat Completions for maximum compatibility/reliability.
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -424,22 +428,12 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         model,
-        max_output_tokens: outOfScope ? 180 : 450,
-        input: [
+        temperature: outOfScope ? 0.7 : 0.2,
+        max_tokens: outOfScope ? 220 : 520,
+        response_format: { type: "json_object" },
+        messages: [
           { role: "system", content: sys },
-          {
-            role: "user",
-            content: [
-              {
-                type: "input_text",
-                text:
-                  "Catalog (choose exactly one):\n" +
-                  JSON.stringify(catalog) +
-                  "\n\nUser description:\n" +
-                  text.trim(),
-              },
-            ],
-          },
+          { role: "user", content: prompt },
         ],
       }),
     });
@@ -486,7 +480,7 @@ export async function POST(req: Request) {
     }
 
     const j = safeJson(raw) || {};
-    const outText = collectTextFromResponse(j);
+    const outText = typeof j?.choices?.[0]?.message?.content === "string" ? j.choices[0].message.content : "";
     const jsonBlob = extractJsonObject(outText) || outText;
     const out = safeJson(jsonBlob) || null;
 
