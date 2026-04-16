@@ -709,8 +709,6 @@ export function AIWorkOrderIntakeCard(props: {
 
       setTurns((prev) => [...prev, { role: "user", text: answerLine }]);
       setIssue("");
-      // Reset textarea height back to 1 row.
-      if (issueRef.current) issueRef.current.style.height = "64px";
 
       // Note: for Q&A media uploads we keep attachments selected until intake submission.
       // (We can wire this into the final work order payload later.)
@@ -748,8 +746,6 @@ export function AIWorkOrderIntakeCard(props: {
 
     // Clear the composer immediately so it doesn't look "stuck" while we classify.
     setIssue("");
-    // Reset textarea height back to 1 row.
-    if (issueRef.current) issueRef.current.style.height = "64px";
 
     // If it's out-of-scope, still call the API so the LLM can generate a contextual funny reply.
     // We'll only fall back to local copy if the request fails.
@@ -939,7 +935,7 @@ export function AIWorkOrderIntakeCard(props: {
         "rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col " +
         (started ? "overflow-hidden" : "")
       }
-      style={started ? { height: isDesktop ? "min(70vh, 920px)" : "min(68vh, 880px)" } : undefined}
+      style={started ? { height: isDesktop ? "min(52vh, 720px)" : "min(68vh, 880px)" } : undefined}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -1413,16 +1409,7 @@ export function AIWorkOrderIntakeCard(props: {
           <textarea
             ref={issueRef}
             value={issue}
-            onChange={(e) => {
-              setIssue(e.target.value);
-              // Auto-grow textarea while typing (up to a cap), but stay compact when empty.
-              const el = issueRef.current;
-              if (el) {
-                el.style.height = "auto";
-                const maxPx = isDesktop ? 220 : 160;
-                el.style.height = Math.min(el.scrollHeight, maxPx) + "px";
-              }
-            }}
+            onChange={(e) => setIssue(e.target.value)}
             onKeyDown={async (e) => {
               if (e.key === "Enter" && (e as any).repeat) return;
 
@@ -1441,9 +1428,9 @@ export function AIWorkOrderIntakeCard(props: {
             }}
             placeholder=""
             aria-label="Message"
-            rows={1}
+            rows={compactComposer ? 1 : 3}
             className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-3 pr-28 text-[17px] leading-7 border-0 outline-none"
-            style={{ minHeight: 64, height: 64 }}
+            style={{ minHeight: compactComposer ? 64 : 140 }}
           />
 
           {!issue && !started ? (
