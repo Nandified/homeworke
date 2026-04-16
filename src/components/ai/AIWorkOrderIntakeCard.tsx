@@ -998,7 +998,7 @@ export function AIWorkOrderIntakeCard(props: {
                 ? scheduleStage === "datetime"
                   ? "min(60vh, 820px)"
                   : "min(52vh, 720px)"
-                : "min(68vh, 880px)",
+                : "min(72vh, 940px)",
             }
           : undefined
       }
