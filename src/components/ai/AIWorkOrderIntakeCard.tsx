@@ -1133,7 +1133,7 @@ export function AIWorkOrderIntakeCard(props: {
                           : scheduleStage === "contact"
                             ? submittedWorkOrderId
                               ? "Submitted."
-                              : "Last, confirm how we should reach you."
+                              : "We have everything we need to get your home serviced. After you schedule this visit, we’ll confirm the exact day and time for a Project Manager to come out."
                             : ""}
                   </div>
 
@@ -1380,11 +1380,16 @@ export function AIWorkOrderIntakeCard(props: {
                           Work order #{submittedWorkOrderId}
                         </div>
                       ) : (
-                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact</div>
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact preference</div>
                       )}
 
                       {!submittedWorkOrderId ? (
-                        <div className="mt-2 flex flex-wrap gap-2">
+                        <div className="mt-2">
+                          <div className="text-sm text-[var(--hw-muted)]">
+                            We have everything we need to get your home serviced. After you schedule this visit, you’ll receive confirmation with the exact day and time to get our Project Manager out to the property.
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
                           {(["Any", "Text", "Call", "Email"] as const).map((m) => (
                             <Button
                               key={m}
@@ -1398,6 +1403,7 @@ export function AIWorkOrderIntakeCard(props: {
                               {m}
                             </Button>
                           ))}
+                          </div>
                         </div>
                       ) : null}
 
@@ -1421,7 +1427,7 @@ export function AIWorkOrderIntakeCard(props: {
                             onClick={scheduleVisit}
                             disabled={!propertyId || !visitDate || submittingVisit || !contactMethod}
                           >
-                            Confirm visit
+                            Schedule a visit
                           </Button>
                         )}
 
