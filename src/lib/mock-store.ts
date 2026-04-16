@@ -259,7 +259,9 @@ export function getWorkOrder(token: string, id: string) {
 }
 
 export function listSharedWorkOrdersForPartner(partnerId: string): WorkOrder[] {
-  return store().workOrders.filter((w) => w.originPartnerId === partnerId && !!w.shareWithPartner);
+  const norm = (s: string) => (s || "").replace(/^(pro_|partner_)/, "");
+  const want = norm(partnerId);
+  return store().workOrders.filter((w) => norm(String(w.originPartnerId || "")) === want && !!w.shareWithPartner);
 }
 
 export function countSharedWorkOrdersForPartner(partnerId: string): number {
