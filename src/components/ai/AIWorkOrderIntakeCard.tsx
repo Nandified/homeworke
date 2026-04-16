@@ -1065,8 +1065,6 @@ export function AIWorkOrderIntakeCard(props: {
               </div>
             ) : null}
 
-            <div ref={chatEndRef} />
-
             {classifyError ? (
               <div className="flex justify-start">
                 <div className="max-w-[95%] rounded-2xl border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] px-4 py-3 text-sm leading-6 text-[var(--hw-ink)]">
@@ -1396,6 +1394,8 @@ export function AIWorkOrderIntakeCard(props: {
                 </div>
               </div>
             ) : null}
+
+            <div ref={chatEndRef} />
           </div>
         </div>
       ) : null}
