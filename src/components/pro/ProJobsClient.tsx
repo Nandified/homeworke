@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import { Calendar, CheckCircle2, Clock3, Wrench } from "lucide-react";
+
 import { ListRow } from "@/components/dashboard/ListRow";
 import { Card, Chip } from "@/components/ui";
 import { isDemoMode, withDemo } from "@/lib/demo";
@@ -45,17 +47,49 @@ function statusIndex(status: StatusGroup) {
 
 function ProgressRail({ status }: { status: StatusGroup }) {
   const idx = statusIndex(status);
+
+  const iconFor = (s: StatusGroup) => {
+    if (s === "Pending") return Clock3;
+    if (s === "Scheduled") return Calendar;
+    if (s === "In progress") return Wrench;
+    return CheckCircle2;
+  };
+
   return (
-    <div className="flex items-center gap-2" aria-label={`Progress: ${status}`}>
+    <div className="flex items-center gap-1.5" aria-label={`Progress: ${status}`} role="group">
       {STATUS_GROUPS.map((s, i) => {
-        const done = i <= idx;
+        const done = i < idx;
+        const current = i === idx;
+
+        const Icon = iconFor(s);
+
+        const nodeClass = current
+          ? "border-[var(--hw-ink)] bg-[var(--hw-ink)] text-white ring-4 ring-[rgba(17,24,39,.10)]"
+          : done
+            ? "border-[var(--hw-ink)] bg-[var(--hw-ink)] text-white"
+            : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)]";
+
+        const lineClass = done
+          ? "bg-[linear-gradient(90deg,rgba(17,24,39,.95),rgba(17,24,39,.55))]"
+          : "bg-[var(--hw-line)]";
+
         return (
           <div key={s} className="flex items-center">
             <div
-              className={`h-2.5 w-2.5 rounded-full border ${done ? "border-[var(--hw-ink)] bg-[var(--hw-ink)]" : "border-[var(--hw-line)] bg-white"}`}
-            />
+              className={
+                "group relative grid h-7 w-7 place-items-center rounded-full border shadow-[0_1px_0_rgba(17,24,39,.08)] transition " +
+                nodeClass
+              }
+              aria-label={s}
+            >
+              <Icon className={"h-3.5 w-3.5 " + (current || done ? "text-white" : "text-[var(--hw-muted)]")} />
+              <div className="pointer-events-none absolute -mt-14 hidden whitespace-nowrap rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-ink)] shadow-sm group-hover:block">
+                {s}
+              </div>
+            </div>
+
             {i < STATUS_GROUPS.length - 1 ? (
-              <div className={`mx-1 h-[2px] w-6 ${i < idx ? "bg-[var(--hw-ink)]" : "bg-[var(--hw-line)]"}`} />
+              <div className={"mx-1 h-[2px] w-7 rounded-full " + lineClass} />
             ) : null}
           </div>
         );
@@ -150,11 +184,11 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
                   footnote={w.clientName ? `Client: ${w.clientName}` : undefined}
                   badge={<Chip className={STATUS_CLASS[status]}>{status}</Chip>}
                   meta={
-                    <div className="flex flex-col items-end gap-2">
+                    <div className="flex flex-col items-center gap-2 sm:items-end">
                       <ProgressRail status={status} />
                       {ts ? (
                         <span className="text-xs text-[var(--hw-muted)]">
-                          Updated {new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                          Updated {new Date(ts).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
                         </span>
                       ) : null}
                     </div>
