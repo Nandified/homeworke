@@ -335,6 +335,7 @@ export function AIWorkOrderIntakeCard(props: {
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const scheduleDateNudgeRef = useRef<string>("");
+  const timeNextRef = useRef<HTMLDivElement | null>(null);
   const datetimeAnchorRef = useRef<HTMLDivElement | null>(null);
   const sendInFlightRef = useRef(false);
 
@@ -478,6 +479,24 @@ export function AIWorkOrderIntakeCard(props: {
     scheduleDateNudgeRef.current = visitDate;
     setTurns((prev) => [...prev, { role: "assistant", text: "Great — now pick a time window." }]);
   }, [scheduleStage, visitDate]);
+
+  // On mobile, after selecting a time window, scroll to reveal the Next button.
+  useEffect(() => {
+    if (isDesktop) return;
+    if (scheduleStage !== "datetime") return;
+    if (!visitWindow) return;
+
+    const el = timeNextRef.current;
+    if (!el) return;
+
+    const t = window.setTimeout(() => {
+      try {
+        el.scrollIntoView({ block: "end", behavior: "smooth" });
+      } catch {}
+    }, 50);
+
+    return () => window.clearTimeout(t);
+  }, [isDesktop, scheduleStage, visitWindow]);
 
   // Typewriter hints (only before first send)
   useEffect(() => {
@@ -1334,7 +1353,7 @@ export function AIWorkOrderIntakeCard(props: {
                       </div>
 
                       {visitWindow ? (
-                        <div className="mt-3 flex justify-end">
+                        <div ref={timeNextRef} className="mt-3 flex justify-end">
                           <Button
                             type="button"
                             className="w-full sm:w-auto"
