@@ -451,18 +451,19 @@ export function AIWorkOrderIntakeCard(props: {
     };
   }, [turns.length, assistantThinking, classifying, classifyError, qIndex, scheduleStage]);
 
-  // When entering the datetime stage, keep the calendar in view (avoid jumping to the bottom of the schedule card).
+  // When entering the datetime stage, keep the calendar in view.
+  // Mobile: center it a bit nicer so it doesn't feel pinned to the bottom.
   useEffect(() => {
     if (scheduleStage !== "datetime") return;
     const el = datetimeAnchorRef.current;
     if (!el) return;
     const t = window.setTimeout(() => {
       try {
-        el.scrollIntoView({ block: "start", behavior: "smooth" });
+        el.scrollIntoView({ block: isDesktop ? "start" : "center", behavior: "smooth" });
       } catch {}
     }, 0);
     return () => window.clearTimeout(t);
-  }, [scheduleStage]);
+  }, [scheduleStage, isDesktop]);
 
   // Separate the scheduling step into two conversational beats:
   // 1) pick a date
