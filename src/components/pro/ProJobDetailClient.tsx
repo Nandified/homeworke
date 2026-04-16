@@ -76,8 +76,54 @@ export function ProJobDetailClient(props: { id: string }) {
   React.useEffect(() => {
     let cancelled = false;
 
+    const loadSessionToken = () => {
+      try {
+        const raw = window.localStorage.getItem("hw_session_v1");
+        const j = raw ? JSON.parse(raw) : null;
+        return j?.token ? String(j.token) : null;
+      } catch {
+        return null;
+      }
+    };
+
+    const mapWorkOrderToApi = (wo: any): ApiWorkOrder => {
+      const title = (wo?.serviceSubcategory || wo?.serviceCategory || wo?.title || "Job").toString();
+      const address = (wo?.propertyAddress || wo?.address || "").toString();
+      const status = (wo?.status || "pending").toString();
+      return {
+        id: String(wo?.id || props.id),
+        title,
+        address,
+        status,
+        clientName: wo?.clientName ? String(wo.clientName) : "Fernando Rocha Jr",
+        createdAt: wo?.createdAt ? String(wo.createdAt) : undefined,
+        updatedAt: wo?.updatedAt ? String(wo.updatedAt) : undefined,
+      };
+    };
+
     (async () => {
       setLoading(true);
+
+      // First: if we have a session token, try to load the exact work order by id.
+      // This prevents the detail page from showing an unrelated demo row.
+      const token = loadSessionToken();
+      if (token) {
+        try {
+          const url = new URL(`/api/work-orders/${encodeURIComponent(props.id)}`, window.location.origin);
+          url.searchParams.set("token", token);
+          const res = await fetch(url);
+          const json = (await res.json().catch(() => null)) as any;
+          if (res.ok && json?.ok && json?.workOrder) {
+            if (!cancelled) {
+              setItem(mapWorkOrderToApi(json.workOrder));
+              setLoading(false);
+            }
+            return;
+          }
+        } catch {
+          // ignore and continue to partner/demo fallbacks
+        }
+      }
 
       // In demo mode (or without partner context), still show a detail page.
       if (!partnerId || isDemoMode()) {
