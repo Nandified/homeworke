@@ -163,9 +163,22 @@ export function ProJobDetailClient(props: { id: string }) {
             return;
           }
         } catch {
-          // ignore and continue to partner/demo fallbacks
+          // ignore and continue to local/partner/demo fallbacks
         }
       }
+
+      // Next: check client-side persisted work orders (for demo/non-DB serverless deployments).
+      try {
+        const raw = window.localStorage.getItem("hw_local_work_orders_v1") || "[]";
+        const arr = JSON.parse(raw);
+        const list = Array.isArray(arr) ? arr : [];
+        const foundLocal = list.find((w: any) => String(w?.id || "") === String(props.id));
+        if (foundLocal && !cancelled) {
+          setItem(mapWorkOrderToApi(foundLocal));
+          setLoading(false);
+          return;
+        }
+      } catch {}
 
       // In demo mode (or without partner context), still show a detail page.
       if (!partnerId || isDemoMode()) {

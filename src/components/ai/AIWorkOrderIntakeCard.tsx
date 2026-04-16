@@ -958,6 +958,25 @@ export function AIWorkOrderIntakeCard(props: {
       const id = String(j.workOrder.id);
       setSubmittedWorkOrderId(id);
 
+      // Persist locally so demo/non-DB deployments still show the submitted work order after navigation.
+      try {
+        const key = "hw_local_work_orders_v1";
+        const raw = window.localStorage.getItem(key) || "[]";
+        const arr = JSON.parse(raw);
+        const list = Array.isArray(arr) ? arr : [];
+        const next = [j.workOrder, ...list].filter(Boolean);
+        // De-dupe by id, keep newest first.
+        const seen = new Set<string>();
+        const deduped = [] as any[];
+        for (const item of next) {
+          const wid = String((item as any)?.id || "");
+          if (!wid || seen.has(wid)) continue;
+          seen.add(wid);
+          deduped.push(item);
+        }
+        window.localStorage.setItem(key, JSON.stringify(deduped.slice(0, 50)));
+      } catch {}
+
       setTurns((prev) => [
         ...prev,
         {

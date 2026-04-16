@@ -121,17 +121,48 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
   const [tab, setTab] = React.useState<"client" | "mine">("client");
   const [items, setItems] = React.useState<ApiWorkOrder[] | null>(null);
 
-  const visibleItems = (items && items.length > 0) ? items : PRO_DEMO_WORK_ORDERS;
+  const localItems = React.useMemo(() => {
+    try {
+      const raw = window.localStorage.getItem("hw_local_work_orders_v1") || "[]";
+      const arr = JSON.parse(raw);
+      const list = Array.isArray(arr) ? arr : [];
+      return list
+        .map((w: any) => ({
+          id: String(w?.id || ""),
+          title: (w?.serviceSubcategory || w?.serviceCategory || w?.title || "Job").toString(),
+          address: (w?.propertyAddress || w?.address || "").toString(),
+          status: (w?.status || "pending").toString(),
+          clientName: w?.clientName ? String(w.clientName) : "Fernando Rocha Jr",
+          createdAt: w?.createdAt ? String(w.createdAt) : undefined,
+          updatedAt: w?.updatedAt ? String(w.updatedAt) : w?.createdAt ? String(w.createdAt) : undefined,
+        }))
+        .filter((w: ApiWorkOrder) => !!w.id);
+    } catch {
+      return [] as ApiWorkOrder[];
+    }
+  }, []);
+
+  const visibleItems = (items && items.length > 0) ? [...localItems, ...items] : [...localItems, ...PRO_DEMO_WORK_ORDERS];
 
   const rows = React.useMemo(() => {
     const list = [...visibleItems];
+    // De-dupe by id
+    const seen = new Set<string>();
+    const deduped: ApiWorkOrder[] = [];
+    for (const w of list) {
+      const id = String((w as ApiWorkOrder).id || "");
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      deduped.push(w as ApiWorkOrder);
+    }
+
     // Most recent first (best-effort)
-    list.sort((a, b) => {
+    deduped.sort((a, b) => {
       const at = new Date((a as ApiWorkOrder).updatedAt || (a as ApiWorkOrder).createdAt || 0).getTime();
       const bt = new Date((b as ApiWorkOrder).updatedAt || (b as ApiWorkOrder).createdAt || 0).getTime();
       return bt - at;
     });
-    return list;
+    return deduped;
   }, [visibleItems]);
 
   React.useEffect(() => {
