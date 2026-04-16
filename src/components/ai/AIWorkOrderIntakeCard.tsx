@@ -426,20 +426,27 @@ export function AIWorkOrderIntakeCard(props: {
     const end = chatEndRef.current;
     if (!scroller || !end) return;
 
-    // Two rAFs helps when the DOM changes + fonts wrap + buttons render.
-    const id = window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
+    const scrollToEnd = () => {
+      try {
+        // Most reliable inside overflow containers.
+        end.scrollIntoView({ block: "end", behavior: "auto" });
+      } catch {
+        // Fallback
         try {
-          end.scrollIntoView({ block: "end", behavior: "smooth" });
-        } catch {
-          try {
-            scroller.scrollTop = scroller.scrollHeight;
-          } catch {}
-        }
-      });
-    });
+          scroller.scrollTop = scroller.scrollHeight;
+        } catch {}
+      }
+    };
 
-    return () => window.cancelAnimationFrame(id);
+    // Do it immediately, then again shortly after to catch late layout (fonts/buttons).
+    scrollToEnd();
+    const t1 = window.setTimeout(scrollToEnd, 50);
+    const t2 = window.setTimeout(scrollToEnd, 200);
+
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
   }, [turns.length, assistantThinking, classifying, classifyError, qIndex, scheduleStage]);
 
   // When entering the datetime stage, keep the calendar in view (avoid jumping to the bottom of the schedule card).
@@ -1395,7 +1402,7 @@ export function AIWorkOrderIntakeCard(props: {
               </div>
             ) : null}
 
-            <div ref={chatEndRef} />
+            <div ref={chatEndRef} style={{ height: 1, scrollMarginBottom: 24 }} />
           </div>
         </div>
       ) : null}
