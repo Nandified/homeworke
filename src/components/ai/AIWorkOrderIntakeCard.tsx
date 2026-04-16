@@ -948,7 +948,17 @@ export function AIWorkOrderIntakeCard(props: {
         "rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col " +
         (started ? "overflow-hidden" : "")
       }
-      style={started ? { height: isDesktop ? "min(52vh, 720px)" : "min(68vh, 880px)" } : undefined}
+      style={
+        started
+          ? {
+              height: isDesktop
+                ? scheduleStage === "datetime"
+                  ? "min(60vh, 820px)"
+                  : "min(52vh, 720px)"
+                : "min(68vh, 880px)",
+            }
+          : undefined
+      }
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -1191,39 +1201,39 @@ export function AIWorkOrderIntakeCard(props: {
                             const canGoPrev = endOfMonth(prevMonth).getTime() >= minVisitDate.getTime();
 
                             return (
-                              <div className="w-full rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.04)] p-4">
+                              <div className="w-full rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.04)] p-3">
                                 <div className="flex items-center justify-between">
                                   <button
                                     type="button"
                                     disabled={!canGoPrev}
                                     onClick={() => canGoPrev && goMonth(-1)}
-                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(229,57,53,.20)] bg-white text-[var(--hw-ink)] shadow-sm disabled:opacity-40"
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(229,57,53,.20)] bg-white text-[var(--hw-ink)] shadow-sm disabled:opacity-40"
                                     aria-label="Previous month"
                                   >
                                     <ChevronLeft className="h-4 w-4" />
                                   </button>
 
-                                  <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">{monthLabel(calMonth)}</div>
+                                  <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{monthLabel(calMonth)}</div>
 
                                   <button
                                     type="button"
                                     onClick={() => goMonth(1)}
-                                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(229,57,53,.20)] bg-white text-[var(--hw-ink)] shadow-sm"
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(229,57,53,.20)] bg-white text-[var(--hw-ink)] shadow-sm"
                                     aria-label="Next month"
                                   >
                                     <ChevronRight className="h-4 w-4" />
                                   </button>
                                 </div>
 
-                                <div className="mt-4 grid grid-cols-7 gap-2 text-center text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                                <div className="mt-3 grid grid-cols-7 gap-1.5 text-center text-[10px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
                                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((w) => (
                                     <div key={w} className="py-1">{w}</div>
                                   ))}
                                 </div>
 
-                                <div className="mt-1 grid grid-cols-7 gap-2">
+                                <div className="mt-1 grid grid-cols-7 gap-1.5">
                                   {days.map((cell, i) => {
-                                    if (!cell.date) return <div key={i} className="h-11" />;
+                                    if (!cell.date) return <div key={i} className="h-10" />;
                                     const d = cell.date;
                                     const disabled = !!cell.disabled;
                                     const selectedDay = selected ? sameDay(selected, d) : false;
@@ -1239,7 +1249,7 @@ export function AIWorkOrderIntakeCard(props: {
                                           setVisitDate(iso);
                                         }}
                                         className={
-                                          "h-11 w-full rounded-[14px] text-sm font-semibold transition " +
+                                          "h-10 w-full rounded-[12px] text-sm font-semibold transition " +
                                           (selectedDay
                                             ? "bg-[var(--hw-red)] text-white shadow-[0_10px_22px_rgba(229,57,53,.28)]"
                                             : disabled
