@@ -333,6 +333,7 @@ export function AIWorkOrderIntakeCard(props: {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const issueRef = useRef<HTMLTextAreaElement | null>(null);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
   const datetimeAnchorRef = useRef<HTMLDivElement | null>(null);
   const sendInFlightRef = useRef(false);
 
@@ -421,13 +422,25 @@ export function AIWorkOrderIntakeCard(props: {
 
   // Auto-scroll chat to bottom on new messages / stage changes
   useEffect(() => {
-    const el = chatScrollRef.current;
-    if (!el) return;
-    const t = window.setTimeout(() => {
-      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-    }, 0);
-    return () => window.clearTimeout(t);
-  }, [turns.length, assistantThinking, classifying, classifyError]);
+    const scroller = chatScrollRef.current;
+    const end = chatEndRef.current;
+    if (!scroller || !end) return;
+
+    // Two rAFs helps when the DOM changes + fonts wrap + buttons render.
+    const id = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        try {
+          end.scrollIntoView({ block: "end", behavior: "smooth" });
+        } catch {
+          try {
+            scroller.scrollTop = scroller.scrollHeight;
+          } catch {}
+        }
+      });
+    });
+
+    return () => window.cancelAnimationFrame(id);
+  }, [turns.length, assistantThinking, classifying, classifyError, qIndex, scheduleStage]);
 
   // When entering the datetime stage, keep the calendar in view (avoid jumping to the bottom of the schedule card).
   useEffect(() => {
@@ -956,7 +969,7 @@ export function AIWorkOrderIntakeCard(props: {
         <div className="mt-4 flex-1 min-h-0 overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white/70 p-4">
           <div
             ref={chatScrollRef}
-            className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto pr-2"
+            className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto pr-2 pb-3"
           >
             {turns.map((t, idx) => {
               const wantsUpload =
@@ -1041,6 +1054,8 @@ export function AIWorkOrderIntakeCard(props: {
                 </div>
               </div>
             ) : null}
+
+            <div ref={chatEndRef} />
 
             {classifyError ? (
               <div className="flex justify-start">
