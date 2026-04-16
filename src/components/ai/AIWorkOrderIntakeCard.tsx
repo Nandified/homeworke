@@ -1375,7 +1375,14 @@ export function AIWorkOrderIntakeCard(props: {
 
                   {scheduleStage === "contact" ? (
                     <div className="mt-4">
-                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact</div>
+                      {submittedWorkOrderId ? (
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                          Work order #{submittedWorkOrderId}
+                        </div>
+                      ) : (
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact</div>
+                      )}
+
                       {!submittedWorkOrderId ? (
                         <div className="mt-2 flex flex-wrap gap-2">
                           {(["Text", "Call", "Email"] as const).map((m) => (
@@ -1440,16 +1447,18 @@ export function AIWorkOrderIntakeCard(props: {
                     <div className="mt-3 text-xs font-semibold text-[var(--hw-ink)]">{attachments.length} attachment(s) added</div>
                   ) : null}
 
-                  <div className="mt-3">
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)]"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Paperclip className="h-3.5 w-3.5" />
-                      Add photos/videos
-                    </button>
-                  </div>
+                  {!submittedWorkOrderId ? (
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)]"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Paperclip className="h-3.5 w-3.5" />
+                        Add photos/videos
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ) : null}
