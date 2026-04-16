@@ -699,7 +699,8 @@ export function AIWorkOrderIntakeCard(props: {
 
     // If we're in Q&A mode, treat send as the answer to the current question.
     if (awaitingAnswers) {
-      setCompactComposer(true);
+      // On desktop, keep the composer roomy (mobile stays compact).
+      setCompactComposer(!isDesktop);
       const answerLine = text || (hasMedia ? `Uploaded ${attachments.length} photo/video file(s).` : "");
 
       const nextAnswers = answers.slice();
@@ -728,7 +729,8 @@ export function AIWorkOrderIntakeCard(props: {
     }
 
     // Otherwise this is the initial issue description.
-    setCompactComposer(true);
+    // On desktop, keep the composer roomy (mobile stays compact).
+    setCompactComposer(!isDesktop);
     setManualOpen(false);
     setClassifyError("");
     setClassifying(true);
@@ -908,9 +910,9 @@ export function AIWorkOrderIntakeCard(props: {
         },
       ]);
 
-      // Collapse manual section; keep composer compact.
+      // Collapse manual section; keep composer compact on mobile.
       setManualOpen(false);
-      setCompactComposer(true);
+      setCompactComposer(!isDesktop);
     } catch {
       setTurns((prev) => [
         ...prev,
@@ -923,7 +925,7 @@ export function AIWorkOrderIntakeCard(props: {
 
   const sendDisabled =
     classifying ||
-    !issue.trim() ||
+    (!issue.trim() && !attachments.length) ||
     // While in Q&A mode, force answers through the same composer (send is fine)
     false;
 
@@ -1428,7 +1430,7 @@ export function AIWorkOrderIntakeCard(props: {
             aria-label="Message"
             rows={compactComposer ? 1 : isDesktop ? (turns.length ? 7 : 3) : 3}
             className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-3 pr-28 text-[17px] leading-7 border-0 outline-none"
-            style={{ minHeight: compactComposer ? 64 : isDesktop ? (turns.length ? 280 : 140) : 140 }}
+            style={{ minHeight: compactComposer ? 64 : isDesktop ? (turns.length ? "60vh" : 140) : 140 }}
           />
 
           {!issue && !started ? (
