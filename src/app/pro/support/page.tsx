@@ -63,13 +63,7 @@ export default function Page() {
       <div className="grid gap-4">
         {/* QUICK HELP */}
         <Card className="p-5 sm:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Contact support</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                Best for: bugs, account issues, approvals, and anything blocking you from inviting clients.
-              </div>
-            </div>
+          <div className="flex items-center justify-end">
             <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
               Submit request
             </Button>
@@ -114,10 +108,7 @@ export default function Page() {
 
         {/* FAQ */}
         <Card className="p-5 sm:p-6">
-          <div className="text-sm font-semibold text-[var(--hw-ink)]">Common fixes</div>
-          <div className="mt-1 text-sm text-[var(--hw-muted)]">Quick answers to the most common issues.</div>
-
-          <div className="mt-5 grid gap-3">
+          <div className="mt-1 grid gap-3">
             <details className="rounded-[16px] border border-[var(--hw-line)] bg-white p-4">
               <summary className="cursor-pointer text-sm font-semibold text-[var(--hw-ink)]">Something isn’t saving</summary>
               <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
@@ -143,11 +134,7 @@ export default function Page() {
 
         {/* STATUS / ROADMAP */}
         <Card className="p-5 sm:p-6">
-          <div className="text-sm font-semibold text-[var(--hw-ink)]">Product notes</div>
-          <div className="mt-1 text-sm text-[var(--hw-muted)]">
-            Homeworke 3.0 is shipping in tight iterations. If something feels unfinished, tell us — we’ll fix it fast.
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
             <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
               Report a bug
             </Button>
