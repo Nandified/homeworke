@@ -35,12 +35,7 @@ export function ProPropertiesPageClient() {
       }
     >
       <Card className="p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">Properties</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">Track addresses involved in inspections, repairs, and negotiation packets.</div>
-          </div>
-
+        <div className="flex items-center justify-end">
           <Button
             variant="secondary"
             onClick={() => {
@@ -56,7 +51,7 @@ export function ProPropertiesPageClient() {
           </Button>
         </div>
 
-        <div className="mt-5">
+        <div className="mt-4">
           <ProPropertiesClient empty={null} addOpen={addOpen} onAddOpenChange={setAddOpen} />
         </div>
       </Card>
