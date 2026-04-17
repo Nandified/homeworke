@@ -435,7 +435,14 @@ export async function POST(req: Request) {
       .map((s) => ({ serviceId: s.id, trade: s.trade, category: s.category, subcategory: s.label }))
       .slice(0, 2000);
 
-    const outOfScope = looksOutOfScope(text);
+    const installInScope = (() => {
+      const t = (text || "").toLowerCase();
+      const isInstallAsk = /(install|mount|hang|assemble|setup|set\s*up|put\s*together)\b/.test(t);
+      const installWhitelist = /(popcorn\s+machine|home\s+theater|projector|tv|shelf|shelves|curtain|blinds|furniture|ikea)\b/.test(t);
+      return isInstallAsk && (installWhitelist || /machine\b/.test(t));
+    })();
+
+    const outOfScope = !installInScope && looksOutOfScope(text);
 
     // Note: no local rate limiting here; rely on provider limits/quota.
     // (We still keep graceful fallbacks on OpenAI failures.)
@@ -568,7 +575,7 @@ export async function POST(req: Request) {
     }
 
     // Guardrail: never mark common in-scope home issues as out-of-scope.
-    const inScopeHint = /(\bac\b|a\/c|air\s+conditioner|hvac|furnace|thermostat|no\s+heat|no\s+cool|plumb|leak|toilet|drain|electrical|breaker|outlet|roof|shingle|garage\s+door|floor|hardwood|drywall|paint)/i.test(
+    const inScopeHint = /(\bac\b|a\/c|air\s+conditioner|hvac|furnace|thermostat|no\s+heat|no\s+cool|plumb|leak|toilet|drain|electrical|breaker|outlet|roof|shingle|garage\s+door|floor|hardwood|drywall|paint|install|mount|hang|assemble|setup|set\s*up|put\s*together|popcorn\s+machine)/i.test(
       text
     );
 

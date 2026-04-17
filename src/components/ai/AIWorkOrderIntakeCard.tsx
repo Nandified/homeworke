@@ -65,6 +65,12 @@ type StoredProperty = { id: string; createdAt: string; address: string; nickname
 
 function isOutOfScope(text: string) {
   const t = (text || "").toLowerCase();
+
+  // Allow physical install/assembly requests (handyman) even if they sound "odd".
+  const isInstallAsk = /(install|mount|hang|assemble|setup|set\s*up|put\s*together)\b/.test(t);
+  const installWhitelist = /(popcorn\s+machine|home\s+theater|projector|tv|shelf|shelves|curtain|blinds|furniture|ikea)\b/.test(t);
+  if (isInstallAsk && (installWhitelist || /machine\b/.test(t))) return false;
+
   return /xbox|playstation|ps5|ps4|nintendo|switch|steam|gaming|game\b|laptop|computer|pc\b|mac\b|printer|scanner|iphone|android|ipad|tablet|it\s+help|tech\s+support|wifi|router|massage|therap(y|ist)|counsel(or|ing)|chiropract|dentist|doctor|lawyer|attorney|babysit|nanny|pet\s*sit|dog\s*walk|tutor|lessons|guitar\s+lesson|piano\s+lesson/.test(
     t
   );
