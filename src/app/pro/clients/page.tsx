@@ -202,16 +202,8 @@ export default function Page() {
     >
       <div className="grid gap-6">
         <Card className="p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">My Clients</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                Clients you’ve added via Properties or Instant Estimate.
-              </div>
-            </div>
-            <div className="w-full sm:w-72">
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search clients…" />
-            </div>
+          <div className="w-full sm:w-72">
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search clients…" />
           </div>
 
           <div className="mt-5 grid gap-3">
