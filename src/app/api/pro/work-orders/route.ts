@@ -16,7 +16,10 @@ export async function GET(req: Request) {
   if (!partnerId) return json({ ok: false, error: "missing_partnerId" }, { status: 400 });
 
   const demo = url.searchParams.get("demo") === "1";
-  if (demo) seedDemoStoreIfEmpty();
+
+  // When DB isn't wired, keep the in-memory mock store seeded so cold starts / new deploys
+  // don't show an empty list until the user refreshes.
+  if (!dbEnabled() || demo) seedDemoStoreIfEmpty();
 
   if (!dbEnabled() || demo) {
     const workOrders = listSharedWorkOrdersForPartner(partnerId).map((w) => ({
