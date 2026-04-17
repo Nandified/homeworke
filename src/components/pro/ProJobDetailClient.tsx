@@ -30,8 +30,9 @@ type StatusGroup = (typeof STATUS_GROUPS)[number];
 
 const STATUS_CLASS: Record<StatusGroup, string> = {
   Pending: "border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.05)] text-[var(--hw-ink)]",
-  Scheduled: "border-[var(--hw-line)] bg-white text-[var(--hw-ink)]",
-  "In progress": "border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-ink)]",
+  // Make Scheduled vs In progress unmistakable.
+  Scheduled: "border-[rgba(37,99,235,.22)] bg-[rgba(37,99,235,.07)] text-[rgb(30,64,175)]",
+  "In progress": "border-[rgba(147,51,234,.22)] bg-[rgba(147,51,234,.07)] text-[rgb(107,33,168)]",
   Completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
 };
 
@@ -56,6 +57,13 @@ function ProgressRail({ status }: { status: StatusGroup }) {
     if (s === "Scheduled") return Calendar;
     if (s === "In progress") return Wrench;
     return CheckCircle2;
+  };
+
+  const accentFor: Record<StatusGroup, string> = {
+    Pending: "text-[rgb(229,57,53)]",
+    Scheduled: "text-[rgb(37,99,235)]",
+    "In progress": "text-[rgb(147,51,234)]",
+    Completed: "text-emerald-500",
   };
 
   return (
@@ -85,7 +93,12 @@ function ProgressRail({ status }: { status: StatusGroup }) {
               }
               aria-label={s}
             >
-              <Icon className={"h-3.5 w-3.5 " + (current || done ? "text-white" : "text-[var(--hw-muted)]")} />
+              <Icon
+                className={
+                  "h-3.5 w-3.5 " +
+                  (current ? accentFor[s] : done ? "text-white" : "text-[var(--hw-muted)]")
+                }
+              />
               <div className="pointer-events-none absolute -mt-14 hidden whitespace-nowrap rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-ink)] shadow-sm group-hover:block">
                 {s}
               </div>
