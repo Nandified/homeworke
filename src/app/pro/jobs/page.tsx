@@ -20,14 +20,7 @@ export default function Page() {
       }
     >
       <Card className="p-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">Jobs</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">Separated views so you can switch between client-shared work and your own properties.</div>
-          </div>
-        </div>
-
-        <div className="mt-5">
+        <div className="mt-1">
           <ProJobsClient
             emptyClientJobs={
               <EmptyState
