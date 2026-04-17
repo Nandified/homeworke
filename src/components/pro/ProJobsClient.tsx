@@ -97,7 +97,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
             </div>
 
             {i < STATUS_GROUPS.length - 1 ? (
-              <div className={"mx-1 h-[2px] w-7 rounded-full " + lineClass} />
+              <div className={"mx-2 h-[2px] w-6 rounded-full " + lineClass} />
             ) : null}
           </div>
         );
