@@ -106,12 +106,15 @@ function ProgressRail({ status }: { status: StatusGroup }) {
             ? "border-[var(--hw-ink)] bg-[var(--hw-ink)] text-white"
             : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)]";
 
-        const lineClass = done
-          ? "bg-[linear-gradient(90deg,rgba(17,24,39,.95),rgba(17,24,39,.55))]"
-          : "bg-[var(--hw-line)]";
+        // Render line segments on both sides to keep nodes perfectly centered.
+
+        const leftLineClass = i > 0 ? (i <= idx ? "bg-[linear-gradient(90deg,rgba(17,24,39,.95),rgba(17,24,39,.55))]" : "bg-[var(--hw-line)]") : "";
+        const rightLineClass = i < STATUS_GROUPS.length - 1 ? (i < idx ? "bg-[linear-gradient(90deg,rgba(17,24,39,.95),rgba(17,24,39,.55))]" : "bg-[var(--hw-line)]") : "";
 
         return (
           <div key={s} className="flex items-center">
+            {i > 0 ? <div className={"mx-2 h-[3px] w-6 rounded-full " + leftLineClass} /> : null}
+
             <div
               className={
                 "group relative grid h-7 w-7 place-items-center rounded-full border shadow-[0_1px_0_rgba(17,24,39,.08)] transition " +
@@ -126,7 +129,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
               </div>
             </div>
 
-            {i < STATUS_GROUPS.length - 1 ? <div className={`mx-2 h-[3px] w-6 rounded-full ${lineClass}`} /> : null}
+            {i < STATUS_GROUPS.length - 1 ? <div className={"mx-2 h-[3px] w-6 rounded-full " + rightLineClass} /> : null}
           </div>
         );
       })}
