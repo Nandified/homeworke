@@ -159,6 +159,7 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
   const { partnerId } = usePartnerContext();
   const [tab, setTab] = React.useState<"client" | "mine">("client");
   const [stage, setStage] = React.useState<StageFilter>("All");
+  const [query, setQuery] = React.useState("");
   const [items, setItems] = React.useState<ApiWorkOrder[] | null>(null);
   const [localItems, setLocalItems] = React.useState<ApiWorkOrder[]>([]);
 
@@ -233,8 +234,19 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
     const byTab = deduped.filter((w) => (tab === "mine" ? !!w.isMyProperty : !w.isMyProperty));
     const byStage = stage === "All" ? byTab : byTab.filter((w) => normalizeStatus(w.status) === stage);
 
-    return byStage;
-  }, [visibleItems, tab, stage]);
+    const q = query.trim().toLowerCase();
+    const byQuery = !q
+      ? byStage
+      : byStage.filter((w) => {
+          const hay = [w.title, w.address, w.clientName, w.status]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          return hay.includes(q);
+        });
+
+    return byQuery;
+  }, [visibleItems, tab, stage, query]);
 
   React.useEffect(() => {
     if (!partnerId) return;
@@ -277,6 +289,16 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
         >
           My properties
         </TabButton>
+      </div>
+
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <input
+          className="h-10 w-full rounded-[999px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 text-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search jobs…"
+        />
+        <div className="shrink-0 text-xs text-[var(--hw-muted)]">{rows.length} result{rows.length === 1 ? "" : "s"}</div>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
