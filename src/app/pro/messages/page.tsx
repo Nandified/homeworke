@@ -17,17 +17,11 @@ export default function Page() {
       description="Quickly scan recent threads, nudge homeowners, and keep deals moving."
     >
       <Card className="p-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">Messages</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">Conversations with homeowners across your active properties and jobs.</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Pill>Inbox</Pill>
-          </div>
+        <div className="flex items-center justify-end">
+          <Pill>Inbox</Pill>
         </div>
 
-        <div className="mt-5">
+        <div className="mt-4">
           {/* Guard against any client-only runtime issues so the whole app doesn't white-screen. */}
           {/**/}
           <ClientErrorBoundary title="Messages crashed" hint="We hit a client-side error while rendering Messages. Refresh and try again.">
