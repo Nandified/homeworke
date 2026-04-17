@@ -386,12 +386,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         ) : null}
         {/* Upload */}
         <Card className="p-6">
-          <div>
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload a PDF</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">Upload a PDF to generate an Express Estimate.</div>
-          </div>
-
-          <div className="mt-4 grid gap-3">
+          <div className="mt-1 grid gap-3">
             {/* Always-mounted file input so the Step 1 header "Change" button works even when collapsed */}
             <input
               ref={fileInputRef}
