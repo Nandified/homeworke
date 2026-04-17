@@ -10,7 +10,6 @@ import QRCode from "qrcode";
 
 import type { PartnerContext } from "@/lib/partner-context";
 import { Button, Card, Label } from "@/components/ui";
-import { DashboardSection } from "@/components/dashboard/DashboardSection";
 
 type PickerOption = { id: string; label: string; sublabel?: string };
 
@@ -272,10 +271,7 @@ export function PartnerMarketingToolsSection({
   }
 
   return (
-    <DashboardSection
-      title="Marketing Tools"
-      description="Copy/paste outreach + branded assets you can share to drive invites and Express Estimates."
-    >
+    <Card className="p-6 md:p-7">
       <div className="grid gap-3 sm:grid-cols-2">
         <Card className="p-4">
           <div className="text-sm font-semibold text-[var(--hw-ink)]">Email templates</div>
@@ -479,6 +475,6 @@ export function PartnerMarketingToolsSection({
           </div>
         </Card>
       </div>
-    </DashboardSection>
+    </Card>
   );
 }
