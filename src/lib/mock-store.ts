@@ -6,6 +6,10 @@ export type WorkOrder = {
   token: string;
   originPartnerId?: string | null;
   shareWithPartner?: boolean | null;
+  /** Display-only until the real data model is wired. */
+  clientName?: string;
+  /** True when this work order belongs to the partner's own property (vs a client). */
+  isMyProperty?: boolean;
   serviceCategory: string;
   serviceSubcategory?: string;
   issueDescription?: string;
@@ -78,17 +82,32 @@ export function seedDemoStoreIfEmpty() {
       address,
       nickname: idx === 0 ? "Home" : idx === 3 ? "Lake St Condo" : idx === 5 ? "Hazel Crest" : undefined,
       sharedWithMe: idx % 3 === 1,
-      ownerName: idx % 3 === 1 ? "Fernando Rocha Jr" : "Fernando Rocha Jr",
+      ownerName:
+        idx === 0
+          ? "Fernando Rocha Jr"
+          : idx === 1
+            ? "Ava Martinez"
+            : idx === 2
+              ? "Noah Johnson"
+              : idx === 3
+                ? "Sophia Lee"
+                : idx === 4
+                  ? "Estrella Puente"
+                  : "Desyi Mejia",
       projectsCount: idx % 3 === 2 ? 2 : idx % 3 === 1 ? 1 : 0,
     });
   });
 
   // Work orders (mix statuses so dashboard looks “full”)
   const wos: Array<Partial<WorkOrder> & Pick<WorkOrder, "serviceCategory" | "token" | "status">> = [
+    // Client jobs
+
     {
       token,
       originPartnerId: partnerId,
       shareWithPartner: true,
+      clientName: "Ava Martinez",
+      isMyProperty: false,
       serviceCategory: "House Repairs & Improvements",
       serviceSubcategory: "Roof maintenance",
       propertyAddress: props[1],
@@ -98,6 +117,8 @@ export function seedDemoStoreIfEmpty() {
       token,
       originPartnerId: partnerId,
       shareWithPartner: true,
+      clientName: "Noah Johnson",
+      isMyProperty: false,
       serviceCategory: "House Repairs & Improvements",
       serviceSubcategory: "Drywall + paint touch-up",
       propertyAddress: props[2],
@@ -107,6 +128,8 @@ export function seedDemoStoreIfEmpty() {
       token,
       originPartnerId: partnerId,
       shareWithPartner: true,
+      clientName: "Estrella Puente",
+      isMyProperty: false,
       serviceCategory: "House Repairs & Improvements",
       serviceSubcategory: "Electrical (GFCI outlets)",
       propertyAddress: props[4],
@@ -116,6 +139,8 @@ export function seedDemoStoreIfEmpty() {
       token,
       originPartnerId: partnerId,
       shareWithPartner: true,
+      clientName: "Desyi Mejia",
+      isMyProperty: false,
       serviceCategory: "Express Estimate",
       serviceSubcategory: "Inspection PDF estimate",
       propertyAddress: props[0],
@@ -125,15 +150,20 @@ export function seedDemoStoreIfEmpty() {
       token,
       originPartnerId: partnerId,
       shareWithPartner: true,
+      clientName: "Sophia Lee",
+      isMyProperty: false,
       serviceCategory: "House Repairs & Improvements",
       serviceSubcategory: "Plumbing (leak under sink)",
       propertyAddress: props[3],
       status: "completed",
     },
+    // My properties (these should show under the My properties tab)
     {
       token,
       originPartnerId: partnerId,
       shareWithPartner: true,
+      clientName: "Fernando Rocha Jr",
+      isMyProperty: true,
       serviceCategory: "House Repairs & Improvements",
       serviceSubcategory: "Kitchen faucet replacement",
       propertyAddress: props[5],
@@ -148,6 +178,8 @@ export function seedDemoStoreIfEmpty() {
       token: w.token,
       originPartnerId: w.originPartnerId,
       shareWithPartner: w.shareWithPartner,
+      clientName: w.clientName,
+      isMyProperty: w.isMyProperty,
       serviceCategory: w.serviceCategory,
       serviceSubcategory: w.serviceSubcategory,
       propertyAddress: w.propertyAddress,

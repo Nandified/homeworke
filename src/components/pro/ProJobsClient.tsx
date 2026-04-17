@@ -17,6 +17,7 @@ type ApiWorkOrder = {
   address?: string;
   status: string;
   clientName?: string;
+  isMyProperty?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -106,6 +107,28 @@ function ProgressRail({ status }: { status: StatusGroup }) {
   );
 }
 
+const STAGE_FILTERS = ["All", ...STATUS_GROUPS] as const;
+
+type StageFilter = (typeof STAGE_FILTERS)[number];
+
+function StageButton(props: { active: boolean; children: React.ReactNode; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={props.onClick}
+      className={
+        "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition " +
+        (props.active
+          ? "border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] text-[var(--hw-ink)]"
+          : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] hover:text-[var(--hw-ink)]")
+      }
+      aria-pressed={props.active}
+    >
+      {props.children}
+    </button>
+  );
+}
+
 function TabButton(props: { active: boolean; children: React.ReactNode; onClick: () => void }) {
   return (
     <button
@@ -127,6 +150,7 @@ function TabButton(props: { active: boolean; children: React.ReactNode; onClick:
 export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMyJobs: React.ReactNode }) {
   const { partnerId } = usePartnerContext();
   const [tab, setTab] = React.useState<"client" | "mine">("client");
+  const [stage, setStage] = React.useState<StageFilter>("All");
   const [items, setItems] = React.useState<ApiWorkOrder[] | null>(null);
   const [localItems, setLocalItems] = React.useState<ApiWorkOrder[]>([]);
 
@@ -180,6 +204,7 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
 
   const rows = React.useMemo(() => {
     const list = [...visibleItems];
+
     // De-dupe by id
     const seen = new Set<string>();
     const deduped: ApiWorkOrder[] = [];
@@ -196,8 +221,12 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
       const bt = new Date((b as ApiWorkOrder).updatedAt || (b as ApiWorkOrder).createdAt || 0).getTime();
       return bt - at;
     });
-    return deduped;
-  }, [visibleItems]);
+
+    const byTab = deduped.filter((w) => (tab === "mine" ? !!w.isMyProperty : !w.isMyProperty));
+    const byStage = stage === "All" ? byTab : byTab.filter((w) => normalizeStatus(w.status) === stage);
+
+    return byStage;
+  }, [visibleItems, tab, stage]);
 
   React.useEffect(() => {
     if (!partnerId) return;
@@ -222,52 +251,69 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
-        <TabButton active={tab === "client"} onClick={() => setTab("client")}>
+        <TabButton
+          active={tab === "client"}
+          onClick={() => {
+            setTab("client");
+            setStage("All");
+          }}
+        >
           Client jobs
         </TabButton>
-        <TabButton active={tab === "mine"} onClick={() => setTab("mine")}>
+        <TabButton
+          active={tab === "mine"}
+          onClick={() => {
+            setTab("mine");
+            setStage("All");
+          }}
+        >
           My properties
         </TabButton>
       </div>
 
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {STAGE_FILTERS.map((s) => (
+          <StageButton key={s} active={stage === s} onClick={() => setStage(s)}>
+            {s}
+          </StageButton>
+        ))}
+      </div>
+
       <div className="mt-4">
-        {tab === "mine" ? (
-          <>{props.emptyMyJobs}</>
-        ) : (
-          <div className="grid gap-2">
-            {items === null ? (
-              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-sm text-[var(--hw-muted)]">Loading jobs…</div>
-            ) : null}
-            {items !== null && rows.length === 0 ? (
-              <>{props.emptyClientJobs}</>
-            ) : (
-              rows.map((w) => {
-                const status = normalizeStatus(w.status);
-                const ts = (w as ApiWorkOrder).updatedAt || (w as ApiWorkOrder).createdAt;
-                return (
-                  <ListRow
-                    key={w.id}
-                    href={withDemo(`/pro/jobs/${w.id}`)}
-                    title={w.title || w.address || `Work Order #${w.id}`}
-                    subtitle={w.address && w.title ? w.address : undefined}
-                    footnote={w.clientName ? `Client: ${w.clientName}` : undefined}
-                    badge={<Chip className={STATUS_CLASS[status]}>{status}</Chip>}
-                    meta={
-                      <div className="flex flex-col items-center gap-2 sm:items-end">
-                        <ProgressRail status={status} />
-                        {ts ? (
-                          <span className="text-xs text-[var(--hw-muted)]">
-                            Updated {new Date(ts).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
-                          </span>
-                        ) : null}
-                      </div>
-                    }
-                  />
-                );
-              })
-            )}
-          </div>
-        )}
+        <div className="grid gap-2">
+          {items === null ? (
+            <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-sm text-[var(--hw-muted)]">Loading jobs…</div>
+          ) : null}
+
+          {items !== null && rows.length === 0 ? (
+            <>{tab === "mine" ? props.emptyMyJobs : props.emptyClientJobs}</>
+          ) : (
+            rows.map((w) => {
+              const status = normalizeStatus(w.status);
+              const ts = (w as ApiWorkOrder).updatedAt || (w as ApiWorkOrder).createdAt;
+              return (
+                <ListRow
+                  key={w.id}
+                  href={withDemo(`/pro/jobs/${w.id}`)}
+                  title={w.title || w.address || `Work Order #${w.id}`}
+                  subtitle={w.address && w.title ? w.address : undefined}
+                  footnote={w.clientName ? `Client: ${w.clientName}` : undefined}
+                  badge={<Chip className={STATUS_CLASS[status]}>{status}</Chip>}
+                  meta={
+                    <div className="flex flex-col items-center gap-2 sm:items-end">
+                      <ProgressRail status={status} />
+                      {ts ? (
+                        <span className="text-xs text-[var(--hw-muted)]">
+                          Updated {new Date(ts).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
+                        </span>
+                      ) : null}
+                    </div>
+                  }
+                />
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );

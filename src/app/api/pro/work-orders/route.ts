@@ -27,7 +27,8 @@ export async function GET(req: Request) {
       title: w.serviceSubcategory || w.serviceCategory,
       address: w.propertyAddress,
       status: w.status,
-      clientName: w.token === "demo" ? "Fernando Rocha Jr" : undefined,
+      clientName: w.clientName,
+      isMyProperty: !!w.isMyProperty,
       createdAt: w.createdAt,
       updatedAt: w.createdAt,
     }));
