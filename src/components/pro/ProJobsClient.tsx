@@ -56,11 +56,11 @@ function ProgressRail({ status }: { status: StatusGroup }) {
     return CheckCircle2;
   };
 
-  const accentFor: Record<StatusGroup, string> = {
-    Pending: "text-[rgb(229,57,53)]",
-    Scheduled: "text-[rgb(37,99,235)]",
-    "In progress": "text-[rgb(147,51,234)]",
-    Completed: "text-emerald-500",
+  const ringFor: Record<StatusGroup, string> = {
+    Pending: "ring-[rgba(229,57,53,.22)]",
+    Scheduled: "ring-[rgba(37,99,235,.22)]",
+    "In progress": "ring-[rgba(147,51,234,.22)]",
+    Completed: "ring-[rgba(16,185,129,.22)]",
   };
 
   return (
@@ -72,7 +72,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
         const Icon = iconFor(s);
 
         const nodeClass = current
-          ? "border-[var(--hw-ink)] bg-[var(--hw-ink)] text-white ring-4 ring-[rgba(17,24,39,.10)]"
+          ? "border-[var(--hw-ink)] bg-[var(--hw-ink)] text-white ring-4 " + ringFor[status]
           : done
             ? "border-[var(--hw-ink)] bg-[var(--hw-ink)] text-white"
             : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)]";
@@ -90,12 +90,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
               }
               aria-label={s}
             >
-              <Icon
-                className={
-                  "h-3.5 w-3.5 " +
-                  (current ? accentFor[s] : done ? "text-white" : "text-[var(--hw-muted)]")
-                }
-              />
+              <Icon className={"h-3.5 w-3.5 " + (current || done ? "text-white" : "text-[var(--hw-muted)]")} />
               <div className="pointer-events-none absolute -mt-14 hidden whitespace-nowrap rounded-full border border-[var(--hw-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--hw-ink)] shadow-sm group-hover:block">
                 {s}
               </div>
