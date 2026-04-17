@@ -111,7 +111,15 @@ const STAGE_FILTERS = ["All", ...STATUS_GROUPS] as const;
 
 type StageFilter = (typeof STAGE_FILTERS)[number];
 
-function StageButton(props: { active: boolean; children: React.ReactNode; onClick: () => void }) {
+const STAGE_ACTIVE_CLASS: Record<StageFilter, string> = {
+  All: "border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] text-[var(--hw-ink)]",
+  Pending: "border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.07)] text-[rgb(229,57,53)]",
+  Scheduled: "border-[rgba(37,99,235,.22)] bg-[rgba(37,99,235,.07)] text-[rgb(30,64,175)]",
+  "In progress": "border-[rgba(147,51,234,.22)] bg-[rgba(147,51,234,.07)] text-[rgb(107,33,168)]",
+  Completed: "border-[rgba(16,185,129,.22)] bg-[rgba(16,185,129,.08)] text-[rgb(5,150,105)]",
+};
+
+function StageButton(props: { active: boolean; tone: StageFilter; children: React.ReactNode; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -119,7 +127,7 @@ function StageButton(props: { active: boolean; children: React.ReactNode; onClic
       className={
         "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition " +
         (props.active
-          ? "border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] text-[var(--hw-ink)]"
+          ? STAGE_ACTIVE_CLASS[props.tone]
           : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] hover:text-[var(--hw-ink)]")
       }
       aria-pressed={props.active}
@@ -273,7 +281,7 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {STAGE_FILTERS.map((s) => (
-          <StageButton key={s} active={stage === s} onClick={() => setStage(s)}>
+          <StageButton key={s} tone={s} active={stage === s} onClick={() => setStage(s)}>
             {s}
           </StageButton>
         ))}
