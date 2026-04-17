@@ -120,29 +120,55 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
   const { partnerId } = usePartnerContext();
   const [tab, setTab] = React.useState<"client" | "mine">("client");
   const [items, setItems] = React.useState<ApiWorkOrder[] | null>(null);
+  const [localItems, setLocalItems] = React.useState<ApiWorkOrder[]>([]);
 
-  const localItems = React.useMemo(() => {
+  const loadLocalItems = React.useCallback(() => {
     try {
       const raw = window.localStorage.getItem("hw_local_work_orders_v1") || "[]";
       const arr = JSON.parse(raw);
       const list = Array.isArray(arr) ? arr : [];
-      return list
+      const mapped = list
         .map((w: any) => ({
           id: String(w?.id || ""),
           title: (w?.serviceSubcategory || w?.serviceCategory || w?.title || "Job").toString(),
           address: (w?.propertyAddress || w?.address || "").toString(),
           status: (w?.status || "pending").toString(),
-          clientName: w?.clientName ? String(w.clientName) : "Fernando Rocha Jr",
+          clientName: w?.clientName ? String(w.clientName) : undefined,
           createdAt: w?.createdAt ? String(w.createdAt) : undefined,
           updatedAt: w?.updatedAt ? String(w.updatedAt) : w?.createdAt ? String(w.createdAt) : undefined,
         }))
         .filter((w: ApiWorkOrder) => !!w.id);
+
+      setLocalItems(mapped);
     } catch {
-      return [] as ApiWorkOrder[];
+      setLocalItems([]);
     }
   }, []);
 
-  const visibleItems = (items && items.length > 0) ? [...localItems, ...items] : [...localItems, ...PRO_DEMO_WORK_ORDERS];
+  // Keep localStorage-backed work orders fresh across navigation/back/refresh.
+  React.useEffect(() => {
+    loadLocalItems();
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "hw_local_work_orders_v1") loadLocalItems();
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") loadLocalItems();
+    };
+
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", loadLocalItems);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", loadLocalItems);
+    };
+  }, [loadLocalItems]);
+
+  const visibleItems = items && items.length > 0 ? [...localItems, ...items] : [...localItems, ...PRO_DEMO_WORK_ORDERS];
 
   const rows = React.useMemo(() => {
     const list = [...visibleItems];
@@ -199,34 +225,39 @@ export function ProJobsClient(props: { emptyClientJobs: React.ReactNode; emptyMy
       <div className="mt-4">
         {tab === "mine" ? (
           <>{props.emptyMyJobs}</>
-        ) : items === null ? (
-          <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-sm text-[var(--hw-muted)]">Loading jobs…</div>
         ) : (
           <div className="grid gap-2">
-            {rows.map((w) => {
-              const status = normalizeStatus(w.status);
-              const ts = (w as ApiWorkOrder).updatedAt || (w as ApiWorkOrder).createdAt;
-              return (
-                <ListRow
-                  key={w.id}
-                  href={withDemo(`/pro/jobs/${w.id}`)}
-                  title={w.title || w.address || `Work Order #${w.id}`}
-                  subtitle={w.address && w.title ? w.address : undefined}
-                  footnote={w.clientName ? `Client: ${w.clientName}` : undefined}
-                  badge={<Chip className={STATUS_CLASS[status]}>{status}</Chip>}
-                  meta={
-                    <div className="flex flex-col items-center gap-2 sm:items-end">
-                      <ProgressRail status={status} />
-                      {ts ? (
-                        <span className="text-xs text-[var(--hw-muted)]">
-                          Updated {new Date(ts).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
-                        </span>
-                      ) : null}
-                    </div>
-                  }
-                />
-              );
-            })}
+            {items === null ? (
+              <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-sm text-[var(--hw-muted)]">Loading jobs…</div>
+            ) : null}
+            {items !== null && rows.length === 0 ? (
+              <>{props.emptyClientJobs}</>
+            ) : (
+              rows.map((w) => {
+                const status = normalizeStatus(w.status);
+                const ts = (w as ApiWorkOrder).updatedAt || (w as ApiWorkOrder).createdAt;
+                return (
+                  <ListRow
+                    key={w.id}
+                    href={withDemo(`/pro/jobs/${w.id}`)}
+                    title={w.title || w.address || `Work Order #${w.id}`}
+                    subtitle={w.address && w.title ? w.address : undefined}
+                    footnote={w.clientName ? `Client: ${w.clientName}` : undefined}
+                    badge={<Chip className={STATUS_CLASS[status]}>{status}</Chip>}
+                    meta={
+                      <div className="flex flex-col items-center gap-2 sm:items-end">
+                        <ProgressRail status={status} />
+                        {ts ? (
+                          <span className="text-xs text-[var(--hw-muted)]">
+                            Updated {new Date(ts).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
+                          </span>
+                        ) : null}
+                      </div>
+                    }
+                  />
+                );
+              })
+            )}
           </div>
         )}
       </div>
