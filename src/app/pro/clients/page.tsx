@@ -89,7 +89,6 @@ export default function Page() {
   const [invitedClients, setInvitedClients] = useState<StoredInvitedClient[]>([]);
 
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [inviteLinkToast, setInviteLinkToast] = useState("");
 
   const [copiedInviteLink, setCopiedInviteLink] = useState(false);
   const [inviteExpanded, setInviteExpanded] = useState(false);
@@ -202,8 +201,16 @@ export default function Page() {
     >
       <div className="grid gap-6">
         <Card className="p-6">
-          <div className="w-full sm:w-72">
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search clients…" />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <input
+              className="h-10 w-full rounded-[999px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 text-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search clients…"
+            />
+            <div className="shrink-0 text-xs text-[var(--hw-muted)]">
+              {derivedClients.length} result{derivedClients.length === 1 ? "" : "s"}
+            </div>
           </div>
 
           <div className="mt-5 grid gap-3">
@@ -455,7 +462,7 @@ export default function Page() {
                     { id: "Homeowner", label: "Homeowner" },
                     { id: "Homebuyer", label: "Homebuyer" },
                   ]}
-                  onChange={(id) => setInviteRole((id as any) || "")}
+                  onChange={(id) => setInviteRole(id === "Homeowner" || id === "Homebuyer" ? id : "")}
                 />
               </div>
 
@@ -484,6 +491,8 @@ export default function Page() {
                     try {
                       const prev = readInvitedClients();
                       const id = "cli_" + Math.random().toString(16).slice(2);
+                      const role: StoredInvitedClient["role"] =
+                        inviteRole === "Homeowner" || inviteRole === "Homebuyer" ? inviteRole : undefined;
                       const row: StoredInvitedClient = {
                         id,
                         createdAt: new Date().toISOString(),
@@ -491,7 +500,7 @@ export default function Page() {
                         lastName: inviteLast.trim() || undefined,
                         email,
                         phone: invitePhone.trim() || undefined,
-                        role: (inviteRole as any) || undefined,
+                        role,
                         inviteSentAt: new Date().toISOString(),
                       };
                       const out = [row, ...prev.filter((c) => (c.email || "").trim().toLowerCase() !== email)];
