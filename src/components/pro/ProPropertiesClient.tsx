@@ -372,8 +372,16 @@ const [newClientLastName, setNewClientLastName] = React.useState("");
             </button>
           </div>
 
-          <div className="w-full sm:w-[380px]">
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or address…" />
+          <div className="mt-1 flex w-full flex-col gap-2 sm:mt-0 sm:w-[420px] sm:flex-row sm:items-center sm:justify-between">
+            <input
+              className="h-10 w-full rounded-[999px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 text-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search by name or address…"
+            />
+            <div className="shrink-0 text-xs text-[var(--hw-muted)]">
+              {filtered.length} result{filtered.length === 1 ? "" : "s"}
+            </div>
           </div>
         </div>
       </div>
