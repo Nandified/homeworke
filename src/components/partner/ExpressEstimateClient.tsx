@@ -525,9 +525,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             {/* Step 2: Property */}
             <div
               className={
-                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white " +
+                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] overflow-hidden " +
+                (step2HasSelection ? "bg-[rgba(229,57,53,.05)] " : "bg-white ") +
                 (step === 2 ? "relative z-20 " : "") +
-                (step2HasSelection ? "overflow-hidden shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
+                (step2HasSelection ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
               }
             >
               <button
@@ -756,6 +757,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                             setProperties((prev) => [p, ...prev]);
                             setSelectedPropertyId(id);
                             setPropertyMode("existing");
+                            setStep(3);
 
                             setNewPropertyAddress("");
                             setNewPropertyNickname("");
