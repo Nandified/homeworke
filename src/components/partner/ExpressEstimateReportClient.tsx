@@ -4,13 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
+import { getDocument, GlobalWorkerOptions, Util } from "pdfjs-dist";
 
 import { Button, Card, Chip, EmptyState, Input, Picker } from "@/components/ui";
 import { Camera, ChevronDown, Copy, Download, Hammer, Share2 } from "lucide-react";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
+import { extractSummaryEvidenceThumbsFromPdf } from "@/lib/pdf-summary-evidence-client";
 
 type EvidenceThumb = { src: string; caption?: string };
 
@@ -422,6 +423,11 @@ export function ExpressEstimateReportClient(props: {
                 note: typeof it.note === "string" ? it.note : undefined,
                 range: typeof it.range === "string" ? it.range : undefined,
                 price: typeof it.price === "number" ? it.price : undefined,
+                evidence: Array.isArray(it.evidence)
+                  ? it.evidence
+                      .filter((ev: any) => ev && typeof ev.src === "string")
+                      .map((ev: any) => ({ src: String(ev.src), caption: typeof ev.caption === "string" ? ev.caption : undefined }))
+                  : undefined,
                 pricingDebug: it.pricingDebug && typeof it.pricingDebug === "object" ? it.pricingDebug : undefined,
               })),
           }));
@@ -636,6 +642,31 @@ export function ExpressEstimateReportClient(props: {
           if (mime === "application/pdf" || f.name.toLowerCase().endsWith(".pdf")) {
             const { text, hash } = await extractPdfTextAndHash(f);
             if (hash) hashes.push(hash);
+
+            // Best-effort: extract summary evidence thumbs client-side and upload to Blob.
+            try {
+              setAnalysisStage("Extracting evidence photos…");
+              const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, { maxPages: 12, scale: 1.35 });
+              if (thumbs.length) {
+                const uploaded: { src: string; caption?: string }[] = [];
+                for (const t of thumbs.slice(0, 18)) {
+                  const upFd = new FormData();
+                  const upFile = new File([t.blob], `evidence-${Date.now()}.jpg`, { type: "image/jpeg" });
+                  upFd.set("file", upFile, upFile.name);
+                  const rr = await fetch("/api/evidence/upload", { method: "POST", body: upFd });
+                  const jj = (await rr.json().catch(() => null)) as any;
+                  if (rr.ok && jj?.ok === true && typeof jj.src === "string") {
+                    uploaded.push({ src: String(jj.src), caption: typeof t.caption === "string" ? t.caption : undefined });
+                  }
+                }
+                if (uploaded.length) {
+                  // store temporarily on the FormData so we can merge into lanes after analyze
+                  fd.set("clientEvidence", JSON.stringify(uploaded));
+                }
+              }
+            } catch {
+              // ignore
+            }
 
             if (text) {
               pieces.push(text);
@@ -853,7 +884,7 @@ export function ExpressEstimateReportClient(props: {
           }
         } catch {}
 
-        const normalized: ExtractedLane[] = lanes
+        let normalized: ExtractedLane[] = lanes
           .filter((l) => l && typeof l.title === "string" && Array.isArray(l.items))
           .map((l) => ({
             title: String(l.title),
@@ -873,6 +904,37 @@ export function ExpressEstimateReportClient(props: {
                 pricingDebug: it.pricingDebug && typeof it.pricingDebug === "object" ? it.pricingDebug : undefined,
               })),
           }));
+
+        // Merge client-side evidence uploads (if present)
+        try {
+          const rawEv = fd.get("clientEvidence");
+          if (typeof rawEv === "string" && rawEv.trim()) {
+            const arr = JSON.parse(rawEv) as any[];
+            const thumbs = Array.isArray(arr)
+              ? arr
+                  .filter((x) => x && typeof x.src === "string")
+                  .map((x) => ({ src: String(x.src), caption: typeof x.caption === "string" ? x.caption : undefined }))
+              : [];
+            if (thumbs.length) {
+              normalized = [
+                {
+                  title: "Evidence (Summary pages)",
+                  items: [
+                    {
+                      id: "evidence_summary",
+                      label: "Summary page photos",
+                      note: "Extracted client-side from the report summary pages.",
+                      evidence: thumbs,
+                    },
+                  ],
+                },
+                ...normalized,
+              ];
+            }
+          }
+        } catch {
+          // ignore
+        }
 
         if (normalized.length) setExtracted(normalized);
         setAnalysisSummary(typeof rec.summary === "string" ? rec.summary : "");
