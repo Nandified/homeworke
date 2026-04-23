@@ -647,25 +647,24 @@ export function ExpressEstimateReportClient(props: {
             try {
               setAnalysisStage("Extracting evidence photos…");
               const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, { maxPages: 12, scale: 1.35 });
-              if (thumbs.length) {
-                const uploaded: { src: string; caption?: string }[] = [];
-                for (const t of thumbs.slice(0, 18)) {
-                  const upFd = new FormData();
-                  const upFile = new File([t.blob], `evidence-${Date.now()}.jpg`, { type: "image/jpeg" });
-                  upFd.set("file", upFile, upFile.name);
-                  const rr = await fetch("/api/evidence/upload", { method: "POST", body: upFd });
-                  const jj = (await rr.json().catch(() => null)) as any;
-                  if (rr.ok && jj?.ok === true && typeof jj.src === "string") {
-                    uploaded.push({ src: String(jj.src), caption: typeof t.caption === "string" ? t.caption : undefined });
-                  }
-                }
-                if (uploaded.length) {
-                  // store temporarily on the FormData so we can merge into lanes after analyze
-                  fd.set("clientEvidence", JSON.stringify(uploaded));
+              const uploaded: { src: string; caption?: string }[] = [];
+
+              for (const t of (thumbs || []).slice(0, 18)) {
+                const upFd = new FormData();
+                const upFile = new File([t.blob], `evidence-${Date.now()}.jpg`, { type: "image/jpeg" });
+                upFd.set("file", upFile, upFile.name);
+                const rr = await fetch("/api/evidence/upload", { method: "POST", body: upFd });
+                const jj = (await rr.json().catch(() => null)) as any;
+                if (rr.ok && jj?.ok === true && typeof jj.src === "string") {
+                  uploaded.push({ src: String(jj.src), caption: typeof t.caption === "string" ? t.caption : undefined });
                 }
               }
-            } catch {
-              // ignore
+
+              // store temporarily on the FormData so we can merge into lanes after analyze
+              fd.set("clientEvidence", JSON.stringify(uploaded));
+            } catch (e) {
+              // best-effort: still set so we can show a placeholder lane
+              fd.set("clientEvidence", JSON.stringify([]));
             }
 
             if (text) {
@@ -915,22 +914,32 @@ export function ExpressEstimateReportClient(props: {
                   .filter((x) => x && typeof x.src === "string")
                   .map((x) => ({ src: String(x.src), caption: typeof x.caption === "string" ? x.caption : undefined }))
               : [];
-            if (thumbs.length) {
-              normalized = [
-                {
-                  title: "Evidence (Summary pages)",
-                  items: [
-                    {
-                      id: "evidence_summary",
-                      label: "Summary page photos",
-                      note: "Extracted client-side from the report summary pages.",
-                      evidence: thumbs,
-                    },
-                  ],
-                },
-                ...normalized,
-              ];
-            }
+            // Always show a lane so we can tell whether extraction ran.
+            normalized = [
+              {
+                title: "Evidence (Summary pages)",
+                items: [
+                  {
+                    id: "evidence_summary",
+                    label: thumbs.length ? "Summary page photos" : "No evidence photos extracted",
+                    note: thumbs.length
+                      ? "Extracted client-side from the report summary pages."
+                      : "Evidence extraction ran but returned 0 thumbs (or upload failed).",
+                    evidence: thumbs.length ? thumbs : undefined,
+                  },
+                ],
+              },
+              ...normalized.map((lane) => ({
+                ...lane,
+                items: lane.items.map((it) => {
+                  // Rough ship: if we have thumbs and this item has none, attach 1 thumb so the Details UI shows it.
+                  if (thumbs.length && (!it.evidence || !it.evidence.length)) {
+                    return { ...it, evidence: [thumbs[0]] };
+                  }
+                  return it;
+                }),
+              })),
+            ];
           }
         } catch {
           // ignore
