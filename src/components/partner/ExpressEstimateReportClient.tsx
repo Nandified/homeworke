@@ -191,6 +191,8 @@ export function ExpressEstimateReportClient(props: {
   const [forceNextRun, setForceNextRun] = useState(false);
   const [notes, setNotes] = useState<string>("");
   const didOcrFallbackRef = useRef(false);
+  const clientEvidenceRef = useRef<Array<{ src: string; caption?: string }>>([]);
+  const evidenceAttemptedRef = useRef(false);
 
   // Once the staged file is consumed we delete it, so on refresh `props.stagedId` is gone.
   // Persist a flag so the UI can still show the right empty-state messaging for an uploaded report.
@@ -394,6 +396,8 @@ export function ExpressEstimateReportClient(props: {
       let gotResult = false;
       try {
         const fd = new FormData();
+        clientEvidenceRef.current = [];
+        evidenceAttemptedRef.current = false;
         fd.set("cacheKey", cacheKey);
         const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
         const j = await r.json().catch(() => null);
@@ -631,6 +635,8 @@ export function ExpressEstimateReportClient(props: {
     void (async () => {
       try {
         const fd = new FormData();
+        clientEvidenceRef.current = [];
+        evidenceAttemptedRef.current = false;
 
         // Build combined text + hash from all files.
         const pieces: string[] = [];
@@ -645,6 +651,7 @@ export function ExpressEstimateReportClient(props: {
 
             // Best-effort: extract summary evidence thumbs client-side and upload to Blob.
             try {
+              evidenceAttemptedRef.current = true;
               setAnalysisStage("Extracting evidence photos…");
               const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, { maxPages: 12, scale: 1.35 });
               setAnalysisStage(`Uploading evidence photos… (${(thumbs || []).length})`);
@@ -661,9 +668,11 @@ export function ExpressEstimateReportClient(props: {
                 }
               }
 
+              clientEvidenceRef.current = uploaded;
               // store temporarily on the FormData so we can merge into lanes after analyze
               fd.set("clientEvidence", JSON.stringify(uploaded));
-            } catch (e) {
+            } catch {
+              clientEvidenceRef.current = [];
               // best-effort: still set so we can show a placeholder lane
               fd.set("clientEvidence", JSON.stringify([]));
             }
@@ -905,16 +914,10 @@ export function ExpressEstimateReportClient(props: {
               })),
           }));
 
-        // Merge client-side evidence uploads (if present)
+        // Merge client-side evidence uploads (attempted during PDF processing)
         try {
-          const rawEv = fd.get("clientEvidence");
-          if (typeof rawEv === "string" && rawEv.trim()) {
-            const arr = JSON.parse(rawEv) as any[];
-            const thumbs = Array.isArray(arr)
-              ? arr
-                  .filter((x) => x && typeof x.src === "string")
-                  .map((x) => ({ src: String(x.src), caption: typeof x.caption === "string" ? x.caption : undefined }))
-              : [];
+          const thumbs = (clientEvidenceRef.current || []).map((x) => ({ src: x.src, caption: x.caption }));
+          if (evidenceAttemptedRef.current) {
             // Always show a lane so we can tell whether extraction ran.
             normalized = [
               {
