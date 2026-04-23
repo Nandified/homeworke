@@ -64,8 +64,8 @@ export async function extractSummaryEvidenceBlocksFromPdf(buf: Buffer, opts?: { 
   for (let pi = 0; pi < maxPages; pi++) {
     const p = data.pages[pi];
     const pageNum = pi + 1;
-    const pageW = Number(p?.pageInfo?.width ?? 612);
-    const pageH = Number(p?.pageInfo?.height ?? 792);
+    const pageW = Number((p as any)?.pageInfo?.width ?? 612);
+    const pageH = Number((p as any)?.pageInfo?.height ?? 792);
     const pageArea = pageW * pageH;
 
     const content = Array.isArray(p?.content) ? p.content : [];
