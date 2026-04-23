@@ -8,9 +8,13 @@ import path from "node:path";
 
 import pdf from "pdf-parse";
 
+import { put } from "@vercel/blob";
+
+import { extractSummaryEvidenceBlocksFromPdf } from "@/lib/pdf-summary-evidence";
+
 import { db, dbEnabled } from "@/lib/db";
 
-type EvidenceThumb = { src: string; caption?: string };
+type EvidenceThumb = { src: string; caption?: string; blobUrl?: string };
 
 type LaneItem = {
   id: string;
@@ -869,6 +873,10 @@ export async function POST(req: Request) {
     let hash = "";
     let pdfBytes = 0;
 
+    // Evidence extraction needs access to the original PDF bytes.
+    let pdfBufForEvidence: Buffer | null = null;
+    let pdfFilenameForEvidence = "inspection.pdf";
+
     // Optionally rerun using a previous cached entry (even if expired) without requiring the PDF upload again.
     if (!textOverride.trim() && !file && cacheKeyOverride && dbEnabled()) {
       const row = await db().expressEstimateCache.findUnique({ where: { cacheKey: cacheKeyOverride } });
@@ -960,6 +968,10 @@ export async function POST(req: Request) {
 
           // Assume PDF
           pdfBytes += buf.length;
+          if (!pdfBufForEvidence) {
+            pdfBufForEvidence = buf;
+            pdfFilenameForEvidence = String((f as any)?.name || "inspection.pdf") || "inspection.pdf";
+          }
           const parsedPdf = await pdf(buf);
           const t = String(parsedPdf?.text || "").replace(/\u0000/g, "").trim();
           if (t) texts.push(t);
@@ -1420,7 +1432,46 @@ export async function POST(req: Request) {
         return { title, items };
       });
 
-    const cleaned = dedupeLanes(lanes, location, marketFactor);
+    let cleaned = dedupeLanes(lanes, location, marketFactor);
+
+    // --- Evidence photos (Summary pages): extract + upload to private Blob + return thumb URLs ---
+    try {
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+      if (blobToken && pdfBufForEvidence) {
+        const blocks = await extractSummaryEvidenceBlocksFromPdf(pdfBufForEvidence, { maxPages: 25 });
+        if (blocks.length) {
+          const evidenceItems: LaneItem[] = [];
+          for (const b of blocks.slice(0, 40)) {
+            const thumbs: EvidenceThumb[] = [];
+            for (const im of b.images.slice(0, 12)) {
+              const imgBuf = Buffer.from(im.base64, "base64");
+              const pathname = `evidence/${hash || "pdf"}/${im.sha256}.${im.mime === "image/png" ? "png" : "jpg"}`;
+              const blob = await put(pathname, imgBuf, { access: "private", contentType: im.mime });
+              thumbs.push({
+                src: `/api/evidence?url=${encodeURIComponent(blob.url)}`,
+                caption: `${b.section || "Summary"} • Page ${b.targetPage} Item ${b.itemNumber}${b.title ? ` — ${b.title}` : ""}`,
+                blobUrl: blob.url,
+              });
+            }
+
+            if (thumbs.length) {
+              evidenceItems.push({
+                id: `evi_${b.summaryPage}_${b.itemNumber}_${b.targetPage}`,
+                label: `${b.section || "Summary"}: ${b.title || b.anchorText}`,
+                note: `Summary page ${b.summaryPage} • Anchor: ${b.anchorText}`,
+                evidence: thumbs,
+              });
+            }
+          }
+
+          if (evidenceItems.length) {
+            cleaned = [{ title: "Evidence (Summary pages)", items: evidenceItems }, ...cleaned];
+          }
+        }
+      }
+    } catch {
+      // Evidence is best-effort; ignore failures.
+    }
 
     if (cleaned.length === 0) {
       // Fallback: build lanes directly from extracted findings so we still return something usable.

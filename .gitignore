@@ -17,3 +17,5 @@ yarn-error.log*
 
 # other apps in this workspace (keep separate repos separate)
 /Relays/
+.vercel
+.env*.local
