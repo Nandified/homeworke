@@ -58,6 +58,13 @@ enum MessageRole {
   SYSTEM
 }
 
+enum InspectionReportStatus {
+  QUEUED
+  PROCESSING
+  DONE
+  ERROR
+}
+
 // ---------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------
@@ -470,4 +477,65 @@ model InspectionLearningEvent {
   @@index([createdAt])
   @@index([zip])
   @@index([state])
+}
+
+model InspectionReport {
+  id        String                @id @default(cuid())
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  status    InspectionReportStatus @default(QUEUED)
+  error     String?
+
+  pdfUrl    String
+  pdfBytes  Int?
+  pdfSha256 String?
+
+  // Optional metadata
+  ownerName String?
+  address   String?
+  inspector String?
+
+  items     InspectionItem[]
+  evidence  InspectionEvidence[]
+
+  @@index([status, updatedAt])
+  @@index([createdAt])
+}
+
+model InspectionItem {
+  id        String           @id @default(cuid())
+  reportId  String
+  createdAt DateTime         @default(now())
+
+  itemNumber Int?
+  laneTitle  String?
+  label      String
+  note       String?
+  pageNum    Int?
+
+  report    InspectionReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  evidence  InspectionEvidence[]
+
+  @@index([reportId])
+  @@index([reportId, itemNumber])
+}
+
+model InspectionEvidence {
+  id        String           @id @default(cuid())
+  reportId  String
+  itemId    String?
+  createdAt DateTime         @default(now())
+
+  itemNumber Int?
+  pageNum    Int?
+  imageUrl   String
+  caption    String?
+
+  report InspectionReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  item   InspectionItem?  @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  @@index([reportId])
+  @@index([reportId, itemNumber])
+  @@index([itemId])
 }
