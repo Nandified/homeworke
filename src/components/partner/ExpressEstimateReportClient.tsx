@@ -653,7 +653,7 @@ export function ExpressEstimateReportClient(props: {
             try {
               evidenceAttemptedRef.current = true;
               setAnalysisStage("Extracting evidence photos…");
-              const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, { maxPages: 12, scale: 1.35 });
+              const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, { maxPages: 60, scale: 1.25 });
               setAnalysisStage(`Uploading evidence photos… (${(thumbs || []).length})`);
               const uploaded: { src: string; caption?: string }[] = [];
 
@@ -921,7 +921,7 @@ export function ExpressEstimateReportClient(props: {
             // Always show a lane so we can tell whether extraction ran.
             normalized = [
               {
-                title: "Evidence (Summary pages)",
+                title: "Evidence (from report)",
                 items: [
                   {
                     id: "evidence_summary",

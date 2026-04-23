@@ -35,8 +35,9 @@ function bboxFromCtm(ctm: number[]): [number, number, number, number] {
 export async function extractSummaryEvidenceThumbsFromPdf(file: File, opts?: { maxPages?: number; scale?: number }) {
   const ab = await file.arrayBuffer();
   const pdf = await getDocument({ data: ab }).promise;
-  const maxPages = Math.min(opts?.maxPages ?? 12, pdf.numPages || 0);
-  const scale = opts?.scale ?? 1.35;
+  // NOTE: despite the name, this now scans broadly (not just summary pages).
+  const maxPages = Math.min(opts?.maxPages ?? 60, pdf.numPages || 0);
+  const scale = opts?.scale ?? 1.25;
 
   const out: ClientEvidenceThumb[] = [];
 
@@ -47,11 +48,9 @@ export async function extractSummaryEvidenceThumbsFromPdf(file: File, opts?: { m
       .map((it: any) => (typeof it?.str === "string" ? String(it.str).trim() : ""))
       .filter(Boolean);
 
-    const joined = strings.join("\n");
-    if (!/Report Summary/i.test(joined)) continue;
-
     // Capture anchor y positions.
-    const anchors: Array<{ y: number; anchor: string; section?: string }> = [];
+    // We key off "Item:" markers when present; otherwise we still may capture images on the page.
+    const anchors: Array<{ y: number; anchor: string; section?: string; itemNum?: number }> = [];
     const items = Array.isArray(textContent.items) ? (textContent.items as any[]) : [];
 
     // Best-effort section detection: keep latest seen section word.
@@ -61,14 +60,18 @@ export async function extractSummaryEvidenceThumbsFromPdf(file: File, opts?: { m
       const s = typeof it?.str === "string" ? String(it.str).trim() : "";
       if (!s) continue;
       if (/^(Exterior|Interior|Systems|Safety)/i.test(s)) currentSection = s;
-      const m = s.match(/^Page\s+(\d+)\s+Item:\s*(\d+)/i);
+      // Common patterns we've seen:
+      // - "Page 12 Item: 3"
+      // - "Item: 3"
+      // - "ITEM 3"
+      const m = s.match(/^(?:Page\s+\d+\s+)?Item:\s*(\d+)$/i) || s.match(/^ITEM\s+(\d+)$/i);
       if (!m) continue;
+      const itemNum = Number(m[1]);
       const tr = Array.isArray(it?.transform) ? it.transform : null;
       const y = tr && typeof tr[5] === "number" ? Number(tr[5]) : 0;
-      anchors.push({ y, anchor: s, section: currentSection });
+      anchors.push({ y, anchor: s, section: currentSection, itemNum: Number.isFinite(itemNum) ? itemNum : undefined });
     }
 
-    if (!anchors.length) continue;
     anchors.sort((a, b) => b.y - a.y); // higher y first
 
     // Parse images from operator list
@@ -124,19 +127,59 @@ export async function extractSummaryEvidenceThumbsFromPdf(file: File, opts?: { m
     canvas.height = Math.max(1, Math.floor(viewport.height));
     await page.render({ canvasContext: ctx as any, viewport }).promise;
 
-    // For each anchor window, choose nearby images (by vertical center)
-    for (let ai = 0; ai < anchors.length; ai++) {
-      const a = anchors[ai];
-      const next = anchors[ai + 1];
-      const yTop = a.y + 5;
-      const yBottom = next ? next.y - 5 : -Infinity;
+    // If we found item anchors, associate nearby images to each anchor window.
+    // Otherwise, just take a few largest images from the page.
+    if (anchors.length) {
+      for (let ai = 0; ai < anchors.length; ai++) {
+        const a = anchors[ai];
+        const next = anchors[ai + 1];
+        const yTop = a.y + 10;
+        const yBottom = next ? next.y - 10 : -Infinity;
 
-      const inBand = images.filter((im) => {
-        const cy = (im.bboxPdf[1] + im.bboxPdf[3]) / 2;
-        return cy <= yTop && cy >= yBottom;
-      });
+        const inBand = images.filter((im) => {
+          const cy = (im.bboxPdf[1] + im.bboxPdf[3]) / 2;
+          return cy <= yTop && cy >= yBottom;
+        });
 
-      for (const im of inBand.slice(0, 2)) {
+        for (const im of inBand.slice(0, 3)) {
+          const [x0, y0, x1, y1] = im.bboxPdf;
+          const rect = viewport.convertToViewportRectangle([x0, y0, x1, y1]);
+          const rx0 = Math.min(rect[0], rect[2]);
+          const ry0 = Math.min(rect[1], rect[3]);
+          const rx1 = Math.max(rect[0], rect[2]);
+          const ry1 = Math.max(rect[1], rect[3]);
+
+          const sx = clamp(Math.floor(rx0), 0, canvas.width - 1);
+          const sy = clamp(Math.floor(ry0), 0, canvas.height - 1);
+          const sw = clamp(Math.ceil(rx1 - rx0), 1, canvas.width - sx);
+          const sh = clamp(Math.ceil(ry1 - ry0), 1, canvas.height - sy);
+          if (sw < 32 || sh < 32) continue;
+
+          const crop = document.createElement("canvas");
+          const cctx = crop.getContext("2d");
+          if (!cctx) continue;
+          crop.width = sw;
+          crop.height = sh;
+          cctx.drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+
+          const blob: Blob | null = await new Promise((resolve) => crop.toBlob(resolve, "image/jpeg", 0.82));
+          if (!blob) continue;
+
+          out.push({
+            blob,
+            caption: `${a.section || "Report"} • ${a.anchor} (page ${pageNum})`,
+          });
+
+          if (out.length >= 30) return out;
+        }
+      }
+    } else {
+      // No anchors: take up to 3 biggest images on the page.
+      const scored = images
+        .map((im) => ({ im, area: Math.abs((im.bboxPdf[2] - im.bboxPdf[0]) * (im.bboxPdf[3] - im.bboxPdf[1])) }))
+        .sort((a, b) => b.area - a.area)
+        .slice(0, 3);
+      for (const { im } of scored) {
         const [x0, y0, x1, y1] = im.bboxPdf;
         const rect = viewport.convertToViewportRectangle([x0, y0, x1, y1]);
         const rx0 = Math.min(rect[0], rect[2]);
@@ -148,9 +191,7 @@ export async function extractSummaryEvidenceThumbsFromPdf(file: File, opts?: { m
         const sy = clamp(Math.floor(ry0), 0, canvas.height - 1);
         const sw = clamp(Math.ceil(rx1 - rx0), 1, canvas.width - sx);
         const sh = clamp(Math.ceil(ry1 - ry0), 1, canvas.height - sy);
-
-        // Skip tiny crops
-        if (sw < 24 || sh < 24) continue;
+        if (sw < 64 || sh < 64) continue;
 
         const crop = document.createElement("canvas");
         const cctx = crop.getContext("2d");
@@ -162,12 +203,8 @@ export async function extractSummaryEvidenceThumbsFromPdf(file: File, opts?: { m
         const blob: Blob | null = await new Promise((resolve) => crop.toBlob(resolve, "image/jpeg", 0.82));
         if (!blob) continue;
 
-        out.push({
-          blob,
-          caption: `${a.section || "Summary"} • ${a.anchor} (summary page ${pageNum})`,
-        });
-
-        if (out.length >= 18) return out;
+        out.push({ blob, caption: `Report image (page ${pageNum})` });
+        if (out.length >= 30) return out;
       }
     }
   }
