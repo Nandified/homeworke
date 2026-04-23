@@ -5,7 +5,7 @@
 // - Walk operator list to locate image XObjects and infer drawn bboxes via CTM.
 // - Render the page once and crop images from the rendered canvas using viewport coords.
 
-import { getDocument, Util } from "pdfjs-dist";
+import { getDocument, Util, OPS } from "pdfjs-dist";
 
 export type ClientEvidenceThumb = { blob: Blob; caption: string };
 
@@ -86,24 +86,28 @@ export async function extractSummaryEvidenceThumbsFromPdf(file: File, opts?: { m
       const fn = fnArray[i];
       const args = argsArray[i];
 
-      // OPS values (pdfjs) are numeric; but we avoid importing OPS and instead match by behavior:
-      // save=10, restore=11, transform=12, paintImageXObject=85, paintJpegXObject=86
-      // These have been stable across pdfjs versions.
-      if (fn === 10) {
+      if (fn === (OPS as any).save) {
         stack.push(ctm.slice());
         continue;
       }
-      if (fn === 11) {
+      if (fn === (OPS as any).restore) {
         const prev = stack.pop();
         if (prev) ctm = prev;
         continue;
       }
-      if (fn === 12) {
+      if (fn === (OPS as any).transform) {
         const m = Array.isArray(args) ? args.map(Number) : [];
         if (m.length === 6) ctm = Util.transform(ctm, m);
         continue;
       }
-      if (fn === 85 || fn === 86) {
+
+      const isImageOp =
+        fn === (OPS as any).paintImageXObject ||
+        fn === (OPS as any).paintJpegXObject ||
+        fn === (OPS as any).paintInlineImageXObject ||
+        fn === (OPS as any).paintImageXObjectRepeat;
+
+      if (isImageOp) {
         const bb = bboxFromCtm(ctm);
         images.push({ bboxPdf: bb });
         continue;

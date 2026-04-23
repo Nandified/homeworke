@@ -647,6 +647,7 @@ export function ExpressEstimateReportClient(props: {
             try {
               setAnalysisStage("Extracting evidence photos…");
               const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, { maxPages: 12, scale: 1.35 });
+              setAnalysisStage(`Uploading evidence photos… (${(thumbs || []).length})`);
               const uploaded: { src: string; caption?: string }[] = [];
 
               for (const t of (thumbs || []).slice(0, 18)) {
