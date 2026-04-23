@@ -19,7 +19,11 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
   await db().inspectionReport.update({ where: { id }, data: { status: "PROCESSING", error: null } });
 
   try {
-    const r = await fetch(report.pdfUrl);
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    const isBlob = /vercel-storage\.com|blob\.vercel-storage\.com/i.test(report.pdfUrl);
+    const r = await fetch(report.pdfUrl, {
+      headers: isBlob && token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
     if (!r.ok) throw new Error(`Failed to fetch PDF (${r.status})`);
     const ab = await r.arrayBuffer();
     const buf = Buffer.from(ab);
@@ -35,7 +39,7 @@ export async function POST(_: Request, ctx: { params: Promise<{ id: string }> })
         const key = `inspection-evidence/${id}/item-${b.itemNumber}/p${b.targetPage}-${i}.${ext}`;
         const bytes = Buffer.from(im.base64, "base64");
         const blob = await put(key, bytes, {
-          access: "public",
+          access: "private",
           contentType: im.mime,
           addRandomSuffix: true,
         });
