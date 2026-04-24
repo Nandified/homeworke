@@ -30,16 +30,21 @@ export async function getPublishedServiceBySlug(slug: string): Promise<ServiceLi
   if (!slug) return null;
 
   if (dbEnabled()) {
-    const row = await db().service.findUnique({ where: { slug } });
-    if (row && row.published) {
-      return {
-        slug: row.slug,
-        name: row.title,
-        icon: row.icon || "wrench",
-        summary: row.summary || "",
-        examples: Array.isArray(row.examples) ? (row.examples as string[]) : [],
-        notes: row.notes || "",
-      };
+    try {
+      const row = await db().service.findUnique({ where: { slug } });
+      if (row && row.published) {
+        return {
+          slug: row.slug,
+          name: row.title,
+          icon: row.icon || "wrench",
+          summary: row.summary || "",
+          examples: Array.isArray(row.examples) ? (row.examples as string[]) : [],
+          notes: row.notes || "",
+        };
+      }
+    } catch {
+      // Common during initial deploys/builds before migrations run (e.g. P2021 table missing).
+      // Fall back to spec-backed content instead of failing the whole render.
     }
   }
   return fromSpec(slug);
@@ -53,8 +58,12 @@ export type PageLike = {
 
 export async function getPublishedPageBySlug(slug: string): Promise<PageLike | null> {
   if (dbEnabled()) {
-    const row = await db().page.findUnique({ where: { slug } });
-    if (row && row.published) return { slug: row.slug, title: row.title, body: row.body || null };
+    try {
+      const row = await db().page.findUnique({ where: { slug } });
+      if (row && row.published) return { slug: row.slug, title: row.title, body: row.body || null };
+    } catch {
+      // Fall back to code/spec-backed pages if DB isn't ready yet.
+    }
   }
 
   // Fallbacks for existing code-backed pages
@@ -67,16 +76,20 @@ export async function getPublishedPageBySlug(slug: string): Promise<PageLike | n
 
 export async function listPublishedServices(): Promise<ServiceLike[]> {
   if (dbEnabled()) {
-    const rows = await db().service.findMany({ where: { published: true }, orderBy: [{ updatedAt: "desc" }] });
-    if (rows.length) {
-      return rows.map((r) => ({
-        slug: r.slug,
-        name: r.title,
-        icon: r.icon || "wrench",
-        summary: r.summary || "",
-        examples: Array.isArray(r.examples) ? (r.examples as string[]) : [],
-        notes: r.notes || "",
-      }));
+    try {
+      const rows = await db().service.findMany({ where: { published: true }, orderBy: [{ updatedAt: "desc" }] });
+      if (rows.length) {
+        return rows.map((r) => ({
+          slug: r.slug,
+          name: r.title,
+          icon: r.icon || "wrench",
+          summary: r.summary || "",
+          examples: Array.isArray(r.examples) ? (r.examples as string[]) : [],
+          notes: r.notes || "",
+        }));
+      }
+    } catch {
+      // If the DB schema isn't applied yet (e.g. P2021 table missing), fall back to spec.
     }
   }
 
