@@ -653,11 +653,13 @@ export function ExpressEstimateReportClient(props: {
             try {
               evidenceAttemptedRef.current = true;
               setAnalysisStage("Extracting evidence photos…");
-              const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, { maxPages: 60, scale: 1.25 });
+              // Some inspection reports are 80-120 pages; evidence photos often appear late.
+              // Scan more pages (still capped inside the extractor) so we actually find photos.
+              const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, { maxPages: 120, scale: 1.15 });
               setAnalysisStage(`Uploading evidence photos… (${(thumbs || []).length})`);
               const uploaded: { src: string; caption?: string }[] = [];
 
-              for (const t of (thumbs || []).slice(0, 18)) {
+              for (const t of (thumbs || []).slice(0, 30)) {
                 const upFd = new FormData();
                 const upFile = new File([t.blob], `evidence-${Date.now()}.jpg`, { type: "image/jpeg" });
                 upFd.set("file", upFile, upFile.name);
