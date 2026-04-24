@@ -25,6 +25,10 @@ function fromSpec(slug: string): ServiceLike | null {
 }
 
 export async function getPublishedServiceBySlug(slug: string): Promise<ServiceLike | null> {
+  // Defensive guard: during build/prerender, Next can invoke routes with missing params.
+  // Prisma throws if we pass `undefined` into a WhereUniqueInput.
+  if (!slug) return null;
+
   if (dbEnabled()) {
     const row = await db().service.findUnique({ where: { slug } });
     if (row && row.published) {

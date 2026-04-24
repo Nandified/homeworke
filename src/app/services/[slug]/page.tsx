@@ -12,11 +12,18 @@ import { getPublishedServiceBySlug } from "@/lib/cms";
 export const runtime = "nodejs";
 
 export function generateStaticParams() {
-  return (servicesData.services || []).map((s) => ({ slug: s.slug }));
+  // Filter out any malformed entries so build-time SSG can't generate invalid routes.
+  return (servicesData.services || [])
+    .map((s) => s.slug)
+    .filter((slug): slug is string => typeof slug === "string" && slug.length > 0)
+    .map((slug) => ({ slug }));
 }
 
-export default async function ServiceDetailPage({ params }: { params: { slug: string } }) {
-  const service = await getPublishedServiceBySlug(params.slug);
+export default async function ServiceDetailPage({ params }: { params: { slug?: string } }) {
+  const slug = params?.slug;
+  if (!slug) return notFound();
+
+  const service = await getPublishedServiceBySlug(slug);
   if (!service) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
