@@ -11,7 +11,7 @@ import { Camera, ChevronDown, Copy, Download, Hammer, Share2 } from "lucide-reac
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
-import { extractSummaryEvidenceThumbsFromPdf } from "@/lib/pdf-summary-evidence-client";
+import { extractSummaryEvidenceThumbsFromPdf, type ClientEvidenceThumb } from "@/lib/pdf-summary-evidence-client";
 
 type EvidenceThumb = { src: string; caption?: string };
 
@@ -193,6 +193,10 @@ export function ExpressEstimateReportClient(props: {
   const didOcrFallbackRef = useRef(false);
   const clientEvidenceRef = useRef<Array<{ src: string; caption?: string }>>([]);
   const evidenceAttemptedRef = useRef(false);
+
+  const pendingEvidenceThumbsRef = useRef<ClientEvidenceThumb[]>([]);
+  const [pendingEvidenceCount, setPendingEvidenceCount] = useState<number>(0);
+  const [loadingMoreEvidence, setLoadingMoreEvidence] = useState<boolean>(false);
 
   // Once the staged file is consumed we delete it, so on refresh `props.stagedId` is gone.
   // Persist a flag so the UI can still show the right empty-state messaging for an uploaded report.
@@ -398,6 +402,8 @@ export function ExpressEstimateReportClient(props: {
         const fd = new FormData();
         clientEvidenceRef.current = [];
         evidenceAttemptedRef.current = false;
+        pendingEvidenceThumbsRef.current = [];
+        setPendingEvidenceCount(0);
         fd.set("cacheKey", cacheKey);
         const r = await fetch("/api/express-estimate/analyze", { method: "POST", body: fd });
         const j = await r.json().catch(() => null);
@@ -637,6 +643,8 @@ export function ExpressEstimateReportClient(props: {
         const fd = new FormData();
         clientEvidenceRef.current = [];
         evidenceAttemptedRef.current = false;
+        pendingEvidenceThumbsRef.current = [];
+        setPendingEvidenceCount(0);
 
         // Build combined text + hash from all files.
         const pieces: string[] = [];
@@ -653,22 +661,19 @@ export function ExpressEstimateReportClient(props: {
             try {
               evidenceAttemptedRef.current = true;
               setAnalysisStage("Extracting evidence photos…");
-              // Some inspection reports are 80-120 pages; evidence photos often appear late.
+              // Some inspection reports are 80-120+ pages; evidence photos often appear late.
               // Scan more pages (still capped inside the extractor) so we actually find photos.
               const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, { maxPages: 120, scale: 1.15 });
-              setAnalysisStage(`Uploading evidence photos… (${(thumbs || []).length})`);
-              const uploaded: { src: string; caption?: string }[] = [];
 
-              for (const t of (thumbs || []).slice(0, 30)) {
-                const upFd = new FormData();
-                const upFile = new File([t.blob], `evidence-${Date.now()}.jpg`, { type: "image/jpeg" });
-                upFd.set("file", upFile, upFile.name);
-                const rr = await fetch("/api/evidence/upload", { method: "POST", body: upFd });
-                const jj = (await rr.json().catch(() => null)) as any;
-                if (rr.ok && jj?.ok === true && typeof jj.src === "string") {
-                  uploaded.push({ src: String(jj.src), caption: typeof t.caption === "string" ? t.caption : undefined });
-                }
-              }
+              // UX: auto-upload a preview batch, then let the user load more on-demand.
+              const initialUploadLimit = 40;
+              const firstBatch = (thumbs || []).slice(0, initialUploadLimit);
+              const remaining = (thumbs || []).slice(initialUploadLimit);
+              pendingEvidenceThumbsRef.current = remaining;
+              setPendingEvidenceCount(remaining.length);
+
+              setAnalysisStage(`Uploading evidence photos… (${firstBatch.length}${remaining.length ? ` +${remaining.length} more available` : ""})`);
+              const uploaded = await uploadEvidenceThumbBatch(firstBatch);
 
               clientEvidenceRef.current = uploaded;
               // store temporarily on the FormData so we can merge into lanes after analyze
@@ -994,6 +999,92 @@ export function ExpressEstimateReportClient(props: {
   // Analysis is triggered during the upload/submit step (list page).
   // This page focuses on viewing results and downloading.
 
+  async function uploadEvidenceThumbBatch(thumbs: ClientEvidenceThumb[]) {
+    const uploaded: { src: string; caption?: string }[] = [];
+
+    // Simple sequential upload (reliable). If we need faster later, we can add concurrency.
+    for (const t of thumbs) {
+      try {
+        const upFd = new FormData();
+        const upFile = new File([t.blob], `evidence-${Date.now()}.jpg`, { type: "image/jpeg" });
+        upFd.set("file", upFile, upFile.name);
+        const rr = await fetch("/api/evidence/upload", { method: "POST", body: upFd });
+        const jj = (await rr.json().catch(() => null)) as any;
+        if (rr.ok && jj?.ok === true && typeof jj.src === "string") {
+          uploaded.push({ src: String(jj.src), caption: typeof t.caption === "string" ? t.caption : undefined });
+        }
+      } catch {
+        // ignore single-thumb failure
+      }
+    }
+
+    return uploaded;
+  }
+
+  async function loadMoreEvidence() {
+    if (loadingMoreEvidence) return;
+    const pending = pendingEvidenceThumbsRef.current || [];
+    if (!pending.length) return;
+
+    setLoadingMoreEvidence(true);
+    try {
+      const batch = pending.splice(0, 25);
+      pendingEvidenceThumbsRef.current = pending;
+      setPendingEvidenceCount(pending.length);
+
+      const newlyUploaded = await uploadEvidenceThumbBatch(batch);
+      if (!newlyUploaded.length) return;
+
+      // Append to the client evidence list.
+      clientEvidenceRef.current = [...(clientEvidenceRef.current || []), ...newlyUploaded];
+
+      // Merge into the rendered lanes (Evidence lane + per-item fallback evidence).
+      setExtracted((prev) => {
+        const thumbs = clientEvidenceRef.current || [];
+        const next = prev.map((lane) => {
+          if (lane.title === "Evidence (from report)") {
+            return {
+              ...lane,
+              items: lane.items.map((it) =>
+                it.id === "evidence_summary"
+                  ? {
+                      ...it,
+                      label: thumbs.length ? "Summary page photos" : "No evidence photos extracted",
+                      note: thumbs.length
+                        ? "Extracted client-side from the report summary pages."
+                        : "Evidence extraction ran but returned 0 thumbs (or upload failed).",
+                      evidence: thumbs.length ? thumbs.map((x) => ({ src: x.src, caption: x.caption })) : undefined,
+                    }
+                  : it
+              ),
+            };
+          }
+          return {
+            ...lane,
+            items: lane.items.map((it) => {
+              if (thumbs.length && (!it.evidence || !it.evidence.length)) {
+                return { ...it, evidence: [thumbs[0]] };
+              }
+              return it;
+            }),
+          };
+        });
+
+        // Persist so refresh doesn't lose loaded thumbs.
+        try {
+          window.localStorage.setItem(
+            `hw.expressEstimate.result.${props.reportId}`,
+            JSON.stringify({ summary: analysisSummary || "", lanes: next, cache: { cacheKey, expiresAt } })
+          );
+        } catch {}
+
+        return next;
+      });
+    } finally {
+      setLoadingMoreEvidence(false);
+    }
+  }
+
   async function download(mode: "full" | "selected") {
     // Allow downloads for uploaded reports too (not just demo reports).
     const reportId = report?.id || props.reportId;
@@ -1275,6 +1366,18 @@ export function ExpressEstimateReportClient(props: {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2">
+                        {lane.title === "Evidence (from report)" && pendingEvidenceCount > 0 ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="rounded-full px-3 min-w-[160px]"
+                            disabled={loadingMoreEvidence}
+                            onClick={() => void loadMoreEvidence()}
+                            title="Upload more evidence photos from this report"
+                          >
+                            {loadingMoreEvidence ? "Loading photos…" : `Load more photos (${pendingEvidenceCount})`}
+                          </Button>
+                        ) : null}
                         {/* Spacer so header actions line up with per-item action columns (Details pill width) */}
                         <div className="hidden sm:block w-[98px]" aria-hidden="true" />
                         <Button
