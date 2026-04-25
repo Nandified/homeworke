@@ -24,6 +24,9 @@ type LaneItem = {
   price?: number;
   evidence?: EvidenceThumb[];
 
+  // Optional: original inspection report numbering (e.g. Item 7 / Defect 7)
+  itemNum?: number;
+
   // Scope-aware pricing + booking eligibility
   pricingMode?: "Guardrails" | "Quote-only";
   confidence?: number; // 0..1
@@ -81,6 +84,26 @@ function normalizeLabel(s: string) {
 function stableIdFor(label: string) {
   const h = crypto.createHash("sha1").update(normalizeLabel(label)).digest("hex").slice(0, 10);
   return `item_${h}`;
+}
+
+function extractInspectionItemNum(text: string): number | null {
+  const s = (text || "").replace(/\s+/g, " ").trim();
+  if (!s) return null;
+  // Accept common label variants.
+  const m = s.match(/\b(?:Item|Defect|Finding|Recommendation|Photo|Picture|Image|Issue|Concern)\s*#?\s*:?\s*(\d{1,3})\b/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  return Number.isFinite(n) ? n : null;
+}
+
+function inferInspectionItemNum(input: { id?: string; label?: string; note?: string }): number | null {
+  const a = extractInspectionItemNum(input.label || "");
+  if (a !== null) return a;
+  const b = extractInspectionItemNum(input.note || "");
+  if (b !== null) return b;
+  const c = extractInspectionItemNum(input.id || "");
+  if (c !== null) return c;
+  return null;
 }
 
 function estimateTokensFromChars(chars: number) {
@@ -1424,7 +1447,8 @@ export async function POST(req: Request) {
             const range = typeof ir.range === "string" ? ir.range : undefined;
             const price = typeof ir.price === "number" && Number.isFinite(ir.price) ? ir.price : undefined;
             const id = typeof ir.id === "string" && ir.id ? ir.id : stableIdFor(label);
-            return { id, label, note, range, price };
+            const itemNum = inferInspectionItemNum({ id, label, note }) ?? (typeof ir.itemNum === "number" ? ir.itemNum : null);
+            return { id, label, note, range, price, itemNum: itemNum ?? undefined };
           })
           .filter((it) => it.label)
           .slice(0, 60);
@@ -1499,7 +1523,9 @@ export async function POST(req: Request) {
         const note = noteParts.join("\n");
         const range = catalog?.rangeHint || fillMissingRange(label, location);
         const price = midpointFromRange(range) ?? undefined;
-        buckets.get(lane)!.push({ id: stableIdFor(label + "|" + (it.location || "")), label, note, range, price });
+        const id = stableIdFor(label + "|" + (it.location || ""));
+        const itemNum = inferInspectionItemNum({ id, label, note }) ?? undefined;
+        buckets.get(lane)!.push({ id, label, note, range, price, itemNum });
       }
 
       const fallbackLanes: ExtractedLane[] = laneOrder

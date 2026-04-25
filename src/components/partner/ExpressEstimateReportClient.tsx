@@ -580,15 +580,16 @@ export function ExpressEstimateReportClient(props: {
   }
 
   function inferItemNumFromText(t: string): number | null {
-    const s = (t || "").trim();
+    const s = (t || "").replace(/\s+/g, " ").trim();
     if (!s) return null;
-    const m = s.match(/\bItem\s*:?\s*(\d{1,3})\b/i) || s.match(/\bITEM\s+(\d{1,3})\b/);
+    const m = s.match(/\b(?:Item|Defect|Finding|Recommendation|Photo|Picture|Image|Issue|Concern)\s*#?\s*:?\s*(\d{1,3})\b/i);
     if (!m) return null;
     const n = Number(m[1]);
     return Number.isFinite(n) ? n : null;
   }
 
-  function inferItemNum(it: { label?: string; note?: string; id?: string }): number | null {
+  function inferItemNum(it: { label?: string; note?: string; id?: string; itemNum?: number }): number | null {
+    if (typeof it.itemNum === "number" && Number.isFinite(it.itemNum)) return it.itemNum;
     const a = inferItemNumFromText(it.label || "");
     if (a !== null) return a;
     const b = inferItemNumFromText(it.note || "");
