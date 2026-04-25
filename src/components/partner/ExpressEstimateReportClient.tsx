@@ -1008,7 +1008,7 @@ export function ExpressEstimateReportClient(props: {
         const upFd = new FormData();
         const upFile = new File([t.blob], `evidence-${Date.now()}.jpg`, { type: "image/jpeg" });
         upFd.set("file", upFile, upFile.name);
-        const rr = await fetch("/api/evidence/upload", { method: "POST", body: upFd });
+        const rr = await fetch("/api/evidence/upload", { method: "POST", body: upFd, credentials: "include" });
         const jj = (await rr.json().catch(() => null)) as any;
         if (rr.ok && jj?.ok === true && typeof jj.src === "string") {
           uploaded.push({ src: String(jj.src), caption: typeof t.caption === "string" ? t.caption : undefined });
