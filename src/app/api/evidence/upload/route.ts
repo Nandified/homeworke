@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   // Store thumbs as PRIVATE blobs (matches Vercel Blob store config). We then serve them
   // through our own `/api/evidence` proxy which attaches the Blob token.
   try {
-    const blob = await put(pathname, buf, { access: "private", contentType: mime });
+    const blob = await put(pathname, buf, { access: "private", contentType: mime, token });
     return NextResponse.json({
       ok: true,
       sha256,
@@ -43,9 +43,25 @@ export async function POST(req: Request) {
       bytes: buf.length,
       blobUrl: blob.url,
       src: `/api/evidence?url=${encodeURIComponent(blob.url)}`,
+      build: {
+        commit: process.env.VERCEL_GIT_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_REF || null,
+        env: process.env.VERCEL_ENV || null,
+      },
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ ok: false, error: "blob_put_failed", detail: msg.slice(0, 500) }, { status: 500 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "blob_put_failed",
+        expectedAccess: "private",
+        detail: msg.slice(0, 500),
+        build: {
+          commit: process.env.VERCEL_GIT_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_REF || null,
+          env: process.env.VERCEL_ENV || null,
+        },
+      },
+      { status: 500 }
+    );
   }
 }
