@@ -1448,7 +1448,7 @@ export async function POST(req: Request) {
               const pathname = `evidence/${hash || "pdf"}/${im.sha256}.${im.mime === "image/png" ? "png" : "jpg"}`;
               const blob = await put(pathname, imgBuf, { access: "private", contentType: im.mime });
               thumbs.push({
-                src: `/api/evidence?url=${encodeURIComponent(blob.url)}`,
+                src: blob.url,
                 caption: `${b.section || "Summary"} • Page ${b.targetPage} Item ${b.itemNumber}${b.title ? ` — ${b.title}` : ""}`,
                 blobUrl: blob.url,
               });
