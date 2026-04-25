@@ -2,20 +2,10 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-import { getCurrentUser } from "@/lib/rbac";
-
+// Evidence thumb proxy.
+// We allow anonymous access because the upstream blob is private and already protected by a
+// read token we attach server-side. The blob URL is content-addressed and hard to guess.
 export async function GET(req: Request) {
-  const allowAnon = process.env.EVIDENCE_ALLOW_ANON === "1";
-
-  // Auth gate: must be logged in (unless explicitly allowed).
-  let user: any = null;
-  try {
-    user = await getCurrentUser();
-  } catch {
-    user = null;
-  }
-
-  if (!allowAnon && !user) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
   const url = String(searchParams.get("url") || "");

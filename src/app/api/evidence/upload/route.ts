@@ -32,12 +32,18 @@ export async function POST(req: Request) {
 
   const pathname = `evidence/uploads/${sha256}.${ext}`;
 
-  // NOTE: We store evidence thumbs as PUBLIC blobs so the client can render them reliably
-  // without relying on session cookies (Safari/WebKit can be finicky) or proxy endpoints.
-  // The URL is effectively unguessable (content-addressed via sha256) and only includes thumbs.
+  // Store thumbs as PRIVATE blobs (matches Vercel Blob store config). We then serve them
+  // through our own `/api/evidence` proxy which attaches the Blob token.
   try {
-    const blob = await put(pathname, buf, { access: "public", contentType: mime });
-    return NextResponse.json({ ok: true, sha256, mime, bytes: buf.length, blobUrl: blob.url, src: blob.url });
+    const blob = await put(pathname, buf, { access: "private", contentType: mime });
+    return NextResponse.json({
+      ok: true,
+      sha256,
+      mime,
+      bytes: buf.length,
+      blobUrl: blob.url,
+      src: `/api/evidence?url=${encodeURIComponent(blob.url)}`,
+    });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return NextResponse.json({ ok: false, error: "blob_put_failed", detail: msg.slice(0, 500) }, { status: 500 });
