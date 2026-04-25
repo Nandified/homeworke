@@ -663,7 +663,12 @@ export function ExpressEstimateReportClient(props: {
               setAnalysisStage("Extracting evidence photos…");
               // Some inspection reports are 80-120+ pages; evidence photos often appear late.
               // Scan more pages (still capped inside the extractor) so we actually find photos.
-              const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, { maxPages: 120, scale: 1.15 });
+              const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, {
+                maxPages: 120,
+                startPage: 3, // skip cover/boilerplate pages
+                maxThumbs: 90,
+                scale: 1.15,
+              });
 
               // UX: auto-upload a preview batch, then let the user load more on-demand.
               const initialUploadLimit = 40;
@@ -932,24 +937,15 @@ export function ExpressEstimateReportClient(props: {
                 items: [
                   {
                     id: "evidence_summary",
-                    label: thumbs.length ? "Summary page photos" : "No evidence photos extracted",
+                    label: thumbs.length ? "Report photos" : "No evidence photos extracted",
                     note: thumbs.length
-                      ? "Extracted client-side from the report summary pages."
+                      ? "Extracted client-side from the inspection report."
                       : "Evidence extraction ran but returned 0 thumbs (or upload failed).",
                     evidence: thumbs.length ? thumbs : undefined,
                   },
                 ],
               },
-              ...normalized.map((lane) => ({
-                ...lane,
-                items: lane.items.map((it) => {
-                  // Rough ship: if we have thumbs and this item has none, attach 1 thumb so the Details UI shows it.
-                  if (thumbs.length && (!it.evidence || !it.evidence.length)) {
-                    return { ...it, evidence: [thumbs[0]] };
-                  }
-                  return it;
-                }),
-              })),
+              ...normalized,
             ];
           }
         } catch {
@@ -1049,9 +1045,9 @@ export function ExpressEstimateReportClient(props: {
                 it.id === "evidence_summary"
                   ? {
                       ...it,
-                      label: thumbs.length ? "Summary page photos" : "No evidence photos extracted",
+                      label: thumbs.length ? "Report photos" : "No evidence photos extracted",
                       note: thumbs.length
-                        ? "Extracted client-side from the report summary pages."
+                        ? "Extracted client-side from the inspection report."
                         : "Evidence extraction ran but returned 0 thumbs (or upload failed).",
                       evidence: thumbs.length ? thumbs.map((x) => ({ src: x.src, caption: x.caption })) : undefined,
                     }
@@ -1059,15 +1055,7 @@ export function ExpressEstimateReportClient(props: {
               ),
             };
           }
-          return {
-            ...lane,
-            items: lane.items.map((it) => {
-              if (thumbs.length && (!it.evidence || !it.evidence.length)) {
-                return { ...it, evidence: [thumbs[0]] };
-              }
-              return it;
-            }),
-          };
+          return lane;
         });
 
         // Persist so refresh doesn't lose loaded thumbs.

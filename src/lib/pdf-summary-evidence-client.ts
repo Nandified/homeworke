@@ -32,16 +32,21 @@ function bboxFromCtm(ctm: number[]): [number, number, number, number] {
   return [x0, y0, x1, y1];
 }
 
-export async function extractSummaryEvidenceThumbsFromPdf(file: File, opts?: { maxPages?: number; scale?: number }) {
+export async function extractSummaryEvidenceThumbsFromPdf(
+  file: File,
+  opts?: { maxPages?: number; scale?: number; startPage?: number; maxThumbs?: number }
+) {
   const ab = await file.arrayBuffer();
   const pdf = await getDocument({ data: ab }).promise;
   // NOTE: despite the name, this now scans broadly (not just summary pages).
   const maxPages = Math.min(opts?.maxPages ?? 60, pdf.numPages || 0);
+  const startPage = clamp(Number(opts?.startPage ?? 1), 1, maxPages);
+  const maxThumbs = clamp(Number(opts?.maxThumbs ?? 60), 1, 500);
   const scale = opts?.scale ?? 1.25;
 
   const out: ClientEvidenceThumb[] = [];
 
-  for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+  for (let pageNum = startPage; pageNum <= maxPages; pageNum++) {
     const page = await pdf.getPage(pageNum);
     const textContent = await page.getTextContent();
     const strings = (textContent.items || [])
@@ -170,7 +175,7 @@ export async function extractSummaryEvidenceThumbsFromPdf(file: File, opts?: { m
             caption: `${a.section || "Report"} • ${a.anchor} (page ${pageNum})`,
           });
 
-          if (out.length >= 30) return out;
+          if (out.length >= maxThumbs) return out;
         }
       }
     } else {
@@ -204,7 +209,7 @@ export async function extractSummaryEvidenceThumbsFromPdf(file: File, opts?: { m
         if (!blob) continue;
 
         out.push({ blob, caption: `Report image (page ${pageNum})` });
-        if (out.length >= 30) return out;
+        if (out.length >= maxThumbs) return out;
       }
     }
   }
