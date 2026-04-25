@@ -31,10 +31,15 @@ export async function POST(req: Request) {
   })();
 
   const pathname = `evidence/uploads/${sha256}.${ext}`;
+
   // NOTE: We store evidence thumbs as PUBLIC blobs so the client can render them reliably
   // without relying on session cookies (Safari/WebKit can be finicky) or proxy endpoints.
   // The URL is effectively unguessable (content-addressed via sha256) and only includes thumbs.
-  const blob = await put(pathname, buf, { access: "public", contentType: mime });
-
-  return NextResponse.json({ ok: true, sha256, mime, bytes: buf.length, blobUrl: blob.url, src: blob.url });
+  try {
+    const blob = await put(pathname, buf, { access: "public", contentType: mime });
+    return NextResponse.json({ ok: true, sha256, mime, bytes: buf.length, blobUrl: blob.url, src: blob.url });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ ok: false, error: "blob_put_failed", detail: msg.slice(0, 500) }, { status: 500 });
+  }
 }
