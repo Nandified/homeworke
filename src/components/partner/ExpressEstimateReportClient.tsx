@@ -368,7 +368,19 @@ export function ExpressEstimateReportClient(props: {
       if (!raw) return;
       const j = JSON.parse(raw) as any;
       if (j && Array.isArray(j.lanes)) {
-        setExtracted(j.lanes as ExtractedLane[]);
+        // Migration: older cached results may have a "fallback" evidence thumb copied onto every line item.
+        // Step 1 wants evidence to live only in the report-level gallery.
+        const cleaned = (j.lanes as ExtractedLane[]).map((lane) => {
+          if (lane?.title === "Evidence (from report)") return lane;
+          return {
+            ...lane,
+            items: Array.isArray(lane.items)
+              ? lane.items.map((it) => ({ ...it, evidence: undefined }))
+              : lane.items,
+          } as ExtractedLane;
+        });
+
+        setExtracted(cleaned);
         if (typeof j.summary === "string") setAnalysisSummary(j.summary);
         if (j.cache && typeof j.cache.cacheKey === "string") setCacheKey(j.cache.cacheKey);
         if (j.cache && typeof j.cache.expiresAt === "string") setExpiresAt(j.cache.expiresAt);
