@@ -14,7 +14,17 @@ import { extractSummaryEvidenceBlocksFromPdf } from "@/lib/pdf-summary-evidence"
 
 import { db, dbEnabled } from "@/lib/db";
 
-type EvidenceThumb = { src: string; caption?: string; blobUrl?: string };
+type EvidenceThumb = {
+  src: string;
+  caption?: string;
+  blobUrl?: string;
+  debug?: {
+    hint?: string;
+    laneGuess?: string;
+    score?: number;
+    matchedItemLabel?: string;
+  };
+};
 
 type LaneItem = {
   id: string;
@@ -1494,15 +1504,23 @@ export async function POST(req: Request) {
     try {
       const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
       if (blobToken && pdfBufForEvidence) {
-        const blocks = await extractSummaryEvidenceBlocksFromPdf(pdfBufForEvidence, { maxPages: 80 });
+        const EVIDENCE_MAX_PAGES = Number(process.env.EVIDENCE_MAX_PAGES || 200);
+        const maxPages = Number.isFinite(EVIDENCE_MAX_PAGES) ? Math.max(10, Math.min(400, EVIDENCE_MAX_PAGES)) : 200;
+        const blocks = await extractSummaryEvidenceBlocksFromPdf(pdfBufForEvidence, { maxPages });
         if (blocks.length) {
           const evidenceItems: LaneItem[] = [];
 
           // Attach evidence to best-matching lane item when we can.
           // Otherwise, keep it in a fallback Evidence lane.
-          for (const b of blocks.slice(0, 120)) {
+          const debugOn = process.env.EVIDENCE_MATCH_DEBUG === "1";
+          const maxBlocks = Math.max(40, Math.min(600, Number(process.env.EVIDENCE_MAX_BLOCKS || 300)));
+          for (const b of blocks.slice(0, maxBlocks)) {
+            const laneGuess = normalizeLaneTitle(b.section || "Other");
+            const hint = `${b.title || ""} ${b.anchorText || ""}`.trim();
+
             const thumbs: EvidenceThumb[] = [];
-            for (const im of b.images.slice(0, 12)) {
+            const maxImgsPerBlock = Math.max(3, Math.min(40, Number(process.env.EVIDENCE_MAX_IMGS_PER_BLOCK || 16)));
+            for (const im of b.images.slice(0, maxImgsPerBlock)) {
               const imgBuf = Buffer.from(im.base64, "base64");
               const pathname = `evidence/${hash || "pdf"}/${im.sha256}.${im.mime === "image/png" ? "png" : "jpg"}`;
               const blob = await put(pathname, imgBuf, { access: "private", contentType: im.mime });
@@ -1510,13 +1528,16 @@ export async function POST(req: Request) {
                 src: `/api/evidence?url=${encodeURIComponent(blob.url)}`,
                 caption: `${b.section || "Summary"} • Page ${b.targetPage} ${b.itemNumber ? `Item ${b.itemNumber} ` : ""}${b.title ? `— ${b.title}` : ""}`.trim(),
                 blobUrl: blob.url,
+                debug: debugOn
+                  ? {
+                      hint,
+                      laneGuess,
+                    }
+                  : undefined,
               });
             }
 
             if (!thumbs.length) continue;
-
-            const laneGuess = normalizeLaneTitle(b.section || "Other");
-            const hint = `${b.title || ""} ${b.anchorText || ""}`.trim();
 
             // Find a candidate lane to attach into.
             const laneIdx = cleaned.findIndex((l) => l.title === laneGuess);
@@ -1526,6 +1547,18 @@ export async function POST(req: Request) {
             // Require a minimum similarity so we don't attach random photos.
             if (best && best.score >= 0.18) {
               const target = candidates[best.idx] as any;
+
+              // Stamp match debug on thumbs (if enabled).
+              if (debugOn) {
+                for (const t of thumbs) {
+                  t.debug = {
+                    ...(t.debug || {}),
+                    score: best.score,
+                    matchedItemLabel: typeof target?.label === "string" ? target.label : undefined,
+                  };
+                }
+              }
+
               const merged = [...(Array.isArray(target.evidence) ? target.evidence : []), ...thumbs].slice(0, 12);
               (candidates as any)[best.idx] = { ...target, evidence: merged, itemNum: target.itemNum ?? (b.itemNumber || undefined) };
               cleaned[laneIdx] = { ...cleaned[laneIdx], items: [...candidates] as any };

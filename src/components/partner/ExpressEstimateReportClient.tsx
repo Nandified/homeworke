@@ -446,10 +446,15 @@ export function ExpressEstimateReportClient(props: {
                 note: typeof it.note === "string" ? it.note : undefined,
                 range: typeof it.range === "string" ? it.range : undefined,
                 price: typeof it.price === "number" ? it.price : undefined,
+                itemNum: typeof it.itemNum === "number" ? it.itemNum : undefined,
                 evidence: Array.isArray(it.evidence)
                   ? it.evidence
                       .filter((ev: any) => ev && typeof ev.src === "string")
-                      .map((ev: any) => ({ src: String(ev.src), caption: typeof ev.caption === "string" ? ev.caption : undefined }))
+                      .map((ev: any) => ({
+                        src: String(ev.src),
+                        caption: typeof ev.caption === "string" ? ev.caption : undefined,
+                        debug: ev.debug && typeof ev.debug === "object" ? (ev.debug as any) : undefined,
+                      }))
                   : undefined,
                 pricingDebug: it.pricingDebug && typeof it.pricingDebug === "object" ? it.pricingDebug : undefined,
               })),
@@ -950,10 +955,15 @@ export function ExpressEstimateReportClient(props: {
                 note: typeof it.note === "string" ? it.note : undefined,
                 range: typeof it.range === "string" ? it.range : undefined,
                 price: typeof it.price === "number" ? it.price : undefined,
+                itemNum: typeof (it as any).itemNum === "number" ? (it as any).itemNum : undefined,
                 evidence: Array.isArray(it.evidence)
                   ? it.evidence
                       .filter((ev: any) => ev && typeof ev.src === "string")
-                      .map((ev: any) => ({ src: String(ev.src), caption: typeof ev.caption === "string" ? ev.caption : undefined }))
+                      .map((ev: any) => ({
+                        src: String(ev.src),
+                        caption: typeof ev.caption === "string" ? ev.caption : undefined,
+                        debug: ev.debug && typeof ev.debug === "object" ? (ev.debug as any) : undefined,
+                      }))
                   : undefined,
                 pricingDebug: it.pricingDebug && typeof it.pricingDebug === "object" ? it.pricingDebug : undefined,
               })),
