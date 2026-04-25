@@ -157,6 +157,38 @@ function normalizeLaneTitle(title: string): ExtractedLane["title"] {
   return "Other";
 }
 
+function tokenizeForMatch(s: string): string[] {
+  return (s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/g)
+    .map((x) => x.trim())
+    .filter(Boolean)
+    .filter((w) => w.length >= 3)
+    .filter((w) => !["repair", "replace", "install", "evaluate", "recommend", "recommended", "monitor", "items", "should"].includes(w));
+}
+
+function jaccard(a: string[], b: string[]): number {
+  const A = new Set(a);
+  const B = new Set(b);
+  if (A.size === 0 || B.size === 0) return 0;
+  let inter = 0;
+  for (const x of A) if (B.has(x)) inter++;
+  const union = A.size + B.size - inter;
+  return union ? inter / union : 0;
+}
+
+function bestItemMatch(items: LaneItem[], hint: string): { idx: number; score: number } | null {
+  const ht = tokenizeForMatch(hint);
+  let best = { idx: -1, score: 0 };
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    const score = jaccard(tokenizeForMatch(it.label + " " + (it.note || "")), ht);
+    if (score > best.score) best = { idx: i, score };
+  }
+  return best.idx >= 0 ? best : null;
+}
+
 import {
   applyRegexRules,
   LICENSE_HINT,
@@ -1462,10 +1494,13 @@ export async function POST(req: Request) {
     try {
       const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
       if (blobToken && pdfBufForEvidence) {
-        const blocks = await extractSummaryEvidenceBlocksFromPdf(pdfBufForEvidence, { maxPages: 25 });
+        const blocks = await extractSummaryEvidenceBlocksFromPdf(pdfBufForEvidence, { maxPages: 80 });
         if (blocks.length) {
           const evidenceItems: LaneItem[] = [];
-          for (const b of blocks.slice(0, 40)) {
+
+          // Attach evidence to best-matching lane item when we can.
+          // Otherwise, keep it in a fallback Evidence lane.
+          for (const b of blocks.slice(0, 120)) {
             const thumbs: EvidenceThumb[] = [];
             for (const im of b.images.slice(0, 12)) {
               const imgBuf = Buffer.from(im.base64, "base64");
@@ -1473,23 +1508,42 @@ export async function POST(req: Request) {
               const blob = await put(pathname, imgBuf, { access: "private", contentType: im.mime });
               thumbs.push({
                 src: `/api/evidence?url=${encodeURIComponent(blob.url)}`,
-                caption: `${b.section || "Summary"} • Page ${b.targetPage} Item ${b.itemNumber}${b.title ? ` — ${b.title}` : ""}`,
+                caption: `${b.section || "Summary"} • Page ${b.targetPage} ${b.itemNumber ? `Item ${b.itemNumber} ` : ""}${b.title ? `— ${b.title}` : ""}`.trim(),
                 blobUrl: blob.url,
               });
             }
 
-            if (thumbs.length) {
-              evidenceItems.push({
-                id: `evi_${b.summaryPage}_${b.itemNumber}_${b.targetPage}`,
-                label: `${b.section || "Summary"}: ${b.title || b.anchorText}`,
-                note: `Summary page ${b.summaryPage} • Anchor: ${b.anchorText}`,
-                evidence: thumbs,
-              });
+            if (!thumbs.length) continue;
+
+            const laneGuess = normalizeLaneTitle(b.section || "Other");
+            const hint = `${b.title || ""} ${b.anchorText || ""}`.trim();
+
+            // Find a candidate lane to attach into.
+            const laneIdx = cleaned.findIndex((l) => l.title === laneGuess);
+            const candidates = laneIdx >= 0 ? cleaned[laneIdx].items : [];
+            const best = bestItemMatch(candidates as any, hint);
+
+            // Require a minimum similarity so we don't attach random photos.
+            if (best && best.score >= 0.18) {
+              const target = candidates[best.idx] as any;
+              const merged = [...(Array.isArray(target.evidence) ? target.evidence : []), ...thumbs].slice(0, 12);
+              (candidates as any)[best.idx] = { ...target, evidence: merged, itemNum: target.itemNum ?? (b.itemNumber || undefined) };
+              cleaned[laneIdx] = { ...cleaned[laneIdx], items: [...candidates] as any };
+              continue;
             }
+
+            // Fallback bucket
+            evidenceItems.push({
+              id: `evi_${b.summaryPage}_${b.itemNumber || "x"}_${b.targetPage}`,
+              label: `${b.section || "Summary"}: ${b.title || b.anchorText}`,
+              note: `Page ${b.targetPage} • Anchor: ${b.anchorText}`,
+              evidence: thumbs,
+              itemNum: b.itemNumber || undefined,
+            });
           }
 
           if (evidenceItems.length) {
-            cleaned = [{ title: "Evidence (Summary pages)", items: evidenceItems }, ...cleaned];
+            cleaned = [{ title: "Evidence (from report)", items: evidenceItems }, ...cleaned];
           }
         }
       }
