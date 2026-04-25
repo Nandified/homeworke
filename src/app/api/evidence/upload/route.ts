@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   // Store thumbs as PRIVATE blobs (matches Vercel Blob store config). We then serve them
   // through our own `/api/evidence` proxy which attaches the Blob token.
   try {
-    const blob = await put(pathname, buf, { access: "private", contentType: mime, token });
+    const blob = await put(pathname, buf, { access: "private", contentType: mime, token, addRandomSuffix: false, allowOverwrite: true });
     return NextResponse.json({
       ok: true,
       sha256,
