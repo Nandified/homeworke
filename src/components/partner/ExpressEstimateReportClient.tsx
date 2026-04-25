@@ -197,6 +197,7 @@ export function ExpressEstimateReportClient(props: {
   const pendingEvidenceThumbsRef = useRef<ClientEvidenceThumb[]>([]);
   const [pendingEvidenceCount, setPendingEvidenceCount] = useState<number>(0);
   const [loadingMoreEvidence, setLoadingMoreEvidence] = useState<boolean>(false);
+  const evidenceAutoLoadSentinelRef = useRef<HTMLDivElement | null>(null);
 
   // Once the staged file is consumed we delete it, so on refresh `props.stagedId` is gone.
   // Persist a flag so the UI can still show the right empty-state messaging for an uploaded report.
@@ -1085,6 +1086,40 @@ export function ExpressEstimateReportClient(props: {
     }
   }
 
+  // Auto-load more evidence when the user scrolls near the end of the Evidence lane.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (pendingEvidenceCount <= 0) return;
+    if (loadingMoreEvidence) return;
+
+    // Only enable when the Evidence lane exists.
+    const hasEvidenceLane = extracted.some((l) => l?.title === "Evidence (from report)");
+    if (!hasEvidenceLane) return;
+
+    const el = evidenceAutoLoadSentinelRef.current;
+    if (!el) return;
+
+    let cancelled = false;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const hit = entries.some((e) => e.isIntersecting);
+        if (!hit) return;
+        if (cancelled) return;
+        if (loadingMoreEvidence) return;
+        if (pendingEvidenceThumbsRef.current?.length) void loadMoreEvidence();
+      },
+      { root: null, rootMargin: "800px 0px", threshold: 0.01 }
+    );
+
+    obs.observe(el);
+    return () => {
+      cancelled = true;
+      try {
+        obs.disconnect();
+      } catch {}
+    };
+  }, [pendingEvidenceCount, loadingMoreEvidence, extracted]);
+
   async function download(mode: "full" | "selected") {
     // Allow downloads for uploaded reports too (not just demo reports).
     const reportId = report?.id || props.reportId;
@@ -1370,12 +1405,12 @@ export function ExpressEstimateReportClient(props: {
                           <Button
                             size="sm"
                             variant="secondary"
-                            className="rounded-full px-3 min-w-[160px]"
+                            className="rounded-full px-3 min-w-[180px]"
                             disabled={loadingMoreEvidence}
                             onClick={() => void loadMoreEvidence()}
-                            title="Upload more evidence photos from this report"
+                            title="More photos will auto-load as you scroll; you can also tap this to load immediately"
                           >
-                            {loadingMoreEvidence ? "Loading photos…" : `Load more photos (${pendingEvidenceCount})`}
+                            {loadingMoreEvidence ? "Loading photos…" : `Loading more as you scroll (${pendingEvidenceCount})`}
                           </Button>
                         ) : null}
                         {/* Spacer so header actions line up with per-item action columns (Details pill width) */}
@@ -1667,6 +1702,9 @@ export function ExpressEstimateReportClient(props: {
                           </div>
                         );
                       })}
+                      {lane.title === "Evidence (from report)" && pendingEvidenceCount > 0 ? (
+                        <div ref={evidenceAutoLoadSentinelRef} className="h-1 w-full" aria-hidden="true" />
+                      ) : null}
                     </div>
                   </div>
                 ))}
