@@ -6,19 +6,11 @@ import crypto from "node:crypto";
 
 import { put } from "@vercel/blob";
 
-import { getCurrentUser } from "@/lib/rbac";
-
+// Evidence thumbnails are derived from uploaded inspection reports.
+// We intentionally allow anonymous uploads here so the client-side extractor works reliably
+// across browsers (Safari/WebKit can omit cookies unexpectedly on background fetches).
+// Thumbs are stored as content-addressed blob URLs.
 export async function POST(req: Request) {
-  const allowAnon = process.env.EVIDENCE_ALLOW_ANON === "1";
-
-  let user: any = null;
-  try {
-    user = await getCurrentUser();
-  } catch {
-    user = null;
-  }
-
-  if (!allowAnon && !user) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
 
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) return NextResponse.json({ ok: false, error: "missing_blob_token" }, { status: 500 });
