@@ -7,7 +7,7 @@
 
 import { getDocument, Util, OPS } from "pdfjs-dist";
 
-export type ClientEvidenceThumb = { blob: Blob; caption: string };
+export type ClientEvidenceThumb = { blob: Blob; caption: string; pageNum?: number; section?: string; itemNum?: number };
 
 type ImgDraw = { bboxPdf: [number, number, number, number] };
 
@@ -173,6 +173,9 @@ export async function extractSummaryEvidenceThumbsFromPdf(
           out.push({
             blob,
             caption: `${a.section || "Report"} • ${a.anchor} (page ${pageNum})`,
+            pageNum,
+            section: a.section,
+            itemNum: typeof a.itemNum === "number" ? a.itemNum : undefined,
           });
 
           if (out.length >= maxThumbs) return out;
@@ -208,7 +211,7 @@ export async function extractSummaryEvidenceThumbsFromPdf(
         const blob: Blob | null = await new Promise((resolve) => crop.toBlob(resolve, "image/jpeg", 0.82));
         if (!blob) continue;
 
-        out.push({ blob, caption: `Report image (page ${pageNum})` });
+        out.push({ blob, caption: `Report image (page ${pageNum})`, pageNum });
         if (out.length >= maxThumbs) return out;
       }
     }

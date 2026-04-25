@@ -191,7 +191,7 @@ export function ExpressEstimateReportClient(props: {
   const [forceNextRun, setForceNextRun] = useState(false);
   const [notes, setNotes] = useState<string>("");
   const didOcrFallbackRef = useRef(false);
-  const clientEvidenceRef = useRef<Array<{ src: string; caption?: string }>>([]);
+  const clientEvidenceRef = useRef<Array<{ src: string; caption?: string; itemNum?: number }>>([]);
   const evidenceAttemptedRef = useRef(false);
 
   const pendingEvidenceThumbsRef = useRef<ClientEvidenceThumb[]>([]);
@@ -579,6 +579,25 @@ export function ExpressEstimateReportClient(props: {
     return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
   }
 
+  function inferItemNumFromText(t: string): number | null {
+    const s = (t || "").trim();
+    if (!s) return null;
+    const m = s.match(/\bItem\s*:?\s*(\d{1,3})\b/i) || s.match(/\bITEM\s+(\d{1,3})\b/);
+    if (!m) return null;
+    const n = Number(m[1]);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function inferItemNum(it: { label?: string; note?: string; id?: string }): number | null {
+    const a = inferItemNumFromText(it.label || "");
+    if (a !== null) return a;
+    const b = inferItemNumFromText(it.note || "");
+    if (b !== null) return b;
+    const c = inferItemNumFromText(it.id || "");
+    if (c !== null) return c;
+    return null;
+  }
+
   const totals = useMemo(() => {
     const fullNums = allItems.map(estimateItemValue).filter((v): v is number => typeof v === "number" && Number.isFinite(v));
     const selNums = selected.map(estimateItemValue).filter((v): v is number => typeof v === "number" && Number.isFinite(v));
@@ -941,9 +960,31 @@ export function ExpressEstimateReportClient(props: {
 
         // Merge client-side evidence uploads (attempted during PDF processing)
         try {
-          const thumbs = (clientEvidenceRef.current || []).map((x) => ({ src: x.src, caption: x.caption }));
+          const thumbs = (clientEvidenceRef.current || []).map((x) => ({ src: x.src, caption: x.caption, itemNum: x.itemNum }));
           if (evidenceAttemptedRef.current) {
             // Always show a lane so we can tell whether extraction ran.
+            // Build a map from itemNum -> evidence[] for heuristic pairing.
+            const byItem = new Map<number, Array<{ src: string; caption?: string }>>();
+            for (const t of thumbs) {
+              if (typeof t.itemNum !== "number" || !Number.isFinite(t.itemNum)) continue;
+              const arr = byItem.get(t.itemNum) || [];
+              arr.push({ src: t.src, caption: t.caption });
+              byItem.set(t.itemNum, arr);
+            }
+
+            const paired = normalized.map((lane) => {
+              if (lane.title === "Evidence (from report)") return lane;
+              return {
+                ...lane,
+                items: lane.items.map((it) => {
+                  const n = inferItemNum(it);
+                  const ev = n !== null ? byItem.get(n) : null;
+                  if (ev && ev.length) return { ...it, evidence: ev.slice(0, 6) };
+                  return it;
+                }),
+              };
+            });
+
             normalized = [
               {
                 title: "Evidence (from report)",
@@ -954,11 +995,11 @@ export function ExpressEstimateReportClient(props: {
                     note: thumbs.length
                       ? "Extracted client-side from the inspection report."
                       : "Evidence extraction ran but returned 0 thumbs (or upload failed).",
-                    evidence: thumbs.length ? thumbs : undefined,
+                    evidence: thumbs.length ? thumbs.map((x) => ({ src: x.src, caption: x.caption })) : undefined,
                   },
                 ],
               },
-              ...normalized,
+              ...paired,
             ];
           }
         } catch {
@@ -1009,7 +1050,7 @@ export function ExpressEstimateReportClient(props: {
   // This page focuses on viewing results and downloading.
 
   async function uploadEvidenceThumbBatch(thumbs: ClientEvidenceThumb[]) {
-    const uploaded: { src: string; caption?: string }[] = [];
+    const uploaded: { src: string; caption?: string; itemNum?: number }[] = [];
 
     // Simple sequential upload (reliable). If we need faster later, we can add concurrency.
     for (const t of thumbs) {
@@ -1020,7 +1061,11 @@ export function ExpressEstimateReportClient(props: {
         const rr = await fetch("/api/evidence/upload", { method: "POST", body: upFd, credentials: "include" });
         const jj = (await rr.json().catch(() => null)) as any;
         if (rr.ok && jj?.ok === true && typeof jj.src === "string") {
-          uploaded.push({ src: String(jj.src), caption: typeof t.caption === "string" ? t.caption : undefined });
+          uploaded.push({
+            src: String(jj.src),
+            caption: typeof t.caption === "string" ? t.caption : undefined,
+            itemNum: typeof (t as any).itemNum === "number" ? Number((t as any).itemNum) : undefined,
+          });
         }
       } catch {
         // ignore single-thumb failure
@@ -1050,6 +1095,16 @@ export function ExpressEstimateReportClient(props: {
       // Merge into the rendered lanes (Evidence lane + per-item fallback evidence).
       setExtracted((prev) => {
         const thumbs = clientEvidenceRef.current || [];
+
+        const byItem = new Map<number, Array<{ src: string; caption?: string }>>();
+        for (const t of thumbs) {
+          if (typeof (t as any).itemNum !== "number" || !Number.isFinite((t as any).itemNum)) continue;
+          const n = Number((t as any).itemNum);
+          const arr = byItem.get(n) || [];
+          arr.push({ src: t.src, caption: t.caption });
+          byItem.set(n, arr);
+        }
+
         const next = prev.map((lane) => {
           if (lane.title === "Evidence (from report)") {
             return {
@@ -1068,7 +1123,15 @@ export function ExpressEstimateReportClient(props: {
               ),
             };
           }
-          return lane;
+          return {
+            ...lane,
+            items: lane.items.map((it) => {
+              const n = inferItemNum(it);
+              const ev = n !== null ? byItem.get(n) : null;
+              if (ev && ev.length) return { ...it, evidence: ev.slice(0, 6) };
+              return it;
+            }),
+          };
         });
 
         // Persist so refresh doesn't lose loaded thumbs.
