@@ -629,6 +629,7 @@ function priceFromRangeByLabel(range: string, label: string): number | null {
 
 function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1): ExtractedLane[] {
   const seen = new Set<string>();
+  const seenItemNums = new Set<number>();
   const homeownerFactor = 1.25; // Homeworke keeps 20% of final price => contractor gets 80%
   const totalFactor = homeownerFactor * (Number.isFinite(marketFactor) && marketFactor > 0 ? marketFactor : 1);
 
@@ -692,6 +693,16 @@ function dedupeLanes(lanes: ExtractedLane[], location: string, marketFactor = 1)
           };
         })
         .filter((it) => {
+          // Strong de-dupe: if the report repeats a Summary section and then a Detailed
+          // section, the same repair often appears twice with slightly different wording.
+          // Prefer de-duping by inspection item number when present.
+          const itemNum = typeof (it as any)?.itemNum === "number" && Number.isFinite((it as any).itemNum) ? (it as any).itemNum : null;
+          if (itemNum !== null) {
+            if (seenItemNums.has(itemNum)) return false;
+            seenItemNums.add(itemNum);
+            return true;
+          }
+
           const key = normalizeLabel(it.label);
           if (!key) return false;
           if (seen.has(key)) return false;
