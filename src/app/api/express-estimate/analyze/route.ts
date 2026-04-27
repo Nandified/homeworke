@@ -1500,6 +1500,9 @@ export async function POST(req: Request) {
 
     let cleaned = dedupeLanes(lanes, location, marketFactor);
 
+    // Captured for debugging/tuning evidence pairing.
+    let evidenceMatchingSummary: any = null;
+
     // --- Evidence photos (Summary pages): extract + upload to private Blob + return thumb URLs ---
     try {
       const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
@@ -1513,8 +1516,23 @@ export async function POST(req: Request) {
           // Attach evidence to best-matching lane item when we can.
           // Otherwise, keep it in a fallback Evidence lane.
           const debugOn = process.env.EVIDENCE_MATCH_DEBUG === "1";
+
+          const matchingSummary = {
+            extractedBlocks: blocks.length,
+            processedBlocks: 0,
+            matchedBlocks: 0,
+            matchedThumbs: 0,
+            fallbackBlocks: 0,
+            strategy: {
+              byItemNumber: 0,
+              byLaneGuessText: 0,
+              byGlobalText: 0,
+            },
+          };
+
           const maxBlocks = Math.max(40, Math.min(600, Number(process.env.EVIDENCE_MAX_BLOCKS || 300)));
           for (const b of blocks.slice(0, maxBlocks)) {
+            matchingSummary.processedBlocks++;
             const laneGuess = normalizeLaneTitle(b.section || "Other");
             const hint = `${b.title || ""} ${b.anchorText || ""}`.trim();
 
@@ -1539,31 +1557,97 @@ export async function POST(req: Request) {
 
             if (!thumbs.length) continue;
 
-            // Find a candidate lane to attach into.
+            // ---- Matching strategy (in priority order) ----
+            // 1) If the PDF block includes a structured itemNumber, attach by itemNum.
+            if (typeof b.itemNumber === "number" && Number.isFinite(b.itemNumber)) {
+              const itemNo = b.itemNumber;
+              let attached = false;
+              for (let li = 0; li < cleaned.length && !attached; li++) {
+                const lane = cleaned[li];
+                const items = lane.items || [];
+                const hitIdx = items.findIndex((it) => typeof (it as any)?.itemNum === "number" && (it as any).itemNum === itemNo);
+                if (hitIdx >= 0) {
+                  const target = items[hitIdx] as any;
+                  if (debugOn) {
+                    for (const t of thumbs) {
+                      t.debug = {
+                        ...(t.debug || {}),
+                        score: 1,
+                        matchedItemLabel: typeof target?.label === "string" ? target.label : undefined,
+                      };
+                    }
+                  }
+                  const merged = [...(Array.isArray(target.evidence) ? target.evidence : []), ...thumbs].slice(0, 12);
+                  const nextItems = [...items] as any;
+                  nextItems[hitIdx] = { ...target, evidence: merged, itemNum: target.itemNum ?? itemNo };
+                  cleaned[li] = { ...lane, items: nextItems };
+                  matchingSummary.matchedBlocks++;
+                  matchingSummary.matchedThumbs += thumbs.length;
+                  matchingSummary.strategy.byItemNumber++;
+                  attached = true;
+                }
+              }
+              if (attached) continue;
+            }
+
+            // 2) Try laneGuess + text similarity
+            const minScore = Number(process.env.EVIDENCE_MATCH_MIN_SCORE || 0.12);
             const laneIdx = cleaned.findIndex((l) => l.title === laneGuess);
-            const candidates = laneIdx >= 0 ? cleaned[laneIdx].items : [];
-            const best = bestItemMatch(candidates as any, hint);
-
-            // Require a minimum similarity so we don't attach random photos.
-            if (best && best.score >= 0.18) {
-              const target = candidates[best.idx] as any;
-
-              // Stamp match debug on thumbs (if enabled).
+            const laneCandidates = laneIdx >= 0 ? cleaned[laneIdx].items : [];
+            const laneBest = bestItemMatch(laneCandidates as any, hint);
+            if (laneBest && laneBest.score >= minScore) {
+              const target = laneCandidates[laneBest.idx] as any;
               if (debugOn) {
                 for (const t of thumbs) {
                   t.debug = {
                     ...(t.debug || {}),
-                    score: best.score,
+                    score: laneBest.score,
                     matchedItemLabel: typeof target?.label === "string" ? target.label : undefined,
                   };
                 }
               }
-
               const merged = [...(Array.isArray(target.evidence) ? target.evidence : []), ...thumbs].slice(0, 12);
-              (candidates as any)[best.idx] = { ...target, evidence: merged, itemNum: target.itemNum ?? (b.itemNumber || undefined) };
-              cleaned[laneIdx] = { ...cleaned[laneIdx], items: [...candidates] as any };
+              const nextItems = [...laneCandidates] as any;
+              nextItems[laneBest.idx] = { ...target, evidence: merged, itemNum: target.itemNum ?? (b.itemNumber || undefined) };
+              cleaned[laneIdx] = { ...cleaned[laneIdx], items: nextItems };
+              matchingSummary.matchedBlocks++;
+              matchingSummary.matchedThumbs += thumbs.length;
+              matchingSummary.strategy.byLaneGuessText++;
               continue;
             }
+
+            // 3) Global best (across all lanes) if lane guess is wrong
+            let gBest: { laneIdx: number; itemIdx: number; score: number } | null = null;
+            for (let li = 0; li < cleaned.length; li++) {
+              const items = cleaned[li]?.items || [];
+              const best = bestItemMatch(items as any, hint);
+              if (best && best.score >= minScore && (!gBest || best.score > gBest.score)) {
+                gBest = { laneIdx: li, itemIdx: best.idx, score: best.score };
+              }
+            }
+            if (gBest) {
+              const items = cleaned[gBest.laneIdx].items || [];
+              const target = items[gBest.itemIdx] as any;
+              if (debugOn) {
+                for (const t of thumbs) {
+                  t.debug = {
+                    ...(t.debug || {}),
+                    score: gBest.score,
+                    matchedItemLabel: typeof target?.label === "string" ? target.label : undefined,
+                  };
+                }
+              }
+              const merged = [...(Array.isArray(target.evidence) ? target.evidence : []), ...thumbs].slice(0, 12);
+              const nextItems = [...items] as any;
+              nextItems[gBest.itemIdx] = { ...target, evidence: merged, itemNum: target.itemNum ?? (b.itemNumber || undefined) };
+              cleaned[gBest.laneIdx] = { ...cleaned[gBest.laneIdx], items: nextItems };
+              matchingSummary.matchedBlocks++;
+              matchingSummary.matchedThumbs += thumbs.length;
+              matchingSummary.strategy.byGlobalText++;
+              continue;
+            }
+
+            matchingSummary.fallbackBlocks++;
 
             // Fallback bucket
             evidenceItems.push({
@@ -1574,6 +1658,9 @@ export async function POST(req: Request) {
               itemNum: b.itemNumber || undefined,
             });
           }
+
+          // Expose matching stats in the API response (internal tuning).
+          evidenceMatchingSummary = matchingSummary;
 
           if (evidenceItems.length) {
             cleaned = [{ title: "Evidence (from report)", items: evidenceItems }, ...cleaned];
@@ -1636,6 +1723,7 @@ export async function POST(req: Request) {
         used: "fallback",
         usage,
         market: marketMeta,
+        evidenceMatchingSummary,
         cache: {
           cacheKey,
           pdfHash: hash,
@@ -1693,6 +1781,7 @@ export async function POST(req: Request) {
       used: "openai",
       usage,
       market: marketMeta,
+      evidenceMatchingSummary,
       cache: {
         cacheKey,
         pdfHash: hash,
