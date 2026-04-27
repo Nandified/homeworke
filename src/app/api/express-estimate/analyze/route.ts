@@ -226,6 +226,10 @@ type NormalizedFinding = {
   accessLimitation?: boolean;
   confidence?: number; // 0..1
   lane?: string;
+
+  // Optional: stable report reference when the PDF provides it (e.g. "Item: 7").
+  // We keep this minimal so we can de-dupe summary vs detailed repeats without bloating the schema.
+  itemNum?: number;
 };
 
 function normalizeSystem(raw?: string): FindingSystem | undefined {
@@ -1347,6 +1351,8 @@ export async function POST(req: Request) {
         const priority = derivePriority(rating, `${issue} ${narrative} ${recommendation || ""}`);
         const confidence = deriveConfidence({ rating, evidence: evidenceObj, accessLimitation, location, component });
 
+        const itemNum = inferInspectionItemNum({ label: issue, note: narrative, id: "" }) ?? undefined;
+
         findings.push({
           system,
           component,
@@ -1363,6 +1369,7 @@ export async function POST(req: Request) {
           accessLimitation,
           confidence,
           lane,
+          itemNum,
         });
       }
     }
@@ -1416,6 +1423,9 @@ export async function POST(req: Request) {
                     note: { type: "string" },
                     range: { type: "string" },
                     price: { type: "number" },
+
+                    // Optional stable reference from the inspection report, when available.
+                    itemNum: { type: "number" },
                   },
                   required: ["label", "range"],
                 },
@@ -1439,12 +1449,15 @@ export async function POST(req: Request) {
       "(6) Keep labels short; put specifics (location, narrative, constraints) in note. " +
       "(7) Use the cost-driver fields to vary ranges realistically: rating/priority, trade, quantity, access limitations, and evidence. " +
       "(8) Group items into lanes titled exactly one of: Exterior, Interior, Systems, Safety, Need more info, Other. " +
-      "Avoid dumping everything into Other—only use Other if you truly cannot classify.";
+      "Avoid dumping everything into Other—only use Other if you truly cannot classify. " +
+      "(9) If an input finding includes itemNum, propagate it onto the estimate line item as itemNum, and prefer using it to avoid duplicates.";
 
     const pricedFindings = dedupedFindings.map((f) => {
       const catalog = matchCatalogForFinding(f, marketFactor);
       return {
         ...f,
+        // Ensure itemNum is present when the source text provides it.
+        itemNum: typeof (f as any).itemNum === "number" ? (f as any).itemNum : undefined,
         catalog,
         rangeHint: catalog?.rangeHint || null,
       };
@@ -1500,7 +1513,11 @@ export async function POST(req: Request) {
             const range = typeof ir.range === "string" ? ir.range : undefined;
             const price = typeof ir.price === "number" && Number.isFinite(ir.price) ? ir.price : undefined;
             const id = typeof ir.id === "string" && ir.id ? ir.id : stableIdFor(label);
-            const itemNum = inferInspectionItemNum({ id, label, note }) ?? (typeof ir.itemNum === "number" ? ir.itemNum : null);
+            const itemNum =
+              inferInspectionItemNum({ id, label, note }) ??
+              (typeof (ir as any).itemNum === "number" && Number.isFinite((ir as any).itemNum)
+                ? (ir as any).itemNum
+                : null);
             return { id, label, note, range, price, itemNum: itemNum ?? undefined };
           })
           .filter((it) => it.label)
