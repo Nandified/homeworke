@@ -995,7 +995,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 }
               })();
 
-              const isReady = r.status === "Ready" || hasSavedResult;
+              const isDemoReport = r.id === "rpt_4240_mozart" || r.id === "rpt_8950_52nd";
+              // A report is truly ready only once we have a saved result for that report id.
+              // (Until server-side background processing is wired.)
+              const isReady = isDemoReport || hasSavedResult;
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
               if (address) q.set("address", address);
