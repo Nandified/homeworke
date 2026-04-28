@@ -190,7 +190,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         address: "8950 S 52nd Ave, Oak Lawn, IL",
         type: "Appraisal",
         createdAt: new Date(now - 1000 * 60 * 60 * 24 * 6).toISOString(),
-        status: "Draft",
+        status: "Ready",
       },
     ];
 
