@@ -525,8 +525,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             {/* Step 2: Property */}
             <div
               className={
-                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] overflow-hidden " +
-                (step2HasSelection ? "bg-[rgba(229,57,53,.05)] " : "bg-white ") +
+                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white overflow-hidden " +
                 (step === 2 ? "relative z-20 " : "") +
                 (step2HasSelection ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
               }
@@ -787,17 +786,16 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             {/* Step 3: Notes */}
             <div
               className={
-                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] overflow-hidden " +
-                (notesCompletedVisual
-                  ? "bg-[rgba(229,57,53,.05)] shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]"
-                  : "bg-white")
+                "rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white overflow-hidden " +
+                (notesCompletedVisual ? "shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]" : "")
               }
             >
               <button
                 type="button"
                 className={
                   "flex w-full items-center justify-between gap-3 p-4 text-left transition " +
-                  (!files.length || !selectedPropertyId ? "opacity-60 " : "")
+                  (!files.length || !selectedPropertyId ? "opacity-60 " : "") +
+                  (notesCompletedVisual ? "bg-[rgba(229,57,53,.05)]" : "")
                 }
                 onClick={() => {
                   // Notes are optional. Start collapsed; user can expand if needed.
