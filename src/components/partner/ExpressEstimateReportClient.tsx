@@ -1284,7 +1284,9 @@ export function ExpressEstimateReportClient(props: {
           </>
         ) : null}
 
-        {analyzing ? (
+        {/* Only show the big blocking modal for true analysis runs.
+            When we are just loading a previously-saved estimate (cacheKey), keep the UI usable. */}
+        {analyzing && !/loading saved estimate/i.test(analysisStage || "") ? (
           <div className="fixed inset-0 z-[65] flex items-center justify-center bg-black/30 p-6 backdrop-blur-[2px]">
             <div className="w-full max-w-sm rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.18)] bg-white p-5 text-center shadow-[0_20px_60px_rgba(0,0,0,.25)]">
               <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-2 border-[rgba(229,57,53,.20)] border-t-[var(--hw-red)]" />
