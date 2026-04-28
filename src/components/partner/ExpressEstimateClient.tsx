@@ -808,6 +808,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       3
                     </div>
                     <div className="text-sm font-semibold text-[var(--hw-ink)]">Notes (optional)</div>
+                    {notesCompleted ? <div className="text-xs font-semibold text-emerald-700">✓</div> : null}
                   </div>
                   <div className="mt-1 text-sm text-[var(--hw-muted)]">Anything you want the estimate to focus on?</div>
                 </div>
@@ -818,8 +819,9 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               </button>
 
               {notesOpen ? (
-                <div className="px-4 pb-4">
+                <div className={"px-4 pb-4 " + (notesCompleted ? "bg-[rgba(229,57,53,.05)]" : "")}>
                   <Textarea
+                    className={notesCompleted ? "bg-[rgba(229,57,53,.03)]" : ""}
                     value={notes}
                     onChange={(e) => {
                       const v = e.target.value;
