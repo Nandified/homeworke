@@ -872,7 +872,16 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       const cacheKey = Array.from(new Uint8Array(keyDigest)).map((b) => b.toString(16).padStart(2, "0")).join("");
                       const reportId = `rpt_${cacheKey.slice(0, 12)}`;
 
-                      const ownerName = selectedProp?.ownerName || "";
+                      // Derive owner name from the selected property (or best-effort fallback).
+                      const ownerName =
+                        selectedProp?.ownerName ||
+                        properties.find((p) => addressKey(p.address) === addressKey(address))?.ownerName ||
+                        "";
+
+                      // Persist owner name by report id so the list can display it even if the report row is missing it.
+                      try {
+                        if (ownerName) window.localStorage.setItem(`hw.expressEstimate.owner.${reportId}`, ownerName);
+                      } catch {}
 
                       // Persist a report row locally so it appears under Reports immediately.
                       setReports((prev) => {
