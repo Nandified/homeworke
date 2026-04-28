@@ -1056,9 +1056,11 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               const jobDone = job && (job.status === "DONE" || job.status === "ERROR");
 
               // Never trust the local report.status for readiness.
-              // Ready only when we have a saved result, or the server job is DONE, or it's a demo report.
-              const isReady = isDemoReport || hasSavedResult || (job && job.status === "DONE");
               const isProcessing = !!job && job.status === "PROCESSING";
+
+              // Ready only when truly complete.
+              // If the server says PROCESSING, never allow Open report even if we have a stale cached result.
+              const isReady = !isProcessing && (isDemoReport || hasSavedResult || (job && job.status === "DONE"));
 
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
@@ -1100,7 +1102,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       </div>
                       {(!isReady || isProcessing) ? (
                         <div className="mt-2 flex items-center gap-2">
-                          <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
+                          <div className="h-2.5 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
                             <div
                               className={
                                 "h-full rounded-full bg-[rgba(229,57,53,.45)] " +
