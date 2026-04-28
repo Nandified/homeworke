@@ -912,6 +912,20 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       q.set("cacheKey", cacheKey);
 
                       setToast("Submitted ✓ We’re processing your report. You can keep working and come back here.");
+
+                      // Demo/background behavior: flip the row to Ready after a short delay
+                      // (until we wire true server-side background processing + real status updates).
+                      window.setTimeout(() => {
+                        try {
+                          setReports((prev) => {
+                            const next = prev.map((x) => (x.id === reportId ? { ...x, status: "Ready" as const, ownerName: x.ownerName || ownerName || undefined } : x));
+                            writeReports(next);
+                            return next;
+                          });
+                          setToast("Report complete ✓ Ready to open.");
+                        } catch {}
+                      }, 25000);
+
                       // Do not navigate away; keep user on this screen while the report processes in the background.
                       // The report will appear in the list below immediately.
                       setStep(1);
@@ -970,7 +984,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
             {filteredReports.slice(0, 10).map((r) => {
               const address = r.address;
-              const ownerName = (() => {
+              const derivedOwnerName = (() => {
                 if (r.ownerName) return r.ownerName;
                 try {
                   const persisted = window.localStorage.getItem(`hw.expressEstimate.owner.${r.id}`) || "";
@@ -982,7 +996,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
               if (address) q.set("address", address);
-              if (ownerName) q.set("owner", ownerName);
+              if (derivedOwnerName) q.set("owner", derivedOwnerName);
               // Preserve cacheKey if present so refresh can reload estimate.
               const ck = (r.id.startsWith("rpt_") ? r.id.slice(4) : "");
               if (ck) q.set("cacheKey", ck);
@@ -994,8 +1008,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
-                      {r.ownerName ? (
-                        <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{r.ownerName}</div>
+                      {derivedOwnerName ? (
+                        <div className="truncate text-sm font-semibold text-[var(--hw-ink)]">{derivedOwnerName}</div>
                       ) : null}
                       <div className={(r.ownerName ? "mt-0.5 " : "") + "truncate text-sm font-semibold text-[var(--hw-ink)]"}>{r.address}</div>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--hw-muted)]">
