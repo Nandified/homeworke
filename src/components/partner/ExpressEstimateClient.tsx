@@ -237,6 +237,31 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Poll job status so Processing bars can be real (server-driven).
+    const pollJobs = () => {
+      try {
+        const persisted = readReports();
+        persisted
+          .filter((r) => r && typeof r.id === "string")
+          .slice(0, 30)
+          .forEach((r) => {
+            fetch(`/api/express-estimate/jobs?reportId=${encodeURIComponent(r.id)}`)
+              .then((res) => res.json())
+              .then((j) => {
+                const job = j && typeof j === "object" && "job" in j ? (j as any).job : null;
+                if (!job) return;
+                try {
+                  window.localStorage.setItem(`hw.expressEstimate.job.${r.id}`, JSON.stringify(job));
+                } catch {}
+              })
+              .catch(() => {});
+          });
+      } catch {}
+    };
+
+    pollJobs();
+    const jobsTimer = window.setInterval(pollJobs, 4000);
+
     // Load existing properties (demo: localStorage + /api/properties).
     const localMy = readCustomProperties().map((p) => ({
       id: p.id,
@@ -300,6 +325,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         });
       })
       .catch(() => {});
+
+    return () => {
+      window.clearInterval(jobsTimer);
+    };
   }, []);
 
   const propertyRequiredMissing = !selectedPropertyId;
@@ -913,8 +942,16 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
                       setToast("Submitted ✓ We’re processing your report. You can keep working and come back here.");
 
-                      // Note: status will flip to Ready only once a saved result exists.
-                      // (True server-side background processing + real status updates are next.)
+                      // Create a server-side job row so the list can show real progress.
+                      try {
+                        fetch("/api/express-estimate/jobs", {
+                          method: "POST",
+                          headers: { "content-type": "application/json" },
+                          body: JSON.stringify({ action: "create", reportId, status: "PROCESSING", progressPct: 1, step: "Queued" }),
+                        }).catch(() => {});
+                      } catch {}
+
+                      // Note: Open report will enable only once a completed result exists.
 
                       // Do not navigate away; keep user on this screen while the report processes in the background.
                       // The report will appear in the list below immediately.
@@ -997,8 +1034,18 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
               const isDemoReport = r.id === "rpt_4240_mozart" || r.id === "rpt_8950_52nd";
               // A report is truly ready only once we have a saved result for that report id.
-              // (Until server-side background processing is wired.)
               const isReady = isDemoReport || hasSavedResult;
+
+              // Try to pull a server-side job row (best-effort).
+              const job = (() => {
+                try {
+                  const raw = window.localStorage.getItem(`hw.expressEstimate.job.${r.id}`) || "";
+                  return raw ? JSON.parse(raw) : null;
+                } catch {
+                  return null;
+                }
+              })();
+
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
               if (address) q.set("address", address);
@@ -1033,7 +1080,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       </div>
                       {!isReady ? (
                         <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
-                          <div className="h-full w-1/3 animate-pulse rounded-full bg-[rgba(229,57,53,.35)]" />
+                          <div
+                            className={"h-full rounded-full bg-[rgba(229,57,53,.45)] " + (job && typeof job.progressPct === "number" ? "transition-[width] duration-300" : "animate-pulse w-1/3")}
+                            style={job && typeof job.progressPct === "number" ? { width: `${Math.max(5, Math.min(97, Math.round(job.progressPct || 0)))}%` } : undefined}
+                          />
                         </div>
                       ) : null}
                     </div>
