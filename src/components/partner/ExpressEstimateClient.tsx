@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 import { Button, Card, Chip, Input, Picker, Textarea } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
@@ -131,7 +131,7 @@ type Report = {
   ownerName?: string;
   type: "Inspection" | "Appraisal";
   createdAt: string;
-  status: "Draft" | "Ready";
+  status: "Processing" | "Ready" | "Failed";
 };
 
 export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
@@ -173,7 +173,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const newClientName = useMemo(() => `${newClientFirstName} ${newClientLastName}`.trim(), [newClientFirstName, newClientLastName]);
 
   const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
-  const router = useRouter();
+  // const router = useRouter();
 
   const [reports, setReports] = useState<Report[]>(() => {
     const now = Date.now();
@@ -889,7 +889,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           ownerName: ownerName || undefined,
                           type: "Inspection",
                           createdAt: new Date().toISOString(),
-                          status: "Draft", // internal only (hidden from UI)
+                          status: "Processing",
                         };
                         const persisted = upsertReport(next);
                         // Merge with existing demo rows
@@ -909,8 +909,15 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       if (ownerName) q.set("owner", ownerName);
                       q.set("cacheKey", cacheKey);
 
-                      setToast("Submitted ✓ Generating estimate…");
-                      router.push(`${props.basePath}/express-estimate/${encodeURIComponent(reportId)}?${q.toString()}`);
+                      setToast("Submitted ✓ We’re processing your report. You can keep working and come back here.");
+                      // Do not navigate away; keep user on this screen while the report processes in the background.
+                      // The report will appear in the list below immediately.
+                      setStep(1);
+                      setFiles([]);
+                      setFileName("");
+                      setNotes("");
+                      setNotesOpen(false);
+                      setSelectedPropertyId("");
                     } catch (e) {
                       const msg = e && typeof e === "object" && "message" in e ? String((e as any).message) : "";
                       setSubmitError(msg ? `Submit failed: ${msg}` : "Submit failed. Please try again.");
@@ -993,7 +1000,20 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         <span>{r.type}</span>
                         <span>•</span>
                         <span>{new Date(r.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
+                        {r.status !== "Ready" ? (
+                          <>
+                            <span>•</span>
+                            <span className={r.status === "Failed" ? "text-[var(--hw-red)]" : "text-amber-700"}>
+                              {r.status === "Failed" ? "Failed" : "Processing…"}
+                            </span>
+                          </>
+                        ) : null}
                       </div>
+                      {r.status !== "Ready" ? (
+                        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
+                          <div className="h-full w-1/3 animate-pulse rounded-full bg-[rgba(229,57,53,.35)]" />
+                        </div>
+                      ) : null}
                     </div>
                     <div className="shrink-0 flex items-center gap-2">
                       <Button
