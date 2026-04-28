@@ -1058,6 +1058,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               // Never trust the local report.status for readiness.
               // Ready only when we have a saved result, or the server job is DONE, or it's a demo report.
               const isReady = isDemoReport || hasSavedResult || (job && job.status === "DONE");
+              const isProcessing = !!job && job.status === "PROCESSING";
 
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
@@ -1097,19 +1098,23 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           </>
                         ) : null}
                       </div>
-                      {(!isReady || (job && job.status === "PROCESSING")) ? (
-                        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
-                          <div
-                            className={
-                              "h-full rounded-full bg-[rgba(229,57,53,.45)] " +
-                              (job && typeof job.progressPct === "number" ? "transition-[width] duration-300" : "animate-pulse w-1/3")
-                            }
-                            style={
-                              job && typeof job.progressPct === "number"
-                                ? { width: `${Math.max(5, Math.min(97, Math.round(job.progressPct || 0)))}%` }
-                                : undefined
-                            }
-                          />
+                      {(!isReady || isProcessing) ? (
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
+                            <div
+                              className={
+                                "h-full rounded-full bg-[rgba(229,57,53,.45)] " +
+                                (job && typeof job.progressPct === "number" ? "transition-[width] duration-300" : "w-1/3") +
+                                " animate-pulse"
+                              }
+                              style={
+                                job && typeof job.progressPct === "number"
+                                  ? { width: `${Math.max(5, Math.min(97, Math.round(job.progressPct || 0)))}%` }
+                                  : undefined
+                              }
+                            />
+                          </div>
+                          <div className="shrink-0 text-[11px] font-semibold text-[var(--hw-muted)]">Processing…</div>
                         </div>
                       ) : null}
                     </div>
