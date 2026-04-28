@@ -1041,11 +1041,17 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         Delete
                       </Button>
 
-                      <Link href={href}>
-                        <Button size="sm" variant="primary" disabled={false}>
-                          Open report
+                      {r.status === "Ready" ? (
+                        <Link href={href}>
+                          <Button size="sm" variant="primary" disabled={false}>
+                            Open report
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button size="sm" variant="primary" disabled={true}>
+                          Processing…
                         </Button>
-                      </Link>
+                      )}
                     </div>
                   </div>
                 </div>
