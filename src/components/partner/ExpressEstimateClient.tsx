@@ -145,6 +145,13 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>("");
   const [toast, setToast] = useState<string>("");
+
+  // Auto-hide toast after a few seconds.
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(""), 5000);
+    return () => window.clearTimeout(t);
+  }, [toast]);
   const [notes, setNotes] = useState("");
   const [notesOpen, setNotesOpen] = useState(false);
 
@@ -409,8 +416,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     >
       <div className="grid gap-6">
         {toast ? (
-          <div className="fixed bottom-5 left-1/2 z-[70] w-[min(520px,calc(100vw-32px))] -translate-x-1/2 rounded-full border border-[rgba(229,57,53,.18)] bg-white px-4 py-2.5 text-center text-sm font-semibold text-[var(--hw-ink)] shadow-[0_16px_40px_rgba(17,24,39,.16)]">
-            {toast}
+          <div className="fixed left-1/2 top-1/2 z-[80] w-[min(560px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2">
+            <div className="rounded-[999px] border border-[rgba(229,57,53,.18)] bg-white px-5 py-3 text-center text-sm font-semibold text-[var(--hw-ink)] shadow-[0_20px_60px_rgba(17,24,39,.18)]">
+              {toast}
+            </div>
           </div>
         ) : null}
         {/* Upload */}
@@ -1033,8 +1042,6 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
               })();
 
               const isDemoReport = r.id === "rpt_4240_mozart" || r.id === "rpt_8950_52nd";
-              // A report is truly ready only once we have a saved result for that report id.
-              const isReady = isDemoReport || hasSavedResult;
 
               // Try to pull a server-side job row (best-effort).
               const job = (() => {
@@ -1045,6 +1052,12 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                   return null;
                 }
               })();
+
+              const jobDone = job && (job.status === "DONE" || job.status === "ERROR");
+
+              // Never trust the local report.status for readiness.
+              // Ready only when we have a saved result, or the server job is DONE, or it's a demo report.
+              const isReady = isDemoReport || hasSavedResult || (job && job.status === "DONE");
 
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
@@ -1075,14 +1088,27 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                             <span className={r.status === "Failed" ? "text-[var(--hw-red)]" : "text-amber-700"}>
                               {r.status === "Failed" ? "Failed" : "Processing…"}
                             </span>
+                            {job && typeof job.step === "string" && job.step.trim() ? (
+                              <>
+                                <span>•</span>
+                                <span className="text-[var(--hw-muted)]">{job.step}</span>
+                              </>
+                            ) : null}
                           </>
                         ) : null}
                       </div>
-                      {!isReady ? (
+                      {(!isReady || (job && job.status === "PROCESSING")) ? (
                         <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
                           <div
-                            className={"h-full rounded-full bg-[rgba(229,57,53,.45)] " + (job && typeof job.progressPct === "number" ? "transition-[width] duration-300" : "animate-pulse w-1/3")}
-                            style={job && typeof job.progressPct === "number" ? { width: `${Math.max(5, Math.min(97, Math.round(job.progressPct || 0)))}%` } : undefined}
+                            className={
+                              "h-full rounded-full bg-[rgba(229,57,53,.45)] " +
+                              (job && typeof job.progressPct === "number" ? "transition-[width] duration-300" : "animate-pulse w-1/3")
+                            }
+                            style={
+                              job && typeof job.progressPct === "number"
+                                ? { width: `${Math.max(5, Math.min(97, Math.round(job.progressPct || 0)))}%` }
+                                : undefined
+                            }
                           />
                         </div>
                       ) : null}
