@@ -913,18 +913,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
                       setToast("Submitted ✓ We’re processing your report. You can keep working and come back here.");
 
-                      // Demo/background behavior: flip the row to Ready after a short delay
-                      // (until we wire true server-side background processing + real status updates).
-                      window.setTimeout(() => {
-                        try {
-                          setReports((prev) => {
-                            const next = prev.map((x) => (x.id === reportId ? { ...x, status: "Ready" as const, ownerName: x.ownerName || ownerName || undefined } : x));
-                            writeReports(next);
-                            return next;
-                          });
-                          setToast("Report complete ✓ Ready to open.");
-                        } catch {}
-                      }, 25000);
+                      // Note: status will flip to Ready only once a saved result exists.
+                      // (True server-side background processing + real status updates are next.)
 
                       // Do not navigate away; keep user on this screen while the report processes in the background.
                       // The report will appear in the list below immediately.
@@ -993,6 +983,19 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 const key = addressKey(r.address);
                 return properties.find((p) => addressKey(p.address) === key)?.ownerName || "";
               })();
+
+              const hasSavedResult = (() => {
+                try {
+                  const raw = window.localStorage.getItem(`hw.expressEstimate.result.${r.id}`) || "";
+                  if (!raw) return false;
+                  const j = JSON.parse(raw);
+                  return !!j && Array.isArray(j.lanes) && j.lanes.length > 0;
+                } catch {
+                  return false;
+                }
+              })();
+
+              const isReady = r.status === "Ready" || hasSavedResult;
               const q = new URLSearchParams();
               if (stagedId) q.set("staged", stagedId);
               if (address) q.set("address", address);
@@ -1016,7 +1019,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         <span>{r.type}</span>
                         <span>•</span>
                         <span>{new Date(r.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
-                        {r.status !== "Ready" ? (
+                        {!isReady ? (
                           <>
                             <span>•</span>
                             <span className={r.status === "Failed" ? "text-[var(--hw-red)]" : "text-amber-700"}>
@@ -1025,7 +1028,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           </>
                         ) : null}
                       </div>
-                      {r.status !== "Ready" ? (
+                      {!isReady ? (
                         <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
                           <div className="h-full w-1/3 animate-pulse rounded-full bg-[rgba(229,57,53,.35)]" />
                         </div>
@@ -1055,7 +1058,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         Delete
                       </Button>
 
-                      {r.status === "Ready" ? (
+                      {isReady ? (
                         <Link href={href}>
                           <Button size="sm" variant="primary" disabled={false}>
                             Open report
