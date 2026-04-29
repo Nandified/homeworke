@@ -407,7 +407,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       title={props.title || "Instant Estimate"}
       portalTitle={props.role === "PRO" ? "Real Estate Pro" : undefined}
       nav={nav}
-      description="Upload an inspection/appraisal PDF, then open a report to analyze and download an estimate."
+      description={undefined}
       primaryAction={
         <Link href={`${props.basePath}/dashboard`}>
           <Button variant="secondary">Back to dashboard</Button>
@@ -424,7 +424,16 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         ) : null}
         {/* Upload */}
         <Card className="p-6">
-          <div className="mt-1 grid gap-3">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Instant Estimate</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                Upload an inspection/appraisal PDF, then open a report to analyze and download an estimate.
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3">
             {/* Always-mounted file input so the Step 1 header "Change" button works even when collapsed */}
             <input
               ref={fileInputRef}
