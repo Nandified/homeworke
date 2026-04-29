@@ -30,11 +30,29 @@ export async function POST(req: Request) {
   const authorized = isAuthorized(req);
   const action = typeof body.action === "string" ? body.action : "update";
 
-  // Allow unauthenticated creation of a PROCESSING row (no error updates) so the UI can show a job immediately.
-  // All real progress updates (DONE/ERROR/etc.) require authorization.
+  // Allow unauthenticated creation of a PROCESSING row so the UI can show a job immediately.
+  // In production, DONE/ERROR should ideally be updated by a trusted worker.
+  // However, today the report page itself performs the work (client-driven), so we also allow
+  // unauthenticated *PROCESSING* progress updates (step/progressPct) to keep the live bar in sync.
   if (!authorized) {
-    if (action !== "create") return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
-    await upsertJob({ reportId: body.reportId, status: "PROCESSING", progressPct: 1, step: "Queued" });
+    if (action === "create") {
+      await upsertJob({ reportId: body.reportId, status: "PROCESSING", progressPct: 1, step: "Queued" });
+      return NextResponse.json({ ok: true });
+    }
+
+    const nextStatus = typeof body.status === "string" ? body.status : "PROCESSING";
+    const isProcessingUpdate = nextStatus === "PROCESSING";
+    if (!isProcessingUpdate) {
+      return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    }
+
+    await upsertJob({
+      reportId: body.reportId,
+      status: "PROCESSING",
+      progressPct: typeof body.progressPct === "number" ? body.progressPct : undefined,
+      step: typeof body.step === "string" ? body.step : null,
+    });
+
     return NextResponse.json({ ok: true });
   }
 
