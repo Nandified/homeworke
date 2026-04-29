@@ -672,12 +672,28 @@ export function ExpressEstimateReportClient(props: {
     if (!files.length) return;
 
     const updateJob = (args: { status?: "PROCESSING" | "DONE" | "ERROR"; step?: string; progressPct?: number; error?: string | null }) => {
+      const payload = { action: "update", reportId: props.reportId, ...args };
+
+      // 1) Persist to server (canonical)
       try {
         fetch("/api/express-estimate/jobs", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ action: "update", reportId: props.reportId, ...args }),
+          body: JSON.stringify(payload),
         }).catch(() => {});
+      } catch {}
+
+      // 2) Best-effort broadcast to other tabs so the Reports list can update live even if timers are throttled.
+      try {
+        // BroadcastChannel supported on modern browsers.
+        const bc = new BroadcastChannel("hw.expressEstimate.jobs");
+        bc.postMessage({ type: "job_update", job: payload });
+        bc.close();
+      } catch {}
+
+      try {
+        // Also write a storage key so other tabs receive a `storage` event (fallback).
+        window.localStorage.setItem(`hw.expressEstimate.jobpulse.${props.reportId}`, JSON.stringify({ t: Date.now(), ...payload }));
       } catch {}
     };
 

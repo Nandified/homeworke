@@ -273,6 +273,36 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     pollJobs();
     const jobsTimer = window.setInterval(pollJobs, 4000);
 
+    // Cross-tab live updates: when the report opens in a new tab, browsers may throttle timers
+    // in the original list tab. Listen for job progress broadcasts so the list stays in sync.
+    const onJobUpdate = (payload: any) => {
+      try {
+        const job = payload && typeof payload === "object" ? payload.job : null;
+        if (!job || typeof job.reportId !== "string") return;
+        window.localStorage.setItem(`hw.expressEstimate.job.${job.reportId}`, JSON.stringify(job));
+        setReports((prev) => prev.slice());
+      } catch {}
+    };
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("hw.expressEstimate.jobs");
+      bc.onmessage = (ev) => {
+        const data = (ev as any)?.data;
+        if (data && data.type === "job_update") onJobUpdate(data);
+      };
+    } catch {}
+
+    const onStorage = (e: StorageEvent) => {
+      try {
+        if (!e.key) return;
+        if (!e.key.startsWith("hw.expressEstimate.jobpulse.")) return;
+        const j = e.newValue ? JSON.parse(e.newValue) : null;
+        if (j && typeof j.reportId === "string") onJobUpdate({ job: j });
+      } catch {}
+    };
+    window.addEventListener("storage", onStorage);
+
     // Load existing properties (demo: localStorage + /api/properties).
     const localMy = readCustomProperties().map((p) => ({
       id: p.id,
@@ -339,6 +369,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
     return () => {
       window.clearInterval(jobsTimer);
+      try {
+        if (bc) bc.close();
+      } catch {}
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 
