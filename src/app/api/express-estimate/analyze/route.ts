@@ -959,7 +959,13 @@ export async function POST(req: Request) {
 
     // Optionally rerun using a previous cached entry (even if expired) without requiring the PDF upload again.
     if (!textOverride.trim() && !file && cacheKeyOverride && dbEnabled()) {
-      const row = await db().expressEstimateCache.findUnique({ where: { cacheKey: cacheKeyOverride } });
+      let row: any = null;
+      try {
+        row = await db().expressEstimateCache.findUnique({ where: { cacheKey: cacheKeyOverride } });
+      } catch {
+        // DB may be enabled but missing migrations; treat as cache-miss and continue.
+        row = null;
+      }
       const src = (row?.payload as any)?.source?.extractedText;
       const loc = (row?.payload as any)?.source?.location;
       if (row && typeof src === "string" && src.trim()) {
