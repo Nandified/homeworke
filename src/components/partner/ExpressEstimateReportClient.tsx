@@ -217,6 +217,31 @@ export function ExpressEstimateReportClient(props: {
   const [analysisSummary, setAnalysisSummary] = useState<string>("");
   const [analysisStage, setAnalysisStage] = useState<string>("");
   const [analysisProgress, setAnalysisProgress] = useState<{ current: number; total: number } | null>(null);
+
+  // Keep the Reports-list live progress bar in sync with the same state that drives the popup.
+  const pushJobProgress = useCallback(
+    (args: { status?: "PROCESSING" | "DONE" | "ERROR"; step?: string; progressPct?: number; error?: string | null }) => {
+      const payload = { action: "update", reportId: props.reportId, ...args };
+      try {
+        fetch("/api/express-estimate/jobs", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => {});
+      } catch {}
+
+      try {
+        const bc = new BroadcastChannel("hw.expressEstimate.jobs");
+        bc.postMessage({ type: "job_update", job: payload });
+        bc.close();
+      } catch {}
+
+      try {
+        window.localStorage.setItem(`hw.expressEstimate.jobpulse.${props.reportId}`, JSON.stringify({ t: Date.now(), ...payload }));
+      } catch {}
+    },
+    [props.reportId]
+  );
   const [cacheKey, setCacheKey] = useState<string>(props.cacheKey || "");
   const [expiresAt, setExpiresAt] = useState<string>("");
 
@@ -666,36 +691,40 @@ export function ExpressEstimateReportClient(props: {
     return () => window.clearTimeout(t);
   }, []);
 
+  // When the popup stage/progress changes, also push that state to the server job row.
+  // This is the most direct way to ensure the outside live bar mirrors what the popup shows.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!analyzing) return;
+
+    const step = (analysisStage || "Processing").trim();
+
+    const progressPct = (() => {
+      // If we're in a per-page OCR loop, reflect that.
+      if (analysisProgress && analysisProgress.total > 0) {
+        const pct = Math.round((analysisProgress.current / analysisProgress.total) * 100);
+        return Math.max(5, Math.min(95, pct));
+      }
+      // Map the major stages to a premium-feeling milestone progress.
+      const s = step.toLowerCase();
+      if (s.includes("preparing")) return 5;
+      if (s.includes("extracting evidence")) return 15;
+      if (s.includes("uploading evidence")) return 25;
+      if (s.includes("reading report")) return 35;
+      if (s.includes("generating") || s.includes("warming") || s.includes("comparing") || s.includes("analyzing")) return 60;
+      if (s.includes("final")) return 90;
+      return 10;
+    })();
+
+    pushJobProgress({ status: "PROCESSING", step, progressPct });
+  }, [analysisStage, analysisProgress, analyzing, pushJobProgress]);
+
   // When we have staged file(s), analyze them and replace demo data.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!files.length) return;
 
-    const updateJob = (args: { status?: "PROCESSING" | "DONE" | "ERROR"; step?: string; progressPct?: number; error?: string | null }) => {
-      const payload = { action: "update", reportId: props.reportId, ...args };
-
-      // 1) Persist to server (canonical)
-      try {
-        fetch("/api/express-estimate/jobs", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload),
-        }).catch(() => {});
-      } catch {}
-
-      // 2) Best-effort broadcast to other tabs so the Reports list can update live even if timers are throttled.
-      try {
-        // BroadcastChannel supported on modern browsers.
-        const bc = new BroadcastChannel("hw.expressEstimate.jobs");
-        bc.postMessage({ type: "job_update", job: payload });
-        bc.close();
-      } catch {}
-
-      try {
-        // Also write a storage key so other tabs receive a `storage` event (fallback).
-        window.localStorage.setItem(`hw.expressEstimate.jobpulse.${props.reportId}`, JSON.stringify({ t: Date.now(), ...payload }));
-      } catch {}
-    };
+    const updateJob = pushJobProgress;
 
     setAnalyzing(true);
     setAnalysisError("");
