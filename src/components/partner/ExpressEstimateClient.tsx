@@ -260,6 +260,10 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                 try {
                   window.localStorage.setItem(`hw.expressEstimate.job.${r.id}`, JSON.stringify(job));
                 } catch {}
+
+                // Trigger a re-render so the progress bar/step reflect the latest polled job.
+                // (The job is stored in localStorage, which does not itself cause React updates.)
+                setReports((prev) => prev.slice());
               })
               .catch(() => {});
           });
