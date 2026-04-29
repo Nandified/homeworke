@@ -1144,17 +1144,14 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         Delete
                       </Button>
 
-                      {isReady ? (
-                        <Link href={href}>
-                          <Button size="sm" variant="primary" disabled={false}>
-                            Open report
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Button size="sm" variant="primary" disabled={true}>
-                          Processing…
+                      {/* Allow opening a report while it is still processing.
+                          The report page is what actually runs the analysis today (no background worker).
+                          The job row + bar will reflect progress while the report generates. */}
+                      <Link href={href}>
+                        <Button size="sm" variant="primary" disabled={false}>
+                          {isReady ? "Open report" : "Open (processing…)"}
                         </Button>
-                      )}
+                      </Link>
                     </div>
                   </div>
                 </div>

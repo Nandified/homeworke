@@ -671,10 +671,21 @@ export function ExpressEstimateReportClient(props: {
     if (typeof window === "undefined") return;
     if (!files.length) return;
 
+    const updateJob = (args: { status?: "PROCESSING" | "DONE" | "ERROR"; step?: string; progressPct?: number; error?: string | null }) => {
+      try {
+        fetch("/api/express-estimate/jobs", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "update", reportId: props.reportId, ...args }),
+        }).catch(() => {});
+      } catch {}
+    };
+
     setAnalyzing(true);
     setAnalysisError("");
     setAnalysisStage("Preparing…");
     setAnalysisProgress(null);
+    updateJob({ status: "PROCESSING", step: "Preparing", progressPct: 5, error: null });
 
     void (async () => {
       try {
@@ -699,6 +710,7 @@ export function ExpressEstimateReportClient(props: {
             try {
               evidenceAttemptedRef.current = true;
               setAnalysisStage("Extracting evidence photos…");
+              updateJob({ status: "PROCESSING", step: "Extracting evidence", progressPct: 15 });
               // Some inspection reports are 80-120+ pages; evidence photos often appear late.
               // Scan more pages (still capped inside the extractor) so we actually find photos.
               const thumbs = await extractSummaryEvidenceThumbsFromPdf(f, {
@@ -716,6 +728,7 @@ export function ExpressEstimateReportClient(props: {
               setPendingEvidenceCount(remaining.length);
 
               setAnalysisStage(`Uploading evidence photos… (${firstBatch.length}${remaining.length ? ` +${remaining.length} more available` : ""})`);
+              updateJob({ status: "PROCESSING", step: "Uploading evidence", progressPct: 25 });
               const uploaded = await uploadEvidenceThumbBatch(firstBatch);
 
               clientEvidenceRef.current = uploaded;
@@ -735,6 +748,7 @@ export function ExpressEstimateReportClient(props: {
             // Scanned/image-only PDFs: Vercel will often 413 if we upload the whole PDF.
             // Instead, rasterize pages client-side and OCR page-images via a lightweight endpoint.
             setAnalysisStage("Reading report…");
+            updateJob({ status: "PROCESSING", step: "Reading report", progressPct: 35 });
 
             const ab = await f.arrayBuffer();
             const pdf = await getDocument({ data: ab }).promise;
@@ -795,6 +809,7 @@ export function ExpressEstimateReportClient(props: {
 
         setAnalysisStage("Generating with Homeworke AI");
         setAnalysisProgress(null);
+        updateJob({ status: "PROCESSING", step: "Analyzing", progressPct: 60 });
 
         fd.set("notes", notes || "");
         fd.set("location", effectiveAddress || "");
@@ -829,6 +844,7 @@ export function ExpressEstimateReportClient(props: {
                 didOcrFallbackRef.current = true;
                 setAnalysisStage("Reading report…");
                 setAnalysisProgress(null);
+                updateJob({ status: "PROCESSING", step: "Reading report", progressPct: 35 });
 
                 const ab = await pdfFile.arrayBuffer();
                 const pdf = await getDocument({ data: ab }).promise;
@@ -1019,6 +1035,7 @@ export function ExpressEstimateReportClient(props: {
 
         if (normalized.length) setExtracted(normalized);
         setAnalysisSummary(typeof rec.summary === "string" ? rec.summary : "");
+        updateJob({ status: "DONE", step: "Complete", progressPct: 100, error: null });
 
         // Persist result so refresh doesn't fall back to demo/empty.
         try {
@@ -1046,6 +1063,8 @@ export function ExpressEstimateReportClient(props: {
       } catch (e) {
         setAnalysisError("Analyze failed. Please try again.");
         setExtracted([]);
+        const msg = e && typeof e === "object" && "message" in e ? String((e as any).message) : "Analyze failed";
+        updateJob({ status: "ERROR", step: "Error", progressPct: 100, error: msg });
       } finally {
         setAnalyzing(false);
         setAnalysisStage("");
