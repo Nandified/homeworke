@@ -1,4 +1,12 @@
-export type WorkOrderStatus = "pending" | "scheduled" | "in_progress" | "completed";
+export type WorkOrderStatus = "pending" | "confirming" | "scheduled" | "in_progress" | "completed";
+
+export type WorkOrderAppointment = {
+  id: string;
+  trade: string; // handyman | plumbing | flooring | ...
+  preferredDate?: string;
+  preferredWindow?: string;
+  status: "PROPOSED" | "PENDING_HG_CONFIRM" | "CONFIRMED" | "DONE" | "CANCELED";
+};
 
 export type WorkOrder = {
   id: string;
@@ -18,6 +26,7 @@ export type WorkOrder = {
   propertyType?: string;
   preferredDate?: string;
   preferredWindow?: string;
+  appointments?: WorkOrderAppointment[];
   status: WorkOrderStatus;
 };
 
@@ -268,12 +277,31 @@ export function store(): Store {
 
 export function createWorkOrder(input: Omit<WorkOrder, "id" | "createdAt" | "status"> & { status?: WorkOrderStatus }) {
   const id = `wo_${Math.random().toString(36).slice(2, 10)}`;
+
+  const preferredDate = (input as any)?.preferredDate;
+  const preferredWindow = (input as any)?.preferredWindow;
+
+  const appointments = Array.isArray((input as any)?.appointments) ? ((input as any).appointments as WorkOrderAppointment[]) : undefined;
+  const defaultAppointments: WorkOrderAppointment[] = !appointments
+    ? [
+        {
+          id: `apt_${Math.random().toString(36).slice(2, 9)}`,
+          trade: "handyman",
+          preferredDate,
+          preferredWindow,
+          status: "PENDING_HG_CONFIRM",
+        },
+      ]
+    : [];
+
   const wo: WorkOrder = {
     id,
     createdAt: new Date().toISOString(),
-    status: input.status || "pending",
+    status: input.status || (preferredDate ? "confirming" : "pending"),
+    appointments: appointments || defaultAppointments,
     ...input,
   };
+
   store().workOrders.unshift(wo);
   return wo;
 }

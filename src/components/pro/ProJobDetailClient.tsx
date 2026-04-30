@@ -24,12 +24,13 @@ type ApiWorkOrder = {
   updatedAt?: string;
 };
 
-const STATUS_GROUPS = ["Pending", "Scheduled", "In progress", "Completed"] as const;
+const STATUS_GROUPS = ["Pending", "Confirming", "Scheduled", "In progress", "Completed"] as const;
 
 type StatusGroup = (typeof STATUS_GROUPS)[number];
 
 const STATUS_CLASS: Record<StatusGroup, string> = {
   Pending: "border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.05)] text-[var(--hw-ink)]",
+  Confirming: "border-[rgba(245,158,11,.22)] bg-[rgba(245,158,11,.10)] text-[rgb(146,64,14)]",
   // Make Scheduled vs In progress unmistakable.
   Scheduled: "border-[rgba(37,99,235,.22)] bg-[rgba(37,99,235,.07)] text-[rgb(30,64,175)]",
   "In progress": "border-[rgba(147,51,234,.22)] bg-[rgba(147,51,234,.07)] text-[rgb(107,33,168)]",
@@ -39,6 +40,7 @@ const STATUS_CLASS: Record<StatusGroup, string> = {
 function normalizeStatus(raw: string): StatusGroup {
   const lower = raw.toLowerCase().trim();
   if (lower === "pending") return "Pending";
+  if (lower === "confirming" || lower === "hg_confirm" || lower === "pending_hg_confirm") return "Confirming";
   if (lower === "scheduled") return "Scheduled";
   if (lower === "in progress" || lower === "in_progress" || lower === "inprogress") return "In progress";
   if (lower === "completed" || lower === "complete" || lower === "done") return "Completed";
@@ -54,6 +56,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
 
   const iconFor = (s: StatusGroup) => {
     if (s === "Pending") return Clock3;
+    if (s === "Confirming") return Clock3;
     if (s === "Scheduled") return Calendar;
     if (s === "In progress") return Wrench;
     return CheckCircle2;

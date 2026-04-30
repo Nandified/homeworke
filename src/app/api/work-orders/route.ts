@@ -67,6 +67,8 @@ export async function POST(req: Request) {
         propertyType: body.intake.property_type,
         preferredDate: body.intake.preferred_date,
         preferredWindow: body.intake.preferred_time_window,
+        // For manual booking, go straight to scheduling and mark as awaiting HG confirmation.
+        status: body.intake.preferred_date ? ("confirming" as any) : undefined,
       });
       return json({ ok: true, workOrder: wo });
     }
