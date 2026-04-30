@@ -114,6 +114,7 @@ export default function Page() {
   const [step, setStep] = useState<StepKey>("select_service");
   const [portalScheduleStep, setPortalScheduleStep] = useState<"date" | "window" | "contact">("date");
   const [showAllTradeServices, setShowAllTradeServices] = useState(false);
+  const [activeTradeExpanded, setActiveTradeExpanded] = useState(true);
   const [tradeSearch, setTradeSearch] = useState("");
   const tradeSearchResults = useMemo(() => {
     const q = tradeSearch.trim().toLowerCase();
@@ -712,107 +713,128 @@ export default function Page() {
                           const { Icon, description } = tradeMeta(t);
                           const active = draft.service_category === t;
                           return (
-                            <button
+                            <div
                               key={t}
-                              type="button"
-                              onClick={() => {
-                                setShowAllTradeServices(false);
-                                update({ service_category: t });
-                              }}
                               className={
-                                "group flex items-start gap-3 rounded-[var(--hw-radius-lg)] border p-4 text-left transition " +
+                                "rounded-[var(--hw-radius-lg)] border p-4 transition " +
                                 (active
                                   ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.04)] ring-4 ring-[rgba(229,57,53,.10)]"
                                   : "border-[var(--hw-line)] bg-white hover:bg-[var(--hw-soft)]")
                               }
                             >
-                              <div
-                                className={
-                                  "mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border " +
-                                  (active
-                                    ? "border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.10)]"
-                                    : "border-[var(--hw-line)] bg-white")
-                                }
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowAllTradeServices(false);
+                                  setActiveTradeExpanded(true);
+                                  update({ service_category: t });
+                                }}
+                                className="group flex w-full items-start gap-3 text-left"
                               >
-                                <Icon className={"h-5 w-5 " + (active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]")} />
-                              </div>
+                                <div
+                                  className={
+                                    "mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border " +
+                                    (active
+                                      ? "border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.10)]"
+                                      : "border-[var(--hw-line)] bg-white")
+                                  }
+                                >
+                                  <Icon className={"h-5 w-5 " + (active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]")} />
+                                </div>
 
-                              <div className="min-w-0">
-                                <div className={"text-sm font-extrabold tracking-tight " + (active ? "text-[var(--hw-ink)]" : "text-[var(--hw-ink)]")}>{t}</div>
-                                {description ? (
-                                  <div className="mt-1 text-xs leading-relaxed text-[var(--hw-muted)]">{description}</div>
-                                ) : null}
-                              </div>
-                            </button>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className={"text-sm font-extrabold tracking-tight text-[var(--hw-ink)]"}>{t}</div>
+                                    {active ? (
+                                      <span className="text-xs font-semibold text-[var(--hw-red)]">Selected</span>
+                                    ) : null}
+                                  </div>
+                                  {description ? (
+                                    <div className="mt-1 text-xs leading-relaxed text-[var(--hw-muted)]">{description}</div>
+                                  ) : null}
+                                  {(() => {
+                                    const svc = tradeMeta(t).services || [];
+                                    const examples = svc.slice(0, 3).map((x) => x.label).filter(Boolean);
+                                    return examples.length ? (
+                                      <div className="mt-2 text-xs text-[var(--hw-muted)]">
+                                        <span className="font-semibold text-[var(--hw-ink)]/70">Examples:</span> {examples.join(" · ")}
+                                      </div>
+                                    ) : null;
+                                  })()}
+                                </div>
+                              </button>
+
+                              {active && activeTradeExpanded ? (
+                                <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.14)] bg-white p-3">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Services</div>
+                                    <button
+                                      type="button"
+                                      onClick={() => setActiveTradeExpanded(false)}
+                                      className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                                    >
+                                      Hide
+                                    </button>
+                                  </div>
+
+                                  {(() => {
+                                    const all = tradeMeta(t).services || [];
+                                    const items = showAllTradeServices ? all : all.slice(0, 12);
+                                    return (
+                                      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        {items.map((s) => (
+                                          <div
+                                            key={s.id || s.label}
+                                            className="rounded-2xl border border-[var(--hw-line)] bg-[var(--hw-soft)]/40 px-3 py-2 text-xs font-semibold text-[var(--hw-ink)]"
+                                          >
+                                            {s.label}
+                                            {s.category ? (
+                                              <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                                                {s.category}
+                                              </div>
+                                            ) : null}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {(() => {
+                                    const total = tradeMeta(t).services?.length || 0;
+                                    if (total <= 12) return null;
+                                    return (
+                                      <div className="mt-3 flex items-center justify-between">
+                                        <div className="text-xs text-[var(--hw-muted)]">Showing {showAllTradeServices ? total : 12} of {total}</div>
+                                        <button
+                                          type="button"
+                                          onClick={() => setShowAllTradeServices((v) => !v)}
+                                          className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
+                                        >
+                                          {showAllTradeServices ? "Show less" : "View all"}
+                                        </button>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              ) : null}
+
+                              {active && !activeTradeExpanded ? (
+                                <div className="mt-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveTradeExpanded(true)}
+                                    className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
+                                  >
+                                    View services included
+                                  </button>
+                                </div>
+                              ) : null}
+                            </div>
                           );
                         })}
                       </div>
 
-                      {draft.service_category ? (
-                        (() => {
-                          const meta = tradeMeta(draft.service_category);
-                          const all = meta.services || [];
-                          const shown = showAllTradeServices ? all : all.slice(0, 10);
-                          return (
-                            <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="text-sm font-semibold text-[var(--hw-ink)]">What’s included</div>
-                                {all.length > 10 ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowAllTradeServices((v) => !v)}
-                                    className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
-                                  >
-                                    {showAllTradeServices ? "Show less" : `View all (${all.length})`}
-                                  </button>
-                                ) : null}
-                              </div>
-
-                              {(() => {
-                                const groups = new Map<string, Array<{ id: string; label: string }>>();
-                                for (const s of all) {
-                                  const k = (s.category || "Other").trim() || "Other";
-                                  const arr = groups.get(k) || [];
-                                  arr.push({ id: s.id, label: s.label });
-                                  groups.set(k, arr);
-                                }
-                                const entries = [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-
-                                return (
-                                  <div className="mt-3 grid gap-2">
-                                    {entries.map(([cat, items]) => (
-                                      <details
-                                        key={cat}
-                                        className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)]/40 px-3 py-2"
-                                        open={entries.length <= 3}
-                                      >
-                                        <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                                          {cat} <span className="normal-case tracking-normal">({items.length})</span>
-                                        </summary>
-                                        <div className="mt-2 flex flex-wrap gap-2">
-                                          {(showAllTradeServices ? items : items.slice(0, 10)).map((it) => (
-                                            <span
-                                              key={it.id || it.label}
-                                              className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-medium text-[var(--hw-ink)]"
-                                            >
-                                              {it.label}
-                                            </span>
-                                          ))}
-                                          {!showAllTradeServices && items.length > 10 ? (
-                                            <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-muted)]">
-                                              +{items.length - 10} more
-                                            </span>
-                                          ) : null}
-                                        </div>
-                                      </details>
-                                    ))}
-                                  </div>
-                                );
-                              })()}
-                            </div>
-                          );
-                        })()
-                      ) : null}
+                      {/* Services list now lives inside the selected trade card (premium expandable section). */}
                     </div>
 
                     <div className="mt-6 flex items-center justify-end">
