@@ -114,8 +114,8 @@ export default function Page() {
   const [step, setStep] = useState<StepKey>("select_service");
   const [portalScheduleStep, setPortalScheduleStep] = useState<"date" | "window" | "contact">("date");
   const [showAllTradeServices, setShowAllTradeServices] = useState(false);
-  const [activeTradeExpanded, setActiveTradeExpanded] = useState(false);
   const [tradeSearch, setTradeSearch] = useState("");
+  const [tradeServicesOpen, setTradeServicesOpen] = useState(false);
   const tradeSearchResults = useMemo(() => {
     const q = tradeSearch.trim().toLowerCase();
     if (q.length < 2) return [] as Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string }>;
@@ -708,7 +708,7 @@ export default function Page() {
                         </div>
                       </div>
 
-                      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 items-start">
                         {TRADE_OPTIONS.map((t) => {
                           const { Icon, description } = tradeMeta(t);
                           const active = draft.service_category === t;
@@ -726,9 +726,8 @@ export default function Page() {
                                 type="button"
                                 onClick={() => {
                                   setShowAllTradeServices(false);
-                                  // Don't auto-expand services when selecting a trade; user can expand if they want.
-                                  setActiveTradeExpanded(false);
-                                  update({ service_category: t });
+                                  setTradeServicesOpen(false);
+                                  update({ service_category: t, service_subcategory: "" });
                                 }}
                                 className="group flex w-full items-start gap-3 text-left"
                               >
@@ -757,64 +756,84 @@ export default function Page() {
                                 </div>
                               </button>
 
-                              {active && activeTradeExpanded ? (
-                                <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.14)] bg-white p-3">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Services</div>
-                                    <button
-                                      type="button"
-                                      onClick={() => setActiveTradeExpanded(false)}
-                                      className="text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
-                                    >
-                                      Hide
-                                    </button>
-                                  </div>
-
-                                  {(() => {
-                                    const all = tradeMeta(t).services || [];
-                                    const limit = 8;
-                                    const items = showAllTradeServices ? all : all.slice(0, limit);
-                                    return (
-                                      <ul className="mt-3 grid gap-1.5">
-                                        {items.map((s) => (
-                                          <li key={s.id || s.label} className="flex items-start justify-between gap-3 rounded-2xl border border-[var(--hw-line)] bg-[var(--hw-soft)]/30 px-3 py-2">
-                                            <div className="text-xs font-semibold text-[var(--hw-ink)]">{s.label}</div>
-                                            {s.category ? (
-                                              <div className="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{s.category}</div>
-                                            ) : null}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    );
-                                  })()}
-
-                                  {(() => {
-                                    const total = tradeMeta(t).services?.length || 0;
-                                    if (total <= 8) return null;
-                                    return (
-                                      <div className="mt-3 flex items-center justify-end">
-                                        <button
-                                          type="button"
-                                          onClick={() => setShowAllTradeServices((v) => !v)}
-                                          className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
-                                        >
-                                          {showAllTradeServices ? "Show fewer" : `View all (${total})`}
-                                        </button>
-                                      </div>
-                                    );
-                                  })()}
-                                </div>
-                              ) : null}
-
-                              {active && !activeTradeExpanded ? (
+                              {active ? (
                                 <div className="mt-3">
                                   <button
                                     type="button"
-                                    onClick={() => setActiveTradeExpanded(true)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setTradeServicesOpen((v) => !v);
+                                    }}
                                     className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
                                   >
-                                    View services included
+                                    {tradeServicesOpen ? "Hide service types" : "Choose service type (optional)"}
                                   </button>
+
+                                  {draft.service_subcategory ? (
+                                    <div className="mt-2 text-xs text-[var(--hw-muted)]">
+                                      Selected: <span className="font-semibold text-[var(--hw-ink)]">{draft.service_subcategory}</span>
+                                    </div>
+                                  ) : null}
+
+                                  {tradeServicesOpen ? (
+                                    <div
+                                      className="mt-3 rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.14)] bg-white p-3"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      {(() => {
+                                        const all = tradeMeta(t).services || [];
+                                        const limit = 8;
+                                        const items = showAllTradeServices ? all : all.slice(0, limit);
+                                        return (
+                                          <ul className="grid gap-1.5">
+                                            {items.map((s) => {
+                                              const selected = draft.service_subcategory === s.label;
+                                              return (
+                                                <li key={s.id || s.label}>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      update({ service_subcategory: s.label });
+                                                      setTradeServicesOpen(false);
+                                                    }}
+                                                    className={
+                                                      "flex w-full items-start justify-between gap-3 rounded-2xl border px-3 py-2 text-left text-xs font-semibold transition " +
+                                                      (selected
+                                                        ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.06)]"
+                                                        : "border-[var(--hw-line)] bg-[var(--hw-soft)]/20 hover:bg-[var(--hw-soft)]")
+                                                    }
+                                                  >
+                                                    <span className="text-[var(--hw-ink)]">{s.label}</span>
+                                                    {s.category ? (
+                                                      <span className="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                                                        {s.category}
+                                                      </span>
+                                                    ) : null}
+                                                  </button>
+                                                </li>
+                                              );
+                                            })}
+                                          </ul>
+                                        );
+                                      })()}
+
+                                      {(() => {
+                                        const total = tradeMeta(t).services?.length || 0;
+                                        if (total <= 8) return null;
+                                        return (
+                                          <div className="mt-3 flex items-center justify-end">
+                                            <button
+                                              type="button"
+                                              onClick={() => setShowAllTradeServices((v) => !v)}
+                                              className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
+                                            >
+                                              {showAllTradeServices ? "Show fewer" : `View all (${total})`}
+                                            </button>
+                                          </div>
+                                        );
+                                      })()}
+                                    </div>
+                                  ) : null}
                                 </div>
                               ) : null}
                             </div>
