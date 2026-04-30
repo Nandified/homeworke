@@ -108,10 +108,24 @@ export default function Page() {
     }
   }, []);
 
+  // Portal mode should not depend on query params; if you're logged into any portal, use the premium intake.
+  const portalMode = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const raw = window.localStorage.getItem("hw_session_v1");
+      const j = raw ? JSON.parse(raw) : null;
+      return !!j?.token;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const isPortalIntake = portalMode || fromAI;
+
   // Load properties for PRO portal order entry.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!fromAI) return;
+    if (!isPortalIntake) return;
 
     let cancelled = false;
     setPropertyLoading(true);
@@ -163,7 +177,7 @@ export default function Page() {
     return () => {
       cancelled = true;
     };
-  }, [fromAI]);
+  }, [isPortalIntake]);
 
   // Prefill from query params (used by AI intake card)
   useEffect(() => {
@@ -203,9 +217,9 @@ export default function Page() {
         });
       }
 
-      // When launched from the PRO portal, keep the flow clean and start at Step 1.
+      // When launched from any portal session, keep the flow clean and start at Step 1.
       // (We may prefill trade/subcategory/issue, but we should not jump the user ahead.)
-      if (fromAI) {
+      if (isPortalIntake) {
         setStep("select_service");
       }
     } catch {
@@ -318,7 +332,7 @@ export default function Page() {
   };
 
   const Shell = ({ children }: { children: React.ReactNode }) => {
-    if (!fromAI) return <>{children}</>;
+    if (!isPortalIntake) return <>{children}</>;
 
     return (
       <PortalShell
@@ -340,21 +354,21 @@ export default function Page() {
 
   return (
     <Shell>
-      <div className={fromAI ? "" : "min-h-screen bg-gradient-to-b from-white to-[#fafafa]"}>
-        <Container className={fromAI ? "py-4" : "py-10 md:py-16"}>
+      <div className={isPortalIntake ? "" : "min-h-screen bg-gradient-to-b from-white to-[#fafafa]"}>
+        <Container className={isPortalIntake ? "py-4" : "py-10 md:py-16"}>
         {/* ── Header ── */}
         <div className="mb-2">
-          {!fromAI ? (
+          {!isPortalIntake ? (
             <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work order</div>
           ) : null}
-          <h1 className={(fromAI ? "mt-0 " : "mt-3 ") + "text-2xl font-extrabold tracking-tight md:text-3xl lg:text-4xl"}>
+          <h1 className={(isPortalIntake ? "mt-0 " : "mt-3 ") + "text-2xl font-extrabold tracking-tight md:text-3xl lg:text-4xl"}>
             {current.title}
           </h1>
           <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--hw-muted)]">{current.description}</p>
         </div>
 
         {/* ── Step indicator ── */}
-        {!fromAI ? (
+        {!isPortalIntake ? (
         <div className="mt-6 mb-8">
           <div className="flex items-center gap-1">
             {steps.map((s, i) => {
@@ -425,12 +439,12 @@ export default function Page() {
         ) : null}
 
         {/* ── Main grid ── */}
-        <div className={"grid grid-cols-1 gap-6 " + (fromAI ? "lg:grid-cols-1" : "lg:grid-cols-3")}>
+        <div className={"grid grid-cols-1 gap-6 " + (isPortalIntake ? "lg:grid-cols-1" : "lg:grid-cols-3")}>
           {/* ── Form card ── */}
           <Card className="p-6 md:p-8 lg:col-span-2">
             {step === "select_service" ? (
               <div>
-                {fromAI ? (
+                {isPortalIntake ? (
                   <>
                     <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Order entry</div>
                     <div className="mt-2 text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Start a work order</div>
@@ -760,7 +774,8 @@ export default function Page() {
             {/* Partner card (homeowner funnel only). PRO portal order entry should not show "Referred by". */}
             {(() => {
               try {
-                if (fromAI) return null;
+                // Only show "Referred by" in the homeowner/public funnel.
+                if (isPortalIntake) return null;
                 const partner = loadPartner();
                 if (!partner) return null;
                 return (
