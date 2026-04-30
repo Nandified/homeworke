@@ -18,6 +18,8 @@ import {
   RadioCardGroup,
   Textarea,
 } from "@/components/ui";
+import { PortalShell } from "@/components/portal-shell";
+import { PRO_NAV } from "@/components/pro/nav";
 
 import spec from "@/../spec/intake_stepper_opus.json";
 import taxonomy from "@/content/homeworke_services_taxonomy.json";
@@ -175,31 +177,38 @@ export default function Page() {
 
   const Shell = ({ children }: { children: React.ReactNode }) => {
     if (!fromAI) return <>{children}</>;
-    // Premium portal chrome when launched from the PRO dashboard / Homeworke AI intake.
+
     return (
-      <div className="bg-[var(--hw-bg)]">
-        <div className="mx-auto w-full max-w-[1180px] px-4 py-6">
-          {children}
-        </div>
-      </div>
+      <PortalShell
+        role="PRO"
+        title="Work order"
+        portalTitle="Real Estate Pro"
+        nav={PRO_NAV as unknown as { href: string; label: string }[]}
+        description="Tell us what you need — we’ll route the right pro and confirm scheduling."
+        primaryAction={
+          <Link href="/pro/dashboard">
+            <Button variant="secondary">Back to dashboard</Button>
+          </Link>
+        }
+      >
+        {children}
+      </PortalShell>
     );
   };
 
   return (
     <Shell>
       <div className={fromAI ? "" : "min-h-screen bg-gradient-to-b from-white to-[#fafafa]"}>
-        <Container className={fromAI ? "py-0" : "py-10 md:py-16"}>
+        <Container className={fromAI ? "py-4" : "py-10 md:py-16"}>
         {/* ── Header ── */}
         <div className="mb-2">
-          <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-            Work order
-          </div>
-          <h1 className="mt-3 text-2xl font-extrabold tracking-tight md:text-3xl lg:text-4xl">
+          {!fromAI ? (
+            <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work order</div>
+          ) : null}
+          <h1 className={(fromAI ? "mt-0 " : "mt-3 ") + "text-2xl font-extrabold tracking-tight md:text-3xl lg:text-4xl"}>
             {current.title}
           </h1>
-          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--hw-muted)]">
-            {current.description}
-          </p>
+          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--hw-muted)]">{current.description}</p>
         </div>
 
         {/* ── Step indicator ── */}
@@ -555,9 +564,11 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="mt-8 text-sm text-[var(--hw-muted)]">
-          <Link href={fromAI ? "/pro/dashboard" : "/"}>← {fromAI ? "Back to dashboard" : "Back home"}</Link>
-        </div>
+        {!fromAI ? (
+          <div className="mt-8 text-sm text-[var(--hw-muted)]">
+            <Link href="/">← Back home</Link>
+          </div>
+        ) : null}
       </Container>
     </div>
     </Shell>
