@@ -15,11 +15,13 @@ import {
   Input,
   Label,
   Pill,
+  Picker,
   RadioCardGroup,
   Textarea,
 } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
+import { Bolt, Droplets, Flame, Hammer, Home, Layers, Sparkles, Wrench } from "lucide-react";
 
 import spec from "@/../spec/intake_stepper_opus.json";
 import taxonomy from "@/content/homeworke_services_taxonomy.json";
@@ -91,11 +93,80 @@ export default function Page() {
     return d;
   });
 
+  const [propertyOptions, setPropertyOptions] = useState<Array<{ id: string; label: string; sublabel?: string; address?: string }>>([]);
+  const [propertyLoading, setPropertyLoading] = useState(false);
+  const [propertyError, setPropertyError] = useState("");
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
+
+  const fromAI = useMemo(() => {
+    try {
+      const sp = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+      return sp.get("fromAI") === "1";
+    } catch {
+      return false;
+    }
+  }, []);
+
+  // Load properties for PRO portal order entry.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!fromAI) return;
+
+    let cancelled = false;
+    setPropertyLoading(true);
+    setPropertyError("");
+
+    (async () => {
+      try {
+        let token: string | null = null;
+        try {
+          const raw = window.localStorage.getItem("hw_session_v1");
+          const j = raw ? JSON.parse(raw) : null;
+          if (j?.token) token = String(j.token);
+        } catch {}
+        if (!token) throw new Error("missing_session");
+
+        const url = new URL("/api/properties", window.location.origin);
+        url.searchParams.set("token", token);
+        const res = await fetch(url);
+        const j = (await res.json().catch(() => null)) as any;
+        const props = Array.isArray(j?.properties) ? j.properties : [];
+
+        const opts = props
+          .filter((p: any) => p && typeof p.id === "string")
+          .map((p: any) => {
+            const address = String(p.address || "").trim();
+            const label = String(p.nickname || address || "Property").trim();
+            const kind = p.sharedWithMe ? "Shared" : p.clientProperty ? "Client" : "My";
+            const sublabel = address ? `${kind} • ${address}` : kind;
+            return { id: String(p.id), label, sublabel, address };
+          });
+
+        if (cancelled) return;
+        setPropertyOptions(opts);
+
+        // Best-effort preselect: if draft has an address, pick the closest match.
+        const draftAddr = (draft.property_address || "").toLowerCase().trim();
+        if (draftAddr) {
+          const hit = opts.find((o: any) => (o.address || "").toLowerCase().trim() === draftAddr) || null;
+          if (hit) setSelectedPropertyId(hit.id);
+        }
+      } catch {
+        if (!cancelled) setPropertyError("Couldn’t load properties.");
+      } finally {
+        if (!cancelled) setPropertyLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fromAI]);
+
   // Prefill from query params (used by AI intake card)
   useEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search);
-      const fromAI = sp.get("fromAI") === "1";
       const trade = sp.get("trade") || "";
       const subcategory = sp.get("subcategory") || "";
       const issue = sp.get("aiSummary") || sp.get("issue") || "";
@@ -230,14 +301,19 @@ export default function Page() {
 
   const current = steps[idx];
 
-  const fromAI = (() => {
-    try {
-      const sp = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-      return sp.get("fromAI") === "1";
-    } catch {
-      return false;
-    }
-  })();
+  const TRADE_OPTIONS = (taxonomy.trades as string[]).filter(Boolean);
+
+  const tradeIcon = (t: string) => {
+    const s = (t || "").toLowerCase();
+    if (s.includes("plumb")) return Droplets;
+    if (s.includes("electric")) return Bolt;
+    if (s.includes("hvac") || s.includes("heating") || s.includes("cool")) return Flame;
+    if (s.includes("floor")) return Layers;
+    if (s.includes("roof")) return Home;
+    if (s.includes("clean")) return Sparkles;
+    if (s.includes("handyman") || s.includes("general")) return Wrench;
+    return Hammer;
+  };
 
   const Shell = ({ children }: { children: React.ReactNode }) => {
     if (!fromAI) return <>{children}</>;
@@ -364,42 +440,52 @@ export default function Page() {
                       <div>
                         <Label>Trade</Label>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {[
-                            "Handyman / General",
-                            "Plumbing",
-                            "Electrical",
-                            "HVAC",
-                            "Flooring",
-                            "Roofing",
-                            "Cleaning / Turnover",
-                            "Remodeling",
-                          ].map((t) => (
-                            <button
-                              key={t}
-                              type="button"
-                              onClick={() => update({ service_category: t })}
-                              className={
-                                "h-10 rounded-full border px-4 text-sm font-semibold transition " +
-                                (draft.service_category === t
-                                  ? "border-[rgba(229,57,53,.35)] bg-white text-[var(--hw-ink)] ring-4 ring-[rgba(229,57,53,.10)]"
-                                  : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[rgba(17,24,39,.03)]")
-                              }
-                            >
-                              {t}
-                            </button>
-                          ))}
+                          {TRADE_OPTIONS.map((t) => {
+                            const Icon = tradeIcon(t);
+                            const active = draft.service_category === t;
+                            return (
+                              <button
+                                key={t}
+                                type="button"
+                                onClick={() => update({ service_category: t })}
+                                className={
+                                  "inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition " +
+                                  (active
+                                    ? "border-[rgba(229,57,53,.35)] bg-white text-[var(--hw-ink)] ring-4 ring-[rgba(229,57,53,.10)]"
+                                    : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[rgba(17,24,39,.03)]")
+                                }
+                              >
+                                <Icon className={"h-4 w-4 " + (active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]")} />
+                                {t}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
 
                       <div>
-                        <Label>Property (optional for now)</Label>
+                        <Label>Property</Label>
                         <div className="mt-2">
-                          <Input
-                            value={draft.property_address}
-                            onChange={(e) => update({ property_address: e.target.value })}
-                            placeholder="Start typing an address…"
+                          <Picker
+                            value={selectedPropertyId}
+                            placeholder={propertyLoading ? "Loading properties…" : "Select a property"}
+                            options={propertyOptions.map((o) => ({ id: o.id, label: o.label, sublabel: o.sublabel }))}
+                            searchable={true}
+                            searchPlaceholder="Search properties…"
+                            onChange={(id) => {
+                              setSelectedPropertyId(id);
+                              const hit = propertyOptions.find((p) => p.id === id) || null;
+                              if (hit?.address) update({ property_address: hit.address });
+                            }}
                           />
-                          <div className="mt-1 text-xs text-[var(--hw-muted)]">We’ll tighten this to use your Properties list next.</div>
+                          <div className="mt-2 flex items-center justify-between gap-2">
+                            <div className="text-[11px] text-[var(--hw-muted)]">
+                              {propertyError ? propertyError : "Choose from your Properties."}
+                            </div>
+                            <Link href="/pro/properties">
+                              <Button size="xs" variant="secondary">Add property</Button>
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </div>
