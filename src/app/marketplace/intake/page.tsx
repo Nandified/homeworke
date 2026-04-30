@@ -16,12 +16,19 @@ import {
   Label,
   Pill,
   Picker,
+  Modal,
   RadioCardGroup,
   Textarea,
 } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
 import { Bolt, Droplets, Flame, Hammer, Home, Layers, Sparkles, Wrench } from "lucide-react";
+import {
+  readClientProperties,
+  readCustomProperties,
+  writeClientProperties,
+  writeCustomProperties,
+} from "../portal-intake-properties";
 
 import spec from "@/../spec/intake_stepper_opus.json";
 import taxonomy from "@/content/homeworke_services_taxonomy.json";
@@ -99,6 +106,18 @@ export default function Page() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
   const [propertyFilter, setPropertyFilter] = useState<"client" | "my" | "shared" | "all">("client");
 
+  const [addPropOpen, setAddPropOpen] = useState(false);
+  const [addPropMode, setAddPropMode] = useState<"client" | "property">("client");
+  const [newAddress, setNewAddress] = useState("");
+  const [newNickname, setNewNickname] = useState("");
+  const [newPropertyType, setNewPropertyType] = useState("");
+  const [newClientFirstName, setNewClientFirstName] = useState("");
+  const [newClientLastName, setNewClientLastName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientPhone, setNewClientPhone] = useState("");
+  const [addTouched, setAddTouched] = useState(false);
+  const [addingProp, setAddingProp] = useState(false);
+
   const fromAI = useMemo(() => {
     try {
       const sp = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
@@ -122,7 +141,7 @@ export default function Page() {
 
   const isPortalIntake = portalMode || fromAI;
 
-  // Load properties for PRO portal order entry.
+  // Load properties for portal order entry (merge API + locally added client/my properties)
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!isPortalIntake) return;
@@ -133,38 +152,64 @@ export default function Page() {
 
     (async () => {
       try {
+        const localMy = readCustomProperties().map((p) => ({
+          id: p.id,
+          label: (p.nickname || p.address || "Property").trim(),
+          sublabel: p.address ? `My • ${p.address}` : "My",
+          address: p.address,
+          kind: "my" as const,
+        }));
+        const localClient = readClientProperties().map((p) => ({
+          id: p.id,
+          label: (p.nickname || p.address || "Property").trim(),
+          sublabel: p.address ? `Client • ${p.address}` : "Client",
+          address: p.address,
+          kind: "client" as const,
+        }));
+
         let token: string | null = null;
         try {
           const raw = window.localStorage.getItem("hw_session_v1");
           const j = raw ? JSON.parse(raw) : null;
           if (j?.token) token = String(j.token);
         } catch {}
-        if (!token) throw new Error("missing_session");
 
-        const url = new URL("/api/properties", window.location.origin);
-        url.searchParams.set("token", token);
-        const res = await fetch(url);
-        const j = (await res.json().catch(() => null)) as any;
-        const props = Array.isArray(j?.properties) ? j.properties : [];
+        const apiOpts = await (async () => {
+          if (!token) return [] as any[];
+          const url = new URL("/api/properties", window.location.origin);
+          url.searchParams.set("token", token);
+          const res = await fetch(url);
+          const j = (await res.json().catch(() => null)) as any;
+          const props = Array.isArray(j?.properties) ? j.properties : [];
+          return props
+            .filter((p: any) => p && typeof p.id === "string")
+            .map((p: any) => {
+              const address = String(p.address || "").trim();
+              const label = String(p.nickname || address || "Property").trim();
+              const kindKey: "client" | "my" | "shared" = p.sharedWithMe ? "shared" : p.clientProperty ? "client" : "my";
+              const kind = kindKey === "shared" ? "Shared" : kindKey === "client" ? "Client" : "My";
+              const sublabel = address ? `${kind} • ${address}` : kind;
+              return { id: String(p.id), label, sublabel, address, kind: kindKey };
+            });
+        })();
 
-        const opts = props
-          .filter((p: any) => p && typeof p.id === "string")
-          .map((p: any) => {
-            const address = String(p.address || "").trim();
-            const label = String(p.nickname || address || "Property").trim();
-            const kindKey: "client" | "my" | "shared" = p.sharedWithMe ? "shared" : p.clientProperty ? "client" : "my";
-            const kind = kindKey === "shared" ? "Shared" : kindKey === "client" ? "Client" : "My";
-            const sublabel = address ? `${kind} • ${address}` : kind;
-            return { id: String(p.id), label, sublabel, address, kind: kindKey };
-          });
+        // Merge (local first so freshly added items show immediately)
+        const merged = [...localClient, ...localMy, ...apiOpts];
+        const seen = new Set<string>();
+        const out: typeof merged = [];
+        for (const o of merged) {
+          if (!o?.id || seen.has(String(o.id))) continue;
+          seen.add(String(o.id));
+          out.push(o);
+        }
 
         if (cancelled) return;
-        setPropertyOptions(opts);
+        setPropertyOptions(out);
 
         // Best-effort preselect: if draft has an address, pick the closest match.
         const draftAddr = (draft.property_address || "").toLowerCase().trim();
         if (draftAddr) {
-          const hit = opts.find((o: any) => (o.address || "").toLowerCase().trim() === draftAddr) || null;
+          const hit = out.find((o: any) => (o.address || "").toLowerCase().trim() === draftAddr) || null;
           if (hit) setSelectedPropertyId(hit.id);
         }
       } catch {
@@ -526,9 +571,13 @@ export default function Page() {
                             <div className="text-[11px] text-[var(--hw-muted)]">
                               {propertyError ? propertyError : "Choose from your Properties."}
                             </div>
-                            <Link href="/pro/properties">
-                              <Button size="xs" variant="secondary">Add property</Button>
-                            </Link>
+                            <Button size="xs" variant="secondary" onClick={() => {
+                              setAddTouched(false);
+                              setAddPropMode(propertyFilter === "client" ? "client" : "property");
+                              setAddPropOpen(true);
+                            }}>
+                              Add property
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -851,6 +900,177 @@ export default function Page() {
           </div>
         ) : null}
       </Container>
+
+      {/* Add property modal (copied from the portal properties flows) */}
+      <Modal
+        open={addPropOpen}
+        onClose={() => setAddPropOpen(false)}
+        title="Add property"
+        mobilePlacement="center"
+        scrollKey={addPropMode}
+      >
+        <div className="grid gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setAddPropMode("client")}
+              className={
+                "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                (addPropMode === "client"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              Client property
+            </button>
+            <button
+              type="button"
+              onClick={() => setAddPropMode("property")}
+              className={
+                "rounded-full px-3 py-2 text-xs font-semibold transition " +
+                (addPropMode === "property"
+                  ? "border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                  : "border border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+              }
+            >
+              My property
+            </button>
+          </div>
+
+          {addPropMode === "client" ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label className="text-xs">Client first name</Label>
+                  <Input value={newClientFirstName} onChange={(e) => setNewClientFirstName(e.target.value)} placeholder="Jane" />
+                </div>
+                <div className="grid gap-2">
+                  <Label className="text-xs">Client last name</Label>
+                  <Input value={newClientLastName} onChange={(e) => setNewClientLastName(e.target.value)} placeholder="Client" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label className="text-xs">Email</Label>
+                <Input value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} placeholder="jane@email.com" />
+              </div>
+              <div className="grid gap-2">
+                <Label className="text-xs">Phone</Label>
+                <Input value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} placeholder="(312) 555-0123" />
+              </div>
+            </>
+          ) : null}
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Address</Label>
+            <Input
+              value={newAddress}
+              onChange={(e) => setNewAddress(e.target.value)}
+              placeholder="123 Main St, Chicago, IL 606.."
+              onBlur={() => setAddTouched(true)}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Nickname (optional)</Label>
+            <Input value={newNickname} onChange={(e) => setNewNickname(e.target.value)} placeholder="Home, Lake Condo…" />
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Type of property</Label>
+            <Input value={newPropertyType} onChange={(e) => setNewPropertyType(e.target.value)} placeholder="Type of Property" />
+          </div>
+
+          {addTouched && !newAddress.trim() ? (
+            <div className="text-xs font-semibold text-[var(--hw-red)]">Address is required.</div>
+          ) : null}
+
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button size="sm" variant="secondary" onClick={() => setAddPropOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={addingProp || !newAddress.trim()}
+              onClick={async () => {
+                setAddTouched(true);
+                if (!newAddress.trim()) return;
+
+                setAddingProp(true);
+                try {
+                  const createdAt = new Date().toISOString();
+                  const id = `prop_${Math.random().toString(36).slice(2, 10)}`;
+
+                  if (addPropMode === "client") {
+                    const clientName = `${newClientFirstName} ${newClientLastName}`.trim();
+                    writeClientProperties([
+                      {
+                        id,
+                        createdAt,
+                        address: newAddress.trim(),
+                        nickname: newNickname.trim() || undefined,
+                        propertyType: newPropertyType.trim() || undefined,
+                        clientName: clientName || undefined,
+                        clientEmail: newClientEmail.trim() || undefined,
+                        clientPhone: newClientPhone.trim() || undefined,
+                      },
+                      ...readClientProperties(),
+                    ]);
+                    setPropertyFilter("client");
+                  } else {
+                    writeCustomProperties([
+                      {
+                        id,
+                        createdAt,
+                        address: newAddress.trim(),
+                        nickname: newNickname.trim() || undefined,
+                        propertyType: newPropertyType.trim() || undefined,
+                      },
+                      ...readCustomProperties(),
+                    ]);
+                    setPropertyFilter("my");
+                  }
+
+                  // Update selected property + draft address immediately
+                  setSelectedPropertyId(id);
+                  update({ property_address: newAddress.trim() });
+
+                  // Reset
+                  setNewAddress("");
+                  setNewNickname("");
+                  setNewPropertyType("");
+                  setNewClientFirstName("");
+                  setNewClientLastName("");
+                  setNewClientEmail("");
+                  setNewClientPhone("");
+                  setAddTouched(false);
+                  setAddPropOpen(false);
+
+                  // Refresh options list (will merge local + api)
+                  setPropertyOptions((prev) => {
+                    // optimistic: insert at top
+                    const label = (newNickname.trim() || newAddress.trim()).trim();
+                    const sublabel = addPropMode === "client" ? `Client • ${newAddress.trim()}` : `My • ${newAddress.trim()}`;
+                    const kind = addPropMode === "client" ? ("client" as const) : ("my" as const);
+                    const next = [{ id, label, sublabel, address: newAddress.trim(), kind }, ...prev];
+                    const seen = new Set<string>();
+                    const out: typeof next = [];
+                    for (const o of next) {
+                      if (!o?.id || seen.has(String(o.id))) continue;
+                      seen.add(String(o.id));
+                      out.push(o);
+                    }
+                    return out;
+                  });
+                } finally {
+                  setAddingProp(false);
+                }
+              }}
+            >
+              {addingProp ? "Adding…" : "Add property"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
     </Shell>
   );
