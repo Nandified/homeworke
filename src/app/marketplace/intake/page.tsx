@@ -160,8 +160,71 @@ export default function Page() {
     setStep(steps[prevIdx].key as StepKey);
   }
 
-  function submit() {
-    // v1: map intake to provider suggestions. Later: create a real WorkOrder.
+  async function submit() {
+    // Portal order entry: create a Work Order and route into the Jobs detail flow.
+    if (fromAI) {
+      try {
+        let token: string | null = null;
+        try {
+          const raw = window.localStorage.getItem("hw_session_v1");
+          const j = raw ? JSON.parse(raw) : null;
+          if (j?.token) token = String(j.token);
+        } catch {}
+
+        if (!token) {
+          router.push("/pro/dashboard");
+          return;
+        }
+
+        const res = await fetch("/api/work-orders", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            token,
+            originPartnerId: null,
+            shareWithPartner: true,
+            intake: {
+              service_category: draft.service_category,
+              service_subcategory: draft.service_subcategory,
+              issue_description: draft.issue_description,
+              urgency_level: draft.urgency_level,
+              property_address: draft.property_address,
+              property_type: draft.property_type,
+              preferred_date: draft.preferred_date,
+              preferred_time_window: draft.preferred_time_window,
+            },
+          }),
+        });
+
+        const j = await res.json().catch(() => null);
+        if (!res.ok || !j?.ok || !j?.workOrder?.id) throw new Error("create_failed");
+
+        // Persist locally so non-DB mode can navigate directly.
+        try {
+          const key = "hw_local_work_orders_v1";
+          const raw = window.localStorage.getItem(key) || "[]";
+          const arr = JSON.parse(raw);
+          const list = Array.isArray(arr) ? arr : [];
+          const next = [j.workOrder, ...list].filter(Boolean);
+          const seen = new Set<string>();
+          const deduped: any[] = [];
+          for (const item of next) {
+            const wid = String((item as any)?.id || "");
+            if (!wid || seen.has(wid)) continue;
+            seen.add(wid);
+            deduped.push(item);
+          }
+          window.localStorage.setItem(key, JSON.stringify(deduped.slice(0, 50)));
+        } catch {}
+
+        router.push(`/pro/jobs/${encodeURIComponent(String(j.workOrder.id))}`);
+        return;
+      } catch {
+        // fall back to providers
+      }
+    }
+
+    // Public marketplace flow: map intake to provider suggestions.
     router.push(`/marketplace/providers?service=${encodeURIComponent(draft.service_category)}&issue=${encodeURIComponent(draft.issue_description || "")}`);
   }
 
@@ -213,6 +276,7 @@ export default function Page() {
         </div>
 
         {/* ── Step indicator ── */}
+        {!fromAI ? (
         <div className="mt-6 mb-8">
           <div className="flex items-center gap-1">
             {steps.map((s, i) => {
@@ -280,6 +344,7 @@ export default function Page() {
             <span className="text-xs text-[var(--hw-muted)]">{draft.service_category}</span>
           </div>
         </div>
+        ) : null}
 
         {/* ── Main grid ── */}
         <div className={"grid grid-cols-1 gap-6 " + (fromAI ? "lg:grid-cols-1" : "lg:grid-cols-3")}>
@@ -287,25 +352,130 @@ export default function Page() {
           <Card className="p-6 md:p-8 lg:col-span-2">
             {step === "select_service" ? (
               <div>
-                <div className="text-sm font-semibold">Service</div>
-                <div className="mt-4">
-                  <RadioCardGroup
-                    name="service_category"
-                    value={draft.service_category}
-                    onChange={(v) => update({ service_category: v })}
-                    options={SERVICE_OPTIONS.map((o) => ({ value: o, title: o }))}
-                  />
-                </div>
-                <div className="mt-5">
-                  <Label>Optional sub-service</Label>
-                  <div className="mt-2">
-                    <Input
-                      value={draft.service_subcategory}
-                      onChange={(e) => update({ service_subcategory: e.target.value })}
-                      placeholder="Example: faucet replacement"
-                    />
-                  </div>
-                </div>
+                {fromAI ? (
+                  <>
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Order entry</div>
+                    <div className="mt-2 text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Start a work order</div>
+                    <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                      Pick a trade, add details, then request a scheduling window. Home Guide confirms.
+                    </div>
+
+                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <Label>Trade</Label>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {[
+                            "Handyman / General",
+                            "Plumbing",
+                            "Electrical",
+                            "HVAC",
+                            "Flooring",
+                            "Roofing",
+                            "Cleaning / Turnover",
+                            "Remodeling",
+                          ].map((t) => (
+                            <button
+                              key={t}
+                              type="button"
+                              onClick={() => update({ service_category: t })}
+                              className={
+                                "h-10 rounded-full border px-4 text-sm font-semibold transition " +
+                                (draft.service_category === t
+                                  ? "border-[rgba(229,57,53,.35)] bg-white text-[var(--hw-ink)] ring-4 ring-[rgba(229,57,53,.10)]"
+                                  : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[rgba(17,24,39,.03)]")
+                              }
+                            >
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label>Property (optional for now)</Label>
+                        <div className="mt-2">
+                          <Input
+                            value={draft.property_address}
+                            onChange={(e) => update({ property_address: e.target.value })}
+                            placeholder="Start typing an address…"
+                          />
+                          <div className="mt-1 text-xs text-[var(--hw-muted)]">We’ll tighten this to use your Properties list next.</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <Label>Describe the issue</Label>
+                      <div className="mt-2">
+                        <Textarea
+                          value={draft.issue_description}
+                          onChange={(e) => update({ issue_description: e.target.value })}
+                          placeholder="What’s happening? Include any constraints, access notes, or urgency."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <Label>Preferred date</Label>
+                        <div className="mt-2">
+                          <Input
+                            value={draft.preferred_date}
+                            onChange={(e) => update({ preferred_date: e.target.value })}
+                            placeholder="YYYY-MM-DD"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Time window</Label>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {(["Morning", "Midday", "Afternoon", "Evening"] as const).map((t) => (
+                            <Button
+                              key={t}
+                              type="button"
+                              variant={draft.preferred_time_window === t ? "primary" : "secondary"}
+                              onClick={() => update({ preferred_time_window: t as any })}
+                            >
+                              {t}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex items-center justify-end gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => void submit()}
+                        disabled={!draft.service_category || !draft.issue_description.trim()}
+                      >
+                        Create work order
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-semibold">Service</div>
+                    <div className="mt-4">
+                      <RadioCardGroup
+                        name="service_category"
+                        value={draft.service_category}
+                        onChange={(v) => update({ service_category: v })}
+                        options={SERVICE_OPTIONS.map((o) => ({ value: o, title: o }))}
+                      />
+                    </div>
+                    <div className="mt-5">
+                      <Label>Optional sub-service</Label>
+                      <div className="mt-2">
+                        <Input
+                          value={draft.service_subcategory}
+                          onChange={(e) => update({ service_subcategory: e.target.value })}
+                          placeholder="Example: faucet replacement"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ) : null}
 
