@@ -563,9 +563,9 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
     >
       <div className="grid gap-6">
         {/* Top row: AI intake (left) + KPIs (right, 2x2) + Messages (under tiles) */}
-        <div className="grid items-start gap-6 lg:grid-cols-12 lg:items-stretch">
-          <div className="lg:col-span-8 h-full flex flex-col">
-            <div className="h-full">
+        <div className="grid items-start gap-6 lg:grid-cols-12 lg:items-start">
+          <div className="lg:col-span-8 flex flex-col">
+            <div>
               <AIWorkOrderIntakeCard
               eyebrow="Job Work Order"
               title={partner?.partnerName ? `Hey ${partner.partnerName.split(" ")[0]}, what do you need help with?` : "What do you need help with?"}

@@ -1013,7 +1013,7 @@ export function AIWorkOrderIntakeCard(props: {
   return (
     <div
       className={
-        "rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col h-full " +
+        "rounded-[var(--hw-radius-lg)] p-5 hw-glass flex flex-col " +
         (started ? "overflow-hidden" : "")
       }
       style={
