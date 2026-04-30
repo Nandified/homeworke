@@ -147,6 +147,9 @@ export default function Page() {
   const [tradeSearch, setTradeSearch] = useState("");
   const [tradeServicesOpen, setTradeServicesOpen] = useState(false);
 
+  // Keep textarea typing isolated from the large draft object to avoid any focus jank.
+  const [issueText, setIssueText] = useState("");
+
   const [issueAttachments, setIssueAttachments] = useState<File[]>([]);
   const [issueFileDialogNonce, setIssueFileDialogNonce] = useState(0);
 
@@ -412,6 +415,14 @@ export default function Page() {
   }, []);
 
   const idx = useMemo(() => steps.findIndex((s) => s.key === step), [steps, step]);
+
+  // Sync issue textarea state when navigating into the step.
+  useEffect(() => {
+    if (!isPortalIntake) return;
+    if (step !== "service_details") return;
+    setIssueText(draft.issue_description || "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPortalIntake, step]);
 
   function update(patch: Partial<IntakeDraft>) {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -957,8 +968,8 @@ export default function Page() {
                     <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Details</div>
                     <div className="mt-2">
                       <Textarea
-                        value={draft.issue_description}
-                        onChange={(e) => update({ issue_description: e.target.value })}
+                        value={issueText}
+                        onChange={(e) => setIssueText(e.target.value)}
                         placeholder="What do you need done? Add any key details (location, access, timing)."
                       />
                     </div>
@@ -1057,13 +1068,15 @@ export default function Page() {
                     <Button
                       type="button"
                       onClick={() => {
-                        // Persist on step transition (portal mode skips autosave while typing).
+                        // Commit textarea → draft, then persist on step transition.
+                        const nextDraft = { ...draft, issue_description: issueText };
+                        setDraft(nextDraft);
                         try {
-                          saveDraft(draft);
+                          saveDraft(nextDraft);
                         } catch {}
                         setStep("property_details");
                       }}
-                      disabled={!draft.issue_description.trim()}
+                      disabled={!issueText.trim()}
                     >
                       Next
                     </Button>
