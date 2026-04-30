@@ -36,6 +36,7 @@ import {
   Home,
   HousePlug,
   Leaf,
+  Layers,
   PaintBucket,
   PaintRoller,
   PlugZap,
