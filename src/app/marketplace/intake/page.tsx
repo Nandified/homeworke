@@ -74,6 +74,7 @@ type IntakeDraft = {
 };
 
 const SERVICE_OPTIONS = taxonomy.trades as string[];
+const TRADE_OPTIONS = (taxonomy.trades as string[]).filter(Boolean);
 
 function draftKey() {
   return "hw_intake_draft_v1";
@@ -120,6 +121,7 @@ export default function Page() {
 
     const results: Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string; score: number }> = [];
 
+    // Trade matches
     for (const t of TRADE_OPTIONS) {
       const hay = t.toLowerCase();
       if (hay.includes(q)) {
@@ -127,14 +129,17 @@ export default function Page() {
       }
     }
 
+    // Service matches
     const services = (taxonomy as any)?.services || [];
     for (const s of services) {
       const trade = String((s as any)?.trade || "");
       const label = String((s as any)?.label || "");
       const category = String((s as any)?.category || "");
       if (!trade || !label) continue;
+
       const hay = label.toLowerCase();
       if (!hay.includes(q)) continue;
+
       const score = hay.startsWith(q) ? 110 : 80;
       results.push({ kind: "service", trade, label, sub: category || undefined, score });
     }
@@ -443,7 +448,7 @@ export default function Page() {
 
   const current = steps[idx];
 
-  const TRADE_OPTIONS = (taxonomy.trades as string[]).filter(Boolean);
+  // TRADE_OPTIONS hoisted to module scope
 
   const servicesByTrade = useMemo(() => {
     const out = new Map<string, Array<{ id: string; category: string; label: string }>>();
@@ -763,16 +768,47 @@ export default function Page() {
                                 ) : null}
                               </div>
 
-                              <div className="mt-3 flex flex-wrap gap-2">
-                                {shown.map((s) => (
-                                  <span
-                                    key={s.id || s.label}
-                                    className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)] px-3 py-2 text-xs font-medium text-[var(--hw-ink)]"
-                                  >
-                                    {s.label}
-                                  </span>
-                                ))}
-                              </div>
+                              {(() => {
+                                const groups = new Map<string, Array<{ id: string; label: string }>>();
+                                for (const s of all) {
+                                  const k = (s.category || "Other").trim() || "Other";
+                                  const arr = groups.get(k) || [];
+                                  arr.push({ id: s.id, label: s.label });
+                                  groups.set(k, arr);
+                                }
+                                const entries = [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+
+                                return (
+                                  <div className="mt-3 grid gap-2">
+                                    {entries.map(([cat, items]) => (
+                                      <details
+                                        key={cat}
+                                        className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)]/40 px-3 py-2"
+                                        open={entries.length <= 3}
+                                      >
+                                        <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                                          {cat} <span className="normal-case tracking-normal">({items.length})</span>
+                                        </summary>
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                          {(showAllTradeServices ? items : items.slice(0, 10)).map((it) => (
+                                            <span
+                                              key={it.id || it.label}
+                                              className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-medium text-[var(--hw-ink)]"
+                                            >
+                                              {it.label}
+                                            </span>
+                                          ))}
+                                          {!showAllTradeServices && items.length > 10 ? (
+                                            <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[var(--hw-muted)]">
+                                              +{items.length - 10} more
+                                            </span>
+                                          ) : null}
+                                        </div>
+                                      </details>
+                                    ))}
+                                  </div>
+                                );
+                              })()}
                             </div>
                           );
                         })()
