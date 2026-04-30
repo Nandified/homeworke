@@ -35,12 +35,30 @@ export async function GET(req: Request) {
     return json({ ok: true, workOrders });
   }
 
-  const workOrders = await db().workOrder.findMany({
-    where: {
-      OR: [{ shareWithPartnerId: partnerId }, { originPartnerId: partnerId }],
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  try {
+    const workOrders = await db().workOrder.findMany({
+      where: {
+        OR: [{ shareWithPartnerId: partnerId }, { originPartnerId: partnerId }],
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-  return json({ ok: true, workOrders });
+    return json({ ok: true, workOrders });
+  } catch (err) {
+    // If DB is configured but temporarily unavailable/mis-migrated, don't hard-fail the dashboard.
+    // Fall back to the seeded mock store so the portal stays usable.
+    seedDemoStoreIfEmpty();
+    const workOrders = listSharedWorkOrdersForPartner(partnerId).map((w) => ({
+      id: w.id,
+      title: w.serviceSubcategory || w.serviceCategory,
+      address: w.propertyAddress,
+      status: w.status,
+      clientName: w.clientName,
+      isMyProperty: !!w.isMyProperty,
+      createdAt: w.createdAt,
+      updatedAt: w.createdAt,
+    }));
+
+    return json({ ok: true, workOrders, warning: "db_unavailable", error: (err as Error)?.message || String(err) });
+  }
 }
