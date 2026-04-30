@@ -114,7 +114,7 @@ export default function Page() {
   const [step, setStep] = useState<StepKey>("select_service");
   const [portalScheduleStep, setPortalScheduleStep] = useState<"date" | "window" | "contact">("date");
   const [showAllTradeServices, setShowAllTradeServices] = useState(false);
-  const [activeTradeExpanded, setActiveTradeExpanded] = useState(true);
+  const [activeTradeExpanded, setActiveTradeExpanded] = useState(false);
   const [tradeSearch, setTradeSearch] = useState("");
   const tradeSearchResults = useMemo(() => {
     const q = tradeSearch.trim().toLowerCase();
@@ -726,7 +726,8 @@ export default function Page() {
                                 type="button"
                                 onClick={() => {
                                   setShowAllTradeServices(false);
-                                  setActiveTradeExpanded(true);
+                                  // Don't auto-expand services when selecting a trade; user can expand if they want.
+                                  setActiveTradeExpanded(false);
                                   update({ service_category: t });
                                 }}
                                 className="group flex w-full items-start gap-3 text-left"
