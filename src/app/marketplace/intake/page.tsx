@@ -348,8 +348,9 @@ export default function Page() {
       const sp = new URLSearchParams(window.location.search);
       const trade = sp.get("trade") || "";
       const subcategory = sp.get("subcategory") || "";
-      const issue = sp.get("aiSummary") || sp.get("issue") || "";
-      const qnaRaw = sp.get("qna") || "";
+      // In portal intake we keep the field empty; avoid prefilling long AI/demo text.
+      const issue = isPortalIntake ? "" : sp.get("aiSummary") || sp.get("issue") || "";
+      const qnaRaw = isPortalIntake ? "" : sp.get("qna") || "";
 
       let qnaText = "";
       try {
@@ -971,10 +972,11 @@ export default function Page() {
                           }}
                         >
                           <div className="flex items-center gap-2 text-sm font-semibold text-[var(--hw-ink)]">
-                            <UploadCloud className="h-4 w-4 text-[var(--hw-muted)]" />
-                            Drag & drop files here, or click to upload
+                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-[rgba(229,57,53,.18)] bg-white shadow-sm">
+                              <UploadCloud className="h-5 w-5 text-[var(--hw-red)]" />
+                            </span>
+                            <span>Drag & drop files here, or click to upload</span>
                           </div>
-                          <div className="mt-1 text-xs text-[var(--hw-muted)]">Up to 12 files.</div>
 
                           {issuePreviews.length ? (
                             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
