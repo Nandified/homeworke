@@ -752,15 +752,7 @@ export default function Page() {
                                   {description ? (
                                     <div className="mt-1 text-xs leading-relaxed text-[var(--hw-muted)]">{description}</div>
                                   ) : null}
-                                  {(() => {
-                                    const svc = tradeMeta(t).services || [];
-                                    const examples = svc.slice(0, 3).map((x) => x.label).filter(Boolean);
-                                    return examples.length ? (
-                                      <div className="mt-2 text-xs text-[var(--hw-muted)]">
-                                        <span className="font-semibold text-[var(--hw-ink)]/70">Examples:</span> {examples.join(" · ")}
-                                      </div>
-                                    ) : null;
-                                  })()}
+                                  {/* Services list is shown in the expandable section below. */}
                                 </div>
                               </button>
 
@@ -779,38 +771,33 @@ export default function Page() {
 
                                   {(() => {
                                     const all = tradeMeta(t).services || [];
-                                    const items = showAllTradeServices ? all : all.slice(0, 12);
+                                    const limit = 8;
+                                    const items = showAllTradeServices ? all : all.slice(0, limit);
                                     return (
-                                      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                      <ul className="mt-3 grid gap-1.5">
                                         {items.map((s) => (
-                                          <div
-                                            key={s.id || s.label}
-                                            className="rounded-2xl border border-[var(--hw-line)] bg-[var(--hw-soft)]/40 px-3 py-2 text-xs font-semibold text-[var(--hw-ink)]"
-                                          >
-                                            {s.label}
+                                          <li key={s.id || s.label} className="flex items-start justify-between gap-3 rounded-2xl border border-[var(--hw-line)] bg-[var(--hw-soft)]/30 px-3 py-2">
+                                            <div className="text-xs font-semibold text-[var(--hw-ink)]">{s.label}</div>
                                             {s.category ? (
-                                              <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                                                {s.category}
-                                              </div>
+                                              <div className="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{s.category}</div>
                                             ) : null}
-                                          </div>
+                                          </li>
                                         ))}
-                                      </div>
+                                      </ul>
                                     );
                                   })()}
 
                                   {(() => {
                                     const total = tradeMeta(t).services?.length || 0;
-                                    if (total <= 12) return null;
+                                    if (total <= 8) return null;
                                     return (
-                                      <div className="mt-3 flex items-center justify-between">
-                                        <div className="text-xs text-[var(--hw-muted)]">Showing {showAllTradeServices ? total : 12} of {total}</div>
+                                      <div className="mt-3 flex items-center justify-end">
                                         <button
                                           type="button"
                                           onClick={() => setShowAllTradeServices((v) => !v)}
                                           className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
                                         >
-                                          {showAllTradeServices ? "Show less" : "View all"}
+                                          {showAllTradeServices ? "Show fewer" : `View all (${total})`}
                                         </button>
                                       </div>
                                     );
