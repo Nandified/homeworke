@@ -619,9 +619,11 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             </div>
 
             <div className="mt-4 grid gap-4">
-              <div className="rounded-[var(--hw-radius-lg)] border-2 border-[var(--hw-line)] bg-white p-3">
-                <div className="text-xs font-semibold text-[var(--hw-ink)] whitespace-nowrap overflow-x-auto">
-                  {partnerInviteLink}
+              <div>
+                <div className="rounded-[var(--hw-radius-lg)] border-2 border-[var(--hw-line)] bg-white px-3 py-3">
+                  <div className="text-xs font-semibold text-[var(--hw-ink)] whitespace-nowrap overflow-x-auto">
+                    {partnerInviteLink}
+                  </div>
                 </div>
 
                 <div className="mt-2 flex items-center gap-2">
