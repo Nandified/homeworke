@@ -22,7 +22,7 @@ import {
 } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
-import { Bolt, Droplets, Flame, Hammer, Home, Layers, Sparkles, Wrench } from "lucide-react";
+import { Bolt, ChevronLeft, ChevronRight, Droplets, Flame, Hammer, Home, Layers, Sparkles, Wrench } from "lucide-react";
 import {
   readClientProperties,
   readCustomProperties,
@@ -44,9 +44,9 @@ type IntakeDraft = {
   property_type: string;
   access_instructions: string;
   preferred_date: string;
-  preferred_time_window: "Morning" | "Midday" | "Afternoon";
+  preferred_time_window: "Morning" | "Midday" | "Afternoon" | "Evening";
   alternate_date: string;
-  contact_method: "Text" | "Email";
+  contact_method: "Any" | "Text" | "Call" | "Email";
   share_with_partner: boolean;
 };
 
@@ -74,7 +74,7 @@ function loadDraft(): IntakeDraft {
     preferred_date: "",
     preferred_time_window: "Morning",
     alternate_date: "",
-    contact_method: "Text",
+    contact_method: "Any",
     share_with_partner: true,
   };
 }
@@ -88,6 +88,7 @@ export default function Page() {
   const steps = spec.steps;
 
   const [step, setStep] = useState<StepKey>("select_service");
+  const [portalScheduleStep, setPortalScheduleStep] = useState<"date" | "window" | "contact">("date");
   const [draft, setDraft] = useState<IntakeDraft>(() => {
     const d = loadDraft();
     try {
@@ -126,6 +127,31 @@ export default function Page() {
       return false;
     }
   }, []);
+
+  // Calendar UI (Preferred date) — copied from Homeworke AI scheduling.
+  const minVisitIso = useMemo(() => {
+    const now = new Date();
+    const min = new Date(now);
+    // Block out the next 2 days so we have time to confirm.
+    min.setDate(min.getDate() + 2);
+    return new Date(min.getTime() - min.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }, []);
+
+  const minVisitDate = useMemo(() => {
+    const [yy, mm, dd] = (minVisitIso || "").split("-").map((x) => Number(x));
+    return new Date(yy, (mm || 1) - 1, dd || 1);
+  }, [minVisitIso]);
+
+  const [calMonth, setCalMonth] = useState<Date>(() => {
+    const base = minVisitDate;
+    return new Date(base.getFullYear(), base.getMonth(), 1);
+  });
+
+  // Keep calendar month aligned with selected date (or min date).
+  useEffect(() => {
+    const base = draft.preferred_date ? new Date(draft.preferred_date + "T00:00:00") : minVisitDate;
+    setCalMonth(new Date(base.getFullYear(), base.getMonth(), 1));
+  }, [draft.preferred_date, minVisitDate]);
 
   // Portal mode should not depend on query params; if you're logged into any portal, use the premium intake.
   const portalMode = useMemo(() => {
@@ -488,149 +514,49 @@ export default function Page() {
               <div>
                 {isPortalIntake ? (
                   <>
-                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work Order</div>
-                    <div className="mt-2 text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Work Order</div>
-                    <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                      <span className="font-semibold text-[var(--hw-ink)]">What do you need help with?</span> Select the service category that best describes your project. We will match you with vetted, qualified professionals in your area.
+                    <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">
+                      What do you need help with?
                     </div>
-
-                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <Label>Trade</Label>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {TRADE_OPTIONS.map((t) => {
-                            const Icon = tradeIcon(t);
-                            const active = draft.service_category === t;
-                            return (
-                              <button
-                                key={t}
-                                type="button"
-                                onClick={() => update({ service_category: t })}
-                                className={
-                                  "inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition " +
-                                  (active
-                                    ? "border-[rgba(229,57,53,.35)] bg-white text-[var(--hw-ink)] ring-4 ring-[rgba(229,57,53,.10)]"
-                                    : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[rgba(17,24,39,.03)]")
-                                }
-                              >
-                                <Icon className={"h-4 w-4 " + (active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]")} />
-                                {t}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label>Property</Label>
-                        <div className="mt-2">
-                          <div className="mb-2 flex flex-wrap gap-2">
-                            {([
-                              { id: "client", label: "Client" },
-                              { id: "my", label: "My" },
-                              { id: "shared", label: "Shared" },
-                              { id: "all", label: "All" },
-                            ] as const).map((f) => (
-                              <button
-                                key={f.id}
-                                type="button"
-                                onClick={() => setPropertyFilter(f.id)}
-                                className={
-                                  "h-9 rounded-full border px-3 text-xs font-semibold transition " +
-                                  (propertyFilter === f.id
-                                    ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
-                                    : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-                                }
-                              >
-                                {f.label}
-                              </button>
-                            ))}
-                          </div>
-
-                          <Picker
-                            value={selectedPropertyId}
-                            placeholder={propertyLoading ? "Loading properties…" : "Select a property"}
-                            options={propertyOptions
-                              .filter((o) => {
-                                if (propertyFilter === "all") return true;
-                                return (o.kind || "my") === propertyFilter;
-                              })
-                              .map((o) => ({ id: o.id, label: o.label, sublabel: o.sublabel }))}
-                            searchable={true}
-                            searchPlaceholder="Search properties…"
-                            onChange={(id) => {
-                              setSelectedPropertyId(id);
-                              const hit = propertyOptions.find((p) => p.id === id) || null;
-                              if (hit?.address) update({ property_address: hit.address });
-                            }}
-                          />
-                          <div className="mt-2 flex items-center justify-between gap-2">
-                            <div className="text-[11px] text-[var(--hw-muted)]">
-                              {propertyError ? propertyError : "Choose from your Properties."}
-                            </div>
-                            <Button
-                              size="xs"
-                              variant="secondary"
-                              onClick={() => {
-                                setAddTouched(false);
-                                // Always start on "Client property" first.
-                                setAddPropMode("client");
-                                setAddPropOpen(true);
-                              }}
-                            >
-                              Add property
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                      Select the service category that best describes your project. We will match you with vetted, qualified professionals in your area.
                     </div>
 
                     <div className="mt-5">
-                      <Label>Describe the issue</Label>
-                      <div className="mt-2">
-                        <Textarea
-                          value={draft.issue_description}
-                          onChange={(e) => update({ issue_description: e.target.value })}
-                          placeholder="What’s happening? Include any constraints, access notes, or urgency."
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <Label>Preferred date</Label>
-                        <div className="mt-2">
-                          <Input
-                            value={draft.preferred_date}
-                            onChange={(e) => update({ preferred_date: e.target.value })}
-                            placeholder="YYYY-MM-DD"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label>Time window</Label>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {(["Morning", "Midday", "Afternoon", "Evening"] as const).map((t) => (
-                            <Button
+                      <Label>Trade</Label>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {TRADE_OPTIONS.map((t) => {
+                          const Icon = tradeIcon(t);
+                          const active = draft.service_category === t;
+                          return (
+                            <button
                               key={t}
                               type="button"
-                              variant={draft.preferred_time_window === t ? "primary" : "secondary"}
-                              onClick={() => update({ preferred_time_window: t as any })}
+                              onClick={() => update({ service_category: t })}
+                              className={
+                                "inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition " +
+                                (active
+                                  ? "border-[rgba(229,57,53,.35)] bg-white text-[var(--hw-ink)] ring-4 ring-[rgba(229,57,53,.10)]"
+                                  : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[rgba(17,24,39,.03)]")
+                              }
                             >
+                              <Icon className={"h-4 w-4 " + (active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]")} />
                               {t}
-                            </Button>
-                          ))}
-                        </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    <div className="mt-6 flex items-center justify-end gap-2">
+                    <div className="mt-6 flex items-center justify-end">
                       <Button
                         type="button"
-                        onClick={() => void submit()}
-                        disabled={!draft.service_category || !draft.issue_description.trim()}
+                        onClick={() => {
+                          setPortalScheduleStep("date");
+                          setStep("service_details");
+                        }}
+                        disabled={!draft.service_category}
                       >
-                        Create work order
+                        Next
                       </Button>
                     </div>
                   </>
@@ -661,162 +587,494 @@ export default function Page() {
             ) : null}
 
             {step === "service_details" ? (
-              <div className="grid gap-5">
+              isPortalIntake ? (
                 <div>
-                  <Label>Describe the issue</Label>
-                  <div className="mt-2">
+                  <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Describe the issue</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">
+                    A few details go a long way. The more context you provide, the faster we can confirm scheduling.
+                  </div>
+
+                  <div className="mt-5">
                     <Textarea
                       value={draft.issue_description}
                       onChange={(e) => update({ issue_description: e.target.value })}
-                      placeholder="What is happening? Any symptoms or constraints?"
+                      placeholder="What’s happening? Include any constraints, access notes, or urgency."
                     />
                   </div>
-                </div>
-                <div>
-                  <Label>Urgency</Label>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {(["Normal", "Soon", "Urgent"] as const).map((u) => (
-                      <Button
-                        key={u}
-                        type="button"
-                        variant={draft.urgency_level === u ? "primary" : "secondary"}
-                        onClick={() => update({ urgency_level: u })}
-                      >
-                        {u}
-                      </Button>
-                    ))}
+
+                  <div className="mt-6 flex items-center justify-between">
+                    <Button type="button" variant="ghost" onClick={() => setStep("select_service")}>Back</Button>
+                    <Button
+                      type="button"
+                      onClick={() => setStep("property_details")}
+                      disabled={!draft.issue_description.trim()}
+                    >
+                      Next
+                    </Button>
                   </div>
                 </div>
-                <Card className="p-4">
-                  <div className="text-sm font-semibold">Photos</div>
-                  <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-                    Upload is a Phase 3 deliverable. For now, describe what you see.
+              ) : (
+                <div className="grid gap-5">
+                  <div>
+                    <Label>Describe the issue</Label>
+                    <div className="mt-2">
+                      <Textarea
+                        value={draft.issue_description}
+                        onChange={(e) => update({ issue_description: e.target.value })}
+                        placeholder="What is happening? Any symptoms or constraints?"
+                      />
+                    </div>
                   </div>
-                </Card>
-              </div>
+                  <div>
+                    <Label>Urgency</Label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(["Normal", "Soon", "Urgent"] as const).map((u) => (
+                        <Button
+                          key={u}
+                          type="button"
+                          variant={draft.urgency_level === u ? "primary" : "secondary"}
+                          onClick={() => update({ urgency_level: u })}
+                        >
+                          {u}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <Card className="p-4">
+                    <div className="text-sm font-semibold">Photos</div>
+                    <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+                      Upload is a Phase 3 deliverable. For now, describe what you see.
+                    </div>
+                  </Card>
+                </div>
+              )
             ) : null}
 
             {step === "property_details" ? (
-              <div className="grid gap-5">
+              isPortalIntake ? (
                 <div>
-                  <Label>Property address</Label>
-                  <div className="mt-2">
-                    <Input
-                      value={draft.property_address}
-                      onChange={(e) => update({ property_address: e.target.value })}
-                      placeholder="123 Main St, Chicago, IL"
-                    />
+                  <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Property</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Select the property for this work order.</div>
+
+                  <div className="mt-5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Property</div>
+                      <button
+                        type="button"
+                        className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
+                        onClick={() => {
+                          setAddTouched(false);
+                          setAddPropMode("client");
+                          setAddPropOpen(true);
+                        }}
+                      >
+                        Add property
+                      </button>
+                    </div>
+
+                    <div className="mt-3">
+                      <div className="mb-2 flex flex-wrap gap-2">
+                        {([
+                          { id: "client", label: "Client" },
+                          { id: "my", label: "My" },
+                          { id: "shared", label: "Shared" },
+                          { id: "all", label: "All" },
+                        ] as const).map((f) => (
+                          <button
+                            key={f.id}
+                            type="button"
+                            onClick={() => setPropertyFilter(f.id)}
+                            className={
+                              "h-9 rounded-full border px-3 text-xs font-semibold transition " +
+                              (propertyFilter === f.id
+                                ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                                : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                            }
+                          >
+                            {f.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <Picker
+                        value={selectedPropertyId}
+                        placeholder={propertyLoading ? "Loading properties…" : "Select a property"}
+                        options={propertyOptions
+                          .filter((o) => {
+                            if (propertyFilter === "all") return true;
+                            return (o.kind || "my") === propertyFilter;
+                          })
+                          .map((o) => ({ id: o.id, label: o.label, sublabel: o.sublabel }))}
+                        searchable={true}
+                        searchPlaceholder="Search properties…"
+                        onChange={(id) => {
+                          setSelectedPropertyId(id);
+                          const hit = propertyOptions.find((p) => p.id === id) || null;
+                          if (hit?.address) update({ property_address: hit.address });
+                        }}
+                      />
+
+                      <div className="mt-2 text-[11px] text-[var(--hw-muted)]">
+                        {propertyError ? propertyError : "Choose from your Properties."}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex items-center justify-between">
+                    <Button type="button" variant="ghost" onClick={() => setStep("service_details")}>Back</Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setPortalScheduleStep("date");
+                        setStep("schedule_visit");
+                      }}
+                      disabled={!draft.property_address.trim()}
+                    >
+                      Next
+                    </Button>
                   </div>
                 </div>
-                <div>
-                  <Label>Property type</Label>
-                  <div className="mt-2">
-                    <Input
-                      value={draft.property_type}
-                      onChange={(e) => update({ property_type: e.target.value })}
-                      placeholder="Single family, condo, multi-unit"
-                    />
+              ) : (
+                <div className="grid gap-5">
+                  <div>
+                    <Label>Property address</Label>
+                    <div className="mt-2">
+                      <Input
+                        value={draft.property_address}
+                        onChange={(e) => update({ property_address: e.target.value })}
+                        placeholder="123 Main St, Chicago, IL"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Property type</Label>
+                    <div className="mt-2">
+                      <Input
+                        value={draft.property_type}
+                        onChange={(e) => update({ property_type: e.target.value })}
+                        placeholder="Single family, condo, multi-unit"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Access instructions (optional)</Label>
+                    <div className="mt-2">
+                      <Textarea
+                        value={draft.access_instructions}
+                        onChange={(e) => update({ access_instructions: e.target.value })}
+                        placeholder="Gate code, pets, parking notes"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <Label>Access instructions (optional)</Label>
-                  <div className="mt-2">
-                    <Textarea
-                      value={draft.access_instructions}
-                      onChange={(e) => update({ access_instructions: e.target.value })}
-                      placeholder="Gate code, pets, parking notes"
-                    />
-                  </div>
-                </div>
-              </div>
+              )
             ) : null}
 
             {step === "schedule_visit" ? (
-              <div className="grid gap-5">
+              isPortalIntake ? (
                 <div>
-                  <Label>Preferred date</Label>
-                  <div className="mt-2">
-                    <Input
-                      value={draft.preferred_date}
-                      onChange={(e) => update({ preferred_date: e.target.value })}
-                      placeholder="YYYY-MM-DD"
-                    />
+                  {/* Portal stepper: schedule → time window → contact preference */}
+                  {portalScheduleStep === "date" ? (
+                    <div>
+                      <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Schedule</div>
+                      <div className="mt-1 text-sm text-[var(--hw-muted)]">Choose a preferred day.</div>
+
+                      <div className="mt-5">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Preferred date</div>
+                        <div className="mt-3">
+                          {(() => {
+                            const selected = draft.preferred_date ? new Date(draft.preferred_date + "T00:00:00") : null;
+                            const monthLabel = (d: Date) => d.toLocaleString(undefined, { month: "long", year: "numeric" });
+                            const startOfMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1);
+                            const endOfMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth() + 1, 0);
+                            const sameDay = (a: Date, b: Date) =>
+                              a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+                            const first = startOfMonth(calMonth);
+                            const last = endOfMonth(calMonth);
+                            const startWeekday = first.getDay();
+                            const daysInMonth = last.getDate();
+
+                            const isBeforeMin = (d: Date) => d.getTime() < minVisitDate.getTime();
+
+                            const days: Array<{ date: Date | null; disabled?: boolean }> = [];
+                            for (let i = 0; i < startWeekday; i++) days.push({ date: null });
+                            for (let day = 1; day <= daysInMonth; day++) {
+                              const d = new Date(calMonth.getFullYear(), calMonth.getMonth(), day);
+                              days.push({ date: d, disabled: isBeforeMin(d) });
+                            }
+                            while (days.length % 7 !== 0) days.push({ date: null });
+
+                            const goMonth = (delta: number) => {
+                              const next = new Date(calMonth.getFullYear(), calMonth.getMonth() + delta, 1);
+                              setCalMonth(next);
+                            };
+
+                            const prevMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1);
+                            const canGoPrev = endOfMonth(prevMonth).getTime() >= minVisitDate.getTime();
+
+                            return (
+                              <div className="w-full rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.04)] p-2.5">
+                                <div className="flex items-center justify-between">
+                                  <button
+                                    type="button"
+                                    disabled={!canGoPrev}
+                                    onClick={() => canGoPrev && goMonth(-1)}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(229,57,53,.20)] bg-white text-[var(--hw-ink)] shadow-sm disabled:opacity-40"
+                                    aria-label="Previous month"
+                                  >
+                                    <ChevronLeft className="h-4 w-4" />
+                                  </button>
+
+                                  <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{monthLabel(calMonth)}</div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => goMonth(1)}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(229,57,53,.20)] bg-white text-[var(--hw-ink)] shadow-sm"
+                                    aria-label="Next month"
+                                  >
+                                    <ChevronRight className="h-4 w-4" />
+                                  </button>
+                                </div>
+
+                                <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                                  {(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const).map((w) => (
+                                    <div key={w} className="py-1">
+                                      {w}
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <div className="mt-1 grid grid-cols-7 gap-[3px]">
+                                  {days.map((cell, i) => {
+                                    if (!cell.date) return <div key={i} className="h-8.5" />;
+                                    const d = cell.date;
+                                    const disabled = !!cell.disabled;
+                                    const selectedDay = selected ? sameDay(selected, d) : false;
+                                    return (
+                                      <button
+                                        key={i}
+                                        type="button"
+                                        disabled={disabled}
+                                        onClick={() => {
+                                          const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+                                            .toISOString()
+                                            .slice(0, 10);
+                                          update({ preferred_date: iso, preferred_time_window: "Morning" });
+                                        }}
+                                        className={
+                                          "h-8.5 w-full rounded-[11px] text-sm font-semibold transition " +
+                                          (selectedDay
+                                            ? "bg-[var(--hw-red)] text-white shadow-[0_10px_22px_rgba(229,57,53,.28)]"
+                                            : disabled
+                                              ? "bg-white/60 text-[var(--hw-muted)] opacity-60"
+                                              : "bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                                        }
+                                      >
+                                        {d.getDate()}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+
+                      <div className="mt-6 flex items-center justify-between">
+                        <Button type="button" variant="ghost" onClick={() => setStep("property_details")}>Back</Button>
+                        <Button
+                          type="button"
+                          onClick={() => setPortalScheduleStep("window")}
+                          disabled={!draft.preferred_date}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {portalScheduleStep === "window" ? (
+                    <div>
+                      <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Time window</div>
+                      <div className="mt-1 text-sm text-[var(--hw-muted)]">Pick a time window.</div>
+
+                      <div className="mt-5 grid gap-2">
+                        {(
+                          [
+                            { id: "Morning", label: "Morning", range: "7:00 AM – 10:00 AM" },
+                            { id: "Midday", label: "Midday", range: "10:00 AM – 2:00 PM" },
+                            { id: "Afternoon", label: "Afternoon", range: "2:00 PM – 6:00 PM" },
+                            { id: "Evening", label: "Evening", range: "6:00 PM – 9:00 PM" },
+                          ] as const
+                        ).map((t) => {
+                          const selected = draft.preferred_time_window === t.id;
+                          return (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => update({ preferred_time_window: t.id })}
+                              className={
+                                "rounded-[var(--hw-radius-lg)] border p-4 text-left transition " +
+                                (selected
+                                  ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.08)] ring-4 ring-[rgba(229,57,53,.10)]"
+                                  : "border-[var(--hw-line)] bg-white hover:bg-[var(--hw-soft)]")
+                              }
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{t.label}</div>
+                                  <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">{t.range}</div>
+                                </div>
+                                <div className={
+                                  "h-4 w-4 rounded-full border " +
+                                  (selected ? "border-[var(--hw-red)] bg-[var(--hw-red)]" : "border-[var(--hw-line)] bg-white")
+                                } />
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-6 flex items-center justify-between">
+                        <Button type="button" variant="ghost" onClick={() => setPortalScheduleStep("date")}>Back</Button>
+                        <Button type="button" onClick={() => setPortalScheduleStep("contact")}>Next</Button>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {portalScheduleStep === "contact" ? (
+                    <div>
+                      <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Contact preference</div>
+                      <div className="mt-1 text-sm text-[var(--hw-muted)]">What’s the best method to contact you?</div>
+
+                      <div className="mt-5">
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Contact preference</div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {(["Any", "Text", "Call", "Email"] as const).map((m) => (
+                            <button
+                              key={m}
+                              type="button"
+                              onClick={() => update({ contact_method: m })}
+                              className={
+                                "h-9 rounded-full border px-4 text-xs font-semibold transition " +
+                                (draft.contact_method === m
+                                  ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                                  : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                              }
+                            >
+                              {m}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-6 flex items-center justify-between">
+                        <Button type="button" variant="ghost" onClick={() => setPortalScheduleStep("window")}>Back</Button>
+                        <Button
+                          type="button"
+                          onClick={() => void submit()}
+                          disabled={!draft.preferred_date || !draft.preferred_time_window || !draft.contact_method}
+                        >
+                          Create Work Order
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="grid gap-5">
+                  <div>
+                    <Label>Preferred date</Label>
+                    <div className="mt-2">
+                      <Input
+                        value={draft.preferred_date}
+                        onChange={(e) => update({ preferred_date: e.target.value })}
+                        placeholder="YYYY-MM-DD"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Preferred time window</Label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(["Morning", "Midday", "Afternoon", "Evening"] as const).map((t) => (
+                        <Button
+                          key={t}
+                          type="button"
+                          variant={draft.preferred_time_window === t ? "primary" : "secondary"}
+                          onClick={() => update({ preferred_time_window: t as any })}
+                        >
+                          {t}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Alternate date (optional)</Label>
+                    <div className="mt-2">
+                      <Input
+                        value={draft.alternate_date}
+                        onChange={(e) => update({ alternate_date: e.target.value })}
+                        placeholder="YYYY-MM-DD"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Preferred contact method</Label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(["Any", "Text", "Call", "Email"] as const).map((m) => (
+                        <Button
+                          key={m}
+                          type="button"
+                          variant={draft.contact_method === m ? "primary" : "secondary"}
+                          onClick={() => update({ contact_method: m as any })}
+                        >
+                          {m}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                    <div className="text-sm font-semibold">Sharing preference</div>
+                    <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+                      If a partner is attached, we keep them in the loop only when you allow it.
+                    </div>
+                    <div className="mt-3">
+                      <Checkbox
+                        checked={draft.share_with_partner}
+                        onChange={(e) => update({ share_with_partner: e.target.checked })}
+                        label="Allow partner updates for this request (recommended)"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <Label>Preferred time window</Label>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {(["Morning", "Midday", "Afternoon"] as const).map((t) => (
-                      <Button
-                        key={t}
-                        type="button"
-                        variant={draft.preferred_time_window === t ? "primary" : "secondary"}
-                        onClick={() => update({ preferred_time_window: t })}
-                      >
-                        {t}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <Label>Alternate date (optional)</Label>
-                  <div className="mt-2">
-                    <Input
-                      value={draft.alternate_date}
-                      onChange={(e) => update({ alternate_date: e.target.value })}
-                      placeholder="YYYY-MM-DD"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label>Preferred contact method</Label>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {(["Text", "Email"] as const).map((m) => (
-                      <Button
-                        key={m}
-                        type="button"
-                        variant={draft.contact_method === m ? "primary" : "secondary"}
-                        onClick={() => update({ contact_method: m })}
-                      >
-                        {m}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-[var(--hw-radius)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-                  <div className="text-sm font-semibold">Sharing preference</div>
-                  <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-                    If a partner is attached, we keep them in the loop only when you allow it.
-                  </div>
-                  <div className="mt-3">
-                    <Checkbox
-                      checked={draft.share_with_partner}
-                      onChange={(e) => update({ share_with_partner: e.target.checked })}
-                      label="Allow partner updates for this request (recommended)"
-                    />
-                  </div>
-                </div>
-              </div>
+              )
             ) : null}
 
-            {/* ── Navigation ── */}
-            <div className="mt-10 flex items-center justify-between gap-3 border-t border-[var(--hw-line)] pt-6">
-              <Button type="button" variant="ghost" onClick={back} disabled={idx === 0}>
-                {spec.copy.backCta}
-              </Button>
+            {!isPortalIntake ? (
+              <>
+                {/* ── Navigation ── */}
+                <div className="mt-10 flex items-center justify-between gap-3 border-t border-[var(--hw-line)] pt-6">
+                  <Button type="button" variant="ghost" onClick={back} disabled={idx === 0}>
+                    {spec.copy.backCta}
+                  </Button>
 
-              {idx < steps.length - 1 ? (
-                <Button type="button" onClick={next}>
-                  Continue
-                </Button>
-              ) : (
-                <Button type="button" onClick={submit}>
-                  {spec.copy.primaryCta}
-                </Button>
-              )}
-            </div>
+                  {idx < steps.length - 1 ? (
+                    <Button type="button" onClick={next}>
+                      Continue
+                    </Button>
+                  ) : (
+                    <Button type="button" onClick={submit}>
+                      {spec.copy.primaryCta}
+                    </Button>
+                  )}
+                </div>
 
-            <p className="mt-3 text-xs text-[var(--hw-muted)]">{spec.copy.saveNote}</p>
+                <p className="mt-3 text-xs text-[var(--hw-muted)]">{spec.copy.saveNote}</p>
+              </>
+            ) : null}
           </Card>
 
           {/* ── Sidebar ── */}
