@@ -116,6 +116,24 @@ export default function Page() {
   const [showAllTradeServices, setShowAllTradeServices] = useState(false);
   const [tradeSearch, setTradeSearch] = useState("");
   const [tradeServicesOpen, setTradeServicesOpen] = useState(false);
+
+  const [issueAttachments, setIssueAttachments] = useState<File[]>([]);
+  const issuePreviews = useMemo(() => {
+    return issueAttachments.map((f) => {
+      const isImage = (f.type || "").startsWith("image/");
+      const isVideo = (f.type || "").startsWith("video/");
+      const url = isImage || isVideo ? URL.createObjectURL(f) : null;
+      return { file: f, isImage, isVideo, url };
+    });
+  }, [issueAttachments]);
+
+  useEffect(() => {
+    return () => {
+      for (const p of issuePreviews) {
+        if (p.url) URL.revokeObjectURL(p.url);
+      }
+    };
+  }, [issuePreviews]);
   const tradeSearchResults = useMemo(() => {
     const q = tradeSearch.trim().toLowerCase();
     if (q.length < 2) return [] as Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string }>;
@@ -887,16 +905,85 @@ export default function Page() {
               isPortalIntake ? (
                 <div>
                   <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Describe the issue</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                    A few details go a long way. The more context you provide, the faster we can confirm scheduling.
-                  </div>
 
                   <div className="mt-5">
-                    <Textarea
-                      value={draft.issue_description}
-                      onChange={(e) => update({ issue_description: e.target.value })}
-                      placeholder="What’s happening? Include any constraints, access notes, or urgency."
-                    />
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Details</div>
+                    <div className="mt-2">
+                      <Textarea
+                        value={draft.issue_description}
+                        onChange={(e) => update({ issue_description: e.target.value })}
+                        placeholder="What’s happening? Include symptoms, location (room), and anything urgent."
+                      />
+                    </div>
+                    <div className="mt-2 text-xs text-[var(--hw-muted)]">
+                      Tip: include where it is (kitchen/bath/exterior) and any access constraints.
+                    </div>
+                  </div>
+
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Photos / video (optional)</div>
+                      <label className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80 cursor-pointer">
+                        Add files
+                        <input
+                          type="file"
+                          className="hidden"
+                          multiple
+                          accept="image/*,video/*,.pdf,.doc,.docx,.heic"
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (!files.length) return;
+                            setIssueAttachments((prev) => [...prev, ...files].slice(0, 12));
+                            e.currentTarget.value = "";
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    <div
+                      className="mt-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)]/30 p-4"
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const files = Array.from(e.dataTransfer.files || []);
+                        if (!files.length) return;
+                        setIssueAttachments((prev) => [...prev, ...files].slice(0, 12));
+                      }}
+                    >
+                      <div className="text-sm font-semibold text-[var(--hw-ink)]">Drag & drop files here</div>
+                      <div className="mt-1 text-xs text-[var(--hw-muted)]">Or click “Add files” to browse. (Up to 12 files)</div>
+
+                      {issuePreviews.length ? (
+                        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          {issuePreviews.map((p, idx) => (
+                            <div key={idx} className="relative overflow-hidden rounded-2xl border border-[var(--hw-line)] bg-white">
+                              {p.url && p.isImage ? (
+                                <img src={p.url} alt={p.file.name} className="h-24 w-full object-cover" />
+                              ) : p.url && p.isVideo ? (
+                                <video src={p.url} className="h-24 w-full object-cover" muted />
+                              ) : (
+                                <div className="flex h-24 items-center justify-center px-3 text-center text-xs font-semibold text-[var(--hw-muted)]">
+                                  {p.file.name}
+                                </div>
+                              )}
+                              <button
+                                type="button"
+                                className="absolute right-2 top-2 rounded-full border border-[var(--hw-line)] bg-white/90 px-2 py-1 text-[10px] font-semibold text-[var(--hw-ink)] hover:bg-white"
+                                onClick={() => {
+                                  setIssueAttachments((prev) => prev.filter((_, i) => i !== idx));
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="mt-6 flex items-center justify-between">
