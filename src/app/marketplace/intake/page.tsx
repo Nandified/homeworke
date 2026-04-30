@@ -93,10 +93,11 @@ export default function Page() {
     return d;
   });
 
-  const [propertyOptions, setPropertyOptions] = useState<Array<{ id: string; label: string; sublabel?: string; address?: string }>>([]);
+  const [propertyOptions, setPropertyOptions] = useState<Array<{ id: string; label: string; sublabel?: string; address?: string; kind?: "client" | "my" | "shared" }>>([]);
   const [propertyLoading, setPropertyLoading] = useState(false);
   const [propertyError, setPropertyError] = useState("");
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
+  const [propertyFilter, setPropertyFilter] = useState<"client" | "my" | "shared" | "all">("client");
 
   const fromAI = useMemo(() => {
     try {
@@ -137,9 +138,10 @@ export default function Page() {
           .map((p: any) => {
             const address = String(p.address || "").trim();
             const label = String(p.nickname || address || "Property").trim();
-            const kind = p.sharedWithMe ? "Shared" : p.clientProperty ? "Client" : "My";
+            const kindKey: "client" | "my" | "shared" = p.sharedWithMe ? "shared" : p.clientProperty ? "client" : "my";
+            const kind = kindKey === "shared" ? "Shared" : kindKey === "client" ? "Client" : "My";
             const sublabel = address ? `${kind} • ${address}` : kind;
-            return { id: String(p.id), label, sublabel, address };
+            return { id: String(p.id), label, sublabel, address, kind: kindKey };
           });
 
         if (cancelled) return;
@@ -466,10 +468,38 @@ export default function Page() {
                       <div>
                         <Label>Property</Label>
                         <div className="mt-2">
+                          <div className="mb-2 flex flex-wrap gap-2">
+                            {([
+                              { id: "client", label: "Client" },
+                              { id: "my", label: "My" },
+                              { id: "shared", label: "Shared" },
+                              { id: "all", label: "All" },
+                            ] as const).map((f) => (
+                              <button
+                                key={f.id}
+                                type="button"
+                                onClick={() => setPropertyFilter(f.id)}
+                                className={
+                                  "h-9 rounded-full border px-3 text-xs font-semibold transition " +
+                                  (propertyFilter === f.id
+                                    ? "border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.10)] text-[var(--hw-red)]"
+                                    : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                                }
+                              >
+                                {f.label}
+                              </button>
+                            ))}
+                          </div>
+
                           <Picker
                             value={selectedPropertyId}
                             placeholder={propertyLoading ? "Loading properties…" : "Select a property"}
-                            options={propertyOptions.map((o) => ({ id: o.id, label: o.label, sublabel: o.sublabel }))}
+                            options={propertyOptions
+                              .filter((o) => {
+                                if (propertyFilter === "all") return true;
+                                return (o.kind || "my") === propertyFilter;
+                              })
+                              .map((o) => ({ id: o.id, label: o.label, sublabel: o.sublabel }))}
                             searchable={true}
                             searchPlaceholder="Search properties…"
                             onChange={(id) => {
