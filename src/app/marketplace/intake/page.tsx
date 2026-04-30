@@ -22,7 +22,29 @@ import {
 } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
-import { Bolt, ChevronLeft, ChevronRight, Droplets, Flame, Hammer, Home, Layers, Sparkles, Wrench } from "lucide-react";
+import {
+  Bolt,
+  BrushCleaning,
+  Bug,
+  ChevronLeft,
+  ChevronRight,
+  DoorClosed,
+  DoorOpen,
+  Droplets,
+  Flame,
+  Hammer,
+  Home,
+  HousePlug,
+  Leaf,
+  PaintBucket,
+  PaintRoller,
+  PlugZap,
+  Refrigerator,
+  SprayCan,
+  TreePine,
+  Trees,
+  Wrench,
+} from "lucide-react";
 import {
   readClientProperties,
   readCustomProperties,
@@ -89,6 +111,7 @@ export default function Page() {
 
   const [step, setStep] = useState<StepKey>("select_service");
   const [portalScheduleStep, setPortalScheduleStep] = useState<"date" | "window" | "contact">("date");
+  const [showAllTradeServices, setShowAllTradeServices] = useState(false);
   const [draft, setDraft] = useState<IntakeDraft>(() => {
     const d = loadDraft();
     try {
@@ -390,16 +413,98 @@ export default function Page() {
 
   const TRADE_OPTIONS = (taxonomy.trades as string[]).filter(Boolean);
 
-  const tradeIcon = (t: string) => {
-    const s = (t || "").toLowerCase();
-    if (s.includes("plumb")) return Droplets;
-    if (s.includes("electric")) return Bolt;
-    if (s.includes("hvac") || s.includes("heating") || s.includes("cool")) return Flame;
-    if (s.includes("floor")) return Layers;
-    if (s.includes("roof")) return Home;
-    if (s.includes("clean")) return Sparkles;
-    if (s.includes("handyman") || s.includes("general")) return Wrench;
-    return Hammer;
+  const servicesByTrade = useMemo(() => {
+    const out = new Map<string, Array<{ id: string; category: string; label: string }>>();
+    for (const s of (taxonomy as any)?.services || []) {
+      const trade = String((s as any)?.trade || "").trim();
+      if (!trade) continue;
+      const arr = out.get(trade) || [];
+      arr.push({ id: String((s as any)?.id || ""), category: String((s as any)?.category || ""), label: String((s as any)?.label || "") });
+      out.set(trade, arr);
+    }
+    // stable sort
+    for (const [trade, arr] of out.entries()) {
+      arr.sort((a, b) => (a.category + a.label).localeCompare(b.category + b.label));
+      out.set(trade, arr);
+    }
+    return out;
+  }, []);
+
+  const tradeMeta = (trade: string) => {
+    const s = (trade || "").toLowerCase();
+
+    // Premium-ish one-line explanations for the UI.
+    const description =
+      s.includes("electrical")
+        ? "Panels, outlets, lighting, troubleshooting"
+        : s.includes("plumb")
+          ? "Leaks, fixtures, drains, water heaters"
+          : s.includes("hvac")
+            ? "Heating/cooling, thermostats, ducts"
+            : s.includes("clean")
+              ? "Turnovers, deep cleans, carpet & more"
+              : s.includes("appliance")
+                ? "Install & repair for household appliances"
+                : s.includes("floor")
+                  ? "Install, repair, refinish"
+                  : s.includes("paint")
+                    ? "Interior/exterior painting & prep"
+                    : s.includes("drywall")
+                      ? "Patch, hang, texture, finish"
+                      : s.includes("pest")
+                        ? "Treatments, prevention, inspections"
+                        : s.includes("landscap")
+                          ? "Lawn care, cleanup, hardscapes"
+                          : s.includes("tree")
+                            ? "Trim, removal, storm cleanup"
+                            : s.includes("roof")
+                              ? "Repair, replace, inspections"
+                              : s.includes("gutter")
+                                ? "Clean, repair, guards"
+                                : s.includes("windows") || s.includes("doors")
+                                  ? "Install, repair, weatherproof"
+                                  : s.includes("garage")
+                                    ? "Openers, springs, repairs"
+                                    : s.includes("masonry") || s.includes("concrete") || s.includes("asphalt")
+                                      ? "Concrete, brick, asphalt work"
+                                      : s.includes("mold") || s.includes("water") || s.includes("environment")
+                                        ? "Remediation, testing, restoration"
+                                        : s.includes("inspect")
+                                          ? "Home, sewer, and specialty inspections"
+                                          : s.includes("pool")
+                                            ? "Service, repair, installs"
+                                            : s.includes("remodel")
+                                              ? "Kitchens, baths, additions"
+                                              : s.includes("handyman") || s.includes("general")
+                                                ? "Small repairs, installs, punch lists"
+                                                : "";
+
+    const Icon = (() => {
+      if (s.includes("electrical")) return PlugZap;
+      if (s.includes("plumb")) return Droplets;
+      if (s.includes("hvac") || s.includes("heating") || s.includes("cool")) return Flame;
+      if (s.includes("appliance")) return Refrigerator;
+      if (s.includes("clean")) return BrushCleaning;
+      if (s.includes("floor")) return Layers;
+      if (s.includes("gutter")) return Home;
+      if (s.includes("landscap") || s.includes("lawn")) return Leaf;
+      if (s.includes("tree")) return TreePine;
+      if (s.includes("masonry") || s.includes("concrete") || s.includes("asphalt")) return Hammer;
+      if (s.includes("mold") || s.includes("water damage") || s.includes("environment")) return SprayCan;
+      if (s.includes("paint")) return PaintRoller;
+      if (s.includes("drywall")) return PaintBucket;
+      if (s.includes("pest")) return Bug;
+      if (s.includes("pool") || s.includes("spa")) return HousePlug;
+      if (s.includes("garage")) return DoorClosed;
+      if (s.includes("windows") || s.includes("doors")) return DoorOpen;
+      if (s.includes("inspect")) return Bolt;
+      if (s.includes("remodel")) return Wrench;
+      if (s.includes("handyman") || s.includes("general")) return Wrench;
+      return Trees;
+    })();
+
+    const services = servicesByTrade.get(trade) || [];
+    return { Icon, description, services };
   };
 
   const Shell = ({ children }: { children: React.ReactNode }) => {
@@ -521,30 +626,84 @@ export default function Page() {
                       Select the service category that best describes your project. We will match you with vetted, qualified professionals in your area.
                     </div>
 
-                    <div className="mt-5">
-                      <Label>Trade</Label>
-                      <div className="mt-2 flex flex-wrap gap-2">
+                    <div className="mt-6">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Trade</div>
+
+                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {TRADE_OPTIONS.map((t) => {
-                          const Icon = tradeIcon(t);
+                          const { Icon, description } = tradeMeta(t);
                           const active = draft.service_category === t;
                           return (
                             <button
                               key={t}
                               type="button"
-                              onClick={() => update({ service_category: t })}
+                              onClick={() => {
+                                setShowAllTradeServices(false);
+                                update({ service_category: t });
+                              }}
                               className={
-                                "inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition " +
+                                "group flex items-start gap-3 rounded-[var(--hw-radius-lg)] border p-4 text-left transition " +
                                 (active
-                                  ? "border-[rgba(229,57,53,.35)] bg-white text-[var(--hw-ink)] ring-4 ring-[rgba(229,57,53,.10)]"
-                                  : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[rgba(17,24,39,.03)]")
+                                  ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.04)] ring-4 ring-[rgba(229,57,53,.10)]"
+                                  : "border-[var(--hw-line)] bg-white hover:bg-[var(--hw-soft)]")
                               }
                             >
-                              <Icon className={"h-4 w-4 " + (active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]")} />
-                              {t}
+                              <div
+                                className={
+                                  "mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border " +
+                                  (active
+                                    ? "border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.10)]"
+                                    : "border-[var(--hw-line)] bg-white")
+                                }
+                              >
+                                <Icon className={"h-5 w-5 " + (active ? "text-[var(--hw-red)]" : "text-[var(--hw-muted)]")} />
+                              </div>
+
+                              <div className="min-w-0">
+                                <div className={"text-sm font-extrabold tracking-tight " + (active ? "text-[var(--hw-ink)]" : "text-[var(--hw-ink)]")}>{t}</div>
+                                {description ? (
+                                  <div className="mt-1 text-xs leading-relaxed text-[var(--hw-muted)]">{description}</div>
+                                ) : null}
+                              </div>
                             </button>
                           );
                         })}
                       </div>
+
+                      {draft.service_category ? (
+                        (() => {
+                          const meta = tradeMeta(draft.service_category);
+                          const all = meta.services || [];
+                          const shown = showAllTradeServices ? all : all.slice(0, 10);
+                          return (
+                            <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="text-sm font-semibold text-[var(--hw-ink)]">What’s included</div>
+                                {all.length > 10 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowAllTradeServices((v) => !v)}
+                                    className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80"
+                                  >
+                                    {showAllTradeServices ? "Show less" : `View all (${all.length})`}
+                                  </button>
+                                ) : null}
+                              </div>
+
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {shown.map((s) => (
+                                  <span
+                                    key={s.id || s.label}
+                                    className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)] px-3 py-2 text-xs font-medium text-[var(--hw-ink)]"
+                                  >
+                                    {s.label}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()
+                      ) : null}
                     </div>
 
                     <div className="mt-6 flex items-center justify-end">
