@@ -164,9 +164,31 @@ export default function Page() {
 
   const current = steps[idx];
 
+  const fromAI = (() => {
+    try {
+      const sp = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+      return sp.get("fromAI") === "1";
+    } catch {
+      return false;
+    }
+  })();
+
+  const Shell = ({ children }: { children: React.ReactNode }) => {
+    if (!fromAI) return <>{children}</>;
+    // Premium portal chrome when launched from the PRO dashboard / Homeworke AI intake.
+    return (
+      <div className="bg-[var(--hw-bg)]">
+        <div className="mx-auto w-full max-w-[1180px] px-4 py-6">
+          {children}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-[#fafafa]">
-      <Container className="py-10 md:py-16">
+    <Shell>
+      <div className={fromAI ? "" : "min-h-screen bg-gradient-to-b from-white to-[#fafafa]"}>
+        <Container className={fromAI ? "py-0" : "py-10 md:py-16"}>
         {/* ── Header ── */}
         <div className="mb-2">
           <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
@@ -534,9 +556,10 @@ export default function Page() {
         </div>
 
         <div className="mt-8 text-sm text-[var(--hw-muted)]">
-          <Link href="/">← Back home</Link>
+          <Link href={fromAI ? "/pro/dashboard" : "/"}>← {fromAI ? "Back to dashboard" : "Back home"}</Link>
         </div>
       </Container>
     </div>
+    </Shell>
   );
 }

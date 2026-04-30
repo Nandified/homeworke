@@ -39,6 +39,8 @@ export async function POST(req: Request) {
       token?: string;
       originPartnerId?: string | null;
       shareWithPartner?: boolean | null;
+      fromInstantEstimate?: boolean | null;
+      appointments?: Array<{ trade?: string; preferredDate?: string; preferredWindow?: string }>;
       intake?: Partial<{
         service_category: string;
         service_subcategory: string;
@@ -67,8 +69,17 @@ export async function POST(req: Request) {
         propertyType: body.intake.property_type,
         preferredDate: body.intake.preferred_date,
         preferredWindow: body.intake.preferred_time_window,
+        appointments: Array.isArray(body.appointments)
+          ? body.appointments.map((a) => ({
+              id: `apt_${Math.random().toString(36).slice(2, 9)}`,
+              trade: String(a?.trade || "handyman"),
+              preferredDate: a?.preferredDate,
+              preferredWindow: a?.preferredWindow,
+              status: body.fromInstantEstimate ? "PROPOSED" : "PENDING_HG_CONFIRM",
+            }))
+          : undefined,
         // For manual booking, go straight to scheduling and mark as awaiting HG confirmation.
-        status: body.intake.preferred_date ? ("confirming" as any) : undefined,
+        status: body.fromInstantEstimate ? ("pending" as any) : body.intake.preferred_date ? ("confirming" as any) : undefined,
       });
       return json({ ok: true, workOrder: wo });
     }

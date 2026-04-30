@@ -2349,11 +2349,83 @@ export function ExpressEstimateReportClient(props: {
                 <div className="mb-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
                   <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Repairs total (est.)</div>
                   <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(totals.repairs)}</div>
-                  <div className="mt-1 text-xs text-[var(--hw-muted)]">This is a placeholder flow — next step will be Checkout/Booking.</div>
+                  <div className="mt-1 text-xs text-[var(--hw-muted)]">Confirm scope, then we’ll route and schedule (Home Guide confirms).</div>
                 </div>
 
                 <div className="flex w-full justify-end gap-2">
-                  <Button size="sm" disabled={repairs.length === 0} onClick={() => {}}>
+                  <Button
+                    size="sm"
+                    disabled={repairs.length === 0}
+                    onClick={async () => {
+                      try {
+                        // Create a Work Order from the selected repairs and jump into the standard Jobs detail flow.
+                        let token: string | null = null;
+                        try {
+                          const raw = window.localStorage.getItem("hw_session_v1");
+                          const j = raw ? JSON.parse(raw) : null;
+                          if (j?.token) token = String(j.token);
+                        } catch {}
+
+                        if (!token) {
+                          alert("Missing session. Please refresh and try again.");
+                          return;
+                        }
+
+                        const trades = Array.from(new Set((repairs || []).map((it) => String((it as any)?.pricingDebug?.tradeId || "handyman"))));
+                        const payload = {
+                          token,
+                          originPartnerId: null,
+                          shareWithPartner: true,
+                          fromInstantEstimate: true,
+                          intake: {
+                            service_category: trades.length <= 1 ? (trades[0] || "Handyman") : "Multiple trades",
+                            service_subcategory: "Instant Estimate booking",
+                            issue_description: repairs.map((r) => `- ${r.label}${r.note ? `: ${r.note}` : ""}`).join("\n"),
+                            urgency_level: "this_week",
+                            property_address: effectiveAddress || "",
+                            property_type: "",
+                            preferred_date: "",
+                            preferred_time_window: "",
+                          },
+                          appointments: trades.map((t: string) => ({ trade: t || "handyman" })),
+                        };
+
+                        const res = await fetch("/api/work-orders", {
+                          method: "POST",
+                          headers: { "content-type": "application/json" },
+                          body: JSON.stringify(payload),
+                        });
+                        const j = await res.json().catch(() => null);
+                        if (!res.ok || !j?.ok || !j?.workOrder?.id) {
+                          alert("Could not start booking. Please try again.");
+                          return;
+                        }
+
+                        // Persist locally so non-DB mode can navigate directly.
+                        try {
+                          const key = "hw_local_work_orders_v1";
+                          const raw = window.localStorage.getItem(key) || "[]";
+                          const arr = JSON.parse(raw);
+                          const list = Array.isArray(arr) ? arr : [];
+                          const next = [j.workOrder, ...list].filter(Boolean);
+                          const seen = new Set<string>();
+                          const deduped: any[] = [];
+                          for (const item of next) {
+                            const wid = String((item as any)?.id || "");
+                            if (!wid || seen.has(wid)) continue;
+                            seen.add(wid);
+                            deduped.push(item);
+                          }
+                          window.localStorage.setItem(key, JSON.stringify(deduped.slice(0, 50)));
+                        } catch {}
+
+                        setRepairsOpen(false);
+                        window.location.href = `${props.basePath}/jobs/${encodeURIComponent(String(j.workOrder.id))}`;
+                      } catch {
+                        alert("Could not start booking. Please try again.");
+                      }
+                    }}
+                  >
                     Continue to book
                   </Button>
                   <Button
