@@ -235,12 +235,14 @@ export default function Page() {
   const [addTouched, setAddTouched] = useState(false);
   const [addingProp, setAddingProp] = useState(false);
 
-  const fromAI = useMemo(() => {
+  const [fromAI, setFromAI] = useState(false);
+
+  useEffect(() => {
     try {
-      const sp = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-      return sp.get("fromAI") === "1";
+      const sp = new URLSearchParams(window.location.search);
+      setFromAI(sp.get("fromAI") === "1");
     } catch {
-      return false;
+      setFromAI(false);
     }
   }, []);
 
@@ -282,6 +284,14 @@ export default function Page() {
   }, []);
 
   const isPortalIntake = portalMode || fromAI;
+
+  // This route is now portal-only. The old homeowner stepper caused inconsistent UI on client navigation
+  // (and is no longer desired).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (isPortalIntake) return;
+    router.replace("/marketplace/request");
+  }, [isPortalIntake, router]);
 
   // Load properties for portal order entry (merge API + locally added client/my properties)
   useEffect(() => {
@@ -1534,112 +1544,13 @@ export default function Page() {
               )
             ) : null}
 
-            {!isPortalIntake ? (
-              <>
-                {/* ── Navigation ── */}
-                <div className="mt-10 flex items-center justify-between gap-3 border-t border-[var(--hw-line)] pt-6">
-                  <Button type="button" variant="ghost" onClick={back} disabled={idx === 0}>
-                    {spec.copy.backCta}
-                  </Button>
-
-                  {idx < steps.length - 1 ? (
-                    <Button type="button" onClick={next}>
-                      Continue
-                    </Button>
-                  ) : (
-                    <Button type="button" onClick={submit}>
-                      {spec.copy.primaryCta}
-                    </Button>
-                  )}
-                </div>
-
-                <p className="mt-3 text-xs text-[var(--hw-muted)]">{spec.copy.saveNote}</p>
-              </>
-            ) : null}
+            {null}
           </Card>
 
-          {/* ── Sidebar ── */}
-          {!fromAI ? (
-            <div className="flex flex-col gap-5">
-            {/* Partner card (homeowner funnel only). PRO portal order entry should not show "Referred by". */}
-            {(() => {
-              try {
-                // Only show "Referred by" in the homeowner/public funnel.
-                if (isPortalIntake) return null;
-                const partner = loadPartner();
-                if (!partner) return null;
-                return (
-                  <Card className="border-[var(--hw-line)] bg-[var(--hw-soft)] p-5">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--hw-ink)]/10 text-xs font-bold text-[var(--hw-ink)]">P</span>
-                      <div className="text-sm font-semibold">Referred by</div>
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">{partner.partnerName} · {partner.officeName}</p>
-                    <p className="mt-2 text-xs leading-relaxed text-[var(--hw-muted)]">
-                      Sharing defaults on. You can turn it off for this request in the final step.
-                    </p>
-                  </Card>
-                );
-              } catch {
-                return null;
-              }
-            })()}
-
-            {/* Summary card */}
-            <Card className="border-[var(--hw-line)] bg-[var(--hw-soft)]/50 p-5 md:p-6">
-              <div className="flex items-center justify-between">
-                <div className="text-sm font-semibold">Summary</div>
-                <Chip>Draft stored locally</Chip>
-              </div>
-
-              <dl className="mt-4 space-y-3 text-sm">
-                <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">Service</dt>
-                  <dd className="mt-0.5 font-medium text-[var(--hw-ink)]">
-                    {draft.service_category}
-                    {draft.service_subcategory ? <span className="ml-1 font-normal text-[var(--hw-muted)]">/ {draft.service_subcategory}</span> : null}
-                  </dd>
-                </div>
-
-                {draft.issue_description ? (
-                  <div>
-                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">Issue</dt>
-                    <dd className="mt-0.5 leading-relaxed text-[var(--hw-ink)]">{draft.issue_description}</dd>
-                  </div>
-                ) : null}
-
-                {draft.property_address ? (
-                  <div>
-                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">Address</dt>
-                    <dd className="mt-0.5 text-[var(--hw-ink)]">{draft.property_address}</dd>
-                  </div>
-                ) : null}
-
-                {draft.preferred_date ? (
-                  <div>
-                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">Preferred</dt>
-                    <dd className="mt-0.5 text-[var(--hw-ink)]">
-                      {draft.preferred_date} <span className="text-[var(--hw-muted)]">({draft.preferred_time_window})</span>
-                    </dd>
-                  </div>
-                ) : null}
-              </dl>
-
-              <div className="mt-5 border-t border-[var(--hw-line)] pt-4">
-                <Link href="/marketplace/request" className="text-xs font-medium text-[var(--hw-muted)] underline decoration-[var(--hw-line)] underline-offset-2 transition-colors hover:text-[var(--hw-ink)]">
-                  Switch to quick request →
-                </Link>
-              </div>
-            </Card>
-          </div>
-          ) : null}
+          {/* Sidebar removed (portal-only). */}
         </div>
 
-        {!fromAI ? (
-          <div className="mt-8 text-sm text-[var(--hw-muted)]">
-            <Link href="/">← Back home</Link>
-          </div>
-        ) : null}
+        {null}
       </Container>
 
       {/* Add property modal (copied from the portal properties flows) */}
