@@ -374,8 +374,25 @@ export default function Page() {
   useEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search);
+      const hasTradeParam = sp.has("trade") && !!(sp.get("trade") || "").trim();
       const trade = sp.get("trade") || "";
       const subcategory = sp.get("subcategory") || "";
+
+      // If user clicked "Browse …" (fromAI=1 but no trade provided), do NOT auto-select a trade.
+      // Clear any persisted draft selection so the user starts from a neutral grid.
+      if (sp.get("fromAI") === "1" && !hasTradeParam) {
+        setDraft((prev) => {
+          const next: IntakeDraft = {
+            ...prev,
+            service_category: "",
+            service_subcategory: "",
+          };
+          try {
+            saveDraft(next);
+          } catch {}
+          return next;
+        });
+      }
       // In portal intake we keep the field empty; avoid prefilling long AI/demo text.
       const issue = isPortalIntake ? "" : sp.get("aiSummary") || sp.get("issue") || "";
       const qnaRaw = isPortalIntake ? "" : sp.get("qna") || "";
