@@ -417,17 +417,22 @@ export default function Page() {
     setDraft((prev) => ({ ...prev, ...patch }));
   }
 
-  // Debounced persist (prevents aggressive localStorage writes that can cause focus jank in some browsers).
+  // Debounced persist.
+  // Note: in some browsers, frequent localStorage writes can steal focus from inputs.
+  // Portal intake already has a "Next" button per step, so we can safely persist less aggressively.
   useEffect(() => {
+    // While typing project details in portal mode, avoid autosave to prevent focus loss.
+    if (isPortalIntake && step === "service_details") return;
+
     const t = window.setTimeout(() => {
       try {
         saveDraft(draft);
       } catch {
         // ignore
       }
-    }, 250);
+    }, 400);
     return () => window.clearTimeout(t);
-  }, [draft]);
+  }, [draft, isPortalIntake, step]);
 
   function next() {
     const nextIdx = Math.min(steps.length - 1, idx + 1);
@@ -1037,10 +1042,27 @@ export default function Page() {
                   </div>
 
                   <div className="mt-6 flex items-center justify-between">
-                    <Button type="button" variant="ghost" onClick={() => setStep("select_service")}>Back</Button>
                     <Button
                       type="button"
-                      onClick={() => setStep("property_details")}
+                      variant="ghost"
+                      onClick={() => {
+                        try {
+                          saveDraft(draft);
+                        } catch {}
+                        setStep("select_service");
+                      }}
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        // Persist on step transition (portal mode skips autosave while typing).
+                        try {
+                          saveDraft(draft);
+                        } catch {}
+                        setStep("property_details");
+                      }}
                       disabled={!draft.issue_description.trim()}
                     >
                       Next
