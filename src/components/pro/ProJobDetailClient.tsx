@@ -64,6 +64,7 @@ function ProgressRail({ status }: { status: StatusGroup }) {
 
   const ringFor: Record<StatusGroup, string> = {
     Pending: "ring-[rgba(229,57,53,.22)]",
+    Confirming: "ring-[rgba(245,158,11,.22)]",
     Scheduled: "ring-[rgba(37,99,235,.22)]",
     "In progress": "ring-[rgba(147,51,234,.22)]",
     Completed: "ring-[rgba(16,185,129,.22)]",
