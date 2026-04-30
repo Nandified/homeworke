@@ -118,6 +118,8 @@ export default function Page() {
   const [tradeServicesOpen, setTradeServicesOpen] = useState(false);
 
   const [issueAttachments, setIssueAttachments] = useState<File[]>([]);
+  const [issueFileDialogNonce, setIssueFileDialogNonce] = useState(0);
+
   const issuePreviews = useMemo(() => {
     return issueAttachments.map((f) => {
       const isImage = (f.type || "").startsWith("image/");
@@ -342,8 +344,9 @@ export default function Page() {
       try {
         const qna = qnaRaw ? (JSON.parse(qnaRaw) as Array<{ question: string; answer: string }>) : [];
         if (Array.isArray(qna) && qna.length) {
+          // Include Q&A, but avoid "demo"-sounding labels like "Details from chat".
           qnaText =
-            "\n\nDetails from chat:\n" +
+            "\n\n" +
             qna
               .filter((x) => x && (x.question || x.answer))
               .map((x) => `- ${String(x.question || "").trim()} ${String(x.answer || "").trim()}`.trim())
@@ -923,9 +926,12 @@ export default function Page() {
                   <div className="mt-6">
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Photos / video (optional)</div>
-                      <label className="text-xs font-semibold text-[var(--hw-red)] hover:opacity-80 cursor-pointer">
-                        Add files
+                    </div>
+
+                    <div className="mt-2">
+                      <label className="block cursor-pointer">
                         <input
+                          key={issueFileDialogNonce}
                           type="file"
                           className="hidden"
                           multiple
@@ -934,55 +940,58 @@ export default function Page() {
                             const files = Array.from(e.target.files || []);
                             if (!files.length) return;
                             setIssueAttachments((prev) => [...prev, ...files].slice(0, 12));
-                            e.currentTarget.value = "";
+                            // reset so selecting the same file again still triggers onChange
+                            setIssueFileDialogNonce((n) => n + 1);
                           }}
                         />
-                      </label>
-                    </div>
 
-                    <div
-                      className="mt-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)]/30 p-4"
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const files = Array.from(e.dataTransfer.files || []);
-                        if (!files.length) return;
-                        setIssueAttachments((prev) => [...prev, ...files].slice(0, 12));
-                      }}
-                    >
-                      <div className="text-sm font-semibold text-[var(--hw-ink)]">Drag & drop files here</div>
-                      <div className="mt-1 text-xs text-[var(--hw-muted)]">Or click “Add files” to browse. (Up to 12 files)</div>
+                        <div
+                          className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)]/30 p-4 transition hover:bg-[var(--hw-soft)]"
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const files = Array.from(e.dataTransfer.files || []);
+                            if (!files.length) return;
+                            setIssueAttachments((prev) => [...prev, ...files].slice(0, 12));
+                          }}
+                        >
+                          <div className="text-sm font-semibold text-[var(--hw-ink)]">Drag & drop files here, or click to upload</div>
+                          <div className="mt-1 text-xs text-[var(--hw-muted)]">Up to 12 files. Photos/videos help us triage faster.</div>
 
-                      {issuePreviews.length ? (
-                        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          {issuePreviews.map((p, idx) => (
-                            <div key={idx} className="relative overflow-hidden rounded-2xl border border-[var(--hw-line)] bg-white">
-                              {p.url && p.isImage ? (
-                                <img src={p.url} alt={p.file.name} className="h-24 w-full object-cover" />
-                              ) : p.url && p.isVideo ? (
-                                <video src={p.url} className="h-24 w-full object-cover" muted />
-                              ) : (
-                                <div className="flex h-24 items-center justify-center px-3 text-center text-xs font-semibold text-[var(--hw-muted)]">
-                                  {p.file.name}
+                          {issuePreviews.length ? (
+                            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                              {issuePreviews.map((p, idx) => (
+                                <div key={idx} className="relative overflow-hidden rounded-2xl border border-[var(--hw-line)] bg-white">
+                                  {p.url && p.isImage ? (
+                                    <img src={p.url} alt={p.file.name} className="h-24 w-full object-cover" />
+                                  ) : p.url && p.isVideo ? (
+                                    <video src={p.url} className="h-24 w-full object-cover" muted />
+                                  ) : (
+                                    <div className="flex h-24 items-center justify-center px-3 text-center text-xs font-semibold text-[var(--hw-muted)]">
+                                      {p.file.name}
+                                    </div>
+                                  )}
+                                  <button
+                                    type="button"
+                                    className="absolute right-2 top-2 rounded-full border border-[var(--hw-line)] bg-white/90 px-2 py-1 text-[10px] font-semibold text-[var(--hw-ink)] hover:bg-white"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setIssueAttachments((prev) => prev.filter((_, i) => i !== idx));
+                                    }}
+                                  >
+                                    Remove
+                                  </button>
                                 </div>
-                              )}
-                              <button
-                                type="button"
-                                className="absolute right-2 top-2 rounded-full border border-[var(--hw-line)] bg-white/90 px-2 py-1 text-[10px] font-semibold text-[var(--hw-ink)] hover:bg-white"
-                                onClick={() => {
-                                  setIssueAttachments((prev) => prev.filter((_, i) => i !== idx));
-                                }}
-                              >
-                                Remove
-                              </button>
+                              ))}
                             </div>
-                          ))}
+                          ) : null}
                         </div>
-                      ) : null}
+                      </label>
                     </div>
                   </div>
 
