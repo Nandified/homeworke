@@ -130,9 +130,10 @@ export default function Page() {
         });
       }
 
-      // Concierge chat already captured service + details; start them at property/scheduling.
+      // When launched from the PRO portal, keep the flow clean and start at Step 1.
+      // (We may prefill trade/subcategory/issue, but we should not jump the user ahead.)
       if (fromAI) {
-        setStep("property_details");
+        setStep("select_service");
       }
     } catch {
       // ignore
@@ -281,7 +282,7 @@ export default function Page() {
         </div>
 
         {/* ── Main grid ── */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className={"grid grid-cols-1 gap-6 " + (fromAI ? "lg:grid-cols-1" : "lg:grid-cols-3")}>
           {/* ── Form card ── */}
           <Card className="p-6 md:p-8 lg:col-span-2">
             {step === "select_service" ? (
@@ -468,23 +469,21 @@ export default function Page() {
           </Card>
 
           {/* ── Sidebar ── */}
-          <div className="flex flex-col gap-5">
-            {/* Partner card */}
+          {!fromAI ? (
+            <div className="flex flex-col gap-5">
+            {/* Partner card (homeowner funnel only). PRO portal order entry should not show "Referred by". */}
             {(() => {
               try {
+                if (fromAI) return null;
                 const partner = loadPartner();
                 if (!partner) return null;
                 return (
                   <Card className="border-[var(--hw-line)] bg-[var(--hw-soft)] p-5">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--hw-ink)]/10 text-xs font-bold text-[var(--hw-ink)]">
-                        P
-                      </span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--hw-ink)]/10 text-xs font-bold text-[var(--hw-ink)]">P</span>
                       <div className="text-sm font-semibold">Referred by</div>
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-                      {partner.partnerName} · {partner.officeName}
-                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">{partner.partnerName} · {partner.officeName}</p>
                     <p className="mt-2 text-xs leading-relaxed text-[var(--hw-muted)]">
                       Sharing defaults on. You can turn it off for this request in the final step.
                     </p>
@@ -504,64 +503,45 @@ export default function Page() {
 
               <dl className="mt-4 space-y-3 text-sm">
                 <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">
-                    Service
-                  </dt>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">Service</dt>
                   <dd className="mt-0.5 font-medium text-[var(--hw-ink)]">
                     {draft.service_category}
-                    {draft.service_subcategory ? (
-                      <span className="ml-1 font-normal text-[var(--hw-muted)]">
-                        / {draft.service_subcategory}
-                      </span>
-                    ) : null}
+                    {draft.service_subcategory ? <span className="ml-1 font-normal text-[var(--hw-muted)]">/ {draft.service_subcategory}</span> : null}
                   </dd>
                 </div>
 
                 {draft.issue_description ? (
                   <div>
-                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">
-                      Issue
-                    </dt>
-                    <dd className="mt-0.5 leading-relaxed text-[var(--hw-ink)]">
-                      {draft.issue_description}
-                    </dd>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">Issue</dt>
+                    <dd className="mt-0.5 leading-relaxed text-[var(--hw-ink)]">{draft.issue_description}</dd>
                   </div>
                 ) : null}
 
                 {draft.property_address ? (
                   <div>
-                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">
-                      Address
-                    </dt>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">Address</dt>
                     <dd className="mt-0.5 text-[var(--hw-ink)]">{draft.property_address}</dd>
                   </div>
                 ) : null}
 
                 {draft.preferred_date ? (
                   <div>
-                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">
-                      Preferred
-                    </dt>
+                    <dt className="text-xs font-medium uppercase tracking-wide text-[var(--hw-muted)]">Preferred</dt>
                     <dd className="mt-0.5 text-[var(--hw-ink)]">
-                      {draft.preferred_date}{" "}
-                      <span className="text-[var(--hw-muted)]">
-                        ({draft.preferred_time_window})
-                      </span>
+                      {draft.preferred_date} <span className="text-[var(--hw-muted)]">({draft.preferred_time_window})</span>
                     </dd>
                   </div>
                 ) : null}
               </dl>
 
               <div className="mt-5 border-t border-[var(--hw-line)] pt-4">
-                <Link
-                  href="/marketplace/request"
-                  className="text-xs font-medium text-[var(--hw-muted)] underline decoration-[var(--hw-line)] underline-offset-2 transition-colors hover:text-[var(--hw-ink)]"
-                >
+                <Link href="/marketplace/request" className="text-xs font-medium text-[var(--hw-muted)] underline decoration-[var(--hw-line)] underline-offset-2 transition-colors hover:text-[var(--hw-ink)]">
                   Switch to quick request →
                 </Link>
               </div>
             </Card>
           </div>
+          ) : null}
         </div>
 
         {!fromAI ? (
