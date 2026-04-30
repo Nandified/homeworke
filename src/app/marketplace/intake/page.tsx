@@ -44,6 +44,7 @@ import {
   SprayCan,
   TreePine,
   Trees,
+  UploadCloud,
   Wrench,
 } from "lucide-react";
 import {
@@ -83,7 +84,17 @@ function draftKey() {
 function loadDraft(): IntakeDraft {
   try {
     const raw = localStorage.getItem(draftKey());
-    if (raw) return JSON.parse(raw) as IntakeDraft;
+    if (raw) {
+      const d = JSON.parse(raw) as IntakeDraft;
+      // Clean up legacy/demo text that may have been prefixed into the issue field.
+      if (typeof d.issue_description === "string") {
+        d.issue_description = d.issue_description
+          .replace(/\n\nDetails from chat:\n/gi, "\n\n")
+          .replace(/^Details from chat:\s*/i, "")
+          .trimStart();
+      }
+      return d;
+    }
   } catch {
     // ignore
   }
@@ -959,8 +970,11 @@ export default function Page() {
                             setIssueAttachments((prev) => [...prev, ...files].slice(0, 12));
                           }}
                         >
-                          <div className="text-sm font-semibold text-[var(--hw-ink)]">Drag & drop files here, or click to upload</div>
-                          <div className="mt-1 text-xs text-[var(--hw-muted)]">Up to 12 files. Photos/videos help us triage faster.</div>
+                          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--hw-ink)]">
+                            <UploadCloud className="h-4 w-4 text-[var(--hw-muted)]" />
+                            Drag & drop files here, or click to upload
+                          </div>
+                          <div className="mt-1 text-xs text-[var(--hw-muted)]">Up to 12 files.</div>
 
                           {issuePreviews.length ? (
                             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
