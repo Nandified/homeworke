@@ -414,12 +414,20 @@ export default function Page() {
   const idx = useMemo(() => steps.findIndex((s) => s.key === step), [steps, step]);
 
   function update(patch: Partial<IntakeDraft>) {
-    setDraft((prev) => {
-      const next = { ...prev, ...patch };
-      saveDraft(next);
-      return next;
-    });
+    setDraft((prev) => ({ ...prev, ...patch }));
   }
+
+  // Debounced persist (prevents aggressive localStorage writes that can cause focus jank in some browsers).
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      try {
+        saveDraft(draft);
+      } catch {
+        // ignore
+      }
+    }, 250);
+    return () => window.clearTimeout(t);
+  }, [draft]);
 
   function next() {
     const nextIdx = Math.min(steps.length - 1, idx + 1);
@@ -938,7 +946,7 @@ export default function Page() {
             {step === "service_details" ? (
               isPortalIntake ? (
                 <div>
-                  <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Describe the issue</div>
+                  <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Tell us about the project</div>
 
                   <div className="mt-5">
                     <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Details</div>
@@ -946,7 +954,7 @@ export default function Page() {
                       <Textarea
                         value={draft.issue_description}
                         onChange={(e) => update({ issue_description: e.target.value })}
-                        placeholder="What’s happening? Include symptoms, location (room), and anything urgent."
+                        placeholder="What do you need done? Add any key details (location, access, timing)."
                       />
                     </div>
                     {/* tip removed */}
