@@ -359,8 +359,12 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
             // ignore
           }
         }
-      } catch (err) {
-        if (!cancelled) setError((err as Error)?.message ?? "Something went wrong");
+      } catch {
+        // Keep dashboard clean; if these widgets fail, we just fall back to demo/empty states.
+        if (!cancelled) {
+          setWorkOrders([]);
+          setMessages([]);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }

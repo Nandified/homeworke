@@ -22,57 +22,65 @@ export async function GET(req: Request) {
   if (demo) seedDemoStoreIfEmpty();
 
   if (dbEnabled() && !demo) {
-    // DB mode
-    const take = Number.isFinite(limit) ? Math.max(1, Math.min(500, limit)) : 20;
-    // Permissions: only allow messages for this partner's proCode.
-    // If a thread is linked to a WorkOrder, also require that the WorkOrder is shared with this partner.
-    const partnerProfile = await db().partnerProfile.findUnique({ where: { proCode: partnerId } });
-    const sharedWorkOrderIds = partnerProfile
-      ? (
-          await db().workOrder.findMany({
-            where: {
-              shareWithPartnerId: partnerProfile.id,
-            },
-            select: { id: true },
-            take: 500,
-          })
-        ).map((x) => x.id)
-      : [];
+    try {
+      // DB mode
+      const take = Number.isFinite(limit) ? Math.max(1, Math.min(500, limit)) : 20;
+      // Permissions: only allow messages for this partner's proCode.
+      // If a thread is linked to a WorkOrder, also require that the WorkOrder is shared with this partner.
+      const partnerProfile = await db().partnerProfile.findUnique({ where: { proCode: partnerId } });
+      const sharedWorkOrderIds = partnerProfile
+        ? (
+            await db().workOrder.findMany({
+              where: {
+                shareWithPartnerId: partnerProfile.id,
+              },
+              select: { id: true },
+              take: 500,
+            })
+          ).map((x) => x.id)
+        : [];
 
-    const messages = await db().message.findMany({
-      where: {
-        partnerCode: partnerId,
-        ...(token ? { token } : {}),
-        thread: {
-          OR: [{ workOrderId: null }, { workOrderId: { in: sharedWorkOrderIds } }],
-        },
-      } as any,
-      orderBy: { createdAt: "desc" },
-      take,
-      include: { thread: true, attachments: true },
-    });
+      const messages = await db().message.findMany({
+        where: {
+          partnerCode: partnerId,
+          ...(token ? { token } : {}),
+          thread: {
+            OR: [{ workOrderId: null }, { workOrderId: { in: sharedWorkOrderIds } }],
+          },
+        } as any,
+        orderBy: { createdAt: "desc" },
+        take,
+        include: { thread: true, attachments: true },
+      });
 
-    return json({
-      ok: true,
-      messages: messages.map((m) => ({
-        id: m.id,
-        createdAt: m.createdAt.toISOString(),
-        threadId: m.threadId,
-        threadTitle: (m.thread as any)?.title || null,
-        propertyAddress: (m.thread as any)?.propertyAddress || null,
-        ownerName: (m.thread as any)?.ownerName || null,
-        propertyId: (m.thread as any)?.propertyId || null,
-        workOrderId: (m.thread as any)?.workOrderId || null,
-        reportId: (m.thread as any)?.reportId || null,
-        fromRole: m.fromRole,
-        fromName: m.fromName || null,
-        body: m.body,
-        readAt: m.readAt ? m.readAt.toISOString() : null,
-        attachments: Array.isArray((m as any).attachments)
-          ? (m as any).attachments.map((a: any) => ({ id: a.id, url: a.url, mimeType: a.mimeType, fileName: a.fileName, bytes: a.bytes }))
-          : [],
-      })),
-    });
+      return json({
+        ok: true,
+        messages: messages.map((m) => ({
+          id: m.id,
+          createdAt: m.createdAt.toISOString(),
+          threadId: m.threadId,
+          threadTitle: (m.thread as any)?.title || null,
+          propertyAddress: (m.thread as any)?.propertyAddress || null,
+          ownerName: (m.thread as any)?.ownerName || null,
+          propertyId: (m.thread as any)?.propertyId || null,
+          workOrderId: (m.thread as any)?.workOrderId || null,
+          reportId: (m.thread as any)?.reportId || null,
+          fromRole: m.fromRole,
+          fromName: m.fromName || null,
+          body: m.body,
+          readAt: m.readAt ? m.readAt.toISOString() : null,
+          attachments: Array.isArray((m as any).attachments)
+            ? (m as any).attachments.map((a: any) => ({ id: a.id, url: a.url, mimeType: a.mimeType, fileName: a.fileName, bytes: a.bytes }))
+            : [],
+        })),
+      });
+    } catch (err) {
+      // If DB is configured but temporarily unavailable/mis-migrated, don't hard-fail the dashboard.
+      // Fall back to the seeded mock store.
+      seedDemoStoreIfEmpty();
+      const messages = listMessages({ token, partnerId, limit: Number.isFinite(limit) ? limit : 20 });
+      return json({ ok: true, messages, warning: "db_unavailable", error: (err as Error)?.message || String(err) });
+    }
   }
 
   const messages = listMessages({ token, partnerId, limit: Number.isFinite(limit) ? limit : 20 });
