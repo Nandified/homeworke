@@ -113,6 +113,37 @@ export default function Page() {
   const [step, setStep] = useState<StepKey>("select_service");
   const [portalScheduleStep, setPortalScheduleStep] = useState<"date" | "window" | "contact">("date");
   const [showAllTradeServices, setShowAllTradeServices] = useState(false);
+  const [tradeSearch, setTradeSearch] = useState("");
+  const tradeSearchResults = useMemo(() => {
+    const q = tradeSearch.trim().toLowerCase();
+    if (q.length < 2) return [] as Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string }>;
+
+    const results: Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string; score: number }> = [];
+
+    for (const t of TRADE_OPTIONS) {
+      const hay = t.toLowerCase();
+      if (hay.includes(q)) {
+        results.push({ kind: "trade", trade: t, label: t, score: hay.startsWith(q) ? 120 : 90 });
+      }
+    }
+
+    const services = (taxonomy as any)?.services || [];
+    for (const s of services) {
+      const trade = String((s as any)?.trade || "");
+      const label = String((s as any)?.label || "");
+      const category = String((s as any)?.category || "");
+      if (!trade || !label) continue;
+      const hay = label.toLowerCase();
+      if (!hay.includes(q)) continue;
+      const score = hay.startsWith(q) ? 110 : 80;
+      results.push({ kind: "service", trade, label, sub: category || undefined, score });
+    }
+
+    return results
+      .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))
+      .slice(0, 8)
+      .map(({ score: _score, ...rest }) => rest);
+  }, [tradeSearch]);
   const [draft, setDraft] = useState<IntakeDraft>(() => {
     const d = loadDraft();
     try {
@@ -434,6 +465,10 @@ export default function Page() {
   const tradeMeta = (trade: string) => {
     const s = (trade || "").toLowerCase();
 
+    // Normalize to nearest known trade label (protect against future taxonomy drift / typos).
+    const exact = TRADE_OPTIONS.find((t) => t.toLowerCase() === s) || trade;
+
+
     // Premium-ish one-line explanations for the UI.
     const description =
       s.includes("electrical")
@@ -504,7 +539,7 @@ export default function Page() {
       return Trees;
     })();
 
-    const services = servicesByTrade.get(trade) || [];
+    const services = servicesByTrade.get(exact) || servicesByTrade.get(trade) || [];
     return { Icon, description, services };
   };
 
@@ -630,7 +665,44 @@ export default function Page() {
                     <div className="mt-6">
                       <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Trade</div>
 
-                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {/* Search → suggest services/trades */}
+                      <div className="mt-3">
+                        <div className="relative">
+                          <Input
+                            value={tradeSearch}
+                            onChange={(e) => setTradeSearch(e.target.value)}
+                            placeholder="Search a service (e.g., leaking sink, outlet, deep clean…)"
+                          />
+
+                          {tradeSearchResults.length ? (
+                            <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[0_18px_40px_rgba(17,24,39,.10)]">
+                              {tradeSearchResults.map((r, idx) => (
+                                <button
+                                  key={`${r.kind}:${r.trade}:${r.label}:${idx}`}
+                                  type="button"
+                                  onClick={() => {
+                                    setShowAllTradeServices(false);
+                                    update({ service_category: r.trade });
+                                    // keep the query as feedback, but collapse suggestions
+                                    setTradeSearch(r.kind === "trade" ? r.trade : r.label);
+                                  }}
+                                  className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-[var(--hw-soft)]"
+                                >
+                                  <div className="min-w-0">
+                                    <div className="font-semibold text-[var(--hw-ink)] truncate">{r.label}</div>
+                                    <div className="mt-0.5 text-xs text-[var(--hw-muted)] truncate">
+                                      {r.kind === "service" ? (r.sub ? `${r.trade} • ${r.sub}` : r.trade) : "Trade"}
+                                    </div>
+                                  </div>
+                                  <div className="shrink-0 text-xs font-semibold text-[var(--hw-red)]">Select</div>
+                                </button>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {TRADE_OPTIONS.map((t) => {
                           const { Icon, description } = tradeMeta(t);
                           const active = draft.service_category === t;
