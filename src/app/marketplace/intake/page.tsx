@@ -148,7 +148,9 @@ export default function Page() {
   const [tradeServicesOpen, setTradeServicesOpen] = useState(false);
 
   // Keep textarea typing isolated from the large draft object to avoid any focus jank.
-  const [issueText, setIssueText] = useState("");
+  const [issueFieldKey, setIssueFieldKey] = useState(0);
+  const [issueLen, setIssueLen] = useState(0);
+  const issueRef = useMemo(() => ({ current: null as HTMLTextAreaElement | null }), []);
 
   const [issueAttachments, setIssueAttachments] = useState<File[]>([]);
   const [issueFileDialogNonce, setIssueFileDialogNonce] = useState(0);
@@ -416,12 +418,13 @@ export default function Page() {
 
   const idx = useMemo(() => steps.findIndex((s) => s.key === step), [steps, step]);
 
-  // Sync issue textarea state when navigating into the step.
+  // Remount the textarea when entering the step so defaultValue is applied,
+  // but avoid controlled input state while typing (prevents focus loss).
   useEffect(() => {
     if (!isPortalIntake) return;
     if (step !== "service_details") return;
-    setIssueText(draft.issue_description || "");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setIssueFieldKey((k) => k + 1);
+    setIssueLen(String(draft.issue_description || "").trim().length);
   }, [isPortalIntake, step]);
 
   function update(patch: Partial<IntakeDraft>) {
@@ -968,8 +971,16 @@ export default function Page() {
                     <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Details</div>
                     <div className="mt-2">
                       <Textarea
-                        value={issueText}
-                        onChange={(e) => setIssueText(e.target.value)}
+                        key={issueFieldKey}
+                        // Uncontrolled to avoid focus loss on re-render.
+                        defaultValue={draft.issue_description}
+                        ref={(el) => {
+                          (issueRef as any).current = el;
+                        }}
+                        onInput={(e) => {
+                          const v = (e.currentTarget.value || "").trim();
+                          setIssueLen(v.length);
+                        }}
                         placeholder="What do you need done? Add any key details (location, access, timing)."
                       />
                     </div>
@@ -1069,14 +1080,15 @@ export default function Page() {
                       type="button"
                       onClick={() => {
                         // Commit textarea → draft, then persist on step transition.
-                        const nextDraft = { ...draft, issue_description: issueText };
+                        const text = String((issueRef as any)?.current?.value || "");
+                        const nextDraft = { ...draft, issue_description: text };
                         setDraft(nextDraft);
                         try {
                           saveDraft(nextDraft);
                         } catch {}
                         setStep("property_details");
                       }}
-                      disabled={!issueText.trim()}
+                      disabled={issueLen === 0}
                     >
                       Next
                     </Button>

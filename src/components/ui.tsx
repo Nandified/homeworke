@@ -267,9 +267,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
 });
 
 type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
-export function Textarea({ className, ...props }: TextareaProps) {
+export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
+  { className, ...props },
+  ref
+) {
   return (
     <textarea
+      ref={ref}
       {...props}
       className={cn(
         "min-h-28 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 py-3 text-sm leading-relaxed outline-none transition-all duration-150 placeholder:text-[var(--hw-muted)] hover:border-[color-mix(in_srgb,var(--hw-line)_60%,var(--hw-ink))] focus:border-[rgba(229,57,53,.5)] focus:ring-2 focus:ring-[rgba(229,57,53,.12)] focus:shadow-[0_0_0_4px_rgba(229,57,53,.06)]",
@@ -277,7 +281,7 @@ export function Textarea({ className, ...props }: TextareaProps) {
       )}
     />
   );
-}
+});
 
 type CheckboxProps = React.InputHTMLAttributes<HTMLInputElement> & { label?: string };
 export function Checkbox({ className, label, ...props }: CheckboxProps) {
