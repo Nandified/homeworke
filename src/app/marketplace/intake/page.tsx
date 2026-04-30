@@ -949,9 +949,7 @@ export default function Page() {
                         placeholder="What’s happening? Include symptoms, location (room), and anything urgent."
                       />
                     </div>
-                    <div className="mt-2 text-xs text-[var(--hw-muted)]">
-                      Tip: include where it is (kitchen/bath/exterior) and any access constraints.
-                    </div>
+                    {/* tip removed */}
                   </div>
 
                   <div className="mt-6">
