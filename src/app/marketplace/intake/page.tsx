@@ -88,10 +88,29 @@ function loadDraft(): IntakeDraft {
       const d = JSON.parse(raw) as IntakeDraft;
       // Clean up legacy/demo text that may have been prefixed into the issue field.
       if (typeof d.issue_description === "string") {
-        d.issue_description = d.issue_description
+        const before = d.issue_description;
+        let next = before
           .replace(/\n\nDetails from chat:\n/gi, "\n\n")
           .replace(/^Details from chat:\s*/i, "")
           .trimStart();
+
+        // If the field is ONLY a Q&A bullet dump (older portal demos), start empty.
+        // Heuristic: every non-empty line is a bullet, and it contains at least one question mark.
+        const lines = next.split("\n").map((l) => l.trim()).filter(Boolean);
+        const looksLikeBulletsOnly = lines.length > 0 && lines.every((l) => l.startsWith("- "));
+        const hasQuestion = next.includes("?");
+        if (looksLikeBulletsOnly && hasQuestion) next = "";
+
+        d.issue_description = next;
+
+        // Persist cleanup so it doesn't keep coming back.
+        if (next !== before) {
+          try {
+            localStorage.setItem(draftKey(), JSON.stringify(d));
+          } catch {
+            // ignore
+          }
+        }
       }
       return d;
     }
