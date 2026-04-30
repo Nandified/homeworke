@@ -347,7 +347,7 @@ export function ProJobDetailClient(props: { id: string }) {
                 <Divider className="my-4" />
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work order</div>
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work Order</div>
                     <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">#{item.id}</div>
                   </div>
                   <div>

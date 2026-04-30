@@ -161,7 +161,7 @@ export default function Page() {
                 {session.workOrderId ? (
                   <div>
                     <dt className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                      Work order
+                      Work Order
                     </dt>
                     <dd className="mt-0.5 font-medium text-[var(--hw-ink)]">
                       {session.workOrderId}

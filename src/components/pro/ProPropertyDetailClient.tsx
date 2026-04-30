@@ -260,7 +260,7 @@ export function ProPropertyDetailClient(props: { property: ProPropertyDetail; op
       {/* Request service modal */}
       <Modal open={requestOpen} onClose={() => setRequestOpen(false)} title="Request service" mobilePlacement="center">
         <AIWorkOrderIntakeCard
-          eyebrow="Work order"
+          eyebrow="Work Order"
           title="What do you need help with?"
           prefillIssue={`Property: ${item.address}\n\n`}
           showServicingPill={true}

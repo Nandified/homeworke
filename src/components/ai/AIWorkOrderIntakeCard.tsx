@@ -1408,7 +1408,7 @@ export function AIWorkOrderIntakeCard(props: {
                     <div className="mt-4">
                       {submittedWorkOrderId ? (
                         <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                          Work order #{submittedWorkOrderId}
+                          Work Order #{submittedWorkOrderId}
                         </div>
                       ) : (
                         <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">CONTACT PREFERENCE</div>

@@ -85,7 +85,7 @@ export default function OfficeDashboardPage() {
               workOrders.slice(0, 6).map((w) => (
                 <ListRow
                   key={w.id}
-                  title={w.serviceCategory || "Work order"}
+                  title={w.serviceCategory || "Work Order"}
                   subtitle={w.propertyAddress || w.id}
                   badge={w.status ? <StatusChip>{w.status}</StatusChip> : null}
                 />

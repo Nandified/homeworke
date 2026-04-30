@@ -382,10 +382,9 @@ export default function Page() {
     return (
       <PortalShell
         role="PRO"
-        title="Work order"
+        title="Work Order"
         portalTitle="Real Estate Pro"
         nav={PRO_NAV as unknown as { href: string; label: string }[]}
-        description="Tell us what you need — we’ll route the right pro and confirm scheduling."
         primaryAction={
           <Link href="/pro/dashboard">
             <Button variant="secondary">Back to dashboard</Button>
@@ -402,15 +401,13 @@ export default function Page() {
       <div className={isPortalIntake ? "" : "min-h-screen bg-gradient-to-b from-white to-[#fafafa]"}>
         <Container className={isPortalIntake ? "py-4" : "py-10 md:py-16"}>
         {/* ── Header ── */}
-        <div className="mb-2">
-          {!isPortalIntake ? (
-            <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work order</div>
-          ) : null}
-          <h1 className={(isPortalIntake ? "mt-0 " : "mt-3 ") + "text-2xl font-extrabold tracking-tight md:text-3xl lg:text-4xl"}>
-            {current.title}
-          </h1>
-          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--hw-muted)]">{current.description}</p>
-        </div>
+        {!isPortalIntake ? (
+          <div className="mb-2">
+            <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work Order</div>
+            <h1 className="mt-3 text-2xl font-extrabold tracking-tight md:text-3xl lg:text-4xl">{current.title}</h1>
+            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[var(--hw-muted)]">{current.description}</p>
+          </div>
+        ) : null}
 
         {/* ── Step indicator ── */}
         {!isPortalIntake ? (
@@ -491,10 +488,10 @@ export default function Page() {
               <div>
                 {isPortalIntake ? (
                   <>
-                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Order entry</div>
-                    <div className="mt-2 text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Start a work order</div>
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work Order</div>
+                    <div className="mt-2 text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Work Order</div>
                     <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                      Pick a trade, add details, then request a scheduling window. Home Guide confirms.
+                      <span className="font-semibold text-[var(--hw-ink)]">What do you need help with?</span> Select the service category that best describes your project. We will match you with vetted, qualified professionals in your area.
                     </div>
 
                     <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -571,11 +568,16 @@ export default function Page() {
                             <div className="text-[11px] text-[var(--hw-muted)]">
                               {propertyError ? propertyError : "Choose from your Properties."}
                             </div>
-                            <Button size="xs" variant="secondary" onClick={() => {
-                              setAddTouched(false);
-                              setAddPropMode(propertyFilter === "client" ? "client" : "property");
-                              setAddPropOpen(true);
-                            }}>
+                            <Button
+                              size="xs"
+                              variant="secondary"
+                              onClick={() => {
+                                setAddTouched(false);
+                                // Always start on "Client property" first.
+                                setAddPropMode("client");
+                                setAddPropOpen(true);
+                              }}
+                            >
                               Add property
                             </Button>
                           </div>

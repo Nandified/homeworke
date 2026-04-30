@@ -79,7 +79,7 @@ export default function Page() {
   }, [id]);
 
   const title = useMemo(() => {
-    if (!workOrder) return "Work order";
+    if (!workOrder) return "Work Order";
     return workOrder.serviceSubcategory ? `${workOrder.serviceCategory} · ${workOrder.serviceSubcategory}` : workOrder.serviceCategory;
   }, [workOrder]);
 
@@ -97,7 +97,7 @@ export default function Page() {
         />
       ) : error ? (
         <EmptyState
-          title="Work order not available"
+          title="Work Order not available"
           text="We could not load this work order."
           action={
             <Link href="/ho/dashboard">
@@ -114,7 +114,7 @@ export default function Page() {
         <div className="grid gap-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Work order</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Work Order</div>
               <h2 className="mt-2 text-2xl font-extrabold tracking-tight md:text-3xl">{title}</h2>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Chip>ID: {workOrder.id}</Chip>

@@ -107,7 +107,7 @@ export default function HomeGuideDashboardPage() {
               workOrders.slice(0, 8).map((w) => (
                 <ListRow
                   key={w.id}
-                  title={w.serviceCategory || "Work order"}
+                  title={w.serviceCategory || "Work Order"}
                   subtitle={w.propertyAddress || w.id}
                   badge={w.status ? <StatusChip>{w.status}</StatusChip> : null}
                 />

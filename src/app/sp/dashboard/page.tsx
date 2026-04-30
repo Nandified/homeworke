@@ -90,7 +90,7 @@ export default function ServiceProviderDashboardPage() {
               opportunities.slice(0, 6).map((w) => (
                 <ListRow
                   key={w.id}
-                  title={w.serviceCategory || "Work order"}
+                  title={w.serviceCategory || "Work Order"}
                   subtitle={w.propertyAddress || "Address TBD"}
                   footnote={w.issueDescription}
                   badge={w.status ? <StatusChip>{w.status}</StatusChip> : null}
