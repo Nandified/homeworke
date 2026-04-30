@@ -318,6 +318,42 @@ export function getWorkOrder(token: string, id: string) {
   return store().workOrders.find((w) => w.token === token && w.id === id) || null;
 }
 
+export function updateWorkOrderSchedule(token: string, id: string, input: { preferredDate?: string; preferredWindow?: string }) {
+  const wo = getWorkOrder(token, id);
+  if (!wo) return null;
+
+  const preferredDate = typeof input.preferredDate === "string" ? input.preferredDate : wo.preferredDate;
+  const preferredWindow = typeof input.preferredWindow === "string" ? input.preferredWindow : wo.preferredWindow;
+
+  wo.preferredDate = preferredDate;
+  wo.preferredWindow = preferredWindow;
+
+  // Ensure we have at least one appointment stub.
+  if (!Array.isArray(wo.appointments) || wo.appointments.length === 0) {
+    wo.appointments = [
+      {
+        id: `apt_${Math.random().toString(36).slice(2, 9)}`,
+        trade: "handyman",
+        preferredDate,
+        preferredWindow,
+        status: "PENDING_HG_CONFIRM",
+      },
+    ];
+  }
+
+  // Update first appointment stub to match.
+  const first = wo.appointments[0];
+  if (first) {
+    first.preferredDate = preferredDate;
+    first.preferredWindow = preferredWindow;
+    if (first.status === "PROPOSED") first.status = "PENDING_HG_CONFIRM";
+  }
+
+  // Status mapping
+  if (preferredDate && preferredWindow) wo.status = "confirming";
+  return wo;
+}
+
 export function listSharedWorkOrdersForPartner(partnerId: string): WorkOrder[] {
   const norm = (s: string) => (s || "").replace(/^(pro_|partner_)/, "");
   const want = norm(partnerId);

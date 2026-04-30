@@ -22,6 +22,9 @@ type ApiWorkOrder = {
   clientName?: string;
   createdAt?: string;
   updatedAt?: string;
+  preferredDate?: string;
+  preferredWindow?: string;
+  appointments?: Array<{ id: string; trade: string; preferredDate?: string; preferredWindow?: string; status: string }>;
 };
 
 const STATUS_GROUPS = ["Pending", "Confirming", "Scheduled", "In progress", "Completed"] as const;
@@ -119,6 +122,12 @@ export function ProJobDetailClient(props: { id: string }) {
   const [item, setItem] = React.useState<ApiWorkOrder | null>(null);
   const [loading, setLoading] = React.useState(true);
 
+  const [rescheduleOpen, setRescheduleOpen] = React.useState(false);
+  const [visitDate, setVisitDate] = React.useState<string>("");
+  const [visitWindow, setVisitWindow] = React.useState<"" | "Morning" | "Midday" | "Afternoon" | "Evening">("");
+  const [savingSchedule, setSavingSchedule] = React.useState(false);
+  const [scheduleError, setScheduleError] = React.useState<string>("");
+
   React.useEffect(() => {
     let cancelled = false;
 
@@ -139,6 +148,9 @@ export function ProJobDetailClient(props: { id: string }) {
         return null;
       }
     };
+
+    // Export for schedule updates.
+    (window as any).__hwSessionToken = loadSessionToken;
 
     const normalizeAddress = (s: string) =>
       (s || "")
@@ -181,6 +193,9 @@ export function ProJobDetailClient(props: { id: string }) {
         clientName: clientName || undefined,
         createdAt: wo?.createdAt ? String(wo.createdAt) : undefined,
         updatedAt: wo?.updatedAt ? String(wo.updatedAt) : undefined,
+        preferredDate: wo?.preferredDate ? String(wo.preferredDate) : undefined,
+        preferredWindow: wo?.preferredWindow ? String(wo.preferredWindow) : undefined,
+        appointments: Array.isArray(wo?.appointments) ? (wo.appointments as any[]) : undefined,
       };
     };
 
@@ -340,6 +355,124 @@ export function ProJobDetailClient(props: { id: string }) {
                     <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{status}</div>
                   </div>
                 </div>
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">Appointments</div>
+                    <div className="mt-1 text-sm text-[var(--hw-muted)]">Scheduling requests and Home Guide confirmation.</div>
+                  </div>
+                  <Button size="sm" variant="secondary" onClick={() => {
+                    setScheduleError("");
+                    setRescheduleOpen((v) => !v);
+                    setVisitDate(item.preferredDate || "");
+                    setVisitWindow((item.preferredWindow as any) || "");
+                  }}>
+                    {rescheduleOpen ? "Close" : "Request reschedule"}
+                  </Button>
+                </div>
+                <Divider className="my-4" />
+
+                {Array.isArray(item.appointments) && item.appointments.length ? (
+                  <div className="grid gap-3">
+                    {item.appointments.map((a) => (
+                      <div key={a.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{a.trade}</div>
+                            <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">
+                              {a.preferredDate ? new Date(a.preferredDate + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }) : "No date selected"}
+                              {a.preferredWindow ? ` • ${a.preferredWindow}` : ""}
+                            </div>
+                          </div>
+                          <Chip className={a.status === "PENDING_HG_CONFIRM" ? "border-[rgba(245,158,11,.22)] bg-[rgba(245,158,11,.10)] text-[rgb(146,64,14)]" : "border-[var(--hw-line)] bg-[var(--hw-soft)] text-[var(--hw-ink)]"}>
+                            {a.status === "PENDING_HG_CONFIRM" ? "Awaiting HG confirm" : a.status}
+                          </Chip>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-[var(--hw-muted)]">No appointments yet.</div>
+                )}
+
+                {rescheduleOpen ? (
+                  <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Preferred time</div>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <label className="grid gap-1">
+                        <span className="text-xs font-semibold text-[var(--hw-ink)]">Date</span>
+                        <input
+                          type="date"
+                          className="h-10 rounded-[999px] border border-[var(--hw-line)] bg-white px-4 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                          value={visitDate}
+                          onChange={(e) => setVisitDate(e.target.value)}
+                        />
+                      </label>
+                      <div className="grid gap-1">
+                        <div className="text-xs font-semibold text-[var(--hw-ink)]">Time window</div>
+                        <div className="flex flex-wrap gap-2">
+                          {(["Morning", "Midday", "Afternoon", "Evening"] as const).map((w) => (
+                            <button
+                              key={w}
+                              type="button"
+                              onClick={() => setVisitWindow(w)}
+                              className={
+                                "h-10 rounded-full border px-4 text-sm font-semibold transition " +
+                                (visitWindow === w
+                                  ? "border-[rgba(229,57,53,.35)] bg-white text-[var(--hw-ink)] ring-4 ring-[rgba(229,57,53,.10)]"
+                                  : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[rgba(17,24,39,.03)]")
+                              }
+                            >
+                              {w}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    {scheduleError ? <div className="mt-3 text-xs font-semibold text-[var(--hw-red)]">{scheduleError}</div> : null}
+                    <div className="mt-4 flex gap-2">
+                      <Button
+                        size="sm"
+                        disabled={!visitDate || !visitWindow || savingSchedule}
+                        onClick={async () => {
+                          setScheduleError("");
+                          setSavingSchedule(true);
+                          try {
+                            const getToken = (window as any).__hwSessionToken as (() => string | null) | undefined;
+                            const token = getToken ? getToken() : null;
+                            if (!token) throw new Error("Missing session");
+
+                            const url = new URL(`/api/work-orders/${encodeURIComponent(item.id)}`, window.location.origin);
+                            url.searchParams.set("token", token);
+                            const res = await fetch(url, {
+                              method: "POST",
+                              headers: { "content-type": "application/json" },
+                              body: JSON.stringify({ action: "update_schedule", preferredDate: visitDate, preferredWindow: visitWindow }),
+                            });
+                            const j = await res.json().catch(() => null);
+                            if (!res.ok || !j?.ok || !j?.workOrder) throw new Error("Update failed");
+                            setItem((prev) => (prev ? { ...prev, ...j.workOrder } : prev));
+                            setRescheduleOpen(false);
+                          } catch {
+                            setScheduleError("Couldn’t save. Please try again.");
+                          } finally {
+                            setSavingSchedule(false);
+                          }
+                        }}
+                      >
+                        {savingSchedule ? "Saving…" : "Submit request"}
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => setRescheduleOpen(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                    <div className="mt-2 text-[11px] text-[var(--hw-muted)]">
+                      A Home Guide will confirm and coordinate with the Project Manager schedule.
+                    </div>
+                  </div>
+                ) : null}
               </Card>
 
               <Card className="p-6">
