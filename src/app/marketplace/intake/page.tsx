@@ -283,15 +283,9 @@ export default function Page() {
     }
   }, []);
 
-  const isPortalIntake = portalMode || fromAI;
-
-  // This route is now portal-only. The old homeowner stepper caused inconsistent UI on client navigation
-  // (and is no longer desired).
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (isPortalIntake) return;
-    router.replace("/marketplace/request");
-  }, [isPortalIntake, router]);
+  // /marketplace/intake now always uses the new portal-style intake UI.
+  // (The legacy homeowner stepper has been removed.)
+  const isPortalIntake = true;
 
   // Load properties for portal order entry (merge API + locally added client/my properties)
   useEffect(() => {
