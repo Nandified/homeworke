@@ -144,9 +144,7 @@ export function HOPropertiesClient(props: {
   const [newNickname, setNewNickname] = React.useState("");
   const [newPropertyType, setNewPropertyType] = React.useState<"Condo" | "House" | "Multi-Units" | "Town house" | "Commercial" | "">("");
 
-  const [newOwnerName, setNewOwnerName] = React.useState("");
-  const [newOwnerEmail, setNewOwnerEmail] = React.useState("");
-  const [newOwnerPhone, setNewOwnerPhone] = React.useState("");
+  // HO: properties are always "my property"; omit client/owner fields.
 
   const [newPhotoDataUrl, setNewPhotoDataUrl] = React.useState<string>("");
   const [addTouched, setAddTouched] = React.useState(false);
@@ -245,9 +243,9 @@ export function HOPropertiesClient(props: {
     address: newAddress.trim(),
     nickname: newNickname.trim(),
     type: newPropertyType,
-    ownerName: newOwnerName.trim(),
-    ownerEmail: newOwnerEmail.trim(),
-    ownerPhone: newOwnerPhone.trim(),
+    ownerName: "",
+    ownerEmail: "",
+    ownerPhone: "",
     photo: newPhotoDataUrl.trim(),
   };
 
@@ -432,30 +430,6 @@ export function HOPropertiesClient(props: {
 
           <Divider />
 
-          <div className="grid gap-3">
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">Owner info (optional)</div>
-            <div>
-              <Label htmlFor="owner-name">Owner name</Label>
-              <Input id="owner-name" value={newOwnerName} onChange={(e) => setNewOwnerName(e.target.value)} placeholder="Name" />
-            </div>
-            <div>
-              <Label htmlFor="owner-email">Owner email</Label>
-              <Input id="owner-email" value={newOwnerEmail} onChange={(e) => setNewOwnerEmail(e.target.value)} placeholder="email@example.com" inputMode="email" />
-            </div>
-            <div>
-              <Label htmlFor="owner-phone">Owner phone</Label>
-              <Input
-                id="owner-phone"
-                value={newOwnerPhone}
-                onChange={(e) => setNewOwnerPhone(formatPhoneUS(e.target.value))}
-                placeholder="(555) 555-5555"
-                inputMode="tel"
-              />
-            </div>
-          </div>
-
-          <Divider />
-
           <div>
             <Label htmlFor="prop-photo">Photo (optional)</Label>
             <Input
@@ -499,9 +473,7 @@ export function HOPropertiesClient(props: {
                   address: req.address,
                   nickname: req.nickname || undefined,
                   propertyType: req.type || undefined,
-                  ownerName: req.ownerName || undefined,
-                  ownerEmail: req.ownerEmail || undefined,
-                  ownerPhone: req.ownerPhone || undefined,
+                  // owner fields intentionally omitted for HO
                 };
 
                 const out = [next, ...readCustomProperties()];
@@ -522,9 +494,7 @@ export function HOPropertiesClient(props: {
                       createdAt,
                       address: req.address,
                       nickname: req.nickname || null,
-                      ownerName: req.ownerName || null,
-                      ownerEmail: req.ownerEmail || null,
-                      ownerPhone: req.ownerPhone || null,
+                      // owner fields intentionally omitted for HO
                       propertyType: req.type || null,
                       projectsCount: 0,
                     },
@@ -537,13 +507,11 @@ export function HOPropertiesClient(props: {
                 setNewAddress("");
                 setNewNickname("");
                 setNewPropertyType("");
-                setNewOwnerName("");
-                setNewOwnerEmail("");
-                setNewOwnerPhone("");
+                // (no owner fields)
                 setNewPhotoDataUrl("");
               }}
             >
-              Save property
+              Add
             </Button>
           </div>
         </div>
