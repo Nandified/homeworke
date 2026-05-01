@@ -860,14 +860,14 @@ export function PartnerDashboardClient(props: PartnerDashboardProps) {
                 })}
               </div>
             </DashboardSection>
-                        <Card className="p-5">
+            <Card className="p-6 md:p-7">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Marketing Tools</div>
-                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Templates and branded assets to help you market yourself with Homeworke.</div>
+                  <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Marketing Tools</div>
+                  <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">Templates and branded assets to help you market yourself with Homeworke.</div>
                 </div>
                 <Link href={`${basePath}/marketing-tools`} className="shrink-0">
-                  <Button size="sm" variant="secondary">Open</Button>
+                  <Button variant="secondary">Open</Button>
                 </Link>
               </div>
 
