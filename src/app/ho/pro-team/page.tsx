@@ -139,6 +139,8 @@ export default function Page() {
 
   const linkedCount = Object.values(team).filter(Boolean).length;
 
+  const roles: TeamRole[] = ["broker", "lender", "insurance", "inspector"];
+
   const groupHref = React.useMemo(() => {
     const codes = roles
       .filter((r) => groupSelected[r] && team[r]?.code)
@@ -148,7 +150,7 @@ export default function Page() {
     qs.set("group", "1");
     qs.set("to", codes.join(","));
     return `/ho/messages?${qs.toString()}`;
-  }, [groupSelected, team]);
+  }, [groupSelected, team, roles]);
 
   function openLink(role: TeamRole) {
     setLinkRole(role);
@@ -183,8 +185,6 @@ export default function Page() {
     writeTeam(next);
     setLinkOpen(false);
   }
-
-  const roles: TeamRole[] = ["broker", "lender", "insurance", "inspector"];
 
   return (
     <PortalShell role="HO" title="Homeowner" portalTitle="Homeowner" nav={HO_NAV as any} hideHeading>
