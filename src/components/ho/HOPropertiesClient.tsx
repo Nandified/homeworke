@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { formatPhoneUS } from "@/lib/phone";
-import { Button, Card, Chip, Divider, EmptyState, Input, Label, Modal } from "@/components/ui";
+import { Button, Card, Chip, Divider, Input, Label, Modal } from "@/components/ui";
 
 type Session = { token: string };
 
@@ -49,6 +49,10 @@ function subtitle(p: ApiProperty) {
   return "";
 }
 
+function propertyBadge(_p: ApiProperty) {
+  return "My property";
+}
+
 // HO portal must be isolated from PRO portal localStorage.
 const SCOPE = "HO" as const;
 
@@ -84,9 +88,7 @@ function writeCustomProperties(items: StoredProperty[]) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(STORAGE_KEYS.customProps, JSON.stringify(items.slice(0, 200)));
-  } catch {
-    // ignore
-  }
+  } catch {}
 }
 
 async function fileToDataUrl(file: File): Promise<string> {
@@ -124,10 +126,14 @@ function TabButton(props: { active: boolean; children: React.ReactNode; onClick:
   );
 }
 
-export function HOPropertiesClient(props: { empty: React.ReactNode; addOpen?: boolean; onAddOpenChange?: (v: boolean) => void }) {
+export function HOPropertiesClient(props: {
+  empty: React.ReactNode;
+  addOpen?: boolean;
+  onAddOpenChange?: (v: boolean) => void;
+}) {
   const router = useRouter();
   const [items, setItems] = React.useState<ApiProperty[] | null>(null);
-  const [tab, setTab] = React.useState<"all" | "my">("all");
+  const [tab, setTab] = React.useState<"all" | "my" | "clients" | "shared">("all");
   const [q, setQ] = React.useState("");
 
   const [addOpenInternal, setAddOpenInternal] = React.useState(false);
@@ -205,37 +211,35 @@ export function HOPropertiesClient(props: { empty: React.ReactNode; addOpen?: bo
       .catch(() => setItems([]));
   }, []);
 
-  if (items === null) {
-    return (
-      <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-sm text-[var(--hw-muted)]">
-        Loading properties…
-      </div>
-    );
-  }
+  // Counts/tabs (HO currently only has "my" properties; other tabs are 0 but kept for design parity.)
+  const counts = React.useMemo(() => {
+    const list = items || [];
+    return {
+      all: list.length,
+      my: list.length,
+      clients: 0,
+      shared: 0,
+    };
+  }, [items]);
 
-  if (!items.length) {
-    return (
-      <div>
-        <EmptyState title="No properties yet" text="Add a property to speed up service requests and scheduling." />
-      </div>
-    );
-  }
+  const filtered = React.useMemo(() => {
+    const list = items || [];
 
-  const filtered = items
-    .filter((p) => {
-      if (tab === "all") return true;
+    // Keep tab behavior consistent (even if HO has only "my" right now)
+    const byTab = list.filter(() => {
+      if (tab === "clients") return false;
+      if (tab === "shared") return false;
       return true;
-    })
-    .filter((p) => {
-      const hay = `${p.nickname || ""} ${p.address || ""} ${p.city || ""} ${p.state || ""} ${p.zip || ""} ${p.ownerName || ""} ${p.ownerEmail || ""}`.toLowerCase();
-      const needle = (q || "").trim().toLowerCase();
-      if (!needle) return true;
-      return hay.includes(needle);
     });
 
-  const counts = {
-    all: items.length,
-  };
+    const needle = (q || "").trim().toLowerCase();
+    if (!needle) return byTab;
+
+    return byTab.filter((p) => {
+      const hay = `${p.nickname || ""} ${p.address || ""} ${p.city || ""} ${p.state || ""} ${p.zip || ""} ${p.ownerName || ""} ${p.ownerEmail || ""}`.toLowerCase();
+      return hay.includes(needle);
+    });
+  }, [items, tab, q]);
 
   const req = {
     address: newAddress.trim(),
@@ -249,7 +253,7 @@ export function HOPropertiesClient(props: { empty: React.ReactNode; addOpen?: bo
 
   const normalizeAddr = (s: string) => (s || "").replace(/\s+/g, " ").trim().toLowerCase();
   const addrNorm = normalizeAddr(req.address);
-  const dupAddr = !!addrNorm && items.some((p) => normalizeAddr(p.address) === addrNorm);
+  const dupAddr = !!addrNorm && (items || []).some((p) => normalizeAddr(p.address) === addrNorm);
 
   const missing = {
     address: !req.address || dupAddr,
@@ -268,6 +272,15 @@ export function HOPropertiesClient(props: { empty: React.ReactNode; addOpen?: bo
             <TabButton active={tab === "all"} onClick={() => setTab("all")}>
               All <CountBadge n={counts.all} />
             </TabButton>
+            <TabButton active={tab === "my"} onClick={() => setTab("my")}>
+              My properties <CountBadge n={counts.my} />
+            </TabButton>
+            <TabButton active={tab === "clients"} onClick={() => setTab("clients")}>
+              Client properties <CountBadge n={counts.clients} />
+            </TabButton>
+            <TabButton active={tab === "shared"} onClick={() => setTab("shared")}>
+              Shared with me <CountBadge n={counts.shared} />
+            </TabButton>
           </div>
         </div>
 
@@ -284,46 +297,57 @@ export function HOPropertiesClient(props: { empty: React.ReactNode; addOpen?: bo
 
       {/* Cards grid */}
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        {filtered.map((p) => {
-          const img = photos[p.id] || "";
+        {items === null ? (
+          <div className="md:col-span-2 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-5 text-sm text-[var(--hw-muted)]">
+            Loading properties…
+          </div>
+        ) : null}
+
+        {items !== null && filtered.map((p) => {
+          const chosen = photos[p.id] || "";
+          const auto = !chosen && p.address ? `/api/google/streetview?address=${encodeURIComponent(p.address)}&size=800x450&fov=80&pitch=10` : "";
+          const photo = chosen || auto;
+          const hasPhoto = !!photo;
+
           return (
-            <Card key={p.id} className="overflow-hidden">
-              <div className="relative h-36 w-full bg-[var(--hw-soft)]">
-                {img ? (
+            <Card
+              key={p.id}
+              className="cursor-pointer overflow-hidden transition hover:shadow-[0_12px_40px_rgba(17,24,39,.10)]"
+              onClick={(e) => {
+                // Keep same feel as PRO (click card = details). HO details page isn't wired yet,
+                // so we keep them on the list and open the Add modal when missing.
+                e.preventDefault();
+                router.push(`/ho/properties?property=${encodeURIComponent(p.id)}`);
+              }}
+            >
+              <div className="relative h-36 overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.14),rgba(17,24,39,.04))]">
+                {hasPhoto ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={img} alt="Property" className="h-full w-full object-cover" />
+                  <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                ) : null}
+                {!hasPhoto ? (
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(229,57,53,.18),rgba(229,57,53,.05),rgba(255,255,255,.0))]" />
                 ) : null}
 
-                <div className="absolute left-3 top-3">
-                  <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-[var(--hw-ink)] backdrop-blur">
-                    Property
-                  </span>
-                </div>
-
-                <div className="absolute right-3 top-3">
-                  <span className="inline-flex items-center rounded-full border border-[var(--hw-line)] bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-[var(--hw-ink)] backdrop-blur">
-                    Projects: {p.projectsCount || 0}
-                  </span>
+                <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-1.5">
+                  <Chip className="px-2.5 py-1 text-[11px]">{propertyBadge(p)}</Chip>
+                  <Chip className="shrink-0 px-2.5 py-1 text-[11px]">Projects: {p.projectsCount || 0}</Chip>
                 </div>
               </div>
 
               <div className="p-4">
-                <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{shortLabel(p)}</div>
-                <div className="mt-1 text-xs text-[var(--hw-muted)]">{subtitle(p)}</div>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{shortLabel(p)}</div>
+                  {subtitle(p) ? <div className="mt-0.5 truncate text-xs text-[var(--hw-muted)]">{subtitle(p)}</div> : null}
+                </div>
 
-                <Divider className="my-3" />
+                <Divider className="my-4" />
 
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 text-xs text-[var(--hw-muted)] truncate">
                     Owner: <span className="font-semibold text-[var(--hw-ink)]">{p.ownerName || "—"}</span>
                   </div>
-                  <button
-                    type="button"
-                    className="text-xs font-semibold text-[var(--hw-red)] hover:underline"
-                    onClick={() => router.push(`/ho/properties?property=${encodeURIComponent(p.id)}`)}
-                  >
-                    Details →
-                  </button>
+                  <div className="shrink-0 whitespace-nowrap text-xs font-semibold text-[var(--hw-red)]">Details →</div>
                 </div>
               </div>
             </Card>
@@ -331,6 +355,45 @@ export function HOPropertiesClient(props: { empty: React.ReactNode; addOpen?: bo
         })}
       </div>
 
+      {items !== null && filtered.length === 0 ? (
+        <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-6">
+          {(() => {
+            const isEmptyTab =
+              (tab === "clients" && counts.clients === 0) ||
+              (tab === "shared" && counts.shared === 0) ||
+              (tab === "my" && counts.my === 0) ||
+              (tab === "all" && counts.all === 0);
+
+            if (isEmptyTab && (q || "").trim() === "") {
+              const title =
+                tab === "clients" ? "No client properties yet" : tab === "shared" ? "No shared properties yet" : "No properties yet";
+
+              const text =
+                tab === "clients"
+                  ? "Client properties will appear here once shared or added on your behalf."
+                  : tab === "shared"
+                    ? "When a team shares a property with you, it will show up here."
+                    : "Add a property to speed up service requests and scheduling.";
+
+              return (
+                <>
+                  <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">{title}</div>
+                  <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">{text}</div>
+                </>
+              );
+            }
+
+            return (
+              <>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">No matches</div>
+                <div className="mt-1 text-sm text-[var(--hw-muted)]">Try a different search.</div>
+              </>
+            );
+          })()}
+        </div>
+      ) : null}
+
+      {/* Add modal must always be mounted so the header button works even when list is empty. */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add property">
         <div className="grid gap-4">
           <div>
