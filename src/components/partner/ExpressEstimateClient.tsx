@@ -1034,8 +1034,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         <Card className="p-6" id="hw_reports">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Reports</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">
+              <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Reports</div>
+              <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">
                 Open a report to view results, select items, analyze, and download.
               </div>
             </div>
