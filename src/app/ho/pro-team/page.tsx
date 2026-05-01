@@ -8,6 +8,7 @@ import { HO_NAV } from "@/components/ho/nav";
 import { Button, Card, CardHeader, Divider, Input, Label, Modal } from "@/components/ui";
 import { isDemoMode } from "@/lib/demo";
 import { resolvePartner } from "@/lib/partners";
+import { PROFILE_STORAGE_KEYS } from "@/components/user-avatar";
 
 type TeamRole = "broker" | "lender" | "insurance" | "inspector";
 
@@ -124,6 +125,20 @@ export default function Page() {
     inspector: true,
   });
 
+  function headshotForCode(code: string): string {
+    const fromProfile = resolvePartner(code) as any;
+    const headshot = (fromProfile?.headshot_url || "").toString();
+    if (headshot) return headshot;
+
+    // If this device has the pro's profile photo stored (e.g. they used /pro/account), use it.
+    try {
+      const local = window.localStorage.getItem(PROFILE_STORAGE_KEYS.photoDataUrl) || "";
+      if (local && code.toLowerCase() === "frj") return local;
+    } catch {}
+
+    return "";
+  }
+
   // Load + auto-link broker if homeowner came in through a partner link.
   // In demo mode, default the broker to /p/frj so you can see the full interactions.
   React.useEffect(() => {
@@ -144,10 +159,25 @@ export default function Page() {
           role: "broker",
           code: effectiveId,
           displayName: effectiveName || undefined,
+          headshotUrl: headshotForCode(effectiveId) || undefined,
           linkedAt: new Date().toISOString(),
         };
-        writeTeam(base);
       }
+
+      // Hydrate missing headshots for any linked pros.
+      let changed = false;
+      (Object.keys(base) as TeamRole[]).forEach((r) => {
+        const v = base[r];
+        if (!v?.code) return;
+        if (v.headshotUrl) return;
+        const hs = headshotForCode(v.code);
+        if (hs) {
+          base[r] = { ...v, headshotUrl: hs };
+          changed = true;
+        }
+      });
+
+      if (effectiveId || changed) writeTeam(base);
     } catch {
       // ignore
     }
@@ -212,13 +242,14 @@ export default function Page() {
   }, [query, PRO_DIRECTORY]);
 
   function selectPro(code: string, name?: string, headshotUrl?: string) {
+    const hs = headshotUrl || headshotForCode(code);
     const next: Record<TeamRole, LinkedPro | null> = {
       ...team,
       [pickerRole]: {
         role: pickerRole,
         code,
         displayName: name || undefined,
-        headshotUrl: headshotUrl || undefined,
+        headshotUrl: hs || undefined,
         linkedAt: new Date().toISOString(),
       },
     };
