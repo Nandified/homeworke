@@ -13,6 +13,8 @@ type LinkedPro = {
   role: TeamRole;
   code: string; // /p/<code>
   displayName?: string;
+  email?: string;
+  phone?: string;
   linkedAt: string;
 };
 
@@ -102,6 +104,9 @@ export default function Page() {
   const [linkOpen, setLinkOpen] = React.useState(false);
   const [linkRole, setLinkRole] = React.useState<TeamRole>("broker");
   const [linkValue, setLinkValue] = React.useState("");
+  const [linkName, setLinkName] = React.useState("");
+  const [linkEmail, setLinkEmail] = React.useState("");
+  const [linkPhone, setLinkPhone] = React.useState("");
   const [linkError, setLinkError] = React.useState<string>("");
 
   const [groupOpen, setGroupOpen] = React.useState(false);
@@ -154,7 +159,13 @@ export default function Page() {
 
   function openLink(role: TeamRole) {
     setLinkRole(role);
-    setLinkValue("");
+
+    const existing = team[role];
+    setLinkValue(existing?.code ? `/p/${existing.code}` : "");
+    setLinkName(existing?.displayName || "");
+    setLinkEmail(existing?.email || "");
+    setLinkPhone(existing?.phone || "");
+
     setLinkError("");
     setLinkOpen(true);
   }
@@ -177,6 +188,9 @@ export default function Page() {
       [linkRole]: {
         role: linkRole,
         code,
+        displayName: linkName.trim() || undefined,
+        email: linkEmail.trim() || undefined,
+        phone: linkPhone.trim() || undefined,
         linkedAt: new Date().toISOString(),
       },
     };
@@ -214,26 +228,67 @@ export default function Page() {
               const v = team[r];
               const href = v?.code ? `/p/${encodeURIComponent(v.code)}` : "";
 
+              const initials = (name: string) =>
+                (name || "")
+                  .trim()
+                  .split(/\s+/)
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((p) => p[0])
+                  .join("")
+                  .toUpperCase();
+
+              const display = v?.displayName || (v?.code ? `Pro: ${v.code}` : "");
+
               return (
                 <Card key={r} className="p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Role</div>
-                      <div className="mt-1 text-base font-extrabold tracking-tight text-[var(--hw-ink)]">{roleLabel(r)}</div>
-                      {v?.code ? (
-                        <div className="mt-1 text-sm text-[var(--hw-muted)] truncate">
-                          Linked to <span className="font-semibold text-[var(--hw-ink)]">/p/{v.code}</span>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)]">
+                        {/* Placeholder headshot until we fetch from /p/<code>. */}
+                        <div className="grid h-full w-full place-items-center text-xs font-extrabold text-[var(--hw-ink)]">
+                          {v?.code ? initials(v.displayName || v.code) : ""}
                         </div>
-                      ) : (
-                        <div className="mt-1 text-sm text-[var(--hw-muted)]">Not linked yet</div>
-                      )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">{roleLabel(r)}</div>
+                        {v?.code ? (
+                          <div className="mt-1 text-sm text-[var(--hw-muted)] truncate">{display}</div>
+                        ) : (
+                          <div className="mt-1 text-sm text-[var(--hw-muted)]">Not linked yet</div>
+                        )}
+
+                        {v?.code && (v.email || v.phone) ? (
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            {v.phone ? (
+                              <a
+                                className="text-xs font-semibold text-[var(--hw-ink)] hover:underline"
+                                href={`tel:${encodeURIComponent(v.phone)}`}
+                              >
+                                {v.phone}
+                              </a>
+                            ) : null}
+                            {v.email ? (
+                              <a
+                                className="text-xs font-semibold text-[var(--hw-ink)] hover:underline"
+                                href={`mailto:${encodeURIComponent(v.email)}`}
+                              >
+                                {v.email}
+                              </a>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div className="shrink-0 flex items-center gap-2">
                       {v?.code ? (
                         <>
                           <Link href={href} className="inline-flex">
-                            <Button size="sm" variant="secondary">View profile</Button>
+                            <Button size="sm" variant="secondary">
+                              View
+                            </Button>
                           </Link>
                           <Link href={`/ho/messages?to=${encodeURIComponent(v.code)}&role=${encodeURIComponent(r)}`} className="inline-flex">
                             <Button size="sm">Message</Button>
@@ -250,7 +305,7 @@ export default function Page() {
                   {v?.code ? (
                     <div className="mt-4 flex items-center justify-end gap-2">
                       <Button size="sm" variant="ghost" onClick={() => openLink(r)}>
-                        Replace
+                        Edit
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => unlink(r)}>
                         Remove
@@ -274,6 +329,23 @@ export default function Page() {
             <Label className="text-xs">Link or code</Label>
             <Input value={linkValue} onChange={(e) => setLinkValue(e.target.value)} placeholder="/p/frj or frj" />
             {linkError ? <div className="text-xs text-[var(--hw-red)]">{linkError}</div> : null}
+          </div>
+
+          <Divider />
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label className="text-xs">Name (optional)</Label>
+              <Input value={linkName} onChange={(e) => setLinkName(e.target.value)} placeholder="Full name" />
+            </div>
+            <div className="grid gap-2">
+              <Label className="text-xs">Phone (optional)</Label>
+              <Input value={linkPhone} onChange={(e) => setLinkPhone(e.target.value)} placeholder="(555) 555-5555" inputMode="tel" />
+            </div>
+          </div>
+          <div className="grid gap-2">
+            <Label className="text-xs">Email (optional)</Label>
+            <Input value={linkEmail} onChange={(e) => setLinkEmail(e.target.value)} placeholder="email@example.com" inputMode="email" />
           </div>
 
           <div className="flex items-center justify-end gap-2">
