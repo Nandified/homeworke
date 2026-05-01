@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Button, Card, Chip, Container, StatTile } from "@/components/ui";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
+import { InstantEstimateCard } from "@/components/dashboard/InstantEstimateCard";
 import { PortalShell } from "@/components/portal-shell";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { ListRow, StatusChip } from "@/components/dashboard/ListRow";
@@ -169,30 +170,7 @@ export default function HomeownerDashboardPage() {
               />
 
               <div className="mt-6 lg:hidden">
-                <Card
-                  className="relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7"
-                  style={{ boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                        Instant estimate
-                      </div>
-                      <div className="mt-2 text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Instant Estimate</div>
-                    </div>
-                    <div className="shrink-0">
-                      <Link href="/ho/express-estimate">
-                        <Button variant="secondary" size="sm">
-                          Open
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-
-                  <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-                    Upload an inspection/appraisal PDF, then open a report to analyze and download an estimate.
-                  </div>
-                </Card>
+                <InstantEstimateCard basePath="/ho" />
               </div>
             </div>
 
@@ -212,30 +190,7 @@ export default function HomeownerDashboardPage() {
 
           {/* Desktop: Instant Estimate full card row */}
           <div className="hidden lg:block">
-            <Card
-              className="relative overflow-hidden border-[rgba(229,57,53,.35)] p-6 md:p-7"
-              style={{ boxShadow: "0 10px 30px rgba(229,57,53,.06)" }}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                    Instant estimate
-                  </div>
-                  <div className="mt-2 text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Instant Estimate</div>
-                </div>
-                <div className="shrink-0">
-                  <Link href="/ho/express-estimate">
-                    <Button variant="secondary" size="sm">
-                      Open
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-
-              <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
-                Upload an inspection/appraisal PDF, then open a report to analyze and download an estimate.
-              </div>
-            </Card>
+            <InstantEstimateCard basePath="/ho" />
           </div>
 
           {/* Active projects */}

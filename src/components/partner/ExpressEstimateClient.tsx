@@ -120,9 +120,10 @@ function upsertReport(next: Report) {
 }
 
 export type ExpressEstimateClientProps = {
-  basePath: "/partner" | "/pro";
+  basePath: string;
   title?: string;
-  role: "PARTNER" | "PRO";
+  role: "PARTNER" | "PRO" | "HO";
+  nav?: Array<{ href: string; label: string }>;
 };
 
 type Report = {
@@ -179,7 +180,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
   const newClientName = useMemo(() => `${newClientFirstName} ${newClientLastName}`.trim(), [newClientFirstName, newClientLastName]);
 
-  const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
+  const nav = useMemo(() => props.nav || buildProNav(props.basePath as any), [props.nav, props.basePath]);
   // const router = useRouter();
 
   const [reports, setReports] = useState<Report[]>(() => {
