@@ -340,7 +340,7 @@ export default function Page() {
                         )}
                         <div className="mt-0.5 text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{roleLabel(r)}</div>
                         {v?.code ? (
-                          <div className="mt-1 text-sm text-[var(--hw-muted)] truncate">Homeworke Pro • /p/{v.code}</div>
+                          <div className="mt-1 text-sm text-[var(--hw-muted)] truncate">Homeworke Pro</div>
                         ) : (
                           <div className="mt-1 text-sm text-[var(--hw-muted)]">Not linked yet</div>
                         )}
