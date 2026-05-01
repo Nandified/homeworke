@@ -7,6 +7,7 @@ import { PortalShell } from "@/components/portal-shell";
 import { HO_NAV } from "@/components/ho/nav";
 import { Button, Card, CardHeader, Divider, Input, Label, Modal } from "@/components/ui";
 import { isDemoMode } from "@/lib/demo";
+import { resolvePartner } from "@/lib/partners";
 
 type TeamRole = "broker" | "lender" | "insurance" | "inspector";
 
@@ -14,6 +15,7 @@ type LinkedPro = {
   role: TeamRole;
   code: string; // /p/<code>
   displayName?: string;
+  headshotUrl?: string;
   email?: string;
   phone?: string;
   linkedAt: string;
@@ -188,14 +190,17 @@ export default function Page() {
     writeTeam(next);
   }
 
-  const PRO_DIRECTORY = React.useMemo(
-    () =>
-      [
-        // Seeded example; replace with real DB-backed search.
-        { code: "frj", name: "Fernando Rocha Jr" },
-      ] as Array<{ code: string; name: string }>,
-    []
-  );
+  const PRO_DIRECTORY = React.useMemo(() => {
+    // Seeded example; replace with real DB-backed search.
+    const frj = resolvePartner("frj");
+    return [
+      {
+        code: "frj",
+        name: (frj as any)?.display_name || "Fernando Rocha Jr",
+        headshotUrl: (frj as any)?.headshot_url || "",
+      },
+    ] as Array<{ code: string; name: string; headshotUrl?: string }>;
+  }, []);
 
   const results = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -206,13 +211,14 @@ export default function Page() {
     });
   }, [query, PRO_DIRECTORY]);
 
-  function selectPro(code: string, name?: string) {
+  function selectPro(code: string, name?: string, headshotUrl?: string) {
     const next: Record<TeamRole, LinkedPro | null> = {
       ...team,
       [pickerRole]: {
         role: pickerRole,
         code,
         displayName: name || undefined,
+        headshotUrl: headshotUrl || undefined,
         linkedAt: new Date().toISOString(),
       },
     };
@@ -278,22 +284,32 @@ export default function Page() {
                   .toUpperCase();
 
               const display = v?.displayName || (v?.code ? `Pro: ${v.code}` : "");
+              const headshot = v?.headshotUrl || "";
 
               return (
                 <Card key={r} className="p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex min-w-0 items-start gap-3">
-                      <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-[var(--hw-line)] bg-[var(--hw-soft)]">
-                        {/* Placeholder headshot until we fetch from /p/<code>. */}
-                        <div className="grid h-full w-full place-items-center text-xs font-extrabold text-[var(--hw-ink)]">
-                          {v?.code ? initials(v.displayName || v.code) : ""}
-                        </div>
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border border-[rgba(229,57,53,.18)] bg-[linear-gradient(135deg,rgba(229,57,53,.10),rgba(17,24,39,.02))] shadow-sm">
+                        {headshot ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={headshot} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="grid h-full w-full place-items-center text-xs font-extrabold text-[var(--hw-ink)]">
+                            {v?.code ? initials(v.displayName || v.code) : ""}
+                          </div>
+                        )}
                       </div>
 
                       <div className="min-w-0">
-                        <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">{roleLabel(r)}</div>
                         {v?.code ? (
-                          <div className="mt-1 text-sm text-[var(--hw-muted)] truncate">{display}</div>
+                          <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)] truncate">{display}</div>
+                        ) : (
+                          <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)] truncate">{roleLabel(r)}</div>
+                        )}
+                        <div className="mt-0.5 text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{roleLabel(r)}</div>
+                        {v?.code ? (
+                          <div className="mt-1 text-sm text-[var(--hw-muted)] truncate">Homeworke Pro • /p/{v.code}</div>
                         ) : (
                           <div className="mt-1 text-sm text-[var(--hw-muted)]">Not linked yet</div>
                         )}
@@ -374,7 +390,7 @@ export default function Page() {
                   key={p.code}
                   type="button"
                   className="flex items-center justify-between gap-3 rounded-[14px] border border-[var(--hw-line)] bg-white px-4 py-3 text-left transition hover:bg-[var(--hw-soft)]"
-                  onClick={() => selectPro(p.code, p.name)}
+                  onClick={() => selectPro(p.code, p.name, (p as any).headshotUrl)}
                 >
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-[var(--hw-ink)] truncate">{p.name}</div>
