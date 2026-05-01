@@ -102,13 +102,17 @@ export default function Page() {
     inspector: null,
   }));
 
-  const [linkOpen, setLinkOpen] = React.useState(false);
-  const [linkRole, setLinkRole] = React.useState<TeamRole>("broker");
-  const [linkValue, setLinkValue] = React.useState("");
-  const [linkName, setLinkName] = React.useState("");
-  const [linkEmail, setLinkEmail] = React.useState("");
-  const [linkPhone, setLinkPhone] = React.useState("");
-  const [linkError, setLinkError] = React.useState<string>("");
+  const [pickerOpen, setPickerOpen] = React.useState(false);
+  const [pickerRole, setPickerRole] = React.useState<TeamRole>("broker");
+  const [query, setQuery] = React.useState("");
+
+  const [inviteOpen, setInviteOpen] = React.useState(false);
+  const [inviteRole, setInviteRole] = React.useState<TeamRole>("broker");
+  const [inviteName, setInviteName] = React.useState("");
+  const [inviteEmail, setInviteEmail] = React.useState("");
+  const [inviteError, setInviteError] = React.useState("");
+
+  const [toast, setToast] = React.useState<string | null>(null);
 
   const [groupOpen, setGroupOpen] = React.useState(false);
   const [groupSelected, setGroupSelected] = React.useState<Record<TeamRole, boolean>>({
@@ -164,17 +168,18 @@ export default function Page() {
     return `/ho/messages?${qs.toString()}`;
   }, [groupSelected, team, roles]);
 
-  function openLink(role: TeamRole) {
-    setLinkRole(role);
+  function openPicker(role: TeamRole) {
+    setPickerRole(role);
+    setQuery("");
+    setPickerOpen(true);
+  }
 
-    const existing = team[role];
-    setLinkValue(existing?.code ? `/p/${existing.code}` : "");
-    setLinkName(existing?.displayName || "");
-    setLinkEmail(existing?.email || "");
-    setLinkPhone(existing?.phone || "");
-
-    setLinkError("");
-    setLinkOpen(true);
+  function openInvite(role: TeamRole) {
+    setInviteRole(role);
+    setInviteName("");
+    setInviteEmail("");
+    setInviteError("");
+    setInviteOpen(true);
   }
 
   function unlink(role: TeamRole) {
@@ -183,28 +188,55 @@ export default function Page() {
     writeTeam(next);
   }
 
-  function saveLink() {
-    const code = parsePartnerCode(linkValue);
-    if (!code) {
-      setLinkError("Paste a valid Homeworke link (e.g. /p/frj) or enter a code.");
-      return;
-    }
+  const PRO_DIRECTORY = React.useMemo(
+    () =>
+      [
+        // Seeded example; replace with real DB-backed search.
+        { code: "frj", name: "Fernando Rocha Jr" },
+      ] as Array<{ code: string; name: string }>,
+    []
+  );
 
+  const results = React.useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return PRO_DIRECTORY;
+    return PRO_DIRECTORY.filter((p) => {
+      const hay = `${p.name} ${p.code}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [query, PRO_DIRECTORY]);
+
+  function selectPro(code: string, name?: string) {
     const next: Record<TeamRole, LinkedPro | null> = {
       ...team,
-      [linkRole]: {
-        role: linkRole,
+      [pickerRole]: {
+        role: pickerRole,
         code,
-        displayName: linkName.trim() || undefined,
-        email: linkEmail.trim() || undefined,
-        phone: linkPhone.trim() || undefined,
+        displayName: name || undefined,
         linkedAt: new Date().toISOString(),
       },
     };
-
     setTeam(next);
     writeTeam(next);
-    setLinkOpen(false);
+    setPickerOpen(false);
+    setToast(`${roleLabel(pickerRole)} linked`);
+  }
+
+  function sendInvite() {
+    const nm = inviteName.trim();
+    const em = inviteEmail.trim();
+    if (!nm) {
+      setInviteError("Name is required.");
+      return;
+    }
+    if (!em || !em.includes("@")) {
+      setInviteError("Enter a valid email.");
+      return;
+    }
+
+    // Stub: this will become an API call that sends an invite email.
+    setInviteOpen(false);
+    setToast(`Invite sent to ${nm} (${em})`);
   }
 
   return (
@@ -302,8 +334,8 @@ export default function Page() {
                           </Link>
                         </>
                       ) : (
-                        <Button size="sm" variant="secondary" onClick={() => openLink(r)}>
-                          Link
+                        <Button size="sm" variant="secondary" onClick={() => openPicker(r)}>
+                          Search
                         </Button>
                       )}
                     </div>
@@ -311,8 +343,8 @@ export default function Page() {
 
                   {v?.code ? (
                     <div className="mt-4 flex items-center justify-end gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => openLink(r)}>
-                        Edit
+                      <Button size="sm" variant="ghost" onClick={() => openPicker(r)}>
+                        Change
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => unlink(r)}>
                         Remove
@@ -326,41 +358,70 @@ export default function Page() {
         </Card>
       </div>
 
-      <Modal open={linkOpen} title={`Link ${roleLabel(linkRole)}`} onClose={() => setLinkOpen(false)}>
+      <Modal open={pickerOpen} title={`Find ${roleLabel(pickerRole)}`} onClose={() => setPickerOpen(false)}>
         <div className="grid gap-4">
-          <div className="text-sm text-[var(--hw-muted)]">
-            Paste their Homeworke link (example: <span className="font-semibold">https://homeworke-nu.vercel.app/p/frj</span>) or enter their code.
+          <div className="text-sm text-[var(--hw-muted)]">Search Homeworke Pros. If they’re not on the platform yet, invite them.</div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Search</Label>
+            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name or code…" />
           </div>
 
           <div className="grid gap-2">
-            <Label className="text-xs">Link or code</Label>
-            <Input value={linkValue} onChange={(e) => setLinkValue(e.target.value)} placeholder="/p/frj or frj" />
-            {linkError ? <div className="text-xs text-[var(--hw-red)]">{linkError}</div> : null}
+            {results.length ? (
+              results.slice(0, 8).map((p) => (
+                <button
+                  key={p.code}
+                  type="button"
+                  className="flex items-center justify-between gap-3 rounded-[14px] border border-[var(--hw-line)] bg-white px-4 py-3 text-left transition hover:bg-[var(--hw-soft)]"
+                  onClick={() => selectPro(p.code, p.name)}
+                >
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-[var(--hw-ink)] truncate">{p.name}</div>
+                    <div className="mt-0.5 text-xs text-[var(--hw-muted)] truncate">/p/{p.code}</div>
+                  </div>
+                  <div className="text-xs font-semibold text-[var(--hw-red)]">Select</div>
+                </button>
+              ))
+            ) : (
+              <div className="rounded-[14px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4 text-sm text-[var(--hw-muted)]">
+                No matches.
+              </div>
+            )}
           </div>
 
           <Divider />
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label className="text-xs">Name (optional)</Label>
-              <Input value={linkName} onChange={(e) => setLinkName(e.target.value)} placeholder="Full name" />
-            </div>
-            <div className="grid gap-2">
-              <Label className="text-xs">Phone (optional)</Label>
-              <Input value={linkPhone} onChange={(e) => setLinkPhone(e.target.value)} placeholder="(555) 555-5555" inputMode="tel" />
-            </div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm text-[var(--hw-muted)]">Not on Homeworke yet?</div>
+            <Button variant="secondary" onClick={() => openInvite(pickerRole)}>
+              Invite to Homeworke
+            </Button>
           </div>
+        </div>
+      </Modal>
+
+      <Modal open={inviteOpen} title={`Invite a Pro`} onClose={() => setInviteOpen(false)}>
+        <div className="grid gap-4">
+          <div className="text-sm text-[var(--hw-muted)]">We’ll email them an invite to join Homeworke. They can pick their role during signup.</div>
+
           <div className="grid gap-2">
-            <Label className="text-xs">Email (optional)</Label>
-            <Input value={linkEmail} onChange={(e) => setLinkEmail(e.target.value)} placeholder="email@example.com" inputMode="email" />
+            <Label className="text-xs">Name</Label>
+            <Input value={inviteName} onChange={(e) => setInviteName(e.target.value)} placeholder="Full name" />
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-xs">Email</Label>
+            <Input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="email@example.com" inputMode="email" />
+            {inviteError ? <div className="text-xs text-[var(--hw-red)]">{inviteError}</div> : null}
           </div>
 
           <div className="flex items-center justify-end gap-2">
-            <Button variant="ghost" onClick={() => setLinkOpen(false)}>
+            <Button variant="ghost" onClick={() => setInviteOpen(false)}>
               Cancel
             </Button>
-            <Button variant="secondary" onClick={saveLink}>
-              Link
+            <Button variant="secondary" onClick={sendInvite}>
+              Send invite
             </Button>
           </div>
         </div>
