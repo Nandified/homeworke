@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
-import { Button, Card, EmptyState } from "@/components/ui";
+import { Button, Card, CardHeader, EmptyState } from "@/components/ui";
 import { ProJobsClient } from "@/components/pro/ProJobsClient";
 
 export default function Page() {
@@ -12,15 +12,19 @@ export default function Page() {
       title="Jobs"
       portalTitle="Real Estate Pro"
       nav={PRO_NAV as unknown as { href: string; label: string }[]}
-      description="Track every active and closed job across client-shared projects and your own properties."
-      primaryAction={
-        <Link href="/pro/express-estimate">
-          <Button>Start Instant Estimate</Button>
-        </Link>
-      }
+      hideHeading
     >
       <Card className="p-6">
-        <div className="mt-1">
+        <CardHeader
+          title="Jobs"
+          subtitle="Track every active and closed job across client-shared projects and your own properties."
+          action={
+            <Link href="/pro/express-estimate">
+              <Button>Start Instant Estimate</Button>
+            </Link>
+          }
+        />
+        <div className="mt-5">
           <ProJobsClient
             emptyClientJobs={
               <EmptyState

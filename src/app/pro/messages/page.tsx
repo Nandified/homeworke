@@ -1,4 +1,4 @@
-import { Card, EmptyState, Pill } from "@/components/ui";
+import { Card, CardHeader, EmptyState, Pill } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
 import { ClientErrorBoundary } from "@/components/ClientErrorBoundary";
@@ -14,14 +14,16 @@ export default function Page() {
       title="Messages"
       portalTitle="Real Estate Pro"
       nav={nav as unknown as { href: string; label: string; badge?: string | number }[]}
-      description="Quickly scan recent threads, nudge homeowners, and keep deals moving."
+      hideHeading
     >
       <Card className="p-6">
-        <div className="flex items-center justify-end">
-          <Pill>Inbox</Pill>
-        </div>
+        <CardHeader
+          title="Messages"
+          subtitle="Quickly scan recent threads, nudge homeowners, and keep deals moving."
+          action={<Pill>Inbox</Pill>}
+        />
 
-        <div className="mt-4">
+        <div className="mt-5">
           {/* Guard against any client-only runtime issues so the whole app doesn't white-screen. */}
           {/**/}
           <ClientErrorBoundary title="Messages crashed" hint="We hit a client-side error while rendering Messages. Refresh and try again.">

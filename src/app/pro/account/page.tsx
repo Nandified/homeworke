@@ -6,7 +6,7 @@ import { PRO_NAV } from "@/components/pro/nav";
 import { PortalShell } from "@/components/portal-shell";
 
 import { PROFILE_STORAGE_KEYS } from "@/components/user-avatar";
-import { Button, Card, Checkbox, Divider, EmptyState, Input, Label, Modal, Pill } from "@/components/ui";
+import { Button, Card, CardHeader, Checkbox, Divider, EmptyState, Input, Label, Modal, Pill } from "@/components/ui";
 
 const BROKERAGE_OPTIONS = [
   "RE/MAX Loyalty",
@@ -275,12 +275,13 @@ export default function Page() {
       role="PRO"
       title="My Account"
       portalTitle="Real Estate Pro"
-      description="Profile, security, and preferences."
       nav={PRO_NAV}
+      hideHeading
     >
       <div className="grid gap-4">
         {/* PROFILE */}
         <Card className="p-5 sm:p-6">
+          <CardHeader title="My Account" subtitle="Profile, security, and preferences." className="mb-5" />
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Profile</div>

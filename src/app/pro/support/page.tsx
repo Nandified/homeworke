@@ -4,7 +4,7 @@ import * as React from "react";
 
 import { PRO_NAV } from "@/components/pro/nav";
 import { PortalShell } from "@/components/portal-shell";
-import { Button, Card, Divider, Input, Label, Modal, Textarea } from "@/components/ui";
+import { Button, Card, CardHeader, Divider, Input, Label, Modal, Textarea } from "@/components/ui";
 
 type SupportTopic =
   | "Account & login"
@@ -52,18 +52,23 @@ export default function Page() {
       role="PRO"
       title="Support"
       portalTitle="Real Estate Pro"
-      description="Get help fast — report an issue, request a feature, or contact our team."
       nav={PRO_NAV}
-      primaryAction={
-        <Button variant="secondary" onClick={() => setOpen(true)}>
-          New support request
-        </Button>
-      }
+      hideHeading
     >
       <div className="grid gap-4">
         {/* QUICK HELP */}
         <Card className="p-5 sm:p-6">
-          <div className="flex items-center justify-end">
+          <CardHeader
+            title="Support"
+            subtitle="Get help fast — report an issue, request a feature, or contact our team."
+            action={
+              <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+                New support request
+              </Button>
+            }
+          />
+
+          <div className="mt-5 flex items-center justify-end">
             <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
               Submit request
             </Button>

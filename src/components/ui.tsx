@@ -18,6 +18,25 @@ export function Card(props: React.HTMLAttributes<HTMLDivElement>) {
   );
 }
 
+export function CardHeader(props: {
+  title: string;
+  subtitle?: React.ReactNode;
+  action?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex items-start justify-between gap-3", props.className)}>
+      <div className="min-w-0">
+        <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">{props.title}</div>
+        {props.subtitle ? (
+          <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">{props.subtitle}</div>
+        ) : null}
+      </div>
+      {props.action ? <div className="shrink-0">{props.action}</div> : null}
+    </div>
+  );
+}
+
 export function Pill(props: React.HTMLAttributes<HTMLSpanElement>) {
   return (
     <span

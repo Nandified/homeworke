@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 // import { useRouter } from "next/navigation";
 
-import { Button, Card, Chip, Input, Picker, Textarea } from "@/components/ui";
+import { Button, Card, CardHeader, Chip, Input, Picker, Textarea } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
@@ -445,12 +445,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       title={props.title || "Instant Estimate"}
       portalTitle={props.role === "PRO" ? "Real Estate Pro" : undefined}
       nav={nav}
-      description="Upload an inspection/appraisal PDF, then open a report to analyze and download an estimate."
-      primaryAction={
-        <Link href={`${props.basePath}/dashboard`}>
-          <Button variant="secondary">Back to dashboard</Button>
-        </Link>
-      }
+      hideHeading
     >
       <div className="grid gap-6">
         {toast ? (
@@ -462,7 +457,17 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
         ) : null}
         {/* Upload */}
         <Card className="p-6">
-          <div className="mt-1 grid gap-3">
+          <CardHeader
+            title={props.title || "Instant Estimate"}
+            subtitle="Upload an inspection/appraisal PDF, then open a report to analyze and download an estimate."
+            action={
+              <Link href={`${props.basePath}/dashboard`}>
+                <Button variant="secondary">Back to dashboard</Button>
+              </Link>
+            }
+          />
+
+          <div className="mt-5 grid gap-3">
             {/* Always-mounted file input so the Step 1 header "Change" button works even when collapsed */}
             <input
               ref={fileInputRef}

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
-import { Button, Card, Chip, Input, Label, Modal, Picker } from "@/components/ui";
+import { Button, Card, CardHeader, Chip, Input, Label, Modal, Picker } from "@/components/ui";
 import { withDemo } from "@/lib/demo";
 
 import { ChevronDown, ChevronUp, Share2, UserPlus } from "lucide-react";
@@ -192,16 +192,21 @@ export default function Page() {
       title="My Clients"
       portalTitle="Real Estate Pro"
       nav={PRO_NAV as unknown as { href: string; label: string }[]}
-      description="Invite clients, track shared projects, and keep everyone in the loop."
-      primaryAction={
-        <Link href={withDemo("/pro/clients?invite=1")}>
-          <Button>Invite client</Button>
-        </Link>
-      }
+      hideHeading
     >
       <div className="grid gap-6">
         <Card className="p-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <CardHeader
+            title="My Clients"
+            subtitle="Invite clients, track shared projects, and keep everyone in the loop."
+            action={
+              <Link href={withDemo("/pro/clients?invite=1")}>
+                <Button>Invite client</Button>
+              </Link>
+            }
+          />
+
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <input
               className="h-10 w-full rounded-[999px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 text-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
               value={q}

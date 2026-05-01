@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import Link from "next/link";
 
-import { Button } from "@/components/ui";
+import { Button, Card, CardHeader } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { loadPartner, PARTNER_STORAGE_KEY, type PartnerContext } from "@/lib/partner-context";
 import { ensureDemoPartnerContext } from "@/lib/demo";
@@ -62,19 +62,23 @@ export function PartnerMarketingToolsPageClient({ basePath }: { basePath: "/part
       : "";
 
   return (
-    <PortalShell
-      role="PRO"
-      title="Marketing Tools"
-      nav={nav}
-      description="Templates and branded assets to help you share Homeworke with clients."
-      primaryAction={
-        <Link href={`${basePath}/dashboard`}>
-          <Button variant="secondary">Back to dashboard</Button>
-        </Link>
-      }
-    >
+    <PortalShell role="PRO" title="Marketing Tools" nav={nav} hideHeading>
       <div className="grid gap-6">
-        <PartnerMarketingToolsSection basePath={basePath} partner={partner} inviteLink={inviteLink} />
+        <Card className="p-6">
+          <CardHeader
+            title="Marketing Tools"
+            subtitle="Templates and branded assets to help you share Homeworke with clients."
+            action={
+              <Link href={`${basePath}/dashboard`}>
+                <Button variant="secondary">Back to dashboard</Button>
+              </Link>
+            }
+          />
+
+          <div className="mt-5">
+            <PartnerMarketingToolsSection basePath={basePath} partner={partner} inviteLink={inviteLink} />
+          </div>
+        </Card>
       </div>
     </PortalShell>
   );
