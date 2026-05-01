@@ -18,6 +18,13 @@ const STORAGE_KEYS = {
   reports: "hw_express_estimate_reports_v1",
 } as const;
 
+type StorageScope = "PRO" | "PARTNER" | "HO";
+
+function scopedKey(scope: StorageScope, key: string) {
+  // Keep portals isolated: HO should not read/write PRO/PARTNER localStorage.
+  return `${key}__${scope}`;
+}
+
 type StoredProperty = { id: string; address: string; nickname?: string; ownerName?: string; propertyType?: string; createdAt: string };
 
 type StoredClientProperty = {
@@ -58,10 +65,10 @@ function addressKey(s: string) {
     .trim();
 }
 
-function readCustomProperties(): StoredProperty[] {
+function readCustomProperties(scope: StorageScope): StoredProperty[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEYS.customProps) || "[]";
+    const raw = window.localStorage.getItem(scopedKey(scope, STORAGE_KEYS.customProps)) || "[]";
     const arr = JSON.parse(raw) as StoredProperty[];
     return Array.isArray(arr) ? arr.filter((p) => p && typeof p.id === "string") : [];
   } catch {
@@ -69,17 +76,17 @@ function readCustomProperties(): StoredProperty[] {
   }
 }
 
-function writeCustomProperties(items: StoredProperty[]) {
+function writeCustomProperties(scope: StorageScope, items: StoredProperty[]) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(STORAGE_KEYS.customProps, JSON.stringify(items.slice(0, 50)));
+    window.localStorage.setItem(scopedKey(scope, STORAGE_KEYS.customProps), JSON.stringify(items.slice(0, 50)));
   } catch {}
 }
 
-function readClientProperties(): StoredClientProperty[] {
+function readClientProperties(scope: StorageScope): StoredClientProperty[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEYS.clientProps) || "[]";
+    const raw = window.localStorage.getItem(scopedKey(scope, STORAGE_KEYS.clientProps)) || "[]";
     const arr = JSON.parse(raw) as StoredClientProperty[];
     return Array.isArray(arr) ? arr.filter((p) => p && typeof p.id === "string") : [];
   } catch {
@@ -87,17 +94,17 @@ function readClientProperties(): StoredClientProperty[] {
   }
 }
 
-function writeClientProperties(items: StoredClientProperty[]) {
+function writeClientProperties(scope: StorageScope, items: StoredClientProperty[]) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(STORAGE_KEYS.clientProps, JSON.stringify(items.slice(0, 200)));
+    window.localStorage.setItem(scopedKey(scope, STORAGE_KEYS.clientProps), JSON.stringify(items.slice(0, 200)));
   } catch {}
 }
 
-function readReports(): Report[] {
+function readReports(scope: StorageScope): Report[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEYS.reports) || "[]";
+    const raw = window.localStorage.getItem(scopedKey(scope, STORAGE_KEYS.reports)) || "[]";
     const arr = JSON.parse(raw) as Report[];
     return Array.isArray(arr) ? arr.filter((r) => r && typeof r.id === "string" && typeof r.address === "string") : [];
   } catch {
@@ -105,17 +112,17 @@ function readReports(): Report[] {
   }
 }
 
-function writeReports(items: Report[]) {
+function writeReports(scope: StorageScope, items: Report[]) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(STORAGE_KEYS.reports, JSON.stringify(items.slice(0, 200)));
+    window.localStorage.setItem(scopedKey(scope, STORAGE_KEYS.reports), JSON.stringify(items.slice(0, 200)));
   } catch {}
 }
 
-function upsertReport(next: Report) {
-  const prev = readReports();
+function upsertReport(scope: StorageScope, next: Report) {
+  const prev = readReports(scope);
   const out: Report[] = [next, ...prev.filter((r) => r.id !== next.id)];
-  writeReports(out);
+  writeReports(scope, out);
   return out;
 }
 
@@ -136,6 +143,7 @@ type Report = {
 };
 
 export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
+  const storageScope = props.role as StorageScope;
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const preselectPropertyId = searchParams?.get("property") || "";
   const preStaged = searchParams?.get("staged") || "";
@@ -204,7 +212,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
 
     // Merge persisted reports (uploaded PDFs) on the client.
     if (typeof window === "undefined") return demo;
-    const persisted = readReports();
+    const persisted = readReports(storageScope);
     const seen = new Set<string>();
     const out: Report[] = [];
     [...persisted, ...demo].forEach((r) => {
@@ -248,7 +256,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     // Poll job status so Processing bars can be real (server-driven).
     const pollJobs = () => {
       try {
-        const persisted = readReports();
+        const persisted = readReports(storageScope);
         persisted
           .filter((r) => r && typeof r.id === "string")
           .slice(0, 30)
@@ -305,7 +313,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     window.addEventListener("storage", onStorage);
 
     // Load existing properties (demo: localStorage + /api/properties).
-    const localMy = readCustomProperties().map((p) => ({
+    const localMy = readCustomProperties(storageScope).map((p) => ({
       id: p.id,
       label: normalizeAddress(p.nickname || p.address),
       address: normalizeAddress(p.address),
@@ -313,7 +321,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       propertyType: typeof p.propertyType === "string" ? p.propertyType : undefined,
       kind: "my" as const,
     }));
-    const localClient = readClientProperties().map((p) => ({
+    const localClient = readClientProperties(storageScope).map((p) => ({
       id: p.id,
       label: normalizeAddress(p.nickname || p.address),
       address: normalizeAddress(p.address),
@@ -814,7 +822,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                                 clientEmail: newClientEmail || undefined,
                                 clientPhone: newClientPhone || undefined,
                               };
-                              writeClientProperties([next, ...readClientProperties()]);
+                              writeClientProperties(storageScope, [next, ...readClientProperties(storageScope)]);
                             } else {
                               const next = {
                                 id,
@@ -824,7 +832,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                                 ownerName: normalizeAddress(newOwnerName) || undefined,
                                 propertyType: newPropertyType || undefined,
                               };
-                              writeCustomProperties([next, ...readCustomProperties()]);
+                              writeCustomProperties(storageScope, [next, ...readCustomProperties(storageScope)]);
                             }
 
                             const p = {
@@ -975,7 +983,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           createdAt: new Date().toISOString(),
                           status: "Processing",
                         };
-                        const persisted = upsertReport(next);
+                        const persisted = upsertReport(storageScope, next);
                         // Merge with existing demo rows
                         const seen = new Set<string>();
                         const out: Report[] = [];
@@ -1175,7 +1183,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           if (!window.confirm("Confirm delete: this cannot be undone.")) return;
 
                           try {
-                            const key = STORAGE_KEYS.reports;
+                            const key = scopedKey(storageScope, STORAGE_KEYS.reports);
                             const raw = window.localStorage.getItem(key) || "[]";
                             const arr = (JSON.parse(raw) as any[]) || [];
                             const out = arr.filter((x) => x && x.id !== r.id);
