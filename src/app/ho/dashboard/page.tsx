@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { Button, Card, Chip, Container, StatTile } from "@/components/ui";
+import { Button, Card, Container, StatTile } from "@/components/ui";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 import { InstantEstimateCard } from "@/components/dashboard/InstantEstimateCard";
 import { PortalShell } from "@/components/portal-shell";
@@ -102,36 +102,39 @@ export default function HomeownerDashboardPage() {
   const pendingCount = useMemo(() => workOrders.filter((w) => String(w.status || "").toLowerCase() === "pending").length, [workOrders]);
   const completedCount = useMemo(() => workOrders.filter((w) => String(w.status || "").toLowerCase() === "completed").length, [workOrders]);
 
-  const previewMessages = useMemo(() => {
-    const rows = messages.slice(0, 3).map((m) => {
+  const previewRows = useMemo(() => {
+    const first = messages.slice(0, 1).map((m) => {
       const from = (m.ownerName || (m.fromRole === "HO" ? "You" : m.fromRole) || "Message").toString();
       const address = m.propertyAddress || "";
       const body = (m.body || "").replace(/\s+/g, " ").trim();
       return { id: m.id, from, address, body, unread: !m.readAt, threadId: m.threadId };
     });
-    return rows;
+    return first;
   }, [messages]);
 
   const MessagesCard = (
-    <Card className="border-[var(--hw-line)] p-5">
-      <div className="flex items-start justify-between gap-3">
+    <Card className="max-w-full overflow-hidden p-3">
+      <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Messages</div>
-          <div className="mt-1 flex items-center gap-2">
-            <div className="text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Messages</div>
-            <Chip>{unreadCount} unread</Chip>
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Messages</div>
+            {unreadCount > 0 ? (
+              <span className="inline-flex items-center rounded-full bg-[rgba(229,57,53,.10)] px-2 py-0.5 text-[11px] font-semibold text-[rgb(229,57,53)]">
+                {unreadCount} unread
+              </span>
+            ) : null}
           </div>
         </div>
         <Link href="/ho/messages" className="shrink-0">
-          <Button size="sm" variant="secondary">
+          <Button size="sm" className="px-3">
             View
           </Button>
         </Link>
       </div>
 
-      <div className="mt-4 grid gap-2">
-        {previewMessages.length ? (
-          previewMessages.map((m) => (
+      <div className="mt-2 grid gap-2">
+        {previewRows.length ? (
+          previewRows.map((m) => (
             <Link
               key={m.id}
               href="/ho/messages"
