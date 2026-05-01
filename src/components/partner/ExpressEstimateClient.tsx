@@ -452,7 +452,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
     <PortalShell
       role={props.role}
       title={props.title || "Instant Estimate"}
-      portalTitle={props.role === "PRO" ? "Real Estate Pro" : undefined}
+      portalTitle={props.role === "PRO" ? "Real Estate Pro" : props.role === "HO" ? "Homeowner" : undefined}
       nav={nav}
       hideHeading
     >
