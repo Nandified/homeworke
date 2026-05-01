@@ -33,7 +33,7 @@ export function DashboardSection({
   const header = (
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
-        <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">{title}</div>
+        <div className="text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">{title}</div>
         {description ? (
           <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">{description}</div>
         ) : null}
