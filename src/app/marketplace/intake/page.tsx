@@ -144,12 +144,13 @@ export default function Page() {
   const [step, setStep] = useState<StepKey>("select_service");
   const [portalScheduleStep, setPortalScheduleStep] = useState<"date" | "window" | "contact">("date");
   const [showAllTradeServices, setShowAllTradeServices] = useState(false);
-  const [tradeSearch, setTradeSearch] = useState("");
+  const [tradeQuery, setTradeQuery] = useState("");
   const [tradeServicesOpen, setTradeServicesOpen] = useState(false);
+  const tradeSearchRef = useMemo(() => ({ current: null as HTMLInputElement | null }), []);
+  const tradeDebounceRef = useMemo(() => ({ current: null as any }), []);
 
   // Keep textarea typing isolated from the large draft object to avoid any focus jank.
   const [issueFieldKey, setIssueFieldKey] = useState(0);
-  const [issueLen, setIssueLen] = useState(0);
   const issueRef = useMemo(() => ({ current: null as HTMLTextAreaElement | null }), []);
 
   const [issueAttachments, setIssueAttachments] = useState<File[]>([]);
@@ -172,7 +173,7 @@ export default function Page() {
     };
   }, [issuePreviews]);
   const tradeSearchResults = useMemo(() => {
-    const q = tradeSearch.trim().toLowerCase();
+    const q = tradeQuery.trim().toLowerCase();
     if (q.length < 2) return [] as Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string }>;
 
     const results: Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string; score: number }> = [];
@@ -204,7 +205,7 @@ export default function Page() {
       .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))
       .slice(0, 8)
       .map(({ score: _score, ...rest }) => rest);
-  }, [tradeSearch]);
+  }, [tradeQuery]);
   const [draft, setDraft] = useState<IntakeDraft>(() => {
     const d = loadDraft();
     try {
@@ -445,7 +446,6 @@ export default function Page() {
     if (!isPortalIntake) return;
     if (step !== "service_details") return;
     setIssueFieldKey((k) => k + 1);
-    setIssueLen(String(draft.issue_description || "").trim().length);
   }, [isPortalIntake, step]);
 
   function update(patch: Partial<IntakeDraft>) {
@@ -775,8 +775,16 @@ export default function Page() {
                       <div className="mt-3">
                         <div className="relative">
                           <Input
-                            value={tradeSearch}
-                            onChange={(e) => setTradeSearch(e.target.value)}
+                            ref={(el) => {
+                              (tradeSearchRef as any).current = el;
+                            }}
+                            defaultValue={tradeQuery}
+                            onInput={(e) => {
+                              const v = String(e.currentTarget.value || "");
+                              // Debounce so typing doesn't cause aggressive re-renders (which can steal focus in some browsers).
+                              if ((tradeDebounceRef as any).current) window.clearTimeout((tradeDebounceRef as any).current);
+                              (tradeDebounceRef as any).current = window.setTimeout(() => setTradeQuery(v), 120);
+                            }}
                             placeholder="Search a service (e.g., leaking sink, outlet, deep clean…)"
                           />
 
@@ -790,7 +798,11 @@ export default function Page() {
                                     setShowAllTradeServices(false);
                                     update({ service_category: r.trade });
                                     // keep the query as feedback, but collapse suggestions
-                                    setTradeSearch(r.kind === "trade" ? r.trade : r.label);
+                                    const v = r.kind === "trade" ? r.trade : r.label;
+                                    try {
+                                      if ((tradeSearchRef as any).current) (tradeSearchRef as any).current.value = v;
+                                    } catch {}
+                                    setTradeQuery(v);
                                   }}
                                   className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-[var(--hw-soft)]"
                                 >
@@ -998,10 +1010,7 @@ export default function Page() {
                         ref={(el) => {
                           (issueRef as any).current = el;
                         }}
-                        onInput={(e) => {
-                          const v = (e.currentTarget.value || "").trim();
-                          setIssueLen(v.length);
-                        }}
+                        // (no onInput handler)
                         placeholder="What do you need done? Add any key details (location, access, timing)."
                       />
                     </div>
@@ -1109,7 +1118,7 @@ export default function Page() {
                         } catch {}
                         setStep("property_details");
                       }}
-                      disabled={issueLen === 0}
+                      disabled={false}
                     >
                       Next
                     </Button>
