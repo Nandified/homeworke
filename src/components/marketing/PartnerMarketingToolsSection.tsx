@@ -271,8 +271,7 @@ export function PartnerMarketingToolsSection({
   }
 
   return (
-    <Card className="p-6 md:p-7">
-      <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-3 sm:grid-cols-2">
         <Card className="p-4">
           <div className="text-sm font-semibold text-[var(--hw-ink)]">Email templates</div>
           <div className="mt-1 text-sm text-[var(--hw-muted)]">Pick a template, personalize, and send from your email.</div>
@@ -474,7 +473,6 @@ export function PartnerMarketingToolsSection({
             <div className="text-xs text-[var(--hw-muted)]">Includes your name, office, invite link, and QR.</div>
           </div>
         </Card>
-      </div>
-    </Card>
+    </div>
   );
 }
