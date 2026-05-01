@@ -6,6 +6,7 @@ import Link from "next/link";
 import { PortalShell } from "@/components/portal-shell";
 import { HO_NAV } from "@/components/ho/nav";
 import { Button, Card, CardHeader, Divider, Input, Label, Modal } from "@/components/ui";
+import { isDemoMode } from "@/lib/demo";
 
 type TeamRole = "broker" | "lender" | "insurance" | "inspector";
 
@@ -118,6 +119,7 @@ export default function Page() {
   });
 
   // Load + auto-link broker if homeowner came in through a partner link.
+  // In demo mode, default the broker to /p/frj so you can see the full interactions.
   React.useEffect(() => {
     const base = readTeam();
 
@@ -126,11 +128,16 @@ export default function Page() {
       const partnerId = s?.partner?.partnerId ? String(s.partner.partnerId) : "";
       const partnerName = s?.partner?.partnerName ? String(s.partner.partnerName) : "";
 
-      if (partnerId && !base.broker) {
+      const demoDefault = isDemoMode() ? "frj" : "";
+
+      const effectiveId = partnerId || demoDefault;
+      const effectiveName = partnerName || (effectiveId ? "FRJ Demo Partner" : "");
+
+      if (effectiveId && !base.broker) {
         base.broker = {
           role: "broker",
-          code: partnerId,
-          displayName: partnerName || undefined,
+          code: effectiveId,
+          displayName: effectiveName || undefined,
           linkedAt: new Date().toISOString(),
         };
         writeTeam(base);
