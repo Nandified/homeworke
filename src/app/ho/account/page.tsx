@@ -1,21 +1,13 @@
-import { Card } from "@/components/ui";
+import { Card, CardHeader } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
-
-const nav = [
-  { href: "/ho/dashboard", label: "Dashboard" },
-  { href: "/ho/messages", label: "Messages" },
-  { href: "/ho/properties", label: "My Properties" },
-  { href: "/ho/pro-team", label: "Pro Team" },
-  { href: "/ho/support", label: "Support" },
-  { href: "/ho/account", label: "My Account" }
-];
+import { HO_NAV } from "@/components/ho/nav";
 
 export default function Page() {
   return (
-    <PortalShell role="HO" title="Homeowner" nav={nav}>
+    <PortalShell role="HO" title="Homeowner" nav={HO_NAV as any} hideHeading>
       <Card className="p-6">
-        <div className="text-sm font-semibold">My Account</div>
-        <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">Placeholder page for 2.0 parity. Wiring next.</div>
+        <CardHeader title="My Account" subtitle="Profile and preferences." />
+        <div className="mt-5 text-sm text-[var(--hw-muted)]">Coming next.</div>
       </Card>
     </PortalShell>
   );

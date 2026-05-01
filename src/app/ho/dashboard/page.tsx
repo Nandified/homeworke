@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { Button, EmptyState, StatTile } from "@/components/ui";
+import { Button, Card, CardHeader, EmptyState, StatTile } from "@/components/ui";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 import { PortalShell } from "@/components/portal-shell";
+import { HO_NAV } from "@/components/ho/nav";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { KpiGrid } from "@/components/dashboard/KpiGrid";
 import { ListRow, StatusChip } from "@/components/dashboard/ListRow";
@@ -49,14 +50,7 @@ type Message = {
   readAt?: string | null;
 };
 
-const nav = [
-  { href: "/ho/dashboard", label: "Dashboard" },
-  { href: "/ho/messages", label: "Messages" },
-  { href: "/ho/properties", label: "My Properties" },
-  { href: "/ho/pro-team", label: "Pro Team" },
-  { href: "/ho/support", label: "Support" },
-  { href: "/ho/account", label: "My Account" },
-];
+// nav defined in components/ho/nav.ts
 
 function loadSession(): Session | null {
   try {
@@ -116,46 +110,68 @@ export default function HomeownerDashboardPage() {
   const unreadCount = useMemo(() => (messages || []).filter((m) => !m.readAt).length, [messages]);
 
   return (
-    <PortalShell
-      role="HO"
-      title="Homeowner"
-      nav={nav}
-      description="Track your active services, properties, and messages with your Pro Team."
-      primaryAction={
-        <Link href="/marketplace/intake">
-          <Button>Request service</Button>
-        </Link>
-      }
-    >
+    <PortalShell role="HO" title="Homeowner" nav={HO_NAV as any} hideHeading>
       <div className="grid gap-6">
+        <Card className="p-6">
+          <CardHeader
+            title="Dashboard"
+            subtitle="Track your active services, properties, and updates from your team."
+            action={
+              <Link href="/marketplace/intake" className="inline-flex">
+                <Button>Request service</Button>
+              </Link>
+            }
+          />
+        </Card>
+
         <AIWorkOrderIntakeCard />
 
         <KpiGrid>
           <StatTile label="Active services" value={String(workOrders?.length ?? 0)} note="Work orders in your dashboard." />
-          <StatTile label="My properties" value={String(properties?.length ?? 0)} note="Property profiles (Phase 2: minimal)." />
-          <StatTile label="Unread messages" value={String(unreadCount)} note="From your Pro Team." />
+          <StatTile label="My properties" value={String(properties?.length ?? 0)} note="Saved addresses." />
+          <StatTile label="Unread" value={String(unreadCount)} note="Messages and updates." />
         </KpiGrid>
+
+        <Card className="p-6 md:p-7">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Instant Estimate</div>
+              <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">
+                Upload an inspection/appraisal PDF, then open a report to analyze and download an estimate.
+              </div>
+            </div>
+            <Link href="/ho/express-estimate" className="shrink-0">
+              <Button variant="secondary">Open</Button>
+            </Link>
+          </div>
+        </Card>
 
         {workOrders && workOrders.length ? (
           <DashboardSection
-            title="Your work orders"
-            description={`Partner: ${session?.partner?.partnerName || "—"} • Latest status: ${latest?.status || "—"}`}
+            title="Active projects shared with you"
+            description={`Team: ${session?.partner?.partnerName || "—"} • Latest status: ${latest?.status || "—"}`}
             count={`${workOrders.length} total`}
-            action={<Button variant="secondary">Chat with Pro Team</Button>}
+            action={
+              <Link href="/ho/pro-team">
+                <Button variant="secondary">My Team</Button>
+              </Link>
+            }
           >
             <div className="grid gap-2">
               {workOrders.slice(0, 5).map((w) => (
                 <ListRow
                   key={w.id}
                   href={`/ho/work-orders/${w.id}`}
-                  title={w.serviceCategory}
+                  title={w.serviceSubcategory ? `${w.serviceCategory} / ${w.serviceSubcategory}` : w.serviceCategory}
                   subtitle={w.propertyAddress}
                   badge={<StatusChip>Status: {w.status}</StatusChip>}
                 />
               ))}
             </div>
             <div className="mt-5">
-              <Button variant="ghost">Request Express Estimate</Button>
+              <Link href="/ho/express-estimate">
+                <Button variant="ghost">Instant Estimate</Button>
+              </Link>
             </div>
           </DashboardSection>
         ) : (
