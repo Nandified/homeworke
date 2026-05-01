@@ -21,8 +21,9 @@ const STORAGE_KEYS = {
 type StorageScope = "PRO" | "PARTNER" | "HO";
 
 function scopedKey(scope: StorageScope, key: string) {
-  // Keep portals isolated: HO should not read/write PRO/PARTNER localStorage.
-  return `${key}__${scope}`;
+  // Keep portals isolated: only HO is scoped.
+  // PRO/PARTNER keep the legacy keys so we don't break existing saved data.
+  return scope === "HO" ? `${key}__${scope}` : key;
 }
 
 type StoredProperty = { id: string; address: string; nickname?: string; ownerName?: string; propertyType?: string; createdAt: string };
