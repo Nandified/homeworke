@@ -7,33 +7,79 @@ import { PortalShell } from "@/components/portal-shell";
 import { Button, Card, CardHeader, Divider, Input, Label, Modal, Textarea } from "@/components/ui";
 
 type SupportTopic =
-  | "Account & login"
-  | "Clients & invites"
-  | "Express Estimate"
-  | "Jobs"
-  | "Marketing tools"
-  | "Billing & payments"
-  | "Bug / broken"
-  | "Feature request"
+  | "Instant Estimate / Negotiation Packet"
+  | "Client invite + sharing"
+  | "Jobs + scheduling"
+  | "Account + team"
+  | "Billing + payments"
+  | "Report a bug"
+  | "Request a feature"
   | "Other";
 
 const TOPICS: SupportTopic[] = [
-  "Account & login",
-  "Clients & invites",
-  "Express Estimate",
-  "Jobs",
-  "Marketing tools",
-  "Billing & payments",
-  "Bug / broken",
-  "Feature request",
+  "Instant Estimate / Negotiation Packet",
+  "Client invite + sharing",
+  "Jobs + scheduling",
+  "Account + team",
+  "Billing + payments",
+  "Report a bug",
+  "Request a feature",
   "Other",
+];
+
+type SupportIntent = {
+  title: string;
+  description: string;
+  topic: SupportTopic;
+  subjectPreset: string;
+};
+
+const INTENTS: SupportIntent[] = [
+  {
+    title: "Instant Estimate / Packet",
+    description: "Upload issues, line items look off, revisions, or share/download questions.",
+    topic: "Instant Estimate / Negotiation Packet",
+    subjectPreset: "Instant Estimate help",
+  },
+  {
+    title: "Client invite + sharing",
+    description: "Client can’t access, resend link, wrong partner attached, or permissions.",
+    topic: "Client invite + sharing",
+    subjectPreset: "Client invite / access issue",
+  },
+  {
+    title: "Jobs + scheduling",
+    description: "Status stuck, schedule changes, deadlines, or escalation.",
+    topic: "Jobs + scheduling",
+    subjectPreset: "Job status / scheduling help",
+  },
+  {
+    title: "Account + team",
+    description: "Office invites, roles, seats, login, or access issues.",
+    topic: "Account + team",
+    subjectPreset: "Account / team access",
+  },
+  {
+    title: "Billing + payments",
+    description: "Invoices, receipts, payouts, or billing questions.",
+    topic: "Billing + payments",
+    subjectPreset: "Billing / payments question",
+  },
+  {
+    title: "Report a bug",
+    description: "Something’s broken or not behaving as expected.",
+    topic: "Report a bug",
+    subjectPreset: "Bug report",
+  },
 ];
 
 export default function Page() {
   const [open, setOpen] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
 
-  const [topic, setTopic] = React.useState<SupportTopic>("Bug / broken");
+  const [topic, setTopic] = React.useState<SupportTopic>("Report a bug");
+  const [urgent, setUrgent] = React.useState(false);
+  const [relatedTo, setRelatedTo] = React.useState<"None" | "Client" | "Property" | "Job" | "Estimate">("None");
   const [subject, setSubject] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [contactEmail, setContactEmail] = React.useState("");
@@ -46,6 +92,14 @@ export default function Page() {
   }, [toast]);
 
   const canSend = subject.trim().length > 2 && message.trim().length > 8;
+
+  function startRequest(intent?: SupportIntent) {
+    if (intent) {
+      setTopic(intent.topic);
+      setSubject((s) => (s.trim().length ? s : intent.subjectPreset));
+    }
+    setOpen(true);
+  }
 
   return (
     <PortalShell
@@ -62,9 +116,11 @@ export default function Page() {
             title="Support"
             subtitle="Get help fast — report an issue, request a feature, or contact our team."
             action={
-              <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
-                New support request
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="secondary" size="sm" onClick={() => startRequest()}>
+                  Start a support request
+                </Button>
+              </div>
             }
           />
 
@@ -105,48 +161,72 @@ export default function Page() {
           </div>
         </Card>
 
-        {/* FAQ */}
+        {/* GUIDED HELP */}
         <Card className="p-5 sm:p-6">
-          <div className="mt-1 grid gap-3">
-            <details className="rounded-[16px] border border-[var(--hw-line)] bg-white p-4">
-              <summary className="cursor-pointer text-sm font-semibold text-[var(--hw-ink)]">Something isn’t saving</summary>
-              <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
-                Try a hard refresh, then re-try in an incognito window. If it still fails, submit a support request with a screenshot.
-              </div>
-            </details>
-
-            <details className="rounded-[16px] border border-[var(--hw-line)] bg-white p-4">
-              <summary className="cursor-pointer text-sm font-semibold text-[var(--hw-ink)]">I can’t download an asset (PNG/PDF)</summary>
-              <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
-                On Safari, popups can be blocked. Allow popups for this site and try again. If it still fails, attach a screen recording.
-              </div>
-            </details>
-
-            <details className="rounded-[16px] border border-[var(--hw-line)] bg-white p-4">
-              <summary className="cursor-pointer text-sm font-semibold text-[var(--hw-ink)]">My invite link isn’t working</summary>
-              <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">
-                Double-check you’re using the PRO/partner link (not a dashboard URL). Share what link you used in the support form.
-              </div>
-            </details>
+          <div className="grid gap-2">
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">What are you trying to do?</div>
+            <div className="text-sm text-[var(--hw-muted)]">Pick a category and we’ll pre-fill the request so you can move fast.</div>
           </div>
-        </Card>
 
-        {/* STATUS / ROADMAP */}
-        <Card className="p-5 sm:p-6">
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
-              Report a bug
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                setTopic("Feature request");
-                setOpen(true);
-              }}
-            >
-              Request a feature
-            </Button>
+          <Divider className="my-5" />
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {INTENTS.map((intent) => (
+              <button
+                key={intent.title}
+                type="button"
+                onClick={() => startRequest(intent)}
+                className="text-left"
+              >
+                <Card className="h-full p-4 transition-all hover:-translate-y-[1px] hover:shadow-[0_10px_30px_rgba(0,0,0,.08)]">
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{intent.title}</div>
+                  <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">{intent.description}</div>
+                  <div className="mt-3 text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{intent.topic}</div>
+                </Card>
+              </button>
+            ))}
+          </div>
+
+          <Divider className="my-5" />
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Card className="p-4 shadow-none hover:shadow-none">
+              <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Priority support</div>
+              <div className="mt-2 text-sm text-[var(--hw-muted)] leading-7">
+                If you’re in an active transaction or on a closing deadline, mark the request as <span className="font-semibold text-[var(--hw-ink)]">Urgent</span>.
+              </div>
+            </Card>
+            <Card className="p-4 shadow-none hover:shadow-none">
+              <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Typical response</div>
+              <div className="mt-2 text-sm text-[var(--hw-muted)] leading-7">Fast during business hours. Urgent requests are prioritized.</div>
+            </Card>
+            <Card className="p-4 shadow-none hover:shadow-none">
+              <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Quick actions</div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    setTopic("Request a feature");
+                    setSubject("Product improvement request");
+                    startRequest();
+                  }}
+                >
+                  Suggest an improvement
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    setTopic("Other");
+                    setSubject("Request a walkthrough / training");
+                    startRequest();
+                  }}
+                >
+                  Request training
+                </Button>
+              </div>
+            </Card>
           </div>
         </Card>
       </div>
@@ -172,6 +252,36 @@ export default function Page() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label className="text-xs">Urgency</Label>
+              <label className="flex h-11 items-center gap-3 rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={urgent}
+                  onChange={(e) => setUrgent(e.target.checked)}
+                />
+                <span className="text-[var(--hw-ink)]">Mark as urgent (closing / active job)</span>
+              </label>
+            </div>
+
+            <div className="grid gap-2">
+              <Label className="text-xs">Related to (optional)</Label>
+              <select
+                className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3.5 text-sm outline-none transition-all duration-150 hover:border-[color-mix(in_srgb,var(--hw-line)_60%,var(--hw-ink))] focus:border-[rgba(229,57,53,.5)] focus:ring-2 focus:ring-[rgba(229,57,53,.12)]"
+                value={relatedTo}
+                onChange={(e) => setRelatedTo(e.target.value as "None" | "Client" | "Property" | "Job" | "Estimate")}
+              >
+                {(["None", "Client", "Property", "Job", "Estimate"] as const).map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="grid gap-2">
@@ -226,6 +336,8 @@ export default function Page() {
                 setOpen(false);
                 setSubject("");
                 setMessage("");
+                setUrgent(false);
+                setRelatedTo("None");
                 setAttachments([]);
                 setToast("Support request sent (stub)");
               }}
