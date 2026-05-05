@@ -27,52 +27,6 @@ const TOPICS: SupportTopic[] = [
   "Other",
 ];
 
-type SupportIntent = {
-  title: string;
-  description: string;
-  topic: SupportTopic;
-  subjectPreset: string;
-};
-
-const INTENTS: SupportIntent[] = [
-  {
-    title: "Instant Estimate / Packet",
-    description: "Upload issues, line items look off, revisions, or share/download questions.",
-    topic: "Instant Estimate / Negotiation Packet",
-    subjectPreset: "Instant Estimate help",
-  },
-  {
-    title: "Client invite + sharing",
-    description: "Client can’t access, resend link, wrong partner attached, or permissions.",
-    topic: "Client invite + sharing",
-    subjectPreset: "Client invite / access issue",
-  },
-  {
-    title: "Jobs + scheduling",
-    description: "Status stuck, schedule changes, deadlines, or escalation.",
-    topic: "Jobs + scheduling",
-    subjectPreset: "Job status / scheduling help",
-  },
-  {
-    title: "Account + team",
-    description: "Office invites, roles, seats, login, or access issues.",
-    topic: "Account + team",
-    subjectPreset: "Account / team access",
-  },
-  {
-    title: "Billing + payments",
-    description: "Invoices, receipts, payouts, or billing questions.",
-    topic: "Billing + payments",
-    subjectPreset: "Billing / payments question",
-  },
-  {
-    title: "Report a bug",
-    description: "Something’s broken or not behaving as expected.",
-    topic: "Report a bug",
-    subjectPreset: "Bug report",
-  },
-];
-
 export default function Page() {
   const [open, setOpen] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
@@ -93,34 +47,26 @@ export default function Page() {
 
   const canSend = subject.trim().length > 2 && message.trim().length > 8;
 
-  function startRequest(intent?: SupportIntent) {
-    if (intent) {
-      setTopic(intent.topic);
-      setSubject((s) => (s.trim().length ? s : intent.subjectPreset));
+  const copyPageLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setToast("Page link copied");
+    } catch {
+      setToast("Couldn’t copy link");
     }
-    setOpen(true);
-  }
+  };
 
   return (
-    <PortalShell
-      role="PRO"
-      title="Support"
-      portalTitle="Real Estate Pro"
-      nav={PRO_NAV}
-      hideHeading
-    >
+    <PortalShell role="PRO" title="Support" portalTitle="Real Estate Pro" nav={PRO_NAV} hideHeading>
       <div className="grid gap-4">
-        {/* QUICK HELP */}
         <Card className="p-5 sm:p-6">
           <CardHeader
             title="Support"
-            subtitle="Get help fast — report an issue, request a feature, or contact our team."
+            subtitle="Get help fast — contact our team or send a request." 
             action={
-              <div className="flex items-center gap-2">
-                <Button variant="secondary" size="sm" onClick={() => startRequest()}>
-                  Start a support request
-                </Button>
-              </div>
+              <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+                Start a support request
+              </Button>
             }
           />
 
@@ -142,7 +88,7 @@ export default function Page() {
             <Card className="p-4 shadow-none hover:shadow-none">
               <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Phone</div>
               <div className="mt-2 text-sm font-semibold text-[var(--hw-ink)]">Call us</div>
-              <div className="mt-1 text-sm text-[var(--hw-muted)]">For urgent issues during a live job.</div>
+              <div className="mt-1 text-sm text-[var(--hw-muted)]">For urgent issues during an active job.</div>
               <div className="mt-3">
                 <a href="tel:+13125550100" className="inline-block">
                   <Button size="sm" variant="secondary">
@@ -153,77 +99,15 @@ export default function Page() {
             </Card>
 
             <Card className="p-4 shadow-none hover:shadow-none">
-              <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">What to include</div>
-              <div className="mt-2 text-sm text-[var(--hw-muted)] leading-7">
-                Screenshots, the page URL, and what you expected vs what happened.
+              <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">To help us move fast</div>
+              <div className="mt-2 space-y-2 text-sm leading-7 text-[var(--hw-muted)]">
+                <div>• What you were trying to do</div>
+                <div>• What happened vs. what you expected</div>
+                <div>• A screenshot (if you can)</div>
               </div>
-            </Card>
-          </div>
-        </Card>
-
-        {/* GUIDED HELP */}
-        <Card className="p-5 sm:p-6">
-          <div className="grid gap-2">
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">What are you trying to do?</div>
-            <div className="text-sm text-[var(--hw-muted)]">Pick a category and we’ll pre-fill the request so you can move fast.</div>
-          </div>
-
-          <Divider className="my-5" />
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {INTENTS.map((intent) => (
-              <button
-                key={intent.title}
-                type="button"
-                onClick={() => startRequest(intent)}
-                className="text-left"
-              >
-                <Card className="h-full p-4 transition-all hover:-translate-y-[1px] hover:shadow-[0_10px_30px_rgba(0,0,0,.08)]">
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{intent.title}</div>
-                  <div className="mt-2 text-sm leading-7 text-[var(--hw-muted)]">{intent.description}</div>
-                  <div className="mt-3 text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{intent.topic}</div>
-                </Card>
-              </button>
-            ))}
-          </div>
-
-          <Divider className="my-5" />
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Card className="p-4 shadow-none hover:shadow-none">
-              <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Priority support</div>
-              <div className="mt-2 text-sm text-[var(--hw-muted)] leading-7">
-                If you’re in an active transaction or on a closing deadline, mark the request as <span className="font-semibold text-[var(--hw-ink)]">Urgent</span>.
-              </div>
-            </Card>
-            <Card className="p-4 shadow-none hover:shadow-none">
-              <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Typical response</div>
-              <div className="mt-2 text-sm text-[var(--hw-muted)] leading-7">Fast during business hours. Urgent requests are prioritized.</div>
-            </Card>
-            <Card className="p-4 shadow-none hover:shadow-none">
-              <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Quick actions</div>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => {
-                    setTopic("Request a feature");
-                    setSubject("Product improvement request");
-                    startRequest();
-                  }}
-                >
-                  Suggest an improvement
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => {
-                    setTopic("Other");
-                    setSubject("Request a walkthrough / training");
-                    startRequest();
-                  }}
-                >
-                  Request training
+              <div className="mt-3">
+                <Button size="sm" variant="secondary" onClick={copyPageLink}>
+                  Copy page link
                 </Button>
               </div>
             </Card>
