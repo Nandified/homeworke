@@ -28,16 +28,25 @@ export function MyHomeworkeMenu() {
 
   return (
     <div ref={wrapRef} className="relative">
-      <Button variant="secondary" onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}>
-        My Homeworke
+      <Button
+        variant="secondary"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="px-3 sm:px-4"
+      >
+        <span className="hidden sm:inline">My Homeworke</span>
+        <span className="sm:hidden">My</span>
       </Button>
 
       {open ? (
-        <div
-          role="menu"
-          className="absolute right-0 top-[calc(100%+10px)] w-[320px] overflow-hidden rounded-2xl border border-[rgba(229,57,53,.14)] bg-white shadow-[0_18px_60px_rgba(17,24,39,.14)]"
-        >
-          <div aria-hidden className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-[rgba(229,57,53,.10)] blur-[28px]" />
+        <>
+          <div className="fixed inset-0 z-[70] bg-black/20 sm:hidden" aria-hidden onClick={() => setOpen(false)} />
+          <div
+            role="menu"
+            className="fixed left-3 right-3 top-[72px] z-[80] max-h-[calc(100dvh-88px)] overflow-auto rounded-2xl border border-[rgba(229,57,53,.14)] bg-white shadow-[0_18px_60px_rgba(17,24,39,.14)] sm:absolute sm:left-auto sm:right-0 sm:top-[calc(100%+10px)] sm:w-[320px]"
+          >
+            <div aria-hidden className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-[rgba(229,57,53,.10)] blur-[28px]" />
 
           <div className="relative px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--hw-muted)]">Sign in</div>
           <div className="relative grid pb-2">
@@ -55,6 +64,7 @@ export function MyHomeworkeMenu() {
             <MenuItem href="/request-access?role=provider&type=apply" title="Become a provider" subtitle="Apply to join the network" />
           </div>
         </div>
+        </>
       ) : null}
     </div>
   );
