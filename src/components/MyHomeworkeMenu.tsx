@@ -36,16 +36,32 @@ export function MyHomeworkeMenu() {
         className="px-3 sm:px-4"
       >
         <span className="hidden sm:inline">My Homeworke</span>
-        <span className="sm:hidden">My</span>
+        <span className="inline-flex items-center gap-2 sm:hidden">
+          <span aria-hidden className="text-base leading-none">👤</span>
+          <span>Account</span>
+        </span>
       </Button>
 
       {open ? (
         <>
-          <div className="fixed inset-0 z-[70] bg-black/20 sm:hidden" aria-hidden onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-[70] bg-black/25 sm:hidden" aria-hidden onClick={() => setOpen(false)} />
           <div
             role="menu"
-            className="fixed left-3 right-3 top-[72px] z-[80] max-h-[calc(100dvh-88px)] overflow-auto rounded-2xl border border-[rgba(229,57,53,.14)] bg-white shadow-[0_18px_60px_rgba(17,24,39,.14)] sm:absolute sm:left-auto sm:right-0 sm:top-[calc(100%+10px)] sm:w-[320px]"
+            className="fixed inset-x-0 bottom-0 z-[80] max-h-[85dvh] overflow-auto rounded-t-3xl border border-[rgba(229,57,53,.14)] bg-white shadow-[0_-18px_60px_rgba(17,24,39,.18)] sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-auto sm:right-0 sm:top-[calc(100%+10px)] sm:max-h-[calc(100dvh-88px)] sm:w-[320px] sm:rounded-2xl sm:shadow-[0_18px_60px_rgba(17,24,39,.14)]"
           >
+            <div className="sticky top-0 z-10 bg-white/90 px-4 pb-2 pt-3 backdrop-blur sm:hidden">
+              <div className="mx-auto mb-2 h-1.5 w-12 rounded-full bg-[var(--hw-line)]" />
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">My Homeworke</div>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)]"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
             <div aria-hidden className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-[rgba(229,57,53,.10)] blur-[28px]" />
 
           <div className="relative px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--hw-muted)]">Sign in</div>
