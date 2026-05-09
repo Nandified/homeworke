@@ -74,7 +74,7 @@ export function OfficeInviteAcceptClient() {
 
     const j = (await res.json().catch(() => null)) as any;
     if (!res.ok || !j?.ok) {
-      setError(j?.error || "Unable to send magic link");
+      setError(j?.error || "Unable to send sign-in link");
       return;
     }
 
@@ -109,7 +109,7 @@ export function OfficeInviteAcceptClient() {
               <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
               {error ? <div className="text-sm text-red-700">{error}</div> : null}
               <Button onClick={requestMagicLink} disabled={!email.includes("@")}>
-                Email me a magic link
+                Email me a sign-in link
               </Button>
               <div className="text-xs text-[var(--hw-muted)]">
                 Phase 2 v1: the link is printed in server logs (email delivery comes later).

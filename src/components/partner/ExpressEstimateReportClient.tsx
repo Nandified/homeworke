@@ -2180,7 +2180,7 @@ export function ExpressEstimateReportClient(props: {
                     <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Generic share link</div>
                     <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">Full report</div>
                     <div className="mt-1 text-xs text-[var(--hw-muted)]">
-                      Anyone with this link can view the estimate. Booking repairs and additional details are gated until they log in via magic link.
+                      Anyone with this link can view the estimate. Booking repairs and additional details are gated until they sign in.
                     </div>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2">

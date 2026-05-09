@@ -18,7 +18,7 @@ const ROLE_META: Record<
 > = {
   homeowner: {
     title: "Homeowner login",
-    subtitle: "Get help with repairs, estimates, and scheduling — magic link is fastest.",
+    subtitle: "Get help with repairs, estimates, and scheduling.",
     allowSelfSignup: true,
     nextDefault: "/ho/dashboard",
   },
@@ -129,7 +129,7 @@ export default function LoginClient(props: { role?: string | null }) {
 
         <div className="mt-6 grid gap-3">
           <Button onClick={sendMagicLink} disabled={!email || status === "sending"}>
-            {status === "sending" ? "Sending…" : "Send magic link"}
+            {status === "sending" ? "Sending…" : "Email me a sign-in link"}
           </Button>
 
           <div className="grid gap-2">
@@ -182,7 +182,7 @@ export default function LoginClient(props: { role?: string | null }) {
           ) : null}
 
           <div className="text-xs text-[var(--hw-muted)]">
-            Magic links reduce abuse and keep accounts secure. Partner/Ops access is controlled.
+            We’ll email you a one-time sign-in link.
           </div>
         </div>
       </div>

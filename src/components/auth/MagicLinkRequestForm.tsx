@@ -47,7 +47,7 @@ export function MagicLinkRequestForm(props: {
 
       <div className="flex flex-wrap items-center gap-3">
         <Button onClick={send} disabled={!email || status === "sending"}>
-          {status === "sending" ? "Sending…" : props.submitLabel ?? "Email me a magic link"}
+          {status === "sending" ? "Sending…" : props.submitLabel ?? "Email me a sign-in link"}
         </Button>
         {status === "sent" ? (
           <div className="text-sm text-[var(--hw-muted)]">Link requested. Check your email (dev: link is logged server-side).</div>
@@ -56,7 +56,7 @@ export function MagicLinkRequestForm(props: {
       </div>
 
       <div className="text-xs text-[var(--hw-muted)]">
-        We’ll email you a one-time link to continue. This helps prevent abuse.
+        We’ll email you a one-time sign-in link.
       </div>
     </div>
   );

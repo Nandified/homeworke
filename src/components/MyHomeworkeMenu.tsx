@@ -50,7 +50,7 @@ export function MyHomeworkeMenu() {
           <div className="relative border-t border-[rgba(229,57,53,.10)]" />
           <div className="relative px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--hw-muted)]">Get started</div>
           <div className="relative grid pb-3">
-            <MenuItem href="/login/homeowner" title="Create homeowner account" subtitle="Sign up with a magic link" />
+            <MenuItem href="/login/homeowner" title="Create homeowner account" subtitle="Get started in under a minute" />
             <MenuItem href="/request-access?role=partner&type=access" title="Real Estate Pro access" subtitle="Request access or schedule a demo" />
             <MenuItem href="/request-access?role=provider&type=apply" title="Become a provider" subtitle="Apply to join the network" />
           </div>
