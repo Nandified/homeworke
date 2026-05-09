@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Button, Container } from "@/components/ui";
+import { MyHomeworkeMenu } from "@/components/MyHomeworkeMenu";
 
 export function SiteHeader({ ctaHref = "/estimate" }: { ctaHref?: string }) {
   return (
@@ -26,6 +27,7 @@ export function SiteHeader({ ctaHref = "/estimate" }: { ctaHref?: string }) {
         </nav>
 
         <div className="flex items-center gap-2">
+          <MyHomeworkeMenu />
           <Link href={ctaHref}>
             <Button>Request an estimate visit</Button>
           </Link>
@@ -57,6 +59,10 @@ export function SiteFooter() {
             <Link href="/contact" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Contact</Link>
             <Link href="/privacy" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Privacy</Link>
             <Link href="/terms" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Terms</Link>
+            <div className="col-span-2 mt-2 text-xs font-semibold uppercase tracking-wider text-[var(--hw-muted)] md:col-span-1 md:mt-3">Portals</div>
+            <Link href="/login/homeowner" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Homeowner sign in</Link>
+            <Link href="/login/partner" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Real Estate Pro sign in</Link>
+            <Link href="/login/provider" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Service Provider sign in</Link>
           </div>
         </div>
 
