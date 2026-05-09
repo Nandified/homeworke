@@ -119,15 +119,35 @@ export default function LoginClient(props: { role?: string | null }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md">
-      <div className="rounded-2xl border border-[var(--hw-line)] bg-white p-6 shadow-sm">
-        <div className="text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">{meta.title}</div>
+    <div className="relative mx-auto w-full max-w-md">
+      <div aria-hidden className="pointer-events-none absolute -inset-6 rounded-[28px] bg-[radial-gradient(circle_at_20%_10%,rgba(229,57,53,.14),transparent_55%),radial-gradient(circle_at_80%_30%,rgba(229,57,53,.08),transparent_55%)]" />
+
+      <div className="relative rounded-3xl border border-[rgba(229,57,53,.14)] bg-white/90 p-7 shadow-[0_18px_60px_rgba(17,24,39,.12)] backdrop-blur">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--hw-muted)]">Homeworke</div>
+        <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{meta.title}</div>
         <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">{meta.subtitle}</div>
 
-        <div className="mt-5 grid gap-3">
-          <Button onClick={continueWithGoogle} variant="secondary">
-            Continue with Google
+        <div className="mt-6 grid gap-3">
+          <Button onClick={sendMagicLink} disabled={!email || status === "sending"}>
+            {status === "sending" ? "Sending…" : "Send magic link"}
           </Button>
+
+          <div className="grid gap-2">
+            <div className="text-sm font-semibold text-[var(--hw-ink)]">Email</div>
+            <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" autoComplete="email" />
+            <div className="text-xs text-[var(--hw-muted)]">We’ll email you a one-time link to continue.</div>
+          </div>
+
+          {status === "sent" ? (
+            <div className="rounded-2xl border border-[rgba(16,185,129,.22)] bg-[rgba(16,185,129,.08)] px-4 py-3 text-sm text-[var(--hw-ink)]">
+              Link sent. Check your inbox (and spam). You can request another link anytime.
+            </div>
+          ) : null}
+          {status === "error" || error ? (
+            <div className="rounded-2xl border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.08)] px-4 py-3 text-sm text-[var(--hw-ink)]">
+              {error ?? "Could not send link."}
+            </div>
+          ) : null}
 
           <div className="my-1 flex items-center gap-3">
             <div className="h-px flex-1 bg-[var(--hw-line)]" />
@@ -135,17 +155,9 @@ export default function LoginClient(props: { role?: string | null }) {
             <div className="h-px flex-1 bg-[var(--hw-line)]" />
           </div>
 
-          <div className="grid gap-2">
-            <div className="text-sm font-semibold text-[var(--hw-ink)]">Email</div>
-            <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" autoComplete="email" />
-          </div>
-
-          <Button onClick={sendMagicLink} disabled={!email || status === "sending"}>
-            {status === "sending" ? "Sending…" : "Send magic link"}
+          <Button onClick={continueWithGoogle} variant="secondary">
+            Continue with Google
           </Button>
-
-          {status === "sent" ? <div className="text-sm text-[var(--hw-muted)]">Check your email for the sign-in link.</div> : null}
-          {status === "error" || error ? <div className="text-sm text-[var(--hw-red)]">{error ?? "Could not send link."}</div> : null}
 
           {meta.requestCtas?.length ? (
             <div className="mt-4 grid gap-2 border-t border-[var(--hw-line)] pt-4">
