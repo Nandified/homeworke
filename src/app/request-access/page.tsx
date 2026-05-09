@@ -1,10 +1,10 @@
 "use client";
 
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
 import { Button, Input, Textarea } from "@/components/ui";
 
-export default function RequestAccessPage() {
+function RequestAccessClient() {
   const sp = useSearchParams();
   const role = sp.get("role") ?? "partner";
   const type = sp.get("type") ?? "access";
@@ -34,8 +34,7 @@ export default function RequestAccessPage() {
   const scheduleUrl = process.env.NEXT_PUBLIC_SCHEDULE_DEMO_URL;
 
   return (
-    <main className="min-h-[calc(100vh-64px)] bg-[var(--hw-surface)] px-4 py-10">
-      <div className="mx-auto w-full max-w-lg rounded-2xl border border-[var(--hw-line)] bg-white p-6 shadow-sm">
+    <div className="mx-auto w-full max-w-lg rounded-2xl border border-[var(--hw-line)] bg-white p-6 shadow-sm">
         <div className="text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">
           {type === "apply" ? "Apply to join" : "Request access"}
         </div>
@@ -89,7 +88,16 @@ export default function RequestAccessPage() {
             We’ll review requests and send invite-only access when approved.
           </div>
         </div>
-      </div>
+    </div>
+  );
+}
+
+export default function RequestAccessPage() {
+  return (
+    <main className="min-h-[calc(100vh-64px)] bg-[var(--hw-surface)] px-4 py-10">
+      <Suspense fallback={null}>
+        <RequestAccessClient />
+      </Suspense>
     </main>
   );
 }
