@@ -35,11 +35,7 @@ export function MyHomeworkeMenu() {
         aria-expanded={open}
         className="px-3 sm:px-4"
       >
-        <span className="hidden sm:inline">My Homeworke</span>
-        <span className="inline-flex items-center gap-2 sm:hidden">
-          <span aria-hidden className="text-base leading-none">👤</span>
-          <span>Account</span>
-        </span>
+        <span>My Homeworke</span>
       </Button>
 
       {open ? (

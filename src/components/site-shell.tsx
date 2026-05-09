@@ -28,8 +28,8 @@ export function SiteHeader({ ctaHref = "/estimate" }: { ctaHref?: string }) {
 
         <div className="flex items-center gap-2">
           <MyHomeworkeMenu />
-          <Link href={ctaHref}>
-            <Button>Request an estimate visit</Button>
+          <Link href={ctaHref} className="hidden sm:block">
+            <Button>Request an estimate</Button>
           </Link>
         </div>
       </Container>
