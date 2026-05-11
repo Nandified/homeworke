@@ -32,11 +32,11 @@ export function MyHomeworkeMenu() {
   const menu = (
     <>
       {/* Mobile backdrop */}
-      <div className="fixed inset-0 z-[70] bg-black/25 sm:hidden" aria-hidden onClick={close} />
+      <div className="fixed inset-0 z-[170] bg-black/25 sm:hidden" aria-hidden onClick={close} />
 
       <div
         role="menu"
-        className="fixed inset-x-0 bottom-0 z-[80] max-h-[85dvh] overflow-auto rounded-t-3xl border border-[rgba(229,57,53,.14)] bg-white shadow-[0_-18px_60px_rgba(17,24,39,.18)] sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[calc(100%+10px)] sm:max-h-[calc(100dvh-88px)] sm:w-[340px] sm:rounded-2xl sm:shadow-[0_18px_60px_rgba(17,24,39,.14)]"
+        className="fixed inset-x-0 bottom-0 z-[180] max-h-[85dvh] overflow-auto rounded-t-3xl border border-[rgba(229,57,53,.14)] bg-white shadow-[0_-18px_60px_rgba(17,24,39,.18)] sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[calc(100%+10px)] sm:max-h-[calc(100dvh-88px)] sm:w-[340px] sm:rounded-2xl sm:shadow-[0_18px_60px_rgba(17,24,39,.14)]"
       >
         {/* Mobile sheet header */}
         <div className="sticky top-0 z-10 bg-white/90 px-4 pb-2 pt-3 backdrop-blur sm:hidden">

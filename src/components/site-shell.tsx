@@ -5,7 +5,7 @@ import { MyHomeworkeMenu } from "@/components/MyHomeworkeMenu";
 
 export function SiteHeader({ ctaHref = "/estimate" }: { ctaHref?: string }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-[var(--hw-line)] bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-[160] border-b border-[var(--hw-line)] bg-white/80 backdrop-blur">
       <Container className="flex h-16 items-center justify-between">
         <Link href="/" className="text-lg font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-sm">
           Homeworke
