@@ -8,6 +8,7 @@ import { ArrowRight, MapPin } from "lucide-react";
 import { Button, Card, Container, Input, Pill } from "@/components/ui";
 import { iconFor } from "@/components/icons";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
+import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 
 import homepageDefault from "@/../spec/homepage_marketing_v1.json";
 import servicesData from "@/../spec/services.json";
@@ -214,127 +215,15 @@ export default function HomeClient(props: { homepage?: any }) {
                 </div>
               </div>
 
-              {/* Chat-style hero search */}
+              {/* Homepage AI Work Submittal (confirmation required) */}
               <div className="lg:col-span-7">
-                <div className="mt-5 rounded-[var(--hw-radius-lg)] p-5 hw-glass">
-                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Estimate request</div>
-                  <div className="mt-1 text-xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-2xl">
-                    What’s going on with your home?
-                  </div>
-
-                  <div className="mt-4">
-                    <div className="relative flex flex-col sm:flex-row sm:items-stretch rounded-[var(--hw-radius-lg)] hw-glass-field">
-                      <div className="flex-1">
-                        <textarea
-                          ref={issueRef}
-                          value={issue}
-                          onChange={(e) => setIssue(e.target.value)}
-                          onFocus={() => setFocused(true)}
-                          onBlur={() => setFocused(false)}
-                          placeholder=""
-                          aria-label="Describe your issue"
-                          rows={2}
-                          className="w-full resize-none rounded-[var(--hw-radius-lg)] bg-transparent px-4 py-2.5 text-[17px] leading-7 border-0 outline-none sm:py-2.5"
-                          style={{ minHeight: 80 }}
-                        />
-
-                        {!issue ? (
-                          <div
-                            aria-hidden
-                            className="pointer-events-none absolute left-4 top-[12px] flex items-baseline gap-1 text-[16px] leading-7 text-[var(--hw-muted)]"
-                          >
-                            <span className="opacity-70">Try:</span>
-                            <span className="font-medium text-[#4b5563]">{demoText}</span>
-                            <span className="hw-caret" />
-                          </div>
-                        ) : null}
-                      </div>
-
-                      {/* Mobile ZIP row (inside the same field) */}
-                      <div className="sm:hidden border-t border-[rgba(107,114,128,.18)] px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-1 items-baseline gap-2">
-                            <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)] whitespace-nowrap">
-                              <MapPin className="h-3.5 w-3.5 text-[rgba(229,57,53,.85)]" aria-hidden />
-                              ZIPCODE:
-                            </div>
-                            <Input
-                              value={zip}
-                              onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
-                              inputMode="numeric"
-                              pattern="[0-9]{5}"
-                              placeholder="60616"
-                              aria-label="ZIP code"
-                              className="h-auto w-[78px] border-0 bg-transparent p-0 pl-[2px] text-[16px] font-semibold leading-6 text-[var(--hw-ink)] underline decoration-[rgba(229,57,53,.45)] decoration-2 underline-offset-4 outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none selection:bg-[rgba(229,57,53,.18)]"
-                              style={{ textDecorationSkipInk: "none" }}
-                            />
-                          </div>
-
-                          {city && state ? (
-                            <div className="text-xs font-medium text-[var(--hw-muted)] whitespace-nowrap">{city}, {state}</div>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      {/* Desktop ZIP column (inside the same field with divider) */}
-                      <div className="hidden sm:flex items-center px-3">
-                        <div className="h-[52px] w-px bg-[rgba(107,114,128,.22)]" />
-                      </div>
-                      <div className="hidden sm:flex flex-col items-start pr-3 pt-2.5 pl-1">
-                        <Input
-                          value={zip}
-                          onChange={(e) => setZip(e.target.value.replace(/[^0-9]/g, "").slice(0, 5))}
-                          inputMode="numeric"
-                          pattern="[0-9]{5}"
-                          placeholder="60616"
-                          aria-label="ZIP code"
-                          className="h-auto w-[96px] border-0 bg-transparent p-0 pl-[18px] text-[16px] font-semibold leading-7 text-[var(--hw-ink)] outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none selection:bg-[rgba(229,57,53,.18)]"
-                        />
-                        <div className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                          <MapPin className="h-3.5 w-3.5 text-[rgba(229,57,53,.85)]" aria-hidden />
-                          Zipcode
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-
-
-                  <div className="mt-4">
-                    <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">OR PICK A CATEGORY</div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {services.map((s) => {
-                        const Icon = iconFor(s.icon);
-                        return (
-                          <Link key={s.slug} href={`/estimate?service=${encodeURIComponent(s.slug)}`}>
-                            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                              <Icon className="h-4 w-4 text-[var(--hw-red)]" />
-                              {s.name}
-                            </span>
-                          </Link>
-                        );
-                      })}
-                      <Link href="/services">
-                        <span className="inline-flex items-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-xs font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
-                          More
-                          <ArrowRight className="h-4 w-4 text-[var(--hw-muted)]" />
-                        </span>
-                      </Link>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <Link href={{ pathname: "/marketplace/intake", query: { issue: issue.trim() || undefined, zip: zip || undefined, service: suggestedService?.slug || undefined } }}>
-                      <Button className="w-full sm:w-auto">
-                        {homepage.hero.primaryCta}
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Link href="/marketplace/intake" className="w-full sm:w-auto">
-                      <Button variant="secondary" className="w-full sm:w-auto">Browse marketplace</Button>
-                    </Link>
-                  </div>
-                </div>
+                <AIWorkOrderIntakeCard
+                  eyebrow="Job work order"
+                  title="What do you need help with?"
+                  primaryCta="Schedule a visit"
+                  requireConfirmation
+                  showServicingPill
+                />
               </div>
             </div>
           </Container>

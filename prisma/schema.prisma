@@ -117,6 +117,22 @@ model MagicLinkToken {
   @@index([token])
 }
 
+model PendingConfirmation {
+  id                  String   @id @default(cuid())
+  email               String
+  name                String
+  phone               String
+  leadRole            String
+  redirectAfterConfirm String
+  payload             Json     @default("{}")
+  createdAt           DateTime @default(now())
+  confirmedAt         DateTime?
+
+  @@index([email])
+  @@index([createdAt])
+  @@index([confirmedAt])
+}
+
 model PartnerProfile {
   id          String      @id @default(cuid())
   proCode     String      @unique

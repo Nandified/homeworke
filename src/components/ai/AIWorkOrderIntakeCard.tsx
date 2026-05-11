@@ -26,6 +26,7 @@ import { Button, Input, Label, Modal, Picker, Pill } from "@/components/ui";
 
 import { ensureDemoPartnerContext, isDemoMode, withDemo } from "@/lib/demo";
 import { loadPartner } from "@/lib/partner-context";
+import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 type IntakeClassifyResult = {
   ok: boolean;
@@ -333,6 +334,12 @@ export function AIWorkOrderIntakeCard(props: {
   secondaryCta?: string;
   prefillIssue?: string;
   showServicingPill?: boolean;
+  /**
+   * When true, we do NOT finalize the work order immediately.
+   * Instead we capture lead info (role/name/email/phone), create a pending confirmation,
+   * then email a sign-in link. Work order finalizes after auth callback.
+   */
+  requireConfirmation?: boolean;
 }) {
   const router = useRouter();
 
@@ -368,6 +375,17 @@ export function AIWorkOrderIntakeCard(props: {
   const [submittingVisit, setSubmittingVisit] = useState(false);
   const [submittedWorkOrderId, setSubmittedWorkOrderId] = useState<string>("");
 
+  // Lead capture (homepage confirmation flow)
+  const [leadRole, setLeadRole] = useState<
+    "homeowner" | "real_estate_pro" | "mortgage_lender" | "home_inspector" | "home_insurance_agent"
+  >("homeowner");
+  const [leadName, setLeadName] = useState<string>("");
+  const [leadEmail, setLeadEmail] = useState<string>("");
+  const [leadPhone, setLeadPhone] = useState<string>("");
+  const [leadTouched, setLeadTouched] = useState(false);
+  const [sendingConfirm, setSendingConfirm] = useState(false);
+  const [confirmError, setConfirmError] = useState<string>("");
+
   const [manualOpen, setManualOpen] = useState(true);
   const [assistantThinking, setAssistantThinking] = useState(false);
 
@@ -394,7 +412,7 @@ export function AIWorkOrderIntakeCard(props: {
   const readyToSchedule = !!result?.ok && isSupported && qIndex >= questions.length;
 
   const [scheduleStage, setScheduleStage] = useState<
-    "idle" | "ask" | "property" | "datetime" | "contact" | "done"
+    "idle" | "ask" | "property" | "datetime" | "contact" | "lead" | "done"
   >("idle");
 
   // Calendar UI (preferred date)
@@ -895,13 +913,45 @@ export function AIWorkOrderIntakeCard(props: {
   }
   }
 
+  function beginConfirmation() {
+    if (!props.requireConfirmation) return;
+    if (!result?.ok) return;
+    if (result.supported === false) return;
+    if (!propertyId) return;
+    if (!visitDate) return;
+    if (questions.length && answers.some((a) => !String(a || "").trim())) return;
+    if (!contactMethod) {
+      setContactTouched(true);
+      return;
+    }
+
+    setConfirmError("");
+    setScheduleStage("lead");
+    setTurns((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        text: "Last step — where should we send this request?",
+      },
+    ]);
+  }
+
   async function scheduleVisit() {
+    if (props.requireConfirmation) {
+      beginConfirmation();
+      return;
+    }
+
     if (!result?.ok) return;
     if (result.supported === false) return;
     if (submittingVisit) return;
     if (!propertyId) return;
     if (!visitDate) return;
     if (questions.length && answers.some((a) => !String(a || "").trim())) return;
+    if (!contactMethod) {
+      setContactTouched(true);
+      return;
+    }
 
     const prop = properties?.find((p) => String(p.id) === String(propertyId)) || null;
 
@@ -1001,6 +1051,110 @@ export function AIWorkOrderIntakeCard(props: {
       ]);
     } finally {
       setSubmittingVisit(false);
+    }
+  }
+
+  async function sendHomepageConfirmation() {
+    if (!props.requireConfirmation) return;
+    if (!result?.ok || result.supported === false) return;
+    if (sendingConfirm) return;
+
+    setConfirmError("");
+    setLeadTouched(true);
+
+    const email = (leadEmail || "").trim().toLowerCase();
+    if (!leadName.trim()) return;
+    if (!email || !email.includes("@")) {
+      setConfirmError("Please enter a valid email.");
+      return;
+    }
+    if (!leadPhone.trim()) {
+      setConfirmError("Please enter a phone number.");
+      return;
+    }
+
+    const prop = properties?.find((p) => String(p.id) === String(propertyId)) || null;
+
+    const qnaLines = questions
+      .map((q, i) => ({ q, a: answers[i] || "" }))
+      .filter((x) => (x.q || "").trim() || (x.a || "").trim())
+      .map((x) => `- ${String(x.q).trim()} ${String(x.a).trim()}`.trim())
+      .join("\n");
+
+    const issueDescription =
+      (result.aiSummary || rootIssue || "").trim() +
+      (qnaLines ? `\n\nDetails from chat:\n${qnaLines}` : "") +
+      `\n\nContact:\n- Name: ${leadName.trim()}\n- Email: ${email}\n- Phone: ${leadPhone.trim()}\n- Role: ${leadRole}`;
+
+    let originPartnerId: string | null = null;
+    const shareWithPartner = true;
+    try {
+      if (isDemoMode()) ensureDemoPartnerContext();
+      const p = loadPartner();
+      if (p?.partnerId) originPartnerId = p.partnerId;
+    } catch {}
+
+    setSendingConfirm(true);
+    try {
+      // 1) Create pending confirmation record (server)
+      const pendingRes = await fetch("/api/pending-confirmations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          name: leadName.trim(),
+          phone: leadPhone.trim(),
+          leadRole,
+          redirectAfterConfirm: leadRole === "homeowner" ? "/ho/dashboard" : "/pro/dashboard",
+          intake: {
+            originPartnerId,
+            shareWithPartner,
+            service_category: result.trade || "General",
+            service_subcategory: result.subcategory || "",
+            issue_description: issueDescription,
+            urgency_level: result.urgency || "this_week",
+            property_address: prop?.address1 || "",
+            property_type: "",
+            preferred_date: visitDate,
+            preferred_time_window: visitWindow,
+            contact_method: contactMethod,
+          },
+        }),
+      });
+      const pendingJson = await pendingRes.json().catch(() => null);
+      if (!pendingRes.ok || !pendingJson?.ok) {
+        setConfirmError("Could not start confirmation. Please try again.");
+        return;
+      }
+
+      // 2) Send Supabase OTP link
+      const supabase = getSupabaseBrowserClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+            leadRole === "homeowner" ? "/ho/dashboard" : "/pro/dashboard"
+          )}`,
+          shouldCreateUser: true,
+        },
+      });
+      if (error) throw error;
+
+      setTurns((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: "Almost done — check your email for a link to confirm your request.",
+        },
+      ]);
+      setScheduleStage("done");
+      setManualOpen(false);
+      setCompactComposer(true);
+    } catch (e: unknown) {
+      const msg = e && typeof e === "object" && "message" in e ? String((e as any).message) : "";
+      setConfirmError(msg || "Could not send confirmation email.");
+    } finally {
+      setSendingConfirm(false);
     }
   }
 
@@ -1469,6 +1623,71 @@ export function AIWorkOrderIntakeCard(props: {
                         >
                           Start over
                         </button>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {scheduleStage === "lead" ? (
+                    <div className="mt-4">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">YOUR DETAILS</div>
+
+                      <div className="mt-3 grid gap-3">
+                        <div>
+                          <div className="text-sm font-semibold text-[var(--hw-ink)]">I’m a…</div>
+                          <select
+                            className="mt-1 w-full rounded-[14px] border border-[var(--hw-line)] bg-white px-3 py-2 text-sm text-[var(--hw-ink)]"
+                            value={leadRole}
+                            onChange={(e) => setLeadRole(e.target.value as any)}
+                          >
+                            <option value="homeowner">Homeowner</option>
+                            <option value="real_estate_pro">Real Estate Pro / Broker</option>
+                            <option value="mortgage_lender">Mortgage Lender</option>
+                            <option value="home_inspector">Home Inspector</option>
+                            <option value="home_insurance_agent">Home Insurance Agent</option>
+                          </select>
+                        </div>
+
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <div>
+                            <div className="text-sm font-semibold text-[var(--hw-ink)]">Name</div>
+                            <Input value={leadName} onChange={(e) => setLeadName(e.target.value)} placeholder="Your name" />
+                            {leadTouched && !leadName.trim() ? <div className="mt-1 text-xs text-[var(--hw-danger)]">Required</div> : null}
+                          </div>
+                          <div>
+                            <div className="text-sm font-semibold text-[var(--hw-ink)]">Phone</div>
+                            <Input value={leadPhone} onChange={(e) => setLeadPhone(e.target.value)} placeholder="(555) 555-5555" />
+                            {leadTouched && !leadPhone.trim() ? <div className="mt-1 text-xs text-[var(--hw-danger)]">Required</div> : null}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-sm font-semibold text-[var(--hw-ink)]">Email</div>
+                          <Input value={leadEmail} onChange={(e) => setLeadEmail(e.target.value)} placeholder="you@email.com" />
+                          {leadTouched && (!leadEmail.trim() || !leadEmail.includes("@")) ? (
+                            <div className="mt-1 text-xs text-[var(--hw-danger)]">Enter a valid email</div>
+                          ) : null}
+                        </div>
+
+                        {confirmError ? (
+                          <div className="rounded-2xl border border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.08)] px-4 py-3 text-sm text-[var(--hw-ink)]">
+                            {confirmError}
+                          </div>
+                        ) : null}
+
+                        <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <Button className="w-full sm:w-auto" onClick={sendHomepageConfirmation} disabled={sendingConfirm}>
+                            {sendingConfirm ? "Sending…" : "Send confirmation"}
+                          </Button>
+                          <button
+                            type="button"
+                            className="text-sm font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                            onClick={() => setScheduleStage("contact")}
+                          >
+                            Back
+                          </button>
+                        </div>
+
+                        <div className="text-xs text-[var(--hw-muted)]">We’ll email you a link to confirm before anything becomes official.</div>
                       </div>
                     </div>
                   ) : null}
