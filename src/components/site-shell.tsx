@@ -44,7 +44,7 @@ export function SiteFooter() {
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="text-sm font-semibold text-[var(--hw-ink)]">Homeworke</div>
-            <div className="mt-2 text-sm text-[var(--hw-muted)]">Chicago-first home services</div>
+            <div className="mt-2 text-sm text-[var(--hw-muted)]">Home services, handled end-to-end</div>
             <div className="mt-4">
               <Link href="/estimate">
                 <Button>Get an Instant Estimate</Button>

@@ -293,6 +293,102 @@ export default function HomeClient(props: { homepage?: any }) {
           </div>
         </Container>
 
+        {/* Why Homeworke */}
+        <Container className="py-12">
+          <div className="relative overflow-hidden rounded-[28px] border border-[rgba(17,24,39,.08)] bg-white/75 p-8 shadow-[0_28px_100px_rgba(17,24,39,.12)] backdrop-blur supports-[backdrop-filter]:bg-white/65 md:p-10">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -left-32 -top-40 h-[520px] w-[520px] rounded-full bg-[var(--hw-red)] opacity-[0.14] blur-[140px]"
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-40 -bottom-48 h-[560px] w-[560px] rounded-full bg-black opacity-[0.10] blur-[160px]"
+            />
+
+            <div className="relative grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start">
+              <div className="lg:col-span-5">
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                  Why Homeworke
+                </div>
+                <div className="mt-2 text-3xl font-extrabold tracking-tight text-[var(--hw-ink)]">
+                  Not a lead form. A coordinated outcome.
+                </div>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--hw-muted)]">
+                  Get a clear plan, fast next steps, and a single thread from request → estimate → scheduling. We prioritize vetted pros and scope clarity so projects don’t drift.
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link href="/estimate">
+                    <Button>
+                      Get an Instant Estimate
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/how-it-works">
+                    <Button variant="secondary">See how it works</Button>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="lg:col-span-7">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  {[
+                    {
+                      icon: "shield",
+                      title: "Quality over quantity",
+                      text: "We focus on vetted pros — not blasting your info to dozens of contractors.",
+                    },
+                    {
+                      icon: "list",
+                      title: "Scope-first estimates",
+                      text: "Clear inclusions, assumptions, and next steps so you can approve confidently.",
+                    },
+                    {
+                      icon: "message-circle",
+                      title: "One place to manage it",
+                      text: "Messages, scheduling, and updates stay organized from start to finish.",
+                    },
+                  ].map((b) => {
+                    const Icon = iconFor(b.icon);
+                    return (
+                      <Card
+                        key={b.title}
+                        className="p-6 border border-[rgba(17,24,39,.08)] bg-white/80 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur supports-[backdrop-filter]:bg-white/70"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
+                            <Icon className="h-5 w-5 text-[var(--hw-red)]" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-semibold text-[var(--hw-ink)]">{b.title}</div>
+                            <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{b.text}</div>
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {[
+                    { k: "1", v: "Primary action per page", d: "Cleaner conversions" },
+                    { k: "2", v: "Evidence + assumptions", d: "More trust" },
+                    { k: "3", v: "Progressive disclosure", d: "Less friction" },
+                  ].map((s) => (
+                    <div
+                      key={s.k}
+                      className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/70 px-4 py-3 shadow-[0_18px_60px_rgba(17,24,39,.08)]"
+                    >
+                      <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{s.d}</div>
+                      <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{s.v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </Container>
+
         {/* How it works */}
         <Container className="py-10">
           <div className="flex items-end justify-between gap-6">
