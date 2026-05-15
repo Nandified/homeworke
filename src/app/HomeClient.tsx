@@ -180,11 +180,22 @@ export default function HomeClient(props: { homepage?: any }) {
         <section className="relative overflow-hidden">
           <div
             aria-hidden
-            className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-[var(--hw-red)] opacity-[0.05] blur-[120px]"
+            className="pointer-events-none absolute -right-40 -top-40 h-[620px] w-[620px] rounded-full bg-[var(--hw-red)] opacity-[0.10] blur-[130px]"
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute -left-48 top-32 h-[560px] w-[560px] rounded-full bg-black opacity-[0.03] blur-[140px]"
+            className="pointer-events-none absolute -left-56 top-24 h-[640px] w-[640px] rounded-full bg-black opacity-[0.05] blur-[160px]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[0.18]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 1px 1px, rgba(17,24,39,.10) 1px, transparent 0)",
+              backgroundSize: "26px 26px",
+              maskImage: "radial-gradient(500px 240px at 50% 15%, black, transparent 70%)",
+              WebkitMaskImage: "radial-gradient(500px 240px at 50% 15%, black, transparent 70%)",
+            }}
           />
 
           <Container className="relative py-12 md:py-16">
@@ -197,7 +208,10 @@ export default function HomeClient(props: { homepage?: any }) {
 
             <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
               <div className="lg:col-span-5">
-                <h1 className="text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-6xl">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--hw-muted)]">
+                  Chicago-first • Concierge project coordination
+                </div>
+                <h1 className="mt-3 text-balance text-4xl font-extrabold tracking-[-0.03em] text-[var(--hw-ink)] md:text-6xl">
                   {homepage.hero.headline}
                 </h1>
                 <p className="mt-4 max-w-xl text-pretty text-base leading-7 text-[var(--hw-muted)] md:text-lg">
@@ -217,15 +231,13 @@ export default function HomeClient(props: { homepage?: any }) {
 
               {/* Homepage AI Work Submittal (confirmation required) */}
               <div className="lg:col-span-7">
-                <div className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/80 p-1 shadow-[0_30px_80px_rgba(17,24,39,.10)] backdrop-blur supports-[backdrop-filter]:bg-white/70">
-                  <AIWorkOrderIntakeCard
-                    eyebrow="Job work order"
-                    title="What do you need help with?"
-                    primaryCta="Schedule a visit"
-                    requireConfirmation
-                    showServicingPill
-                  />
-                </div>
+                <AIWorkOrderIntakeCard
+                  eyebrow="Job work order"
+                  title="What do you need help with?"
+                  primaryCta="Schedule a visit"
+                  requireConfirmation
+                  showServicingPill
+                />
               </div>
             </div>
 
@@ -243,7 +255,7 @@ export default function HomeClient(props: { homepage?: any }) {
                   return (
                     <Card
                       key={b.title}
-                      className="p-5 shadow-[0_18px_40px_rgba(17,24,39,.06)] backdrop-blur supports-[backdrop-filter]:bg-white/80"
+                      className="p-5 border border-[rgba(17,24,39,.08)] bg-white/80 shadow-[0_22px_60px_rgba(17,24,39,.08)] backdrop-blur supports-[backdrop-filter]:bg-white/70"
                     >
                       <div className="flex items-start gap-3">
                         <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
