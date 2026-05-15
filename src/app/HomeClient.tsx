@@ -294,8 +294,8 @@ export default function HomeClient(props: { homepage?: any }) {
         </Container>
 
         {/* Why Homeworke */}
-        <Container className="py-12">
-          <div className="relative overflow-hidden rounded-[28px] border border-[rgba(17,24,39,.08)] bg-white/75 p-8 shadow-[0_28px_100px_rgba(17,24,39,.12)] backdrop-blur supports-[backdrop-filter]:bg-white/65 md:p-10">
+        <Container className="py-10 md:py-12">
+          <div className="relative overflow-hidden rounded-[28px] border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_28px_100px_rgba(17,24,39,.12)] backdrop-blur supports-[backdrop-filter]:bg-white/65 md:p-10">
             <div
               aria-hidden
               className="pointer-events-none absolute -left-32 -top-40 h-[520px] w-[520px] rounded-full bg-[var(--hw-red)] opacity-[0.14] blur-[140px]"
@@ -305,7 +305,7 @@ export default function HomeClient(props: { homepage?: any }) {
               className="pointer-events-none absolute -right-40 -bottom-48 h-[560px] w-[560px] rounded-full bg-black opacity-[0.10] blur-[160px]"
             />
 
-            <div className="relative grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start">
+            <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
               <div className="lg:col-span-5">
                 <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
                   Why Homeworke
@@ -317,15 +317,15 @@ export default function HomeClient(props: { homepage?: any }) {
                   Get a clear plan, fast next steps, and a single thread from request → estimate → scheduling. We prioritize vetted pros and scope clarity so projects don’t drift.
                 </p>
 
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href="/estimate">
-                    <Button>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                  <Link href="/estimate" className="w-full sm:w-auto">
+                    <Button className="w-full sm:w-auto">
                       Get an Instant Estimate
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
-                  <Link href="/how-it-works">
-                    <Button variant="secondary">See how it works</Button>
+                  <Link href="/how-it-works" className="w-full sm:w-auto">
+                    <Button className="w-full sm:w-auto" variant="secondary">See how it works</Button>
                   </Link>
                 </div>
               </div>
