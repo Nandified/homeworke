@@ -416,7 +416,7 @@ export default function HomeClient(props: { homepage?: any }) {
         <Container className="relative py-10">
           <div
             aria-hidden
-            className="pointer-events-none absolute -inset-x-6 -top-10 h-[260px] rounded-[28px] bg-[radial-gradient(700px_220px_at_30%_0%,rgba(229,57,53,0.10),transparent_60%)]"
+            className="pointer-events-none absolute -inset-6 rounded-[28px] bg-[radial-gradient(600px_240px_at_30%_0%,rgba(229,57,53,0.14),transparent_60%),radial-gradient(520px_240px_at_110%_30%,rgba(17,24,39,0.10),transparent_55%)]"
           />
           <div className="flex items-end justify-between gap-6">
             <div>
