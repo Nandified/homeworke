@@ -310,8 +310,8 @@ export default function HomeClient(props: { homepage?: any }) {
                 <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
                   Why Homeworke
                 </div>
-                <div className="mt-2 text-3xl font-extrabold tracking-tight text-[var(--hw-ink)]">
-                  Not a lead form. A coordinated outcome.
+                <div className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[var(--hw-ink)] md:text-4xl">
+                  Not a lead form. <span className="text-[var(--hw-red)]">A coordinated outcome.</span>
                 </div>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--hw-muted)]">
                   Get a clear plan, fast next steps, and a single thread from request → estimate → scheduling. We prioritize vetted pros and scope clarity so projects don’t drift.
@@ -369,20 +369,20 @@ export default function HomeClient(props: { homepage?: any }) {
                   })}
                 </div>
 
-                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {[
-                    { k: "1", v: "Primary action per page", d: "Cleaner conversions" },
-                    { k: "2", v: "Evidence + assumptions", d: "More trust" },
-                    { k: "3", v: "Progressive disclosure", d: "Less friction" },
-                  ].map((s) => (
-                    <div
-                      key={s.k}
-                      className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/70 px-4 py-3 shadow-[0_18px_60px_rgba(17,24,39,.08)]"
-                    >
-                      <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{s.d}</div>
-                      <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{s.v}</div>
-                    </div>
-                  ))}
+                <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {["Clear scope before you approve work.", "One thread from request to completion.", "Vetted pros — no lead spam.", "Fast next steps, fewer missed details."].map(
+                    (t) => (
+                      <div
+                        key={t}
+                        className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/70 px-4 py-3 shadow-[0_18px_60px_rgba(17,24,39,.08)]"
+                      >
+                        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--hw-ink)]">
+                          <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--hw-red)]" />
+                          {t}
+                        </div>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             </div>
