@@ -208,21 +208,44 @@ export default function HomeClient(props: { homepage?: any }) {
 
             <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
               <div className="lg:col-span-5">
-                <h1 className="text-balance text-4xl font-extrabold tracking-[-0.03em] text-[var(--hw-ink)] md:text-6xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(17,24,39,.08)] bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)] shadow-[0_12px_40px_rgba(17,24,39,.06)]">
+                  <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--hw-red)]" />
+                  Concierge home services
+                </div>
+
+                <h1 className="mt-4 text-balance text-4xl font-extrabold tracking-[-0.04em] text-[var(--hw-ink)] md:text-6xl">
                   {homepage.hero.headline}
                 </h1>
+
                 <p className="mt-4 max-w-xl text-pretty text-base leading-7 text-[var(--hw-muted)] md:text-lg">
                   {homepage.hero.subheadline}
                 </p>
-                <div className="mt-4 text-sm text-[var(--hw-muted)]">{homepage.hero.disclaimer}</div>
-                <div className="mt-6 text-base font-semibold text-[var(--hw-ink)]">
-                  {city && state ? (
-                    <span>
-                      Pros for every project in <span className="text-[var(--hw-red)]">{city}, {state}</span>.
-                    </span>
-                  ) : (
-                    <span>Pros for every project in your area.</span>
-                  )}
+
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <div className="rounded-full border border-[rgba(17,24,39,.08)] bg-white/70 px-3 py-1 text-xs text-[var(--hw-muted)]">
+                    {homepage.hero.disclaimer}
+                  </div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">
+                    {city && state ? (
+                      <span>
+                        Pros for every project in <span className="text-[var(--hw-red)]">{city}, {state}</span>.
+                      </span>
+                    ) : (
+                      <span>Pros for every project in your area.</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link href="/estimate">
+                    <Button variant="secondary">
+                      Get an Instant Estimate
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/services">
+                    <Button variant="ghost">Browse services</Button>
+                  </Link>
                 </div>
               </div>
 
@@ -390,7 +413,11 @@ export default function HomeClient(props: { homepage?: any }) {
         </Container>
 
         {/* How it works */}
-        <Container className="py-10">
+        <Container className="relative py-10">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-x-6 -top-10 h-[260px] rounded-[28px] bg-[radial-gradient(700px_220px_at_30%_0%,rgba(229,57,53,0.10),transparent_60%)]"
+          />
           <div className="flex items-end justify-between gap-6">
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{homepage.howItWorks.title}</div>
@@ -404,15 +431,22 @@ export default function HomeClient(props: { homepage?: any }) {
             </Link>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="relative mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
             {homepage.howItWorks.steps.map((s: any) => {
               const Icon = iconFor(s.icon);
               return (
-                <Card key={s.title} className="p-6">
-                  <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2 w-fit">
+                <Card
+                  key={s.title}
+                  className="relative overflow-hidden border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-[0_28px_90px_rgba(17,24,39,.14)]"
+                >
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100"
+                  />
+                  <div className="rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2 w-fit">
                     <Icon className="h-5 w-5 text-[var(--hw-red)]" />
                   </div>
-                  <div className="mt-4 text-sm font-semibold text-[var(--hw-ink)]">{s.title}</div>
+                  <div className="mt-4 text-base font-semibold text-[var(--hw-ink)]">{s.title}</div>
                   <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{s.text}</div>
                 </Card>
               );
