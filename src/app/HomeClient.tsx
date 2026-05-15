@@ -331,7 +331,7 @@ export default function HomeClient(props: { homepage?: any }) {
               </div>
 
               <div className="lg:col-span-7">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3">
                   {[
                     {
                       icon: "shield",
@@ -353,14 +353,14 @@ export default function HomeClient(props: { homepage?: any }) {
                     return (
                       <Card
                         key={b.title}
-                        className="p-6 border border-[rgba(17,24,39,.08)] bg-white/80 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur supports-[backdrop-filter]:bg-white/70"
+                        className="border border-[rgba(17,24,39,.08)] bg-white/80 p-5 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur supports-[backdrop-filter]:bg-white/70"
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
+                        <div className="flex items-start gap-4">
+                          <div className="mt-0.5 rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
                             <Icon className="h-5 w-5 text-[var(--hw-red)]" />
                           </div>
-                          <div>
-                            <div className="text-sm font-semibold text-[var(--hw-ink)]">{b.title}</div>
+                          <div className="min-w-0">
+                            <div className="text-base font-semibold leading-6 text-[var(--hw-ink)]">{b.title}</div>
                             <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{b.text}</div>
                           </div>
                         </div>
@@ -369,7 +369,7 @@ export default function HomeClient(props: { homepage?: any }) {
                   })}
                 </div>
 
-                <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
                   {["Clear scope before you approve work.", "One thread from request to completion.", "Vetted pros — no lead spam.", "Fast next steps, fewer missed details."].map(
                     (t) => (
                       <div
