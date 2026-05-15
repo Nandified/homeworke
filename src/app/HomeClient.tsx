@@ -9,6 +9,7 @@ import { Button, Card, Container, Input, Pill } from "@/components/ui";
 import { iconFor } from "@/components/icons";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
+import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 import homepageDefault from "@/../spec/homepage_marketing_v1.json";
 import servicesData from "@/../spec/services.json";
@@ -40,6 +41,16 @@ export default function HomeClient(props: { homepage?: any }) {
   const [city, setCity] = useState<string>("");
   const [state, setState] = useState<string>("");
   const [locLoading, setLocLoading] = useState(false);
+
+  // Manual booking (non-AI) lead capture
+  const [manualService, setManualService] = useState<string>("General");
+  const [manualIssue, setManualIssue] = useState<string>("");
+  const [manualName, setManualName] = useState<string>("");
+  const [manualEmail, setManualEmail] = useState<string>("");
+  const [manualPhone, setManualPhone] = useState<string>("");
+  const [manualSending, setManualSending] = useState(false);
+  const [manualError, setManualError] = useState<string>("");
+  const [manualSent, setManualSent] = useState(false);
 
   // Typewriter-style rotating hint
   const hints = useMemo(
@@ -171,6 +182,70 @@ export default function HomeClient(props: { homepage?: any }) {
     return servicesData.services.find((s) => s.slug === suggestedSlug) ?? null;
   }, [suggestedSlug]);
 
+  async function submitManualLead() {
+    if (manualSending) return;
+    setManualError("");
+
+    const name = manualName.trim();
+    const email = manualEmail.trim().toLowerCase();
+    const phone = manualPhone.trim();
+
+    if (!name) return setManualError("Please enter your name.");
+    if (!email || !email.includes("@")) return setManualError("Please enter a valid email.");
+    if (!phone) return setManualError("Please enter a phone number.");
+
+    setManualSending(true);
+    try {
+      // 1) Create pending confirmation record (server)
+      const pendingRes = await fetch("/api/pending-confirmations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          name,
+          phone,
+          leadRole: "homeowner",
+          redirectAfterConfirm: "/marketplace/intake",
+          intake: {
+            originPartnerId: null,
+            shareWithPartner: true,
+            service_category: manualService || "General",
+            service_subcategory: "",
+            issue_description: (manualIssue || "").trim(),
+            urgency_level: "this_week",
+            property_address: "",
+            property_type: "",
+            preferred_date: "",
+            preferred_time_window: "",
+            contact_method: "email",
+          },
+        }),
+      });
+      const pendingJson = await pendingRes.json().catch(() => null);
+      if (!pendingRes.ok || !pendingJson?.ok) {
+        setManualError("Could not start confirmation. Please try again.");
+        return;
+      }
+
+      // 2) Send Supabase OTP link
+      const supabase = getSupabaseBrowserClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/marketplace/intake")}`,
+          shouldCreateUser: true,
+        },
+      });
+      if (error) throw error;
+
+      setManualSent(true);
+    } catch (e: any) {
+      setManualError(e?.message || "Could not send confirmation email.");
+    } finally {
+      setManualSending(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[radial-gradient(1200px_600px_at_20%_-10%,rgba(229,57,53,0.10),transparent_60%),radial-gradient(900px_500px_at_110%_0%,rgba(17,24,39,0.06),transparent_55%),linear-gradient(to_bottom,#ffffff,#fbfbfb)]">
       <SiteHeader />
@@ -251,53 +326,99 @@ export default function HomeClient(props: { homepage?: any }) {
               </div>
             </div>
 
-            {/* Trust (keep within first scroll on mobile) */}
+            {/* Manual booking (non-AI) */}
             <div className="mt-10">
               <div className="flex items-center justify-between">
                 <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                  {homepage.trust.title}
+                  Manual booking
                 </div>
+                <Link href="/services" className="hidden md:block">
+                  <Button variant="ghost">
+                    Browse more
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
 
-              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-                {homepage.trust.bullets.map((b: any) => {
-                  const Icon = iconFor(b.icon);
-                  return (
-                    <Card
-                      key={b.title}
-                      className="p-5 border border-[rgba(17,24,39,.08)] bg-white/80 shadow-[0_22px_60px_rgba(17,24,39,.08)] backdrop-blur supports-[backdrop-filter]:bg-white/70"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
-                          <Icon className="h-5 w-5 text-[var(--hw-red)]" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-[var(--hw-ink)]">{b.title}</div>
-                          <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{b.text}</div>
+              <Card className="mt-4 border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+                  <div className="lg:col-span-7">
+                    <div className="text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">
+                      Prefer not to use Homeworke AI?
+                    </div>
+                    <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
+                      Pick a service, add a quick note, and we’ll email you a link to confirm your request.
+                    </div>
+
+                    <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {servicesData.services.slice(0, 8).map((s) => (
+                        <button
+                          key={s.slug}
+                          type="button"
+                          onClick={() => setManualService(s.name)}
+                          className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                            manualService === s.name
+                              ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.08)] text-[var(--hw-ink)]"
+                              : "border-[rgba(17,24,39,.08)] bg-white/70 text-[var(--hw-muted)] hover:bg-white"
+                          }`}
+                        >
+                          {s.name}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="text-xs font-semibold text-[var(--hw-muted)]">Details</label>
+                      <textarea
+                        value={manualIssue}
+                        onChange={(e) => setManualIssue(e.target.value)}
+                        placeholder="What do you need help with? (Optional, but helpful)"
+                        className="mt-2 w-full resize-none rounded-2xl border border-[rgba(17,24,39,.10)] bg-white/80 px-4 py-3 text-sm text-[var(--hw-ink)] shadow-[0_18px_60px_rgba(17,24,39,.06)] outline-none placeholder:text-[rgba(107,114,128,.9)] focus:border-[rgba(229,57,53,.30)]"
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-5">
+                    {manualSent ? (
+                      <div className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/70 p-5">
+                        <div className="text-sm font-semibold text-[var(--hw-ink)]">Check your email</div>
+                        <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
+                          We sent a confirmation link to <span className="font-semibold text-[var(--hw-ink)]">{manualEmail.trim()}</span>.
+                          Open it to confirm your request.
                         </div>
                       </div>
-                    </Card>
-                  );
-                })}
-              </div>
+                    ) : (
+                      <div className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/70 p-5">
+                        <div className="grid grid-cols-1 gap-3">
+                          <Input placeholder="Name" value={manualName} onChange={(e) => setManualName(e.target.value)} />
+                          <Input placeholder="Email" value={manualEmail} onChange={(e) => setManualEmail(e.target.value)} />
+                          <Input placeholder="Phone" value={manualPhone} onChange={(e) => setManualPhone(e.target.value)} />
 
-              {/* Proof strip */}
-              <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-4">
-                {[
-                  { t: "No lead auctions", d: "No contractor spam." },
-                  { t: "Vetted pros", d: "License/insurance prioritized." },
-                  { t: "Scope clarity", d: "Inclusions + assumptions." },
-                  { t: "Project coordination", d: "One thread, fewer misses." },
-                ].map((p) => (
-                  <div
-                    key={p.t}
-                    className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/65 px-4 py-3 shadow-[0_18px_60px_rgba(17,24,39,.08)]"
-                  >
-                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{p.t}</div>
-                    <div className="mt-0.5 text-xs leading-5 text-[var(--hw-muted)]">{p.d}</div>
+                          {manualError ? (
+                            <div className="text-sm font-semibold text-[var(--hw-red)]">{manualError}</div>
+                          ) : null}
+
+                          <Button onClick={submitManualLead} disabled={manualSending}>
+                            {manualSending ? "Sending…" : "Email me a confirmation link"}
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+
+                          <div className="text-xs leading-5 text-[var(--hw-muted)]">
+                            Request won’t be submitted until you confirm via email.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mt-3 md:hidden">
+                      <Link href="/services">
+                        <Button className="w-full" variant="secondary">Browse more services</Button>
+                      </Link>
+                    </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              </Card>
             </div>
           </Container>
         </section>
