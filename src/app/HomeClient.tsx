@@ -236,6 +236,27 @@ export default function HomeClient(props: { homepage?: any }) {
                   </div>
                 </div>
 
+                {/* What happens next (micro stepper) */}
+                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {[
+                    { n: "01", t: "Request", d: "Tell us what you need (photos help)." },
+                    { n: "02", t: "Confirm", d: "We clarify scope + next steps." },
+                    { n: "03", t: "Schedule", d: "Pick a time that works for you." },
+                    { n: "04", t: "Complete", d: "Get it done with updates in one thread." },
+                  ].map((s) => (
+                    <div
+                      key={s.n}
+                      className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/65 px-4 py-3 shadow-[0_18px_60px_rgba(17,24,39,.08)]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{s.n}</div>
+                        <div className="text-sm font-semibold text-[var(--hw-ink)]">{s.t}</div>
+                      </div>
+                      <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{s.d}</div>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link href="/estimate">
                     <Button variant="secondary">
@@ -278,7 +299,7 @@ export default function HomeClient(props: { homepage?: any }) {
                       className="p-5 border border-[rgba(17,24,39,.08)] bg-white/80 shadow-[0_22px_60px_rgba(17,24,39,.08)] backdrop-blur supports-[backdrop-filter]:bg-white/70"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
+                        <div className="rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
                           <Icon className="h-5 w-5 text-[var(--hw-red)]" />
                         </div>
                         <div>
@@ -289,6 +310,24 @@ export default function HomeClient(props: { homepage?: any }) {
                     </Card>
                   );
                 })}
+              </div>
+
+              {/* Proof strip */}
+              <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-4">
+                {[
+                  { t: "No lead auctions", d: "No contractor spam." },
+                  { t: "Vetted pros", d: "License/insurance prioritized." },
+                  { t: "Scope clarity", d: "Inclusions + assumptions." },
+                  { t: "Project coordination", d: "One thread, fewer misses." },
+                ].map((p) => (
+                  <div
+                    key={p.t}
+                    className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/65 px-4 py-3 shadow-[0_18px_60px_rgba(17,24,39,.08)]"
+                  >
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{p.t}</div>
+                    <div className="mt-0.5 text-xs leading-5 text-[var(--hw-muted)]">{p.d}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </Container>
@@ -520,28 +559,57 @@ export default function HomeClient(props: { homepage?: any }) {
         </Container>
 
         {/* FAQ */}
-        <Container className="py-12">
-          <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{homepage.faq.title}</div>
-          <div className="mt-2 text-2xl font-bold text-[var(--hw-ink)]">Quick answers</div>
-          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {homepage.faq.items.map((item: any) => (
-              <Card key={item.q} className="p-6">
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">{item.q}</div>
-                <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{item.a}</div>
-              </Card>
-            ))}
-          </div>
+        <Container className="relative py-12">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-6 rounded-[28px] bg-[radial-gradient(600px_240px_at_30%_0%,rgba(229,57,53,0.12),transparent_60%),radial-gradient(520px_240px_at_110%_30%,rgba(17,24,39,0.10),transparent_55%)]"
+          />
 
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Link href="/estimate">
-              <Button>
-                Get an Instant Estimate
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/contact">
-              <Button variant="secondary">Talk to us</Button>
-            </Link>
+          <div className="relative">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{homepage.faq.title}</div>
+            <div className="mt-2 text-2xl font-bold text-[var(--hw-ink)]">Quick answers</div>
+
+            <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+              {homepage.faq.items.map((item: any) => (
+                <Card
+                  key={item.q}
+                  className="border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur"
+                >
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{item.q}</div>
+                  <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{item.a}</div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Final CTA panel */}
+            <div className="mt-10 overflow-hidden rounded-[28px] border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_28px_100px_rgba(17,24,39,.12)] backdrop-blur md:p-8">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute"
+              />
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-12 md:items-center">
+                <div className="md:col-span-7">
+                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Ready when you are</div>
+                  <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Get a clear plan and next steps today.</div>
+                  <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
+                    Start with an instant estimate for inspections/appraisals, or request a visit for confirmed scope.
+                  </div>
+                </div>
+                <div className="md:col-span-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                    <Link href="/estimate" className="w-full sm:w-auto">
+                      <Button className="w-full sm:w-auto">
+                        Get an Instant Estimate
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href="/marketplace/intake" className="w-full sm:w-auto">
+                      <Button className="w-full sm:w-auto" variant="secondary">Request a visit</Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </Container>
       </main>
