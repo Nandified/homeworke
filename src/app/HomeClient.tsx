@@ -208,10 +208,7 @@ export default function HomeClient(props: { homepage?: any }) {
 
             <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
               <div className="lg:col-span-5">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--hw-muted)]">
-                  Chicago-first • Concierge project coordination
-                </div>
-                <h1 className="mt-3 text-balance text-4xl font-extrabold tracking-[-0.03em] text-[var(--hw-ink)] md:text-6xl">
+                <h1 className="text-balance text-4xl font-extrabold tracking-[-0.03em] text-[var(--hw-ink)] md:text-6xl">
                   {homepage.hero.headline}
                 </h1>
                 <p className="mt-4 max-w-xl text-pretty text-base leading-7 text-[var(--hw-muted)] md:text-lg">
@@ -328,43 +325,67 @@ export default function HomeClient(props: { homepage?: any }) {
         </Container>
 
         {/* Services grid */}
-        <Container className="py-4">
-          <div className="flex items-end justify-between gap-6">
+        <Container className="py-8">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between md:gap-6">
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{homepage.services.title}</div>
-              <div className="mt-2 text-2xl font-bold text-[var(--hw-ink)]">Pick a category to get started</div>
+              <div className="mt-2 text-2xl font-bold tracking-tight text-[var(--hw-ink)] md:text-3xl">Pick a category to get started</div>
+              <div className="mt-2 max-w-2xl text-sm leading-6 text-[var(--hw-muted)]">
+                Tell us what you need — we’ll route you to vetted pros and keep the project organized end-to-end.
+              </div>
             </div>
-            <Link href="/services" className="hidden md:block">
-              <Button variant="ghost">
-                {homepage.services.cta}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/services" className="hidden md:block">
+                <Button variant="ghost">
+                  {homepage.services.cta}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/services" className="md:hidden">
+                <Button variant="secondary">See all services</Button>
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((s) => {
-              const Icon = iconFor(s.icon);
-              return (
-                <Link key={s.slug} href={`/services/${s.slug}`} className="group">
-                  <Card className="h-full p-6 transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(17,24,39,.08)]">
-                    <div className="flex items-start gap-3">
-                      <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
-                        <Icon className="h-5 w-5 text-[var(--hw-red)]" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-[var(--hw-ink)]">{s.name}</div>
-                        <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{s.summary}</div>
-                        <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--hw-red)]">
-                          Get an instant estimate
-                          <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+          <div className="relative mt-6">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -inset-6 rounded-[28px] bg-[radial-gradient(600px_240px_at_30%_0%,rgba(229,57,53,0.14),transparent_60%),radial-gradient(520px_240px_at_110%_30%,rgba(17,24,39,0.10),transparent_55%)]"
+            />
+
+            <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {services.map((s) => {
+                const Icon = iconFor(s.icon);
+                return (
+                  <Link key={s.slug} href={`/services/${s.slug}`} className="group">
+                    <Card className="relative h-full overflow-hidden border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_28px_90px_rgba(17,24,39,.14)]">
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100"
+                        style={{
+                          background:
+                            "radial-gradient(380px 180px at 20% 0%, rgba(229,57,53,0.18), transparent 60%), radial-gradient(380px 200px at 110% 30%, rgba(17,24,39,0.10), transparent 60%)",
+                        }}
+                      />
+
+                      <div className="relative flex items-start gap-3">
+                        <div className="rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
+                          <Icon className="h-5 w-5 text-[var(--hw-red)]" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-[var(--hw-ink)]">{s.name}</div>
+                          <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{s.summary}</div>
+                          <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--hw-red)]">
+                            Get an instant estimate
+                            <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                </Link>
-              );
-            })}
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </Container>
 
