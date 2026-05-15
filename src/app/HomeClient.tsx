@@ -208,12 +208,7 @@ export default function HomeClient(props: { homepage?: any }) {
 
             <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
               <div className="lg:col-span-5">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(17,24,39,.08)] bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)] shadow-[0_12px_40px_rgba(17,24,39,.06)]">
-                  <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--hw-red)]" />
-                  Concierge home services
-                </div>
-
-                <h1 className="mt-4 text-balance text-4xl font-extrabold tracking-[-0.04em] text-[var(--hw-ink)] md:text-6xl">
+                <h1 className="text-balance text-4xl font-extrabold tracking-[-0.04em] text-[var(--hw-ink)] md:text-6xl">
                   {homepage.hero.headline}
                 </h1>
 
@@ -221,40 +216,14 @@ export default function HomeClient(props: { homepage?: any }) {
                   {homepage.hero.subheadline}
                 </p>
 
-                <div className="mt-5 flex flex-wrap items-center gap-3">
-                  <div className="rounded-full border border-[rgba(17,24,39,.08)] bg-white/70 px-3 py-1 text-xs text-[var(--hw-muted)]">
-                    {homepage.hero.disclaimer}
-                  </div>
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">
-                    {city && state ? (
-                      <span>
-                        Pros for every project in <span className="text-[var(--hw-red)]">{city}, {state}</span>.
-                      </span>
-                    ) : (
-                      <span>Pros for every project in your area.</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* What happens next (micro stepper) */}
-                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {[
-                    { n: "01", t: "Request", d: "Tell us what you need (photos help)." },
-                    { n: "02", t: "Confirm", d: "We clarify scope + next steps." },
-                    { n: "03", t: "Schedule", d: "Pick a time that works for you." },
-                    { n: "04", t: "Complete", d: "Get it done with updates in one thread." },
-                  ].map((s) => (
-                    <div
-                      key={s.n}
-                      className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/65 px-4 py-3 shadow-[0_18px_60px_rgba(17,24,39,.08)]"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{s.n}</div>
-                        <div className="text-sm font-semibold text-[var(--hw-ink)]">{s.t}</div>
-                      </div>
-                      <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{s.d}</div>
-                    </div>
-                  ))}
+                <div className="mt-5 text-sm font-semibold text-[var(--hw-ink)]">
+                  {city && state ? (
+                    <span>
+                      Pros for every project in <span className="text-[var(--hw-red)]">{city}, {state}</span>.
+                    </span>
+                  ) : (
+                    <span>Pros for every project in your area.</span>
+                  )}
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
