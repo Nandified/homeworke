@@ -43,8 +43,10 @@ export default function HomeClient(props: { homepage?: any }) {
   const [locLoading, setLocLoading] = useState(false);
 
   // Manual booking (non-AI) lead capture
-  const [manualService, setManualService] = useState<string>("General");
+  const [manualStep, setManualStep] = useState<1 | 2>(1);
+  const [manualService, setManualService] = useState<string>("Plumbing");
   const [manualIssue, setManualIssue] = useState<string>("");
+  const [manualAddress, setManualAddress] = useState<string>("");
   const [manualName, setManualName] = useState<string>("");
   const [manualEmail, setManualEmail] = useState<string>("");
   const [manualPhone, setManualPhone] = useState<string>("");
@@ -205,7 +207,7 @@ export default function HomeClient(props: { homepage?: any }) {
           name,
           phone,
           leadRole: "homeowner",
-          redirectAfterConfirm: "/marketplace/intake",
+          redirectAfterConfirm: "/confirm/next-steps",
           intake: {
             originPartnerId: null,
             shareWithPartner: true,
@@ -213,7 +215,7 @@ export default function HomeClient(props: { homepage?: any }) {
             service_subcategory: "",
             issue_description: (manualIssue || "").trim(),
             urgency_level: "this_week",
-            property_address: "",
+            property_address: (manualAddress || "").trim(),
             property_type: "",
             preferred_date: "",
             preferred_time_window: "",
@@ -232,11 +234,26 @@ export default function HomeClient(props: { homepage?: any }) {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/marketplace/intake")}`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/confirm/next-steps")}`,
           shouldCreateUser: true,
         },
       });
       if (error) throw error;
+
+      try {
+        window.localStorage.setItem(
+          "hw_session_v1",
+          JSON.stringify({
+            token: "manual",
+            jobId: "manual",
+            email,
+            service: manualService,
+            providerName: "",
+            date: new Date().toLocaleDateString(),
+            window: "",
+          })
+        );
+      } catch {}
 
       setManualSent(true);
     } catch (e: any) {
@@ -347,35 +364,78 @@ export default function HomeClient(props: { homepage?: any }) {
                       Prefer not to use Homeworke AI?
                     </div>
                     <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
-                      Pick a service, add a quick note, and we’ll email you a link to confirm your request.
+                      Pick a service and enter a few details. We’ll email you a magic link to confirm.
                     </div>
 
-                    <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      {servicesData.services.slice(0, 8).map((s) => (
+                    {/* Step 1: Trade chips */}
+                    <div className="mt-5">
+                      <div className="text-xs font-semibold text-[var(--hw-muted)]">Trade</div>
+                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        {[
+                          "Plumbing",
+                          "Electrical",
+                          "HVAC",
+                          "Handyman / General",
+                          "Cleaning / Turnover",
+                          "Remodeling",
+                          "Roofing",
+                          "Flooring",
+                          "Inspections",
+                          "Drywall",
+                          "Painting",
+                          "Windows & Doors",
+                        ].map((name) => (
+                          <button
+                            key={name}
+                            type="button"
+                            onClick={() => {
+                              setManualService(name);
+                              setManualStep(2);
+                            }}
+                            className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
+                              manualService === name
+                                ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.08)] text-[var(--hw-ink)]"
+                                : "border-[rgba(17,24,39,.08)] bg-white/70 text-[var(--hw-muted)] hover:bg-white"
+                            }`}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="text-xs text-[var(--hw-muted)]">
+                          Selected: <span className="font-semibold text-[var(--hw-ink)]">{manualService}</span>
+                        </div>
                         <button
-                          key={s.slug}
                           type="button"
-                          onClick={() => setManualService(s.name)}
-                          className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
-                            manualService === s.name
-                              ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.08)] text-[var(--hw-ink)]"
-                              : "border-[rgba(17,24,39,.08)] bg-white/70 text-[var(--hw-muted)] hover:bg-white"
-                          }`}
+                          className="text-xs font-semibold text-[var(--hw-red)]"
+                          onClick={() => setManualStep(1)}
                         >
-                          {s.name}
+                          Change
                         </button>
-                      ))}
+                      </div>
                     </div>
 
-                    <div className="mt-4">
-                      <label className="text-xs font-semibold text-[var(--hw-muted)]">Details</label>
-                      <textarea
-                        value={manualIssue}
-                        onChange={(e) => setManualIssue(e.target.value)}
-                        placeholder="What do you need help with? (Optional, but helpful)"
-                        className="mt-2 w-full resize-none rounded-2xl border border-[rgba(17,24,39,.10)] bg-white/80 px-4 py-3 text-sm text-[var(--hw-ink)] shadow-[0_18px_60px_rgba(17,24,39,.06)] outline-none placeholder:text-[rgba(107,114,128,.9)] focus:border-[rgba(229,57,53,.30)]"
-                        rows={3}
+                    {/* Step 2: Details */}
+                    <div className="mt-5">
+                      <div className="text-xs font-semibold text-[var(--hw-muted)]">Property address</div>
+                      <Input
+                        placeholder="Street, City, State, ZIP"
+                        value={manualAddress}
+                        onChange={(e) => setManualAddress(e.target.value)}
                       />
+
+                      <div className="mt-4">
+                        <label className="text-xs font-semibold text-[var(--hw-muted)]">Details</label>
+                        <textarea
+                          value={manualIssue}
+                          onChange={(e) => setManualIssue(e.target.value)}
+                          placeholder="What do you need help with? (Optional, but helpful)"
+                          className="mt-2 w-full resize-none rounded-2xl border border-[rgba(17,24,39,.10)] bg-white/80 px-4 py-3 text-sm text-[var(--hw-ink)] shadow-[0_18px_60px_rgba(17,24,39,.06)] outline-none placeholder:text-[rgba(107,114,128,.9)] focus:border-[rgba(229,57,53,.30)]"
+                          rows={3}
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -386,6 +446,9 @@ export default function HomeClient(props: { homepage?: any }) {
                         <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
                           We sent a confirmation link to <span className="font-semibold text-[var(--hw-ink)]">{manualEmail.trim()}</span>.
                           Open it to confirm your request.
+                        </div>
+                        <div className="mt-3 text-xs leading-5 text-[var(--hw-muted)]">
+                          After you confirm, you’ll see next steps and we’ll begin coordinating your request.
                         </div>
                       </div>
                     ) : (
@@ -400,12 +463,12 @@ export default function HomeClient(props: { homepage?: any }) {
                           ) : null}
 
                           <Button onClick={submitManualLead} disabled={manualSending}>
-                            {manualSending ? "Sending…" : "Email me a confirmation link"}
+                            {manualSending ? "Sending…" : "Send me a confirmation link"}
                             <ArrowRight className="h-4 w-4" />
                           </Button>
 
                           <div className="text-xs leading-5 text-[var(--hw-muted)]">
-                            Request won’t be submitted until you confirm via email.
+                            Nothing is submitted until you confirm via email.
                           </div>
                         </div>
                       </div>
