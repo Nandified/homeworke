@@ -172,7 +172,7 @@ export default function HomeClient(props: { homepage?: any }) {
   }, [suggestedSlug]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-white to-[#fafafa]">
+    <div className="min-h-screen bg-[radial-gradient(1200px_600px_at_20%_-10%,rgba(229,57,53,0.10),transparent_60%),radial-gradient(900px_500px_at_110%_0%,rgba(17,24,39,0.06),transparent_55%),linear-gradient(to_bottom,#ffffff,#fbfbfb)]">
       <SiteHeader />
 
       <main>
@@ -217,13 +217,46 @@ export default function HomeClient(props: { homepage?: any }) {
 
               {/* Homepage AI Work Submittal (confirmation required) */}
               <div className="lg:col-span-7">
-                <AIWorkOrderIntakeCard
-                  eyebrow="Job work order"
-                  title="What do you need help with?"
-                  primaryCta="Schedule a visit"
-                  requireConfirmation
-                  showServicingPill
-                />
+                <div className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/80 p-1 shadow-[0_30px_80px_rgba(17,24,39,.10)] backdrop-blur supports-[backdrop-filter]:bg-white/70">
+                  <AIWorkOrderIntakeCard
+                    eyebrow="Job work order"
+                    title="What do you need help with?"
+                    primaryCta="Schedule a visit"
+                    requireConfirmation
+                    showServicingPill
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Trust (keep within first scroll on mobile) */}
+            <div className="mt-10">
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                  {homepage.trust.title}
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+                {homepage.trust.bullets.map((b: any) => {
+                  const Icon = iconFor(b.icon);
+                  return (
+                    <Card
+                      key={b.title}
+                      className="p-5 shadow-[0_18px_40px_rgba(17,24,39,.06)] backdrop-blur supports-[backdrop-filter]:bg-white/80"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
+                          <Icon className="h-5 w-5 text-[var(--hw-red)]" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-[var(--hw-ink)]">{b.title}</div>
+                          <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{b.text}</div>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           </Container>
@@ -231,7 +264,7 @@ export default function HomeClient(props: { homepage?: any }) {
 
         {/* Trust */}
         <Container className="pb-4">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="hidden grid-cols-1 gap-4 lg:grid-cols-3">
             {homepage.trust.bullets.map((b: any) => {
               const Icon = iconFor(b.icon);
               return (
