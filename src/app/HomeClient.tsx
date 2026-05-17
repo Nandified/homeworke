@@ -9,7 +9,6 @@ import { Button, Card, Container, Input, Pill } from "@/components/ui";
 import { iconFor } from "@/components/icons";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
-import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 import homepageDefault from "@/../spec/homepage_marketing_v1.json";
 import servicesData from "@/../spec/services.json";
@@ -41,19 +40,6 @@ export default function HomeClient(props: { homepage?: any }) {
   const [city, setCity] = useState<string>("");
   const [state, setState] = useState<string>("");
   const [locLoading, setLocLoading] = useState(false);
-
-  // Manual booking (non-AI) lead capture
-  const [manualStep, setManualStep] = useState<1 | 2>(1);
-  const [manualService, setManualService] = useState<string>("Plumbing");
-  const [manualIssue, setManualIssue] = useState<string>("");
-  const [manualAddress, setManualAddress] = useState<string>("");
-  const [manualName, setManualName] = useState<string>("");
-  const [manualEmail, setManualEmail] = useState<string>("");
-  const [manualPhone, setManualPhone] = useState<string>("");
-  const [manualSending, setManualSending] = useState(false);
-  const [manualError, setManualError] = useState<string>("");
-  const [manualSent, setManualSent] = useState(false);
-
   // Typewriter-style rotating hint
   const hints = useMemo(
     () => ["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"],
@@ -184,85 +170,6 @@ export default function HomeClient(props: { homepage?: any }) {
     return servicesData.services.find((s) => s.slug === suggestedSlug) ?? null;
   }, [suggestedSlug]);
 
-  async function submitManualLead() {
-    if (manualSending) return;
-    setManualError("");
-
-    const name = manualName.trim();
-    const email = manualEmail.trim().toLowerCase();
-    const phone = manualPhone.trim();
-
-    if (!name) return setManualError("Please enter your name.");
-    if (!email || !email.includes("@")) return setManualError("Please enter a valid email.");
-    if (!phone) return setManualError("Please enter a phone number.");
-
-    setManualSending(true);
-    try {
-      // 1) Create pending confirmation record (server)
-      const pendingRes = await fetch("/api/pending-confirmations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          name,
-          phone,
-          leadRole: "homeowner",
-          redirectAfterConfirm: "/confirm/next-steps",
-          intake: {
-            originPartnerId: null,
-            shareWithPartner: true,
-            service_category: manualService || "General",
-            service_subcategory: "",
-            issue_description: (manualIssue || "").trim(),
-            urgency_level: "this_week",
-            property_address: (manualAddress || "").trim(),
-            property_type: "",
-            preferred_date: "",
-            preferred_time_window: "",
-            contact_method: "email",
-          },
-        }),
-      });
-      const pendingJson = await pendingRes.json().catch(() => null);
-      if (!pendingRes.ok || !pendingJson?.ok) {
-        setManualError("Could not start confirmation. Please try again.");
-        return;
-      }
-
-      // 2) Send Supabase OTP link
-      const supabase = getSupabaseBrowserClient();
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/confirm/next-steps")}`,
-          shouldCreateUser: true,
-        },
-      });
-      if (error) throw error;
-
-      try {
-        window.localStorage.setItem(
-          "hw_session_v1",
-          JSON.stringify({
-            token: "manual",
-            jobId: "manual",
-            email,
-            service: manualService,
-            providerName: "",
-            date: new Date().toLocaleDateString(),
-            window: "",
-          })
-        );
-      } catch {}
-
-      setManualSent(true);
-    } catch (e: any) {
-      setManualError(e?.message || "Could not send confirmation email.");
-    } finally {
-      setManualSending(false);
-    }
-  }
-
   return (
     <div className="min-h-screen bg-[radial-gradient(1200px_600px_at_20%_-10%,rgba(229,57,53,0.10),transparent_60%),radial-gradient(900px_500px_at_110%_0%,rgba(17,24,39,0.06),transparent_55%),linear-gradient(to_bottom,#ffffff,#fbfbfb)]">
       <SiteHeader />
@@ -343,147 +250,7 @@ export default function HomeClient(props: { homepage?: any }) {
               </div>
             </div>
 
-            {/* Manual booking (non-AI) */}
-            <div className="mt-10">
-              <div className="flex items-center justify-between">
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                  Manual booking
-                </div>
-                <Link href="/services" className="hidden md:block">
-                  <Button variant="ghost">
-                    Browse more
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-
-              <Card className="mt-4 border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur">
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
-                  <div className="lg:col-span-7">
-                    <div className="text-xl font-extrabold tracking-tight text-[var(--hw-ink)]">
-                      Prefer not to use Homeworke AI?
-                    </div>
-                    <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
-                      Pick a service and enter a few details. We’ll email you a magic link to confirm.
-                    </div>
-
-                    {/* Step 1: Trade chips */}
-                    <div className="mt-5">
-                      <div className="text-xs font-semibold text-[var(--hw-muted)]">Trade</div>
-                      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                        {[
-                          "Plumbing",
-                          "Electrical",
-                          "HVAC",
-                          "Handyman / General",
-                          "Cleaning / Turnover",
-                          "Remodeling",
-                          "Roofing",
-                          "Flooring",
-                          "Inspections",
-                          "Drywall",
-                          "Painting",
-                          "Windows & Doors",
-                        ].map((name) => (
-                          <button
-                            key={name}
-                            type="button"
-                            onClick={() => {
-                              setManualService(name);
-                              setManualStep(2);
-                            }}
-                            className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${
-                              manualService === name
-                                ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.08)] text-[var(--hw-ink)]"
-                                : "border-[rgba(17,24,39,.08)] bg-white/70 text-[var(--hw-muted)] hover:bg-white"
-                            }`}
-                          >
-                            {name}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="mt-3 flex items-center gap-3">
-                        <div className="text-xs text-[var(--hw-muted)]">
-                          Selected: <span className="font-semibold text-[var(--hw-ink)]">{manualService}</span>
-                        </div>
-                        <button
-                          type="button"
-                          className="text-xs font-semibold text-[var(--hw-red)]"
-                          onClick={() => setManualStep(1)}
-                        >
-                          Change
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Step 2: Details */}
-                    <div className="mt-5">
-                      <div className="text-xs font-semibold text-[var(--hw-muted)]">Property address</div>
-                      <Input
-                        placeholder="Street, City, State, ZIP"
-                        value={manualAddress}
-                        onChange={(e) => setManualAddress(e.target.value)}
-                      />
-
-                      <div className="mt-4">
-                        <label className="text-xs font-semibold text-[var(--hw-muted)]">Details</label>
-                        <textarea
-                          value={manualIssue}
-                          onChange={(e) => setManualIssue(e.target.value)}
-                          placeholder="What do you need help with? (Optional, but helpful)"
-                          className="mt-2 w-full resize-none rounded-2xl border border-[rgba(17,24,39,.10)] bg-white/80 px-4 py-3 text-sm text-[var(--hw-ink)] shadow-[0_18px_60px_rgba(17,24,39,.06)] outline-none placeholder:text-[rgba(107,114,128,.9)] focus:border-[rgba(229,57,53,.30)]"
-                          rows={3}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-5">
-                    {manualSent ? (
-                      <div className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/70 p-5">
-                        <div className="text-sm font-semibold text-[var(--hw-ink)]">Check your email</div>
-                        <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
-                          We sent a confirmation link to <span className="font-semibold text-[var(--hw-ink)]">{manualEmail.trim()}</span>.
-                          Open it to confirm your request.
-                        </div>
-                        <div className="mt-3 text-xs leading-5 text-[var(--hw-muted)]">
-                          After you confirm, you’ll see next steps and we’ll begin coordinating your request.
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/70 p-5">
-                        <div className="grid grid-cols-1 gap-3">
-                          <Input placeholder="Name" value={manualName} onChange={(e) => setManualName(e.target.value)} />
-                          <Input placeholder="Email" value={manualEmail} onChange={(e) => setManualEmail(e.target.value)} />
-                          <Input placeholder="Phone" value={manualPhone} onChange={(e) => setManualPhone(e.target.value)} />
-
-                          {manualError ? (
-                            <div className="text-sm font-semibold text-[var(--hw-red)]">{manualError}</div>
-                          ) : null}
-
-                          <Button onClick={submitManualLead} disabled={manualSending}>
-                            {manualSending ? "Sending…" : "Send me a confirmation link"}
-                            <ArrowRight className="h-4 w-4" />
-                          </Button>
-
-                          <div className="text-xs leading-5 text-[var(--hw-muted)]">
-                            Nothing is submitted until you confirm via email.
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="mt-3 md:hidden">
-                      <Link href="/services">
-                        <Button className="w-full" variant="secondary">Browse more services</Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </Container>
+                      </Container>
         </section>
 
         {/* Trust */}
