@@ -225,17 +225,6 @@ export default function HomeClient(props: { homepage?: any }) {
                   )}
                 </div>
 
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href="/estimate">
-                    <Button variant="secondary">
-                      Get an Instant Estimate
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/services">
-                    <Button variant="ghost">Browse services</Button>
-                  </Link>
-                </div>
               </div>
 
               {/* Homepage AI Work Submittal (confirmation required) */}

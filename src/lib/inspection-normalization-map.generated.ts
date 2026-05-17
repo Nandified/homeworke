@@ -2,7 +2,7 @@
 // Source: https://docs.google.com/spreadsheets/d/10mTd71gvi7njJAbSuWDWez9mjGMGvlemQ3aXgsOLBAk/gviz/tq?tqx=out%3Acsv&sheet=Sheet1&range=F97%3AK2000
 export const SHEET_META = {
   "ok": true,
-  "generatedAt": "2026-05-17T16:18:46.176Z",
+  "generatedAt": "2026-05-17T16:27:28.435Z",
   "sheetId": "10mTd71gvi7njJAbSuWDWez9mjGMGvlemQ3aXgsOLBAk",
   "sheetName": "Sheet1",
   "range": "F97:K2000",
