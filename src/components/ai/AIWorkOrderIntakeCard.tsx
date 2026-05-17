@@ -387,6 +387,9 @@ export function AIWorkOrderIntakeCard(props: {
   const [confirmError, setConfirmError] = useState<string>("");
 
   const [manualOpen, setManualOpen] = useState(true);
+
+  const manualLinksHref = props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1";
+
   const [assistantThinking, setAssistantThinking] = useState(false);
 
   const [isDesktop, setIsDesktop] = useState(false);
@@ -1833,50 +1836,50 @@ export function AIWorkOrderIntakeCard(props: {
             {manualOpen ? (
               <div className="mt-3">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                  <Link href="/marketplace/intake?fromAI=1&trade=Plumbing" className="w-full">
+                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Plumbing"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Droplet className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Plumbing
                     </span>
                   </Link>
-                  <Link href="/marketplace/intake?fromAI=1&trade=Electrical" className="w-full">
+                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Electrical"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Zap className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Electrical
                     </span>
                   </Link>
-                  <Link href="/marketplace/intake?fromAI=1&trade=HVAC" className="w-full">
+                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=HVAC"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Wind className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       HVAC
                     </span>
                   </Link>
-                  <Link href="/marketplace/intake?fromAI=1&trade=Handyman%20%2F%20General" className="w-full">
+                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Handyman%20%2F%20General"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Hammer className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Handyman
                     </span>
                   </Link>
-                  <Link href="/marketplace/intake?fromAI=1&trade=Cleaning%20%2F%20Turnover" className="w-full">
+                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Cleaning%20%2F%20Turnover"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Sparkles className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Cleaning
                     </span>
                   </Link>
 
-                  <Link href="/marketplace/intake?fromAI=1&trade=Remodeling" className="w-full">
+                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Remodeling"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Home className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Remodel
                     </span>
                   </Link>
-                  <Link href="/marketplace/intake?fromAI=1&trade=Roofing" className="w-full">
+                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Roofing"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Shield className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Roofing
                     </span>
                   </Link>
-                  <Link href="/marketplace/intake?fromAI=1&trade=Flooring" className="w-full">
+                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Flooring"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Layers className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Flooring
@@ -1884,7 +1887,7 @@ export function AIWorkOrderIntakeCard(props: {
                   </Link>
 
                   <Link
-                    href="/marketplace/intake?fromAI=1"
+                    href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1"}
                     className="col-span-2 inline-flex w-full items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] whitespace-nowrap sm:col-span-2"
                   >
                     Browse services
