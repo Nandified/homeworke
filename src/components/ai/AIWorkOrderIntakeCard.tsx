@@ -1887,7 +1887,7 @@ export function AIWorkOrderIntakeCard(props: {
                   </Link>
 
                   <Link
-                    href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1"}
+                    href={props.requireConfirmation ? "/work-order" : "/marketplace/intake?fromAI=1"}
                     className="col-span-2 inline-flex w-full items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-3 py-2 text-[11px] font-semibold text-[var(--hw-muted)] hover:bg-[var(--hw-soft)] whitespace-nowrap sm:col-span-2"
                   >
                     Browse services
