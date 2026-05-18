@@ -78,7 +78,7 @@ function RequestAccessClient() {
         <div className="relative flex items-start justify-between gap-5">
           <div>
             <Image
-              src="/brand/Homeworke - Logo Main W Slogan (Black & Red).png"
+              src="/brand/homeworke-logo.avif"
               alt="Homeworke"
               width={190}
               height={72}

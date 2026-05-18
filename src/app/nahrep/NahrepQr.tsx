@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 import QRCode from "qrcode";
 
@@ -41,6 +42,16 @@ export function NahrepQr() {
 
   return (
     <div className="rounded-[24px] border border-[rgba(229,57,53,.25)] bg-white p-4 shadow-[0_18px_44px_rgba(17,24,39,.12)]">
+      <div className="mb-4 rounded-[18px] border border-[rgba(17,24,39,.08)] bg-white px-4 py-3 shadow-[0_12px_28px_rgba(17,24,39,.06)]">
+        <Image
+          src="/brand/nahrep-web-logo.png"
+          alt="NAHREP"
+          width={380}
+          height={100}
+          priority
+          className="mx-auto h-auto w-full max-w-[260px]"
+        />
+      </div>
       <div className="rounded-[18px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
         {qrDataUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
