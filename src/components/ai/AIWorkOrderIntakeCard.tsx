@@ -1842,44 +1842,44 @@ export function AIWorkOrderIntakeCard(props: {
                       Plumbing
                     </span>
                   </Link>
-                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Electrical"} className="w-full">
+                  <Link href={props.requireConfirmation ? "/work-order?fromAI=1&trade=Electrical" : "/marketplace/intake?fromAI=1&trade=Electrical"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Zap className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Electrical
                     </span>
                   </Link>
-                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=HVAC"} className="w-full">
+                  <Link href={props.requireConfirmation ? "/work-order?fromAI=1&trade=HVAC" : "/marketplace/intake?fromAI=1&trade=HVAC"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Wind className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       HVAC
                     </span>
                   </Link>
-                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Handyman%20%2F%20General"} className="w-full">
+                  <Link href={props.requireConfirmation ? "/work-order?fromAI=1&trade=Handyman%20%2F%20General" : "/marketplace/intake?fromAI=1&trade=Handyman%20%2F%20General"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Hammer className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Handyman
                     </span>
                   </Link>
-                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Cleaning%20%2F%20Turnover"} className="w-full">
+                  <Link href={props.requireConfirmation ? "/work-order?fromAI=1&trade=Cleaning%20%2F%20Turnover" : "/marketplace/intake?fromAI=1&trade=Cleaning%20%2F%20Turnover"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Sparkles className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Cleaning
                     </span>
                   </Link>
 
-                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Remodeling"} className="w-full">
+                  <Link href={props.requireConfirmation ? "/work-order?fromAI=1&trade=Remodeling" : "/marketplace/intake?fromAI=1&trade=Remodeling"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Home className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Remodel
                     </span>
                   </Link>
-                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Roofing"} className="w-full">
+                  <Link href={props.requireConfirmation ? "/work-order?fromAI=1&trade=Roofing" : "/marketplace/intake?fromAI=1&trade=Roofing"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Shield className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Roofing
                     </span>
                   </Link>
-                  <Link href={props.requireConfirmation ? "/services" : "/marketplace/intake?fromAI=1&trade=Flooring"} className="w-full">
+                  <Link href={props.requireConfirmation ? "/work-order?fromAI=1&trade=Flooring" : "/marketplace/intake?fromAI=1&trade=Flooring"} className="w-full">
                     <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[var(--hw-line)] bg-white px-2 py-1.5 text-[11px] font-semibold text-[#374151] hover:bg-[var(--hw-soft)]">
                       <Layers className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                       Flooring

@@ -118,7 +118,7 @@ export function EstimateClient() {
                     Generate estimate
                     <ArrowRight className="h-4 w-4" />
                   </Button>
-                  <Link href="/services">
+                  <Link href="/work-order">
                     <Button variant="secondary">Browse services</Button>
                   </Link>
                 </div>

@@ -132,7 +132,7 @@ export default function UiKitPage() {
               title="Nothing here yet"
               text="Empty states should explain what happens next and provide a single clear CTA."
               action={
-                <Link href="/services">
+                <Link href="/work-order">
                   <Button>Browse services</Button>
                 </Link>
               }

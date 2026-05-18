@@ -284,14 +284,15 @@ export default function Page() {
     }
   }, []);
 
-  // /marketplace/intake now always uses the new portal-style intake UI.
-  // (The legacy homeowner stepper has been removed.)
-  const isPortalIntake = false;
+  // Use the premium portal-style intake UI everywhere (public + portals).
+  // We only show the PortalShell chrome when the viewer is actually in a portal session.
+  const usePremiumIntakeUI = true;
+  const showPortalShell = portalMode;
 
   // Load properties for portal order entry (merge API + locally added client/my properties)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!isPortalIntake) return;
+    if (!usePremiumIntakeUI) return;
 
     let cancelled = false;
     setPropertyLoading(true);
@@ -369,7 +370,7 @@ export default function Page() {
     return () => {
       cancelled = true;
     };
-  }, [isPortalIntake]);
+  }, [usePremiumIntakeUI]);
 
   // Prefill from query params (used by AI intake card)
   useEffect(() => {
@@ -395,8 +396,8 @@ export default function Page() {
         });
       }
       // In portal intake we keep the field empty; avoid prefilling long AI/demo text.
-      const issue = isPortalIntake ? "" : sp.get("aiSummary") || sp.get("issue") || "";
-      const qnaRaw = isPortalIntake ? "" : sp.get("qna") || "";
+      const issue = usePremiumIntakeUI ? "" : sp.get("aiSummary") || sp.get("issue") || "";
+      const qnaRaw = usePremiumIntakeUI ? "" : sp.get("qna") || "";
 
       let qnaText = "";
       try {
@@ -430,7 +431,7 @@ export default function Page() {
 
       // When launched from any portal session, keep the flow clean and start at Step 1.
       // (We may prefill trade/subcategory/issue, but we should not jump the user ahead.)
-      if (isPortalIntake) {
+      if (usePremiumIntakeUI) {
         setStep("select_service");
       }
     } catch {
@@ -443,10 +444,10 @@ export default function Page() {
   // Remount the textarea when entering the step so defaultValue is applied,
   // but avoid controlled input state while typing (prevents focus loss).
   useEffect(() => {
-    if (!isPortalIntake) return;
+    if (!usePremiumIntakeUI) return;
     if (step !== "service_details") return;
     setIssueFieldKey((k) => k + 1);
-  }, [isPortalIntake, step]);
+  }, [usePremiumIntakeUI, step]);
 
   function update(patch: Partial<IntakeDraft>) {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -457,7 +458,7 @@ export default function Page() {
   // Portal intake already has a "Next" button per step, so we can safely persist less aggressively.
   useEffect(() => {
     // While typing project details in portal mode, avoid autosave to prevent focus loss.
-    if (isPortalIntake && step === "service_details") return;
+    if (usePremiumIntakeUI && step === "service_details") return;
 
     const t = window.setTimeout(() => {
       try {
@@ -467,7 +468,7 @@ export default function Page() {
       }
     }, 400);
     return () => window.clearTimeout(t);
-  }, [draft, isPortalIntake, step]);
+  }, [draft, usePremiumIntakeUI, step]);
 
   function next() {
     const nextIdx = Math.min(steps.length - 1, idx + 1);
@@ -650,7 +651,7 @@ export default function Page() {
   };
 
   const Shell = ({ children }: { children: React.ReactNode }) => {
-    if (!isPortalIntake) return <>{children}</>;
+    if (!showPortalShell) return <>{children}</>;
 
     return (
       <PortalShell
@@ -671,10 +672,10 @@ export default function Page() {
 
   return (
     <Shell>
-      <div className={isPortalIntake ? "" : "min-h-screen bg-gradient-to-b from-white to-[#fafafa]"}>
-        <Container className={isPortalIntake ? "py-4" : "py-10 md:py-16"}>
+      <div className={usePremiumIntakeUI ? "" : "min-h-screen bg-gradient-to-b from-white to-[#fafafa]"}>
+        <Container className={usePremiumIntakeUI ? "py-4" : "py-10 md:py-16"}>
         {/* ── Header ── */}
-        {!isPortalIntake ? (
+        {!usePremiumIntakeUI ? (
           <div className="mb-2">
             <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work Order</div>
             <h1 className="mt-3 text-2xl font-extrabold tracking-tight md:text-3xl lg:text-4xl">{current.title}</h1>
@@ -683,7 +684,7 @@ export default function Page() {
         ) : null}
 
         {/* ── Step indicator ── */}
-        {!isPortalIntake ? (
+        {!usePremiumIntakeUI ? (
         <div className="mt-6 mb-8">
           <div className="flex items-center gap-1">
             {steps.map((s, i) => {
@@ -754,12 +755,12 @@ export default function Page() {
         ) : null}
 
         {/* ── Main grid ── */}
-        <div className={"grid grid-cols-1 gap-6 " + (isPortalIntake ? "lg:grid-cols-1" : "lg:grid-cols-3")}>
+        <div className={"grid grid-cols-1 gap-6 " + (usePremiumIntakeUI ? "lg:grid-cols-1" : "lg:grid-cols-3")}>
           {/* ── Form card ── */}
           <Card className="p-6 md:p-8 lg:col-span-2">
             {step === "select_service" ? (
               <div>
-                {isPortalIntake ? (
+                {usePremiumIntakeUI ? (
                   <>
                     <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">
                       What do you need help with?
@@ -996,7 +997,7 @@ export default function Page() {
             ) : null}
 
             {step === "service_details" ? (
-              isPortalIntake ? (
+              usePremiumIntakeUI ? (
                 <div>
                   <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Tell us about the project</div>
 
@@ -1162,7 +1163,7 @@ export default function Page() {
             ) : null}
 
             {step === "property_details" ? (
-              isPortalIntake ? (
+              usePremiumIntakeUI ? (
                 <div>
                   <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-3xl">Property</div>
                   <div className="mt-1 text-sm text-[var(--hw-muted)]">Select the property for this work order.</div>
@@ -1282,7 +1283,7 @@ export default function Page() {
             ) : null}
 
             {step === "schedule_visit" ? (
-              isPortalIntake ? (
+              usePremiumIntakeUI ? (
                 <div>
                   {/* Portal stepper: schedule → time window → contact preference */}
                   {portalScheduleStep === "date" ? (

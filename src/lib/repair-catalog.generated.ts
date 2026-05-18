@@ -1,7 +1,7 @@
 // AUTO-GENERATED from data/repair_catalog_master.csv at build time.
 export const REPAIR_CATALOG_META = {
   "ok": true,
-  "generatedAt": "2026-05-17T17:13:18.391Z",
+  "generatedAt": "2026-05-18T00:09:15.485Z",
   "count": 335
 } as const;
 export const REPAIR_CATALOG = [

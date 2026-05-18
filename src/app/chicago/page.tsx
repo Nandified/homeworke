@@ -40,7 +40,7 @@ export default async function ChicagoPage() {
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Link href="/services">
+                <Link href="/work-order">
                   <Button variant="secondary">Browse services</Button>
                 </Link>
               </div>
