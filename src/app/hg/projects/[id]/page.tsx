@@ -212,7 +212,7 @@ export default function HomeGuideProjectDetailPage({ params }: { params: { id: s
 
           <div className="grid gap-4">
             <Card className="p-5">
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Scheduling</div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Visit Appointment</div>
               {wo ? (
                 <div className="mt-3 grid gap-3 text-sm">
                   <div>
@@ -223,6 +223,48 @@ export default function HomeGuideProjectDetailPage({ params }: { params: { id: s
                     <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Created</div>
                     <div className="mt-1 text-[var(--hw-ink)]">{fmtDate(wo.createdAt)}</div>
                   </div>
+
+                  <Divider />
+
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Status</div>
+                      <div className="mt-1">
+                        {wo.appointments?.[0]?.status ? <StatusChip>{wo.appointments[0].status}</StatusChip> : <span className="text-[var(--hw-muted)]">—</span>}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="xs"
+                        variant="secondary"
+                        onClick={async () => {
+                          await fetch(`/api/hg/work-orders/${encodeURIComponent(id)}`, {
+                            method: "POST",
+                            headers: { "content-type": "application/json" },
+                            body: JSON.stringify({ action: "set_visit_status", visitStatus: "DONE" }),
+                          });
+                          await reload();
+                        }}
+                      >
+                        Mark visit completed
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="secondary"
+                        onClick={async () => {
+                          await fetch(`/api/hg/work-orders/${encodeURIComponent(id)}`, {
+                            method: "POST",
+                            headers: { "content-type": "application/json" },
+                            body: JSON.stringify({ action: "set_visit_status", visitStatus: "CANCELED" }),
+                          });
+                          await reload();
+                        }}
+                      >
+                        Mark visit skipped
+                      </Button>
+                    </div>
+                  </div>
+
                   {Array.isArray(wo.appointments) && wo.appointments.length ? (
                     <>
                       <Divider />

@@ -64,5 +64,28 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     return json({ ok: true, workOrder: wo });
   }
 
+  if (action === "set_visit_status") {
+    const wo = getWorkOrderById(id);
+    if (!wo) return json({ ok: false, error: "not_found" }, { status: 404 });
+
+    const visitStatus = typeof body.visitStatus === "string" ? String(body.visitStatus) : "";
+    if (!visitStatus) return json({ ok: false, error: "missing_visitStatus" }, { status: 400 });
+
+    // Update first appointment stub.
+    if (!Array.isArray((wo as any).appointments) || (wo as any).appointments.length === 0) {
+      (wo as any).appointments = [
+        {
+          id: `apt_${Math.random().toString(36).slice(2, 9)}`,
+          trade: "handyman",
+          status: visitStatus,
+        },
+      ];
+    } else {
+      (wo as any).appointments[0].status = visitStatus;
+    }
+
+    return json({ ok: true, workOrder: wo });
+  }
+
   return json({ ok: false, error: "unsupported_action" }, { status: 400 });
 }
