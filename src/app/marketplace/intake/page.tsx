@@ -22,6 +22,7 @@ import {
 } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { PRO_NAV } from "@/components/pro/nav";
+import { TradeSearch } from "@/components/TradeSearch";
 import {
   Bolt,
   BrushCleaning,
@@ -144,10 +145,7 @@ export default function Page() {
   const [step, setStep] = useState<StepKey>("select_service");
   const [portalScheduleStep, setPortalScheduleStep] = useState<"date" | "window" | "contact">("date");
   const [showAllTradeServices, setShowAllTradeServices] = useState(false);
-  const [tradeQuery, setTradeQuery] = useState("");
   const [tradeServicesOpen, setTradeServicesOpen] = useState(false);
-  const tradeSearchRef = useMemo(() => ({ current: null as HTMLInputElement | null }), []);
-  const tradeDebounceRef = useMemo(() => ({ current: null as any }), []);
 
   // Keep textarea typing isolated from the large draft object to avoid any focus jank.
   const [issueFieldKey, setIssueFieldKey] = useState(0);
@@ -172,40 +170,6 @@ export default function Page() {
       }
     };
   }, [issuePreviews]);
-  const tradeSearchResults = useMemo(() => {
-    const q = tradeQuery.trim().toLowerCase();
-    if (q.length < 2) return [] as Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string }>;
-
-    const results: Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string; score: number }> = [];
-
-    // Trade matches
-    for (const t of TRADE_OPTIONS) {
-      const hay = t.toLowerCase();
-      if (hay.includes(q)) {
-        results.push({ kind: "trade", trade: t, label: t, score: hay.startsWith(q) ? 120 : 90 });
-      }
-    }
-
-    // Service matches
-    const services = (taxonomy as any)?.services || [];
-    for (const s of services) {
-      const trade = String((s as any)?.trade || "");
-      const label = String((s as any)?.label || "");
-      const category = String((s as any)?.category || "");
-      if (!trade || !label) continue;
-
-      const hay = label.toLowerCase();
-      if (!hay.includes(q)) continue;
-
-      const score = hay.startsWith(q) ? 110 : 80;
-      results.push({ kind: "service", trade, label, sub: category || undefined, score });
-    }
-
-    return results
-      .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))
-      .slice(0, 8)
-      .map(({ score: _score, ...rest }) => rest);
-  }, [tradeQuery]);
   const [draft, setDraft] = useState<IntakeDraft>(() => {
     const d = loadDraft();
     try {
@@ -773,51 +737,20 @@ export default function Page() {
 
                       {/* Search → suggest services/trades */}
                       <div className="mt-3">
-                        <div className="relative">
-                          <Input
-                            ref={(el) => {
-                              (tradeSearchRef as any).current = el;
-                            }}
-                            defaultValue={tradeQuery}
-                            onInput={(e) => {
-                              const v = String(e.currentTarget.value || "");
-                              // Debounce so typing doesn't cause aggressive re-renders (which can steal focus in some browsers).
-                              if ((tradeDebounceRef as any).current) window.clearTimeout((tradeDebounceRef as any).current);
-                              (tradeDebounceRef as any).current = window.setTimeout(() => setTradeQuery(v), 120);
-                            }}
-                            placeholder="Search a service (e.g., leaking sink, outlet, deep clean…)"
-                          />
-
-                          {tradeSearchResults.length ? (
-                            <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white shadow-[0_18px_40px_rgba(17,24,39,.10)]">
-                              {tradeSearchResults.map((r, idx) => (
-                                <button
-                                  key={`${r.kind}:${r.trade}:${r.label}:${idx}`}
-                                  type="button"
-                                  onClick={() => {
-                                    setShowAllTradeServices(false);
-                                    update({ service_category: r.trade });
-                                    // keep the query as feedback, but collapse suggestions
-                                    const v = r.kind === "trade" ? r.trade : r.label;
-                                    try {
-                                      if ((tradeSearchRef as any).current) (tradeSearchRef as any).current.value = v;
-                                    } catch {}
-                                    setTradeQuery(v);
-                                  }}
-                                  className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-[var(--hw-soft)]"
-                                >
-                                  <div className="min-w-0">
-                                    <div className="font-semibold text-[var(--hw-ink)] truncate">{r.label}</div>
-                                    <div className="mt-0.5 text-xs text-[var(--hw-muted)] truncate">
-                                      {r.kind === "service" ? (r.sub ? `${r.trade} • ${r.sub}` : r.trade) : "Trade"}
-                                    </div>
-                                  </div>
-                                  <div className="shrink-0 text-xs font-semibold text-[var(--hw-red)]">Select</div>
-                                </button>
-                              ))}
-                            </div>
-                          ) : null}
-                        </div>
+                        <TradeSearch
+                          placeholder="Search a service (e.g., leaking sink, outlet, deep clean…)"
+                          trades={TRADE_OPTIONS}
+                          services={(((taxonomy as any)?.services || []) as any[]).map((s) => ({
+                            trade: String(s?.trade || ""),
+                            label: String(s?.label || ""),
+                            category: String(s?.category || "") || undefined,
+                          }))}
+                          onSelect={(r) => {
+                            setShowAllTradeServices(false);
+                            setTradeServicesOpen(false);
+                            update({ service_category: r.trade, service_subcategory: "" });
+                          }}
+                        />
                       </div>
 
                       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 items-start">
