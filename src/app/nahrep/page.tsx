@@ -276,59 +276,55 @@ function TopOfMindVisual() {
               </div>
               <div className="mt-2 max-w-[440px] text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">Your home team stays visible</div>
             </div>
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[rgba(229,57,53,.18)] bg-white px-3 py-2 text-xs font-extrabold text-[var(--hw-red)] shadow-sm">
+            <div className="inline-flex w-fit min-w-[196px] items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[rgba(229,57,53,.18)] bg-white px-3 py-2 text-xs font-extrabold text-[var(--hw-red)] shadow-sm">
               <Users className="h-4 w-4" />
               Connected relationship
             </div>
           </div>
 
-          <div className="mt-5 grid gap-5 lg:grid-cols-[1.02fr_.98fr] lg:items-stretch">
-            <div className="rounded-[24px] border border-[rgba(229,57,53,.16)] bg-white/80 p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {pros.map((pro) => (
-                  <div
-                    key={pro.name}
-                    className={`relative min-h-[132px] rounded-[22px] border border-[var(--hw-line)] ${pro.accent} p-4 shadow-[0_16px_34px_rgba(17,24,39,.08)] transition-transform ${pro.rotate}`}
-                  >
-                    <div className="absolute right-4 top-4 h-2.5 w-2.5 rounded-full bg-[var(--hw-red)] shadow-[0_0_0_5px_rgba(229,57,53,.10)]" />
-                    <div className="flex items-center gap-3.5 pr-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-white text-sm font-extrabold text-[var(--hw-ink)] shadow-[0_10px_24px_rgba(17,24,39,.12)]">
-                        {pro.src ? (
-                          pro.src.startsWith("http") ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={pro.src} alt={pro.name} className="h-full w-full object-cover" />
-                          ) : (
-                            <Image src={pro.src} alt={pro.name} width={56} height={56} className="h-full w-full object-cover" />
-                          )
+          <div className="mt-5 rounded-[24px] border border-[rgba(229,57,53,.16)] bg-white/85 p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {pros.map((pro) => (
+                <div key={pro.name} className={`min-w-0 rounded-[18px] border border-[var(--hw-line)] ${pro.accent} p-3 shadow-[0_12px_28px_rgba(17,24,39,.07)]`}>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-white text-sm font-extrabold text-[var(--hw-ink)] shadow-[0_10px_22px_rgba(17,24,39,.10)]">
+                      {pro.src ? (
+                        pro.src.startsWith("http") ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={pro.src} alt={pro.name} className="h-full w-full object-cover" />
                         ) : (
-                          pro.initials
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-base font-extrabold leading-5 text-[var(--hw-ink)]">{pro.name}</div>
-                        <div className="mt-1 inline-flex rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-[var(--hw-red)] shadow-sm">
-                          {pro.role}
-                        </div>
-                      </div>
+                          <Image src={pro.src} alt={pro.name} width={48} height={48} className="h-full w-full object-cover" />
+                        )
+                      ) : (
+                        pro.initials
+                      )}
                     </div>
-                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--hw-line)] pt-3">
-                      <div className="text-sm font-semibold leading-5 text-[var(--hw-muted)]">{pro.company}</div>
-                      <div className="shrink-0 text-[10px] font-extrabold uppercase tracking-wide text-[var(--hw-red)]">Visible</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-extrabold leading-5 text-[var(--hw-ink)]">{pro.name}</div>
+                      <div className="mt-1 flex min-w-0 items-center gap-2">
+                        <span className="shrink-0 rounded-full bg-white px-2 py-1 text-[9px] font-extrabold uppercase tracking-wide text-[var(--hw-red)] shadow-sm">
+                          {pro.role}
+                        </span>
+                        <span className="min-w-0 truncate text-xs font-semibold text-[var(--hw-muted)]">{pro.company}</span>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-
-              <div className="mt-4 rounded-[18px] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.06)] px-4 py-3">
-                <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[var(--hw-red)]">
-                  <Clock3 className="h-3.5 w-3.5" />
-                  Work order status
                 </div>
-                <div className="mt-2 text-lg font-extrabold text-[var(--hw-ink)]">Inspection repair estimate</div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-4 lg:grid-cols-[.88fr_1.12fr] lg:items-stretch">
+            <div className="rounded-[20px] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.06)] p-4">
+              <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[var(--hw-red)]">
+                <Clock3 className="h-3.5 w-3.5" />
+                Work order status
               </div>
+              <div className="mt-3 text-xl font-extrabold text-[var(--hw-ink)]">Inspection repair estimate</div>
+              <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">The trusted home team stays attached to the next step.</div>
             </div>
 
-            <div className="rounded-[24px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
+            <div className="rounded-[20px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work order thread</div>
                 <MessageSquareText className="h-4 w-4 text-[var(--hw-red)]" />
