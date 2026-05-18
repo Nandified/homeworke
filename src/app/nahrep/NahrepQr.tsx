@@ -13,6 +13,7 @@ export function NahrepQr() {
     let cancelled = false;
     (async () => {
       const url = new URL("/request-access", window.location.origin);
+      url.searchParams.set("role", "real-estate-pro");
       url.searchParams.set("source", "nahrep");
       url.searchParams.set("campaign", "instant-estimates-beta");
       const nextJoinUrl = url.toString();

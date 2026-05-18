@@ -172,7 +172,14 @@ function BrowserFrame({ children, className = "" }: { children: React.ReactNode;
         <span className="h-3 w-3 rounded-full bg-[#28C840]" />
         <span className="ml-3 h-5 flex-1 rounded-full border border-[var(--hw-line)] bg-white" />
       </div>
-      <div className="bg-[radial-gradient(600px_260px_at_15%_0%,rgba(229,57,53,.12),transparent_55%),#fff] p-4 md:p-6">{children}</div>
+      <div
+        className="p-4 md:p-6"
+        style={{
+          background: "radial-gradient(600px 260px at 15% 0%, rgba(229,57,53,.12), transparent 55%), #fff",
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -230,7 +237,13 @@ export default function NahrepLandingPage() {
       <SiteHeader ctaHref={betaUrl} />
 
       <main>
-        <section className="relative min-h-[calc(100vh-64px)] overflow-hidden border-b border-[var(--hw-line)] bg-[radial-gradient(900px_460px_at_80%_4%,rgba(229,57,53,.14),transparent_58%),linear-gradient(180deg,#fff_0%,#fff_60%,#F8FAFC_100%)]">
+        <section
+          className="relative min-h-[calc(100vh-64px)] overflow-hidden border-b border-[var(--hw-line)]"
+          style={{
+            background:
+              "radial-gradient(900px 460px at 80% 4%, rgba(229,57,53,.14), transparent 58%), linear-gradient(180deg, #fff 0%, #fff 60%, #F8FAFC 100%)",
+          }}
+        >
           <div
             aria-hidden
             className="absolute inset-0 opacity-[0.12]"
@@ -328,7 +341,10 @@ export default function NahrepLandingPage() {
           </Container>
         </section>
 
-        <section className="border-y border-[var(--hw-line)] bg-[linear-gradient(180deg,#F8FAFC,#fff)] py-16 md:py-24">
+        <section
+          className="border-y border-[var(--hw-line)] py-16 md:py-24"
+          style={{ background: "linear-gradient(180deg, #F8FAFC, #fff)" }}
+        >
           <Container className="max-w-[1180px]">
             <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
               <div>
@@ -348,7 +364,12 @@ export default function NahrepLandingPage() {
 
         <section className="py-16 md:py-24">
           <Container className="max-w-[1180px]">
-            <div className="rounded-[34px] border border-[rgba(229,57,53,.28)] bg-[radial-gradient(520px_260px_at_85%_0%,rgba(229,57,53,.34),transparent_62%),var(--hw-ink)] p-6 text-white shadow-[0_34px_90px_rgba(17,24,39,.28)] md:p-10">
+            <div
+              className="rounded-[34px] border border-[rgba(229,57,53,.28)] p-6 text-white shadow-[0_34px_90px_rgba(17,24,39,.28)] md:p-10"
+              style={{
+                background: "radial-gradient(520px 260px at 85% 0%, rgba(229,57,53,.34), transparent 62%), #111827",
+              }}
+            >
               <div className="grid gap-6 lg:grid-cols-[1fr_260px] lg:items-center">
                 <div>
                   <div className="text-sm font-extrabold uppercase tracking-widest text-white/60">Ready for beta users</div>

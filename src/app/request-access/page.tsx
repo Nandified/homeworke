@@ -78,12 +78,12 @@ function RequestAccessClient() {
         <div className="relative flex items-start justify-between gap-5">
           <div>
             <Image
-              src="/brand/homeworke-logo.avif"
+              src="/brand/homeworke-logo.png"
               alt="Homeworke"
-              width={190}
-              height={72}
+              width={248}
+              height={80}
               priority
-              className="h-auto w-[170px]"
+              className="h-auto w-[210px]"
             />
             <div className="mt-5 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">
               {type === "apply" ? "Apply to join" : "Request access"}
@@ -147,7 +147,13 @@ function RequestAccessClient() {
 
 export default function RequestAccessPage() {
   return (
-    <main className="min-h-[calc(100vh-64px)] overflow-hidden bg-[radial-gradient(760px_380px_at_52%_0%,rgba(229,57,53,.12),transparent_60%),linear-gradient(180deg,#fff,#F8FAFC)] px-4 py-10 md:py-14">
+    <main
+      className="min-h-[calc(100vh-64px)] overflow-hidden px-4 py-10 md:py-14"
+      style={{
+        background:
+          "radial-gradient(760px 380px at 52% 0%, rgba(229,57,53,.12), transparent 60%), linear-gradient(180deg, #fff, #F8FAFC)",
+      }}
+    >
       <Suspense fallback={null}>
         <RequestAccessClient />
       </Suspense>
