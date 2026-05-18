@@ -46,7 +46,7 @@ const pillars = [
     icon: BellRing,
     eyebrow: "Staying Top of Mind",
     title: "Stay useful after closing without becoming the contractor.",
-    text: "Give clients a branded homeownership resource that keeps the Real Estate Pro connected to future repair moments.",
+    text: "Give clients a home dashboard where the broker, lender, insurance agent, and inspector stay visible around repair moments.",
   },
 ];
 
@@ -221,18 +221,32 @@ function RehabLoanVisual() {
 
 function TopOfMindVisual() {
   const pros = [
-    { name: "Fernando Rocha Jr", company: "The FRJ Group", src: "/partners/frj-headshot.jpg" },
-    { name: "Maria Alvarez", company: "NAHREP Pro", initials: "MA" },
-    { name: "Luis Moreno", company: "Broker Partner", initials: "LM" },
+    { name: "Fernando Rocha Jr", role: "Real Estate Broker", company: "The FRJ Group", src: "/partners/frj-headshot.jpg" },
+    {
+      name: "Justin Rodriguez",
+      role: "Mortgage Lender",
+      company: "Neighborhood Loans",
+      src: "https://neighborhoodloans.com/wp-content/uploads/2021/10/justin-Headshot.jpg",
+    },
+    {
+      name: "Guillermo Chavez",
+      role: "Home Insurance",
+      company: "State Farm",
+      src: "https://ac1.st8fm.com/associate-photos/Z/ZCKLR7FVHGE/formalColorFull.jpg",
+    },
+    { name: "Tony Ramirez", role: "Home Inspector", company: "Top Tier Inspections", initials: "TR" },
   ];
 
   return (
-    <BrowserFrame className="max-w-[760px]">
-      <div className="relative overflow-hidden rounded-[26px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
+    <BrowserFrame className="w-full max-w-[920px]">
+      <div className="relative overflow-hidden rounded-[26px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)] md:p-6">
         <div
           aria-hidden
           className="absolute inset-0"
-          style={{ background: "radial-gradient(420px 220px at 88% 0%, rgba(229,57,53,.14), transparent 62%)" }}
+          style={{
+            background:
+              "radial-gradient(520px 260px at 86% 0%, rgba(229,57,53,.16), transparent 62%), radial-gradient(420px 280px at 8% 14%, rgba(229,57,53,.08), transparent 66%)",
+          }}
         />
 
         <div className="relative">
@@ -242,7 +256,7 @@ function TopOfMindVisual() {
                 <Home className="h-3.5 w-3.5 text-[var(--hw-red)]" />
                 Homeowner dashboard
               </div>
-              <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Your Pro Team stays visible</div>
+              <div className="mt-2 max-w-[440px] text-2xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-3xl">Your home team stays visible</div>
             </div>
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[rgba(229,57,53,.18)] bg-white px-3 py-2 text-xs font-extrabold text-[var(--hw-red)] shadow-sm">
               <Users className="h-4 w-4" />
@@ -250,33 +264,50 @@ function TopOfMindVisual() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {pros.map((pro) => (
-              <div key={pro.name} className="rounded-[20px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-                <div className="flex items-center gap-3">
+              <div key={pro.name} className="rounded-[20px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3.5 shadow-[0_14px_32px_rgba(17,24,39,.06)]">
+                <div className="flex items-start gap-3">
                   <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-white text-sm font-extrabold text-[var(--hw-ink)] shadow-[0_10px_24px_rgba(17,24,39,.10)]">
-                    {pro.src ? <Image src={pro.src} alt={pro.name} width={52} height={52} className="h-full w-full object-cover" /> : pro.initials}
+                    {pro.src ? (
+                      pro.src.startsWith("http") ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={pro.src} alt={pro.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <Image src={pro.src} alt={pro.name} width={52} height={52} className="h-full w-full object-cover" />
+                      )
+                    ) : (
+                      pro.initials
+                    )}
                   </div>
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-extrabold text-[var(--hw-ink)]">{pro.name}</div>
-                    <div className="mt-0.5 truncate text-xs font-semibold text-[var(--hw-muted)]">{pro.company}</div>
-                    <div className="mt-2 w-fit rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-[var(--hw-red)] shadow-sm">
-                      Connected
-                    </div>
+                    <div className="text-sm font-extrabold leading-4 text-[var(--hw-ink)]">{pro.name}</div>
+                    <div className="mt-1 text-[11px] font-extrabold uppercase tracking-wide text-[var(--hw-red)]">{pro.role}</div>
+                    <div className="mt-0.5 text-xs font-semibold leading-4 text-[var(--hw-muted)]">{pro.company}</div>
                   </div>
+                </div>
+                <div className="mt-3 w-fit rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-[var(--hw-red)] shadow-sm">
+                  Connected
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-5 grid gap-4 lg:grid-cols-[260px_1fr]">
+          <div className="mt-5 grid gap-4 lg:grid-cols-[1.05fr_.95fr]">
             <div className="rounded-[20px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
               <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[var(--hw-red)]">
                 <Clock3 className="h-3.5 w-3.5" />
                 Work order status
               </div>
-              <div className="mt-4 text-lg font-extrabold text-[var(--hw-ink)]">Inspection repair estimate</div>
-              <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">Estimate ready. Homeowner and Real Estate Pro are both in the loop.</div>
+              <div className="mt-4 text-xl font-extrabold text-[var(--hw-ink)]">Inspection repair estimate</div>
+              <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">The client sees the repair moment, and the trusted home team stays attached to the next step.</div>
+              <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                {["Estimate ready", "Broker visible", "Lender aligned", "Inspector context"].map((item) => (
+                  <div key={item} className="rounded-full bg-white px-3 py-2 text-center text-[11px] font-extrabold text-[var(--hw-ink)] shadow-sm">
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="rounded-[20px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_12px_30px_rgba(17,24,39,.06)]">
@@ -286,16 +317,16 @@ function TopOfMindVisual() {
               </div>
               <div className="mt-4 grid gap-3">
                 <div className="max-w-[92%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
-                  Your estimate is ready. Fernando can see the repair summary too.
+                  Your estimate is ready. Your home team can see the repair summary and next steps.
                 </div>
                 <div className="ml-auto max-w-[88%] rounded-2xl bg-[#111827] px-4 py-3 text-sm leading-6 text-white shadow-sm">
-                  Great, please keep my agent updated.
+                  Great, keep my team updated.
                 </div>
                 <div className="rounded-[16px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] px-4 py-3">
                   <div className="flex items-center gap-3">
                     <Users className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
                     <div className="text-xs font-semibold leading-5 text-[var(--hw-ink)]">
-                      Real Estate Pro attribution stays attached to the client relationship.
+                      Broker, lender, insurance, and inspector stay present through the home journey.
                     </div>
                   </div>
                 </div>
@@ -312,17 +343,23 @@ function PillarSection({
   pillar,
   visual,
   flip = false,
+  wide = false,
 }: {
   pillar: (typeof pillars)[number];
   visual: React.ReactNode;
   flip?: boolean;
+  wide?: boolean;
 }) {
   const Icon = pillar.icon;
 
   return (
     <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
       <Container className="max-w-[1180px]">
-        <div className={`grid gap-10 lg:grid-cols-[0.84fr_1.16fr] lg:items-center ${flip ? "lg:[&>*:first-child]:order-2" : ""}`}>
+        <div
+          className={`grid gap-10 lg:items-center ${
+            wide ? "lg:grid-cols-[1.28fr_.72fr]" : "lg:grid-cols-[0.84fr_1.16fr]"
+          } ${flip ? "lg:[&>*:first-child]:order-2" : ""}`}
+        >
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(229,57,53,.20)] bg-white px-3 py-2 text-xs font-extrabold uppercase tracking-widest text-[var(--hw-red)] shadow-sm">
               <Icon className="h-4 w-4" />
@@ -423,7 +460,7 @@ export default function NahrepLandingPage() {
         <PillarSection pillar={pillars[0]} visual={<InstantEstimateVisual />} />
         <PillarSection pillar={pillars[1]} visual={<HomeworkeAiVisual />} flip />
         <PillarSection pillar={pillars[2]} visual={<RehabLoanVisual />} />
-        <PillarSection pillar={pillars[3]} visual={<TopOfMindVisual />} flip />
+        <PillarSection pillar={pillars[3]} visual={<TopOfMindVisual />} flip wide />
 
         <section className="py-16 md:py-24">
           <Container className="max-w-[1180px]">
