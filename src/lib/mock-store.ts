@@ -318,6 +318,11 @@ export function getWorkOrder(token: string, id: string) {
   return store().workOrders.find((w) => w.token === token && w.id === id) || null;
 }
 
+// Operator access helper (Home Guide / admin views)
+export function getWorkOrderById(id: string) {
+  return store().workOrders.find((w) => w.id === id) || null;
+}
+
 export function updateWorkOrderSchedule(token: string, id: string, input: { preferredDate?: string; preferredWindow?: string }) {
   const wo = getWorkOrder(token, id);
   if (!wo) return null;
