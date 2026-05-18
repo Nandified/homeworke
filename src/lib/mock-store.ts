@@ -28,6 +28,10 @@ export type WorkOrder = {
   preferredWindow?: string;
   appointments?: WorkOrderAppointment[];
   status: WorkOrderStatus;
+
+  // Operator-managed fields (Home Guide)
+  scopeText?: string;
+  selectedEstimateId?: string;
 };
 
 export type Property = {
@@ -59,6 +63,24 @@ export type Message = {
   fromRole: "HO" | "PARTNER" | "SP" | "HG" | "PM" | "SYSTEM";
   body: string;
   readAt?: string | null;
+};
+
+export type Estimate = {
+  id: string;
+  createdAt: string;
+  workOrderId: string;
+  providerName: string;
+  totalCents: number;
+  status: "sent" | "replaced";
+  expiresAt?: string;
+};
+
+export type Document = {
+  id: string;
+  createdAt: string;
+  workOrderId: string;
+  title: string;
+  url: string;
 };
 
 export type HelpDeskStatus = "pending" | "accepted" | "solved";
@@ -104,6 +126,8 @@ type Store = {
   workOrders: WorkOrder[];
   properties: Property[];
   messages: Message[];
+  estimates: Estimate[];
+  documents: Document[];
   helpDesk: HelpDeskTicket[];
   providers: ServiceProvider[];
   people: PersonDirectoryEntry[];
@@ -112,7 +136,17 @@ type Store = {
 // Demo seeding
 export function seedDemoStoreIfEmpty() {
   const s = store();
-  if (s.workOrders.length || s.properties.length || s.messages.length || s.helpDesk.length || s.providers.length || s.people.length) return;
+  if (
+    s.workOrders.length ||
+    s.properties.length ||
+    s.messages.length ||
+    s.estimates.length ||
+    s.documents.length ||
+    s.helpDesk.length ||
+    s.providers.length ||
+    s.people.length
+  )
+    return;
 
   const token = "demo";
   const partnerId = "frj";
@@ -361,6 +395,38 @@ export function seedDemoStoreIfEmpty() {
     }
   );
 
+  // Estimates + docs for a couple of seeded work orders so Project Detail looks real.
+  const woForEstimates = store().workOrders.find((w) => w.serviceSubcategory?.toLowerCase().includes("electrical")) || store().workOrders[0];
+  if (woForEstimates) {
+    store().estimates.unshift(
+      {
+        id: "est_demo_1",
+        createdAt: new Date(now - 1000 * 60 * 60 * 26).toISOString(),
+        workOrderId: woForEstimates.id,
+        providerName: "Alberto Anaya",
+        totalCents: 480000,
+        status: "sent",
+        expiresAt: new Date(now + 1000 * 60 * 60 * 24 * 10).toISOString(),
+      },
+      {
+        id: "est_demo_2",
+        createdAt: new Date(now - 1000 * 60 * 60 * 22).toISOString(),
+        workOrderId: woForEstimates.id,
+        providerName: "Raul Rosas",
+        totalCents: 510000,
+        status: "sent",
+        expiresAt: new Date(now + 1000 * 60 * 60 * 24 * 8).toISOString(),
+      }
+    );
+    store().documents.unshift({
+      id: "doc_demo_1",
+      createdAt: new Date(now - 1000 * 60 * 60 * 20).toISOString(),
+      workOrderId: woForEstimates.id,
+      title: "Inspection Report PDF",
+      url: "https://example.com/inspection.pdf",
+    });
+  }
+
   // Help Desk tickets
   store().helpDesk.unshift(
     {
@@ -404,7 +470,7 @@ function getGlobal(): { __HW3_STORE__?: Store } {
 export function store(): Store {
   const g = getGlobal();
   if (!g.__HW3_STORE__) {
-    g.__HW3_STORE__ = { workOrders: [], properties: [], messages: [], helpDesk: [], providers: [], people: [] };
+    g.__HW3_STORE__ = { workOrders: [], properties: [], messages: [], estimates: [], documents: [], helpDesk: [], providers: [], people: [] };
   }
   return g.__HW3_STORE__;
 }

@@ -57,5 +57,12 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     return json({ ok: true, workOrder: wo });
   }
 
+  if (action === "set_scope") {
+    const wo = getWorkOrderById(id);
+    if (!wo) return json({ ok: false, error: "not_found" }, { status: 404 });
+    (wo as any).scopeText = typeof body.scopeText === "string" ? String(body.scopeText) : "";
+    return json({ ok: true, workOrder: wo });
+  }
+
   return json({ ok: false, error: "unsupported_action" }, { status: 400 });
 }
