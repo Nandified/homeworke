@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui";
 
 export function MyHomeworkeMenu() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
@@ -82,7 +84,30 @@ export function MyHomeworkeMenu() {
     <div ref={wrapRef} className="relative">
       <Button
         variant="secondary"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          // If we can detect an active portal context, route directly instead of showing the chooser.
+          // This is the expected behavior for returning users.
+          try {
+            const rawSession = window.localStorage.getItem("hw_session_v1");
+            const session = rawSession ? (JSON.parse(rawSession) as any) : null;
+            if (session?.token) {
+              // Homeowner sessions are stored here.
+              router.push("/ho/dashboard");
+              return;
+            }
+          } catch {}
+
+          try {
+            const rawPartner = window.localStorage.getItem("hw3_partner_context_v1");
+            const partner = rawPartner ? (JSON.parse(rawPartner) as any) : null;
+            if (partner?.partnerId) {
+              router.push("/pro/dashboard");
+              return;
+            }
+          } catch {}
+
+          setOpen((v) => !v);
+        }}
         aria-haspopup="menu"
         aria-expanded={open}
         className="h-10 rounded-full px-3 text-sm sm:h-11 sm:px-4"
