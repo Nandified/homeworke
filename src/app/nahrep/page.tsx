@@ -301,11 +301,11 @@ function TopOfMindVisual() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-extrabold leading-5 text-[var(--hw-ink)]">{pro.name}</div>
-                      <div className="mt-1 flex min-w-0 items-center gap-2">
-                        <span className="shrink-0 rounded-full bg-white px-2 py-1 text-[9px] font-extrabold uppercase tracking-wide text-[var(--hw-red)] shadow-sm">
+                      <div className="mt-1">
+                        <span className="inline-flex rounded-full bg-white px-2 py-1 text-[9px] font-extrabold uppercase tracking-wide text-[var(--hw-red)] shadow-sm">
                           {pro.role}
                         </span>
-                        <span className="min-w-0 truncate text-xs font-semibold text-[var(--hw-muted)]">{pro.company}</span>
+                        <div className="mt-1 truncate text-xs font-semibold text-[var(--hw-muted)]">{pro.company}</div>
                       </div>
                     </div>
                   </div>
@@ -322,6 +322,14 @@ function TopOfMindVisual() {
               </div>
               <div className="mt-3 text-xl font-extrabold text-[var(--hw-ink)]">Inspection repair estimate</div>
               <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">The trusted home team stays attached to the next step.</div>
+              <div className="mt-5 grid gap-2">
+                {["Estimate ready", "Team notified", "Repair summary shared"].map((item) => (
+                  <div key={item} className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[11px] font-extrabold text-[var(--hw-ink)] shadow-sm">
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[var(--hw-red)]" />
+                    {item}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="rounded-[20px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
@@ -408,7 +416,7 @@ export default function NahrepLandingPage() {
 
       <main>
         <section
-          className="relative min-h-[calc(100vh-64px)] overflow-hidden border-b border-[var(--hw-line)]"
+          className="relative overflow-hidden border-b border-[var(--hw-line)]"
           style={{
             background:
               "radial-gradient(900px 460px at 80% 4%, rgba(229,57,53,.16), transparent 58%), linear-gradient(180deg, #fff 0%, #fff 60%, #F8FAFC 100%)",
@@ -424,7 +432,7 @@ export default function NahrepLandingPage() {
               WebkitMaskImage: "linear-gradient(to bottom, black, transparent 82%)",
             }}
           />
-          <Container className="relative max-w-[1180px] py-10 md:py-16">
+          <Container className="relative max-w-[1180px] py-8 md:py-10 lg:py-12">
             <div className="grid gap-10 lg:grid-cols-[1fr_430px] lg:items-center">
               <div>
                 <div className="flex flex-wrap gap-2">
