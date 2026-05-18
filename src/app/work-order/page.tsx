@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { loadPartner } from "@/lib/partner-context";
@@ -145,9 +145,9 @@ export default function Page() {
   const [portalScheduleStep, setPortalScheduleStep] = useState<"date" | "window" | "contact">("date");
   const [showAllTradeServices, setShowAllTradeServices] = useState(false);
   const [tradeQuery, setTradeQuery] = useState("");
+  const deferredTradeQuery = useDeferredValue(tradeQuery);
   const [tradeServicesOpen, setTradeServicesOpen] = useState(false);
   const tradeSearchRef = useMemo(() => ({ current: null as HTMLInputElement | null }), []);
-  const tradeDebounceRef = useMemo(() => ({ current: null as any }), []);
 
   // Keep textarea typing isolated from the large draft object to avoid any focus jank.
   const [issueFieldKey, setIssueFieldKey] = useState(0);
@@ -173,7 +173,7 @@ export default function Page() {
     };
   }, [issuePreviews]);
   const tradeSearchResults = useMemo(() => {
-    const q = tradeQuery.trim().toLowerCase();
+    const q = deferredTradeQuery.trim().toLowerCase();
     if (q.length < 2) return [] as Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string }>;
 
     const results: Array<{ kind: "trade" | "service"; trade: string; label: string; sub?: string; score: number }> = [];
@@ -205,7 +205,7 @@ export default function Page() {
       .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))
       .slice(0, 8)
       .map(({ score: _score, ...rest }) => rest);
-  }, [tradeQuery]);
+  }, [deferredTradeQuery]);
   const [draft, setDraft] = useState<IntakeDraft>(() => {
     const d = loadDraft();
     try {
@@ -779,13 +779,8 @@ export default function Page() {
                             ref={(el) => {
                               (tradeSearchRef as any).current = el;
                             }}
-                            defaultValue={tradeQuery}
-                            onInput={(e) => {
-                              const v = String(e.currentTarget.value || "");
-                              // Debounce so typing doesn't cause aggressive re-renders (which can steal focus in some browsers).
-                              if ((tradeDebounceRef as any).current) window.clearTimeout((tradeDebounceRef as any).current);
-                              (tradeDebounceRef as any).current = window.setTimeout(() => setTradeQuery(v), 120);
-                            }}
+                            value={tradeQuery}
+                            onChange={(e) => setTradeQuery(String(e.currentTarget.value || ""))}
                             placeholder="Search a service (e.g., leaking sink, outlet, deep clean…)"
                           />
 
