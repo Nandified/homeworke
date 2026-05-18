@@ -61,16 +61,58 @@ export type Message = {
   readAt?: string | null;
 };
 
+export type HelpDeskStatus = "pending" | "accepted" | "solved";
+export type HelpDeskTicket = {
+  id: string;
+  createdAt: string;
+  assignedAt?: string;
+  status: HelpDeskStatus;
+  userName: string;
+  userRole: "Homeowner" | "Real Estate Pro" | "Service Provider";
+  userEmail?: string;
+  userPhone?: string;
+  message: string;
+  homeGuideName?: string;
+  notes?: Array<{ id: string; body: string; createdAt: string }>;
+};
+
+export type ProviderApprovalStatus = "join_request" | "approved" | "rejected";
+export type ServiceProvider = {
+  id: string;
+  createdAt: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  approvalStatus: ProviderApprovalStatus;
+  completionPct: number;
+  trades: string[];
+  rating?: number;
+};
+
+export type PersonDirectoryEntry = {
+  id: string;
+  createdAt: string;
+  kind: "customer" | "rep";
+  fullName: string;
+  email?: string;
+  phone?: string;
+  primaryAddress?: string;
+  activeWorkOrders?: number;
+};
+
 type Store = {
   workOrders: WorkOrder[];
   properties: Property[];
   messages: Message[];
+  helpDesk: HelpDeskTicket[];
+  providers: ServiceProvider[];
+  people: PersonDirectoryEntry[];
 };
 
 // Demo seeding
 export function seedDemoStoreIfEmpty() {
   const s = store();
-  if (s.workOrders.length || s.properties.length || s.messages.length) return;
+  if (s.workOrders.length || s.properties.length || s.messages.length || s.helpDesk.length || s.providers.length || s.people.length) return;
 
   const token = "demo";
   const partnerId = "frj";
@@ -259,6 +301,98 @@ export function seedDemoStoreIfEmpty() {
   push(threads[2], 9, "HO", "Yep, I can take them after work.");
   push(threads[2], 10, "HG", "Perfect. Upload here anytime — we’ll update the estimate within the hour.");
 
+  // People directory (Customers + Real Estate Pros)
+  store().people.unshift(
+    {
+      id: "cust_demo_1",
+      createdAt: new Date(now - 1000 * 60 * 60 * 24 * 14).toISOString(),
+      kind: "customer",
+      fullName: "Estrella Puente",
+      email: "estrella@example.com",
+      phone: "+1 (312) 555-0138",
+      primaryAddress: "3836 Home Avenue, Berwyn, IL 60402",
+      activeWorkOrders: 1,
+    },
+    {
+      id: "cust_demo_2",
+      createdAt: new Date(now - 1000 * 60 * 60 * 24 * 40).toISOString(),
+      kind: "customer",
+      fullName: "Desyi Mejia",
+      email: "desyi@example.com",
+      phone: "+1 (312) 555-0164",
+      primaryAddress: "2310 Cuyler Avenue, Berwyn, IL 60402",
+      activeWorkOrders: 1,
+    },
+    {
+      id: "rep_demo_1",
+      createdAt: new Date(now - 1000 * 60 * 60 * 24 * 120).toISOString(),
+      kind: "rep",
+      fullName: "Fernando Rocha Jr",
+      email: "fernando@thefrjgroup.com",
+      phone: "+1 (312) 555-0101",
+      primaryAddress: "Chicago, IL",
+      activeWorkOrders: 3,
+    }
+  );
+
+  // Service Providers
+  store().providers.unshift(
+    {
+      id: "sp_demo_1",
+      createdAt: new Date(now - 1000 * 60 * 60 * 24 * 3).toISOString(),
+      fullName: "Alberto Anaya",
+      email: "alberto@asquareproperties.com",
+      phone: "+1 (773) 555-0109",
+      approvalStatus: "join_request",
+      completionPct: 62,
+      trades: ["Masonry / Concrete / Asphalt"],
+      rating: 4.7,
+    },
+    {
+      id: "sp_demo_2",
+      createdAt: new Date(now - 1000 * 60 * 60 * 24 * 18).toISOString(),
+      fullName: "Raul Rosas",
+      email: "raul@example.com",
+      phone: "+1 (773) 555-0157",
+      approvalStatus: "approved",
+      completionPct: 94,
+      trades: ["Plumbing", "Handyman / General"],
+      rating: 4.9,
+    }
+  );
+
+  // Help Desk tickets
+  store().helpDesk.unshift(
+    {
+      id: "ticket_demo_1",
+      createdAt: new Date(now - 1000 * 60 * 45).toISOString(),
+      assignedAt: new Date(now - 1000 * 60 * 30).toISOString(),
+      status: "pending",
+      userName: "Yadira Adunas",
+      userRole: "Real Estate Pro",
+      userEmail: "yadira@example.com",
+      userPhone: "+1 (312) 555-0199",
+      message: "My client invite link isn’t working — can you resend?",
+      homeGuideName: "Home Guide Queue",
+      notes: [
+        { id: "note_1", body: "Repro attempt: link redirects to /login/partner without preserving next.", createdAt: new Date(now - 1000 * 60 * 20).toISOString() },
+      ],
+    },
+    {
+      id: "ticket_demo_2",
+      createdAt: new Date(now - 1000 * 60 * 60 * 24).toISOString(),
+      assignedAt: new Date(now - 1000 * 60 * 60 * 23).toISOString(),
+      status: "accepted",
+      userName: "Saul Margarito",
+      userRole: "Homeowner",
+      userEmail: "saul@example.com",
+      userPhone: "+1 (312) 555-0170",
+      message: "I uploaded my inspection PDF but it’s stuck on processing.",
+      homeGuideName: "Sarah Banu",
+      notes: [],
+    }
+  );
+
 }
 
 
@@ -270,7 +404,7 @@ function getGlobal(): { __HW3_STORE__?: Store } {
 export function store(): Store {
   const g = getGlobal();
   if (!g.__HW3_STORE__) {
-    g.__HW3_STORE__ = { workOrders: [], properties: [], messages: [] };
+    g.__HW3_STORE__ = { workOrders: [], properties: [], messages: [], helpDesk: [], providers: [], people: [] };
   }
   return g.__HW3_STORE__;
 }
