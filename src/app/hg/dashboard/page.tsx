@@ -1,10 +1,10 @@
 "use client";
 import { HG_NAV } from "@/components/hg/nav";
 
-
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { EmptyState, StatTile } from "@/components/ui";
+import { Button, Container, EmptyState, Pill, StatTile } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { KpiGrid } from "@/components/dashboard/KpiGrid";
@@ -14,46 +14,75 @@ type WorkOrder = {
   id: string;
   createdAt: string;
   serviceCategory?: string;
+  serviceSubcategory?: string;
   propertyAddress?: string;
   status?: string;
 };
 
-type Message = {
+type Ticket = {
   id: string;
   createdAt: string;
-  body: string;
-  readAt?: string | null;
+  status: string;
+  userName: string;
+  userRole: string;
+  message: string;
 };
 
+type Provider = {
+  id: string;
+  createdAt: string;
+  approvalStatus: string;
+  fullName: string;
+  email: string;
+  completionPct: number;
+  trades: string[];
+};
+
+type ThreadRow = {
+  threadId: string;
+  threadTitle?: string;
+  ownerName?: string;
+  propertyAddress?: string;
+  lastBody: string;
+  lastAt: string;
+  unreadCount: number;
+};
 
 export default function HomeGuideDashboardPage() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[] | null>(null);
-  const [messages, setMessages] = useState<Message[] | null>(null);
+  const [tickets, setTickets] = useState<Ticket[] | null>(null);
+  const [providers, setProviders] = useState<Provider[] | null>(null);
+  const [threads, setThreads] = useState<ThreadRow[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       try {
-        const [woRes, msgRes] = await Promise.all([
-          fetch("/api/work-orders/recent?limit=20"),
-          fetch("/api/messages?limit=20"),
+        const [woRes, tRes, pRes, thRes] = await Promise.all([
+          fetch("/api/hg/work-orders/recent?limit=30"),
+          fetch("/api/hg/help-desk?status=pending&demo=1"),
+          fetch("/api/hg/providers?status=join_request&demo=1"),
+          fetch("/api/hg/messages/threads?demo=1"),
         ]);
 
         const woJson = (await woRes.json()) as { ok: boolean; workOrders?: WorkOrder[] };
-        const msgJson = (await msgRes.json()) as { ok: boolean; messages?: Message[] };
-
-        if (!woRes.ok || !woJson.ok) throw new Error("failed_work_orders");
-        if (!msgRes.ok || !msgJson.ok) throw new Error("failed_messages");
+        const tJson = (await tRes.json()) as { ok: boolean; tickets?: Ticket[] };
+        const pJson = (await pRes.json()) as { ok: boolean; providers?: Provider[] };
+        const thJson = (await thRes.json()) as { ok: boolean; threads?: ThreadRow[] };
 
         if (!cancelled) {
           setWorkOrders(woJson.workOrders || []);
-          setMessages(msgJson.messages || []);
+          setTickets(tJson.tickets || []);
+          setProviders(pJson.providers || []);
+          setThreads(thJson.threads || []);
         }
       } catch {
         if (!cancelled) {
           setWorkOrders([]);
-          setMessages([]);
+          setTickets([]);
+          setProviders([]);
+          setThreads([]);
         }
       }
     })();
@@ -63,8 +92,8 @@ export default function HomeGuideDashboardPage() {
     };
   }, []);
 
-  const pendingCount = useMemo(
-    () => (workOrders || []).filter((w) => (w.status || "").toLowerCase() === "pending").length,
+  const pendingWorkOrders = useMemo(
+    () => (workOrders || []).filter((w) => (w.status || "").toLowerCase() === "pending"),
     [workOrders]
   );
 
@@ -76,37 +105,99 @@ export default function HomeGuideDashboardPage() {
     [workOrders]
   );
 
-  const unreadCount = useMemo(() => (messages || []).filter((m) => !m.readAt).length, [messages]);
+  const unreadThreadCount = useMemo(() => (threads || []).filter((t) => (t.unreadCount || 0) > 0).length, [threads]);
 
   return (
-    <PortalShell role="HG" title="Home Guide" nav={HG_NAV} description="Monitor the triage queue, keep threads moving, and route work to the right team." >
-      <div className="grid gap-6">
-        <KpiGrid>
-          <StatTile label="Work orders pending" value={String(pendingCount)} note="Triage queue (Phase 2: simplified)." />
-          <StatTile label="Unread messages" value={String(unreadCount)} note="Across threads." />
-          <StatTile label="Active projects" value={String(activeCount)} note="Non-completed work orders." />
-        </KpiGrid>
+    <PortalShell
+      role="HG"
+      title="Home Guide"
+      nav={HG_NAV}
+      description="Monitor queues, keep threads moving, and route work to the right team."
+    >
+      <Container>
+        <div className="grid gap-6">
+          <KpiGrid>
+            <StatTile label="Work orders pending" value={String(pendingWorkOrders.length)} note="Triage queue" />
+            <StatTile label="Pending tickets" value={String(tickets?.length ?? 0)} note="Help Desk" />
+            <StatTile label="Join requests" value={String(providers?.length ?? 0)} note="Service Providers" />
+            <StatTile label="Unread threads" value={String(unreadThreadCount)} note="Messages" />
+            <StatTile label="Active projects" value={String(activeCount)} note="Non-completed" />
+          </KpiGrid>
 
-        <DashboardSection title="Triage queue" count={workOrders?.length ?? "—"}>
-          <div className="grid gap-2">
-            {workOrders === null ? (
-              <div className="text-sm text-[var(--hw-muted)]">Loading…</div>
-            ) : workOrders.length === 0 ? (
-              <EmptyState title="No work orders" text="Create a work order from the marketplace to populate this queue." />
-            ) : (
-              workOrders.slice(0, 8).map((w) => (
-                <ListRow
-                  key={w.id}
-                  href={`/hg/projects/${w.id}`}
-                  title={w.serviceCategory || "Work Order"}
-                  subtitle={w.propertyAddress || w.id}
-                  badge={w.status ? <StatusChip>{w.status}</StatusChip> : null}
-                />
-              ))
-            )}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <DashboardSection title="Triage queue" count={workOrders === null ? "—" : pendingWorkOrders.length}>
+              <div className="grid gap-2">
+                {workOrders === null ? (
+                  <div className="text-sm text-[var(--hw-muted)]">Loading…</div>
+                ) : pendingWorkOrders.length === 0 ? (
+                  <EmptyState title="No pending work orders" text="You're caught up." />
+                ) : (
+                  pendingWorkOrders.slice(0, 6).map((w) => (
+                    <ListRow
+                      key={w.id}
+                      href={`/hg/projects/${w.id}`}
+                      title={w.serviceSubcategory ? `${w.serviceCategory || "Work Order"} • ${w.serviceSubcategory}` : w.serviceCategory || "Work Order"}
+                      subtitle={w.propertyAddress || w.id}
+                      badge={w.status ? <StatusChip>{w.status}</StatusChip> : null}
+                    />
+                  ))
+                )}
+                <Link href="/hg/projects" className="no-underline">
+                  <Button variant="secondary" size="sm">View all projects</Button>
+                </Link>
+              </div>
+            </DashboardSection>
+
+            <DashboardSection title="Help Desk" count={tickets === null ? "—" : tickets?.length ?? 0}>
+              <div className="grid gap-2">
+                {tickets === null ? (
+                  <div className="text-sm text-[var(--hw-muted)]">Loading…</div>
+                ) : (tickets || []).length === 0 ? (
+                  <EmptyState title="No pending tickets" text="Nothing needs attention." />
+                ) : (
+                  (tickets || []).slice(0, 6).map((t) => (
+                    <ListRow
+                      key={t.id}
+                      href="/hg/help-desk"
+                      title={<span>{t.userName} <span className="text-xs text-[var(--hw-muted)]">({t.userRole})</span></span>}
+                      subtitle={t.message}
+                      badge={<StatusChip>{t.status}</StatusChip>}
+                    />
+                  ))
+                )}
+                <Link href="/hg/help-desk" className="no-underline">
+                  <Button variant="secondary" size="sm">Open Help Desk</Button>
+                </Link>
+              </div>
+            </DashboardSection>
+
+            <DashboardSection title="Service Providers" count={providers === null ? "—" : providers?.length ?? 0}>
+              <div className="grid gap-2">
+                {providers === null ? (
+                  <div className="text-sm text-[var(--hw-muted)]">Loading…</div>
+                ) : (providers || []).length === 0 ? (
+                  <EmptyState title="No join requests" text="All caught up." />
+                ) : (
+                  (providers || []).slice(0, 6).map((p) => (
+                    <ListRow
+                      key={p.id}
+                      href="/hg/service-providers"
+                      title={p.fullName}
+                      subtitle={p.email}
+                      footnote={Array.isArray(p.trades) && p.trades.length ? p.trades.slice(0, 2).join(" • ") : undefined}
+                      badge={<StatusChip>{p.approvalStatus}</StatusChip>}
+                      meta={<Pill>{p.completionPct}%</Pill>}
+                    />
+                  ))
+                )}
+                <Link href="/hg/service-providers" className="no-underline">
+                  <Button variant="secondary" size="sm">Review providers</Button>
+                </Link>
+              </div>
+            </DashboardSection>
           </div>
-        </DashboardSection>
-      </div>
+        </div>
+      </Container>
     </PortalShell>
   );
 }

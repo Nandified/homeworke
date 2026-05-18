@@ -9,17 +9,14 @@ import { PortalShell } from "@/components/portal-shell";
 import { DashboardSection } from "@/components/dashboard/DashboardSection";
 import { ListRow, StatusChip } from "@/components/dashboard/ListRow";
 
-type Msg = {
-  id: string;
-  createdAt: string;
+type ThreadRow = {
   threadId: string;
-  threadTitle?: string | null;
-  ownerName?: string | null;
-  propertyAddress?: string | null;
-  workOrderId?: string | null;
-  fromRole?: string;
-  body: string;
-  readAt?: string | null;
+  threadTitle?: string;
+  ownerName?: string;
+  propertyAddress?: string;
+  lastBody: string;
+  lastAt: string;
+  unreadCount: number;
 };
 
 function fmtDate(iso?: string) {
@@ -32,18 +29,16 @@ function fmtDate(iso?: string) {
 }
 
 export default function HomeGuideMessagesPage() {
-  const [items, setItems] = useState<Msg[] | null>(null);
+  const [items, setItems] = useState<ThreadRow[] | null>(null);
   const [q, setQ] = useState("");
-  const [onlyUnread, setOnlyUnread] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/messages?limit=200&demo=1");
-        const j = (await res.json()) as { ok: boolean; messages?: Msg[] };
-        if (!res.ok || !j.ok) throw new Error("failed");
-        if (!cancelled) setItems(j.messages || []);
+        const res = await fetch(`/api/hg/messages/threads?q=${encodeURIComponent(q)}&demo=1`);
+        const j = (await res.json().catch(() => null)) as any;
+        if (!cancelled) setItems(Array.isArray(j?.threads) ? (j.threads as ThreadRow[]) : []);
       } catch {
         if (!cancelled) setItems([]);
       }
@@ -51,63 +46,49 @@ export default function HomeGuideMessagesPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [q]);
 
-  const filtered = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    return (items || []).filter((m) => {
-      if (onlyUnread && m.readAt) return false;
-      if (!query) return true;
-      const hay = [m.threadTitle, m.ownerName, m.propertyAddress, m.body, m.threadId, m.workOrderId]
-        .filter(Boolean)
-        .map((x) => String(x).toLowerCase())
-        .join(" | ");
-      return hay.includes(query);
-    });
-  }, [items, q, onlyUnread]);
+  const list = useMemo(() => items || [], [items]);
 
   return (
-    <PortalShell role="HG" title="Home Guide" nav={HG_NAV} description="Inbox across the platform. (v1: thread list; per-thread view next)." >
+    <PortalShell role="HG" title="Home Guide" nav={HG_NAV} description="Inbox across the platform." >
       <Container>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Messages</div>
-            <div className="mt-1 text-sm text-[var(--hw-muted)]">Search threads by address, owner, or content.</div>
+            <div className="mt-1 text-sm text-[var(--hw-muted)]">Search threads by address, owner, or last message.</div>
           </div>
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <Input value={q} onChange={(e) => setQ(e.currentTarget.value)} placeholder="Search messages…" className="sm:w-[320px]" />
-            <button
-              type="button"
-              onClick={() => setOnlyUnread((v) => !v)}
-              className="h-11 rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-white px-3 text-sm"
-            >
-              {onlyUnread ? "Unread only" : "All"}
-            </button>
+          <div className="w-full sm:w-auto sm:min-w-[320px]">
+            <Input value={q} onChange={(e) => setQ(e.currentTarget.value)} placeholder="Search threads…" />
           </div>
         </div>
 
         <div className="mt-6">
-          <DashboardSection title="Recent" count={items === null ? "—" : filtered.length}>
+          <DashboardSection title="Threads" count={items === null ? "—" : list.length}>
             <div className="grid gap-2">
               {items === null ? (
                 <div className="text-sm text-[var(--hw-muted)]">Loading…</div>
-              ) : filtered.length === 0 ? (
-                <EmptyState title="No messages" text="Once a user starts a thread, it will appear here." />
+              ) : list.length === 0 ? (
+                <EmptyState title="No threads" text="Once a user starts a thread, it will appear here." />
               ) : (
-                filtered.slice(0, 100).map((m) => (
+                list.map((t) => (
                   <ListRow
-                    key={m.id}
-                    href={m.workOrderId ? `/hg/projects/${m.workOrderId}` : undefined}
+                    key={t.threadId}
+                    href={`/hg/messages/${encodeURIComponent(t.threadId)}`}
                     title={
                       <div className="flex flex-wrap items-center gap-2">
-                        <span>{m.threadTitle || "Thread"}</span>
-                        {m.ownerName ? <Pill>{m.ownerName}</Pill> : null}
+                        <span>{t.threadTitle || "Thread"}</span>
+                        {t.ownerName ? <Pill>{t.ownerName}</Pill> : null}
                       </div>
                     }
-                    subtitle={m.propertyAddress || m.threadId}
-                    footnote={m.body}
-                    badge={!m.readAt ? <StatusChip className="border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.06)] text-[var(--hw-red)]">Unread</StatusChip> : null}
-                    meta={fmtDate(m.createdAt)}
+                    subtitle={t.propertyAddress || t.threadId}
+                    footnote={t.lastBody}
+                    badge={t.unreadCount ? (
+                      <StatusChip className="border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.06)] text-[var(--hw-red)]">
+                        {t.unreadCount} unread
+                      </StatusChip>
+                    ) : null}
+                    meta={fmtDate(t.lastAt)}
                   />
                 ))
               )}
@@ -115,7 +96,7 @@ export default function HomeGuideMessagesPage() {
           </DashboardSection>
 
           <div className="mt-4 text-xs text-[var(--hw-muted)]">
-            Tip: clicking a row routes to the linked project/work order when available. Next step is a dedicated thread view + reply composer.
+            Tip: click a thread to view the full conversation and reply as Home Guide.
           </div>
         </div>
       </Container>
