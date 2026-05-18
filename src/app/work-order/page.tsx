@@ -779,6 +779,17 @@ export default function Page() {
                             ref={tradeSearchRef}
                             value={tradeQuery}
                             onChange={(e) => setTradeQuery(String(e.currentTarget.value || ""))}
+                            onBlur={() => {
+                              // When the suggestion list mounts, some browsers can drop focus because the input node gets reconciled.
+                              // If the user is actively typing (query >= 2), immediately restore focus.
+                              if ((tradeQuery || "").trim().length >= 2) {
+                                window.setTimeout(() => {
+                                  try {
+                                    tradeSearchRef.current?.focus();
+                                  } catch {}
+                                }, 0);
+                              }
+                            }}
                             placeholder="Search a service (e.g., leaking sink, outlet, deep clean…)"
                           />
 
@@ -788,16 +799,14 @@ export default function Page() {
                                 <button
                                   key={`${r.kind}:${r.trade}:${r.label}:${idx}`}
                                   type="button"
+                                  // prevent stealing focus from the input on click/press
+                                  onMouseDown={(e) => e.preventDefault()}
                                   onClick={() => {
                                     setShowAllTradeServices(false);
                                     update({ service_category: r.trade });
-                                    // keep the query as feedback, but collapse suggestions
                                     const v = r.kind === "trade" ? r.trade : r.label;
                                     setTradeQuery(v);
-                                    // keep typing flow smooth
-                                    try {
-                                      tradeSearchRef.current?.focus();
-                                    } catch {}
+                                    window.setTimeout(() => tradeSearchRef.current?.focus(), 0);
                                   }}
                                   className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-[var(--hw-soft)]"
                                 >
