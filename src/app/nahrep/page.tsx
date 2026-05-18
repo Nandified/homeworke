@@ -21,7 +21,7 @@ import { Button, Container, Pill } from "@/components/ui";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 import { NahrepQr } from "@/app/nahrep/NahrepQr";
 
-const betaUrl = "/request-access?source=nahrep&campaign=instant-estimates-beta";
+const betaUrl = "/request-access?role=real-estate-pro&source=nahrep&campaign=instant-estimates-beta";
 
 const proofItems = [
   { label: "Agent-first", value: "3.0", text: "A platform built around long-term client relationships." },
