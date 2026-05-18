@@ -1,9 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 
 import {
   ArrowRight,
   BellRing,
   CheckCircle2,
+  Clock3,
+  Home,
   MessageSquareText,
   Paperclip,
   Send,
@@ -135,12 +138,15 @@ function HomeworkeAiVisual() {
   return (
     <BrowserFrame className="max-w-[720px]" dark>
       <div className="rounded-[24px] border border-white/10 bg-white/[.96] p-5 shadow-[0_24px_70px_rgba(0,0,0,.24)]">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Job work order</div>
             <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">What’s going on with the property?</div>
           </div>
-          <Pill className="border-transparent bg-[linear-gradient(90deg,#E53935,#EC4899,#8B5CF6)] text-white shadow-sm">Homeworke AI</Pill>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[linear-gradient(90deg,#E53935,#EC4899,#8B5CF6)] px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.08em] text-white shadow-sm whitespace-nowrap">
+            <Sparkles className="h-3 w-3" />
+            Homeworke AI
+          </span>
         </div>
 
         <div className="mt-5 grid gap-3 rounded-[22px] border border-[var(--hw-line)] bg-white/80 p-4">
@@ -214,43 +220,83 @@ function RehabLoanVisual() {
 }
 
 function TopOfMindVisual() {
+  const pros = [
+    { name: "Fernando Rocha Jr", company: "The FRJ Group", src: "/partners/frj-headshot.jpg" },
+    { name: "Maria Alvarez", company: "NAHREP Pro", initials: "MA" },
+    { name: "Luis Moreno", company: "Broker Partner", initials: "LM" },
+  ];
+
   return (
     <BrowserFrame className="max-w-[720px]">
-      <div className="grid gap-4 md:grid-cols-[1fr_240px]">
-        <div className="rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
-          <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-            <MessageSquareText className="h-3.5 w-3.5 text-[var(--hw-red)]" />
-            Staying Top of Mind
-          </div>
-          <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Client touchpoint kit</div>
-
-          <div className="mt-5 grid gap-3">
-            {[
-              ["Text script", "Here’s my Homeworke link for repairs and renovation help."],
-              ["Email template", "Upload your inspection and get a repair-cost estimate."],
-              ["Social post", "Branded graphic with your QR link."],
-            ].map(([title, text]) => (
-              <div key={title} className="rounded-[16px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-                <div className="text-sm font-extrabold text-[var(--hw-ink)]">{title}</div>
-                <div className="mt-1 text-xs leading-5 text-[var(--hw-muted)]">{text}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden rounded-[24px] border border-[rgba(229,57,53,.22)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.10)]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+        <div className="relative overflow-hidden rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
           <div
             aria-hidden
             className="absolute inset-0"
-            style={{ background: "radial-gradient(260px 160px at 80% 0%, rgba(229,57,53,.16), transparent 60%)" }}
+            style={{ background: "radial-gradient(320px 180px at 88% 0%, rgba(229,57,53,.14), transparent 62%)" }}
           />
           <div className="relative">
-            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Partner Link</div>
-            <div className="mt-2 text-xl font-extrabold text-[var(--hw-ink)]">Scan to connect</div>
-            <div className="mt-8 aspect-square rounded-[18px] border border-[var(--hw-line)] bg-[linear-gradient(135deg,#111827_0_12%,#fff_12%_22%,#111827_22%_36%,#fff_36%_50%,#111827_50%_64%,#fff_64%_74%,#111827_74%_88%,#fff_88%)] p-4" />
-            <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-[var(--hw-muted)]">
-              <Users className="h-4 w-4 text-[var(--hw-red)]" />
-              Real Estate Pro attribution
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Homeowner dashboard</div>
+                <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Your Pro Team</div>
+              </div>
+              <Home className="h-5 w-5 text-[var(--hw-red)]" />
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              {pros.map((pro) => (
+                <div key={pro.name} className="flex items-center gap-3 rounded-[18px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white bg-white text-sm font-extrabold text-[var(--hw-ink)] shadow-sm">
+                    {pro.src ? (
+                      <Image src={pro.src} alt={pro.name} width={48} height={48} className="h-full w-full object-cover" />
+                    ) : (
+                      pro.initials
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-extrabold text-[var(--hw-ink)]">{pro.name}</div>
+                    <div className="mt-0.5 truncate text-xs font-semibold text-[var(--hw-muted)]">{pro.company}</div>
+                  </div>
+                  <div className="ml-auto rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-[var(--hw-red)] shadow-sm">
+                    Connected
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work order thread</div>
+              <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Agent stays visible</div>
+            </div>
+            <MessageSquareText className="h-5 w-5 text-[var(--hw-red)]" />
+          </div>
+
+          <div className="mt-5 grid gap-3">
+            <div className="rounded-2xl border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
+              <div className="flex items-center gap-2 text-xs font-extrabold text-[var(--hw-ink)]">
+                <Clock3 className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                Inspection repair estimate
+              </div>
+              <div className="mt-1 text-xs leading-5 text-[var(--hw-muted)]">Estimate ready. Homeowner and Real Estate Pro both in the loop.</div>
+            </div>
+            <div className="max-w-[92%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+              Your estimate is ready. Fernando can see the repair summary too.
+            </div>
+            <div className="ml-auto max-w-[88%] rounded-2xl bg-[#111827] px-4 py-3 text-sm leading-6 text-white shadow-sm">
+              Great, please keep my agent updated.
+            </div>
+            <div className="rounded-[18px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-3">
+              <div className="flex items-center gap-3">
+                <Users className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
+                <div className="text-xs font-semibold leading-5 text-[var(--hw-ink)]">
+                  Real Estate Pro attribution stays attached to the client relationship.
+                </div>
+              </div>
             </div>
           </div>
         </div>
