@@ -227,74 +227,77 @@ function TopOfMindVisual() {
   ];
 
   return (
-    <BrowserFrame className="max-w-[720px]">
-      <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-        <div className="relative overflow-hidden rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{ background: "radial-gradient(320px 180px at 88% 0%, rgba(229,57,53,.14), transparent 62%)" }}
-          />
-          <div className="relative">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Homeowner dashboard</div>
-                <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Your Pro Team</div>
-              </div>
-              <Home className="h-5 w-5 text-[var(--hw-red)]" />
-            </div>
+    <BrowserFrame className="max-w-[760px]">
+      <div className="relative overflow-hidden rounded-[26px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{ background: "radial-gradient(420px 220px at 88% 0%, rgba(229,57,53,.14), transparent 62%)" }}
+        />
 
-            <div className="mt-5 grid gap-3">
-              {pros.map((pro) => (
-                <div key={pro.name} className="flex items-center gap-3 rounded-[18px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white bg-white text-sm font-extrabold text-[var(--hw-ink)] shadow-sm">
-                    {pro.src ? (
-                      <Image src={pro.src} alt={pro.name} width={48} height={48} className="h-full w-full object-cover" />
-                    ) : (
-                      pro.initials
-                    )}
+        <div className="relative">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                <Home className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                Homeowner dashboard
+              </div>
+              <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Your Pro Team stays visible</div>
+            </div>
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[rgba(229,57,53,.18)] bg-white px-3 py-2 text-xs font-extrabold text-[var(--hw-red)] shadow-sm">
+              <Users className="h-4 w-4" />
+              Connected relationship
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {pros.map((pro) => (
+              <div key={pro.name} className="rounded-[20px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-white text-sm font-extrabold text-[var(--hw-ink)] shadow-[0_10px_24px_rgba(17,24,39,.10)]">
+                    {pro.src ? <Image src={pro.src} alt={pro.name} width={52} height={52} className="h-full w-full object-cover" /> : pro.initials}
                   </div>
                   <div className="min-w-0">
                     <div className="truncate text-sm font-extrabold text-[var(--hw-ink)]">{pro.name}</div>
                     <div className="mt-0.5 truncate text-xs font-semibold text-[var(--hw-muted)]">{pro.company}</div>
-                  </div>
-                  <div className="ml-auto rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-[var(--hw-red)] shadow-sm">
-                    Connected
+                    <div className="mt-2 w-fit rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-[var(--hw-red)] shadow-sm">
+                      Connected
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work order thread</div>
-              <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Agent stays visible</div>
-            </div>
-            <MessageSquareText className="h-5 w-5 text-[var(--hw-red)]" />
-          </div>
-
-          <div className="mt-5 grid gap-3">
-            <div className="rounded-2xl border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
-              <div className="flex items-center gap-2 text-xs font-extrabold text-[var(--hw-ink)]">
-                <Clock3 className="h-3.5 w-3.5 text-[var(--hw-red)]" />
-                Inspection repair estimate
               </div>
-              <div className="mt-1 text-xs leading-5 text-[var(--hw-muted)]">Estimate ready. Homeowner and Real Estate Pro both in the loop.</div>
+            ))}
+          </div>
+
+          <div className="mt-5 grid gap-4 lg:grid-cols-[260px_1fr]">
+            <div className="rounded-[20px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4">
+              <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[var(--hw-red)]">
+                <Clock3 className="h-3.5 w-3.5" />
+                Work order status
+              </div>
+              <div className="mt-4 text-lg font-extrabold text-[var(--hw-ink)]">Inspection repair estimate</div>
+              <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">Estimate ready. Homeowner and Real Estate Pro are both in the loop.</div>
             </div>
-            <div className="max-w-[92%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
-              Your estimate is ready. Fernando can see the repair summary too.
-            </div>
-            <div className="ml-auto max-w-[88%] rounded-2xl bg-[#111827] px-4 py-3 text-sm leading-6 text-white shadow-sm">
-              Great, please keep my agent updated.
-            </div>
-            <div className="rounded-[18px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-3">
-              <div className="flex items-center gap-3">
-                <Users className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
-                <div className="text-xs font-semibold leading-5 text-[var(--hw-ink)]">
-                  Real Estate Pro attribution stays attached to the client relationship.
+
+            <div className="rounded-[20px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_12px_30px_rgba(17,24,39,.06)]">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work order thread</div>
+                <MessageSquareText className="h-4 w-4 text-[var(--hw-red)]" />
+              </div>
+              <div className="mt-4 grid gap-3">
+                <div className="max-w-[92%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+                  Your estimate is ready. Fernando can see the repair summary too.
+                </div>
+                <div className="ml-auto max-w-[88%] rounded-2xl bg-[#111827] px-4 py-3 text-sm leading-6 text-white shadow-sm">
+                  Great, please keep my agent updated.
+                </div>
+                <div className="rounded-[16px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <Users className="h-4 w-4 shrink-0 text-[var(--hw-red)]" />
+                    <div className="text-xs font-semibold leading-5 text-[var(--hw-ink)]">
+                      Real Estate Pro attribution stays attached to the client relationship.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
