@@ -3,13 +3,10 @@ import Link from "next/link";
 import {
   ArrowRight,
   BellRing,
-  CalendarCheck,
   CheckCircle2,
-  ClipboardList,
-  FileText,
-  Home,
   MessageSquareText,
-  ShieldCheck,
+  Paperclip,
+  Send,
   Sparkles,
   Upload,
   Users,
@@ -23,159 +20,60 @@ import { NahrepQr } from "@/app/nahrep/NahrepQr";
 
 const betaUrl = "/request-access?role=real-estate-pro&source=nahrep&campaign=instant-estimates-beta";
 
-const proofItems = [
-  { label: "Agent-first", value: "3.0", text: "A platform built around long-term client relationships." },
-  { label: "Repair clarity", value: "Fast", text: "Turn inspection needs into organized next steps." },
-  { label: "Client touchpoints", value: "Always", text: "Stay useful without becoming the contractor." },
-];
-
-const featureCards = [
+const pillars = [
   {
     icon: Zap,
-    title: "Instant Estimates",
-    text: "Upload an inspection, village report, appraisal note, or repair list and convert it into a clear repair-cost view.",
+    eyebrow: "Instant Estimates",
+    title: "Turn inspection chaos into a repair-cost view.",
+    text: "Upload inspection, appraisal, village, or repair files and give clients a clearer path from findings to next steps.",
+  },
+  {
+    icon: Sparkles,
+    eyebrow: "Homeworke AI",
+    title: "Capture the work order before the moment disappears.",
+    text: "Homeowners describe the issue, attach photos, and Homeworke AI organizes the request for scheduling and follow-up.",
   },
   {
     icon: Wrench,
-    title: "203k Rehab Process",
-    text: "Help buyers and listing teams understand rehab scope, repair priority, and contractor coordination faster.",
+    eyebrow: "203K / Rehab Loans",
+    title: "Make rehab conversations easier to structure.",
+    text: "Help agents frame scope, priorities, repair readiness, and contractor coordination around renovation-heavy deals.",
   },
   {
     icon: BellRing,
-    title: "Stay Top of Mind",
-    text: "Give clients a useful homeownership resource that keeps your name attached to the help they actually need.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Essential 3.0 Platform",
-    text: "AI intake, partner attribution, project coordination, and marketing tools in one clean Homeworke experience.",
+    eyebrow: "Staying Top of Mind",
+    title: "Stay useful after closing without becoming the contractor.",
+    text: "Give clients a branded homeownership resource that keeps the Real Estate Pro connected to future repair moments.",
   },
 ];
 
-function MiniAiCard() {
+function BrowserFrame({
+  children,
+  className = "",
+  dark = false,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  dark?: boolean;
+}) {
   return (
-    <div className="rounded-[22px] border border-[rgba(229,57,53,.24)] bg-white p-4 shadow-[0_28px_70px_rgba(17,24,39,.16)]">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-            <Sparkles className="h-3.5 w-3.5 text-[var(--hw-red)]" />
-            Homeworke AI
-          </div>
-          <div className="mt-1 text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">What is going on at the property?</div>
-        </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
-          <Home className="h-5 w-5" />
-        </div>
-      </div>
-
-      <div className="mt-4 rounded-[18px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-        <div className="text-sm leading-6 text-[var(--hw-ink)]">
-          Buyer inspection found GFCI outlets, loose handrail, and water heater venting.
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {["Electrical", "Safety", "Inspection repair"].map((item) => (
-            <span key={item} className="rounded-full border border-[rgba(229,57,53,.18)] bg-white px-3 py-1 text-xs font-semibold text-[var(--hw-muted)]">
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-        <div className="rounded-[14px] bg-[rgba(229,57,53,.07)] p-3 font-semibold text-[var(--hw-ink)]">Classify</div>
-        <div className="rounded-[14px] bg-[var(--hw-soft)] p-3 font-semibold text-[var(--hw-ink)]">Schedule</div>
-        <div className="rounded-[14px] bg-[var(--hw-soft)] p-3 font-semibold text-[var(--hw-ink)]">Track</div>
-      </div>
-    </div>
-  );
-}
-
-function InstantEstimatePreview() {
-  const rows = [
-    ["Electrical", "GFCI protection", "$285"],
-    ["Handyman", "Secure handrail", "$190"],
-    ["Plumbing", "Water heater vent correction", "$425"],
-  ];
-
-  return (
-    <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_28px_70px_rgba(17,24,39,.14)]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-            <Upload className="h-3.5 w-3.5 text-[var(--hw-red)]" />
-            Instant estimate
-          </div>
-          <div className="mt-1 text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Inspection report parsed</div>
-        </div>
-        <Pill className="bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">Beta</Pill>
-      </div>
-
-      <div className="mt-4 overflow-hidden rounded-[16px] border border-[var(--hw-line)]">
-        {rows.map(([trade, task, price], index) => (
-          <div key={task} className={`grid grid-cols-[1fr_auto] gap-3 p-3 ${index > 0 ? "border-t border-[var(--hw-line)]" : ""}`}>
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">{trade}</div>
-              <div className="mt-0.5 text-sm font-semibold text-[var(--hw-ink)]">{task}</div>
-            </div>
-            <div className="self-center rounded-full bg-[var(--hw-soft)] px-3 py-1 text-sm font-extrabold text-[var(--hw-ink)]">{price}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-4 flex items-center justify-between rounded-[16px] bg-[var(--hw-ink)] p-4 text-white">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-white/60">Estimated total</div>
-          <div className="mt-1 text-2xl font-extrabold">$900</div>
-        </div>
-        <CheckCircle2 className="h-7 w-7 text-white" />
-      </div>
-    </div>
-  );
-}
-
-function TopOfMindPreview() {
-  return (
-    <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_28px_70px_rgba(17,24,39,.14)]">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-            <MessageSquareText className="h-3.5 w-3.5 text-[var(--hw-red)]" />
-            Staying top of mind
-          </div>
-          <div className="mt-1 text-lg font-extrabold tracking-tight text-[var(--hw-ink)]">Client touchpoint kit</div>
-        </div>
-        <Users className="h-5 w-5 text-[var(--hw-red)]" />
-      </div>
-
-      <div className="mt-4 grid gap-3">
-        {[
-          ["Text script", "Here is my Homeworke link for repairs and renovation help."],
-          ["Email template", "Upload your inspection and get a repair-cost estimate."],
-          ["Social post", "Branded square graphic with your QR link."],
-        ].map(([title, text]) => (
-          <div key={title} className="rounded-[16px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-3">
-            <div className="text-sm font-extrabold text-[var(--hw-ink)]">{title}</div>
-            <div className="mt-1 text-xs leading-5 text-[var(--hw-muted)]">{text}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function BrowserFrame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`overflow-hidden rounded-[28px] border border-[rgba(17,24,39,.12)] bg-white shadow-[0_34px_90px_rgba(17,24,39,.18)] ${className}`}>
-      <div className="flex h-11 items-center gap-2 border-b border-[var(--hw-line)] bg-[linear-gradient(180deg,#fff,#F8FAFC)] px-4">
+    <div
+      className={`overflow-hidden rounded-[30px] border shadow-[0_34px_90px_rgba(17,24,39,.18)] ${
+        dark ? "border-white/10 bg-[#111827]" : "border-[rgba(17,24,39,.12)] bg-white"
+      } ${className}`}
+    >
+      <div className={`flex h-11 items-center gap-2 border-b px-4 ${dark ? "border-white/10 bg-white/[.04]" : "border-[var(--hw-line)] bg-white"}`}>
         <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
         <span className="h-3 w-3 rounded-full bg-[#FFBD2E]" />
         <span className="h-3 w-3 rounded-full bg-[#28C840]" />
-        <span className="ml-3 h-5 flex-1 rounded-full border border-[var(--hw-line)] bg-white" />
+        <span className={`ml-3 h-5 flex-1 rounded-full border ${dark ? "border-white/10 bg-white/[.06]" : "border-[var(--hw-line)] bg-[var(--hw-soft)]"}`} />
       </div>
       <div
         className="p-4 md:p-6"
         style={{
-          background: "radial-gradient(600px 260px at 15% 0%, rgba(229,57,53,.12), transparent 55%), #fff",
+          background: dark
+            ? "radial-gradient(620px 280px at 12% 0%, rgba(229,57,53,.28), transparent 56%), #111827"
+            : "radial-gradient(620px 280px at 12% 0%, rgba(229,57,53,.12), transparent 56%), #fff",
         }}
       >
         {children}
@@ -184,51 +82,216 @@ function BrowserFrame({ children, className = "" }: { children: React.ReactNode;
   );
 }
 
-function ProductShowcase() {
-  return (
-    <div className="relative min-h-[560px] md:min-h-[660px]">
-      <div aria-hidden className="absolute left-8 top-12 h-[420px] w-[420px] rounded-full bg-[var(--hw-red)]/10 blur-[90px]" />
-      <BrowserFrame className="relative z-10 max-w-[760px]">
-        <MiniAiCard />
-      </BrowserFrame>
-      <BrowserFrame className="relative z-20 -mt-10 ml-auto max-w-[700px] rotate-0 md:-mt-28 md:rotate-[1deg]">
-        <InstantEstimatePreview />
-      </BrowserFrame>
-      <div className="relative z-30 -mt-8 max-w-[420px] md:-mt-24 md:ml-12">
-        <TopOfMindPreview />
-      </div>
-    </div>
-  );
-}
-
-function RehabTimeline() {
-  const steps = [
-    { icon: FileText, title: "Scope", text: "Inspection findings, appraisal notes, and desired repairs get organized." },
-    { icon: ClipboardList, title: "Estimate", text: "Repair categories and priority items become a client-ready cost view." },
-    { icon: CalendarCheck, title: "Coordinate", text: "Next steps, contractor readiness, and timing stay visible to the team." },
+function InstantEstimateVisual() {
+  const rows = [
+    ["Electrical", "GFCI protection at kitchen", "$285"],
+    ["Safety", "Secure loose stair handrail", "$190"],
+    ["Plumbing", "Water heater vent correction", "$425"],
+    ["Exterior", "Repair deteriorated trim", "$365"],
   ];
 
   return (
-    <div className="grid gap-3 md:grid-cols-3">
-      {steps.map((step) => {
-        const Icon = step.icon;
-        return (
-          <div key={step.title} className="rounded-[20px] border border-[var(--hw-line)] bg-white p-5 shadow-[0_10px_24px_rgba(17,24,39,.06)]">
-            <div className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
-              <Icon className="h-5 w-5" />
+    <BrowserFrame className="max-w-[720px]">
+      <div className="rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.14)]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+              <Upload className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+              Instant Estimate
             </div>
-            <div className="mt-4 text-lg font-extrabold text-[var(--hw-ink)]">{step.title}</div>
-            <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{step.text}</div>
+            <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Inspection report parsed</div>
+            <div className="mt-1 text-sm font-semibold text-[var(--hw-muted)]">Prepared for 1234 W Carmen Ave.</div>
           </div>
-        );
-      })}
-    </div>
+          <Pill className="border-[rgba(229,57,53,.24)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">Report ready</Pill>
+        </div>
+
+        <div className="mt-5 grid gap-3">
+          {rows.map(([trade, task, price]) => (
+            <div key={task} className="grid grid-cols-[1fr_auto] items-center gap-4 rounded-[16px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+              <div className="min-w-0">
+                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{trade}</div>
+                <div className="mt-1 truncate text-sm font-extrabold text-[var(--hw-ink)]">{task}</div>
+              </div>
+              <div className="rounded-full bg-white px-4 py-2 text-sm font-extrabold text-[var(--hw-ink)] shadow-sm">{price}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 flex items-center justify-between rounded-[20px] bg-[#111827] p-5 text-white">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-widest text-white/60">Estimated total</div>
+            <div className="mt-1 text-4xl font-extrabold">$1,265</div>
+          </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-white/10">
+            <CheckCircle2 className="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+    </BrowserFrame>
+  );
+}
+
+function HomeworkeAiVisual() {
+  return (
+    <BrowserFrame className="max-w-[720px]" dark>
+      <div className="rounded-[24px] border border-white/10 bg-white/[.96] p-5 shadow-[0_24px_70px_rgba(0,0,0,.24)]">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Job work order</div>
+            <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">What’s going on with the property?</div>
+          </div>
+          <Pill className="border-transparent bg-[linear-gradient(90deg,#E53935,#EC4899,#8B5CF6)] text-white shadow-sm">Homeworke AI</Pill>
+        </div>
+
+        <div className="mt-5 grid gap-3 rounded-[22px] border border-[var(--hw-line)] bg-white/80 p-4">
+          <div className="max-w-[88%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+            Tell me what happened. You can add photos or video if that helps.
+          </div>
+          <div className="ml-auto max-w-[86%] rounded-2xl bg-[#111827] px-4 py-3 text-sm leading-6 text-white shadow-sm">
+            Water is showing under the vanity and the drywall is soft.
+          </div>
+          <div className="max-w-[92%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+            Got it. Is this active leaking, and do you want to schedule a visit?
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <button className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--hw-line)] bg-white px-4 py-3 text-sm font-semibold text-[var(--hw-ink)] shadow-sm">
+            <Paperclip className="h-4 w-4" />
+            Add photos/videos
+          </button>
+          <button className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--hw-red)] px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(229,57,53,.26)]">
+            Schedule a visit
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </BrowserFrame>
+  );
+}
+
+function RehabLoanVisual() {
+  const steps = [
+    ["Scope", "Inspection findings and desired repairs"],
+    ["Estimate", "Repair priorities and cost visibility"],
+    ["Coordinate", "Contractor readiness and timing"],
+  ];
+
+  return (
+    <BrowserFrame className="max-w-[720px]">
+      <div className="rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+              <Wrench className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+              203K / Rehab Loans
+            </div>
+            <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Rehab deal workspace</div>
+          </div>
+          <Pill className="bg-white">Repair-ready</Pill>
+        </div>
+
+        <div className="mt-6 grid gap-3 md:grid-cols-3">
+          {steps.map(([title, text], index) => (
+            <div key={title} className="rounded-[18px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--hw-red)] text-sm font-extrabold text-white">{index + 1}</div>
+              <div className="mt-4 text-lg font-extrabold text-[var(--hw-ink)]">{title}</div>
+              <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{text}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 grid gap-3 rounded-[20px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <div className="text-sm font-extrabold text-[var(--hw-ink)]">Rehab package status</div>
+            <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">Scope organized, estimate in review, contractor next steps ready.</div>
+          </div>
+          <div className="rounded-full bg-white px-4 py-2 text-sm font-extrabold text-[var(--hw-red)] shadow-sm">Close-safe</div>
+        </div>
+      </div>
+    </BrowserFrame>
+  );
+}
+
+function TopOfMindVisual() {
+  return (
+    <BrowserFrame className="max-w-[720px]">
+      <div className="grid gap-4 md:grid-cols-[1fr_240px]">
+        <div className="rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
+          <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+            <MessageSquareText className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+            Staying Top of Mind
+          </div>
+          <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Client touchpoint kit</div>
+
+          <div className="mt-5 grid gap-3">
+            {[
+              ["Text script", "Here’s my Homeworke link for repairs and renovation help."],
+              ["Email template", "Upload your inspection and get a repair-cost estimate."],
+              ["Social post", "Branded graphic with your QR link."],
+            ].map(([title, text]) => (
+              <div key={title} className="rounded-[16px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+                <div className="text-sm font-extrabold text-[var(--hw-ink)]">{title}</div>
+                <div className="mt-1 text-xs leading-5 text-[var(--hw-muted)]">{text}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-[24px] border border-[rgba(229,57,53,.22)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.10)]">
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: "radial-gradient(260px 160px at 80% 0%, rgba(229,57,53,.16), transparent 60%)" }}
+          />
+          <div className="relative">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Partner Link</div>
+            <div className="mt-2 text-xl font-extrabold text-[var(--hw-ink)]">Scan to connect</div>
+            <div className="mt-8 aspect-square rounded-[18px] border border-[var(--hw-line)] bg-[linear-gradient(135deg,#111827_0_12%,#fff_12%_22%,#111827_22%_36%,#fff_36%_50%,#111827_50%_64%,#fff_64%_74%,#111827_74%_88%,#fff_88%)] p-4" />
+            <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-[var(--hw-muted)]">
+              <Users className="h-4 w-4 text-[var(--hw-red)]" />
+              Real Estate Pro attribution
+            </div>
+          </div>
+        </div>
+      </div>
+    </BrowserFrame>
+  );
+}
+
+function PillarSection({
+  pillar,
+  visual,
+  flip = false,
+}: {
+  pillar: (typeof pillars)[number];
+  visual: React.ReactNode;
+  flip?: boolean;
+}) {
+  const Icon = pillar.icon;
+
+  return (
+    <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
+      <Container className="max-w-[1180px]">
+        <div className={`grid gap-10 lg:grid-cols-[0.84fr_1.16fr] lg:items-center ${flip ? "lg:[&>*:first-child]:order-2" : ""}`}>
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(229,57,53,.20)] bg-white px-3 py-2 text-xs font-extrabold uppercase tracking-widest text-[var(--hw-red)] shadow-sm">
+              <Icon className="h-4 w-4" />
+              {pillar.eyebrow}
+            </div>
+            <h2 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">{pillar.title}</h2>
+            <p className="mt-4 max-w-xl text-lg leading-8 text-[var(--hw-muted)]">{pillar.text}</p>
+          </div>
+          <div>{visual}</div>
+        </div>
+      </Container>
+    </section>
   );
 }
 
 export const metadata = {
   title: "Homeworke Beta for NAHREP | Instant Estimates",
-  description: "Join the Homeworke 3.0 beta for Instant Estimates, 203k rehab coordination, and agent relationship tools.",
+  description: "Instant Estimates, Homeworke AI, 203K rehab workflows, and top-of-mind tools for Real Estate Pros.",
 };
 
 export default function NahrepLandingPage() {
@@ -241,12 +304,12 @@ export default function NahrepLandingPage() {
           className="relative min-h-[calc(100vh-64px)] overflow-hidden border-b border-[var(--hw-line)]"
           style={{
             background:
-              "radial-gradient(900px 460px at 80% 4%, rgba(229,57,53,.14), transparent 58%), linear-gradient(180deg, #fff 0%, #fff 60%, #F8FAFC 100%)",
+              "radial-gradient(900px 460px at 80% 4%, rgba(229,57,53,.16), transparent 58%), linear-gradient(180deg, #fff 0%, #fff 60%, #F8FAFC 100%)",
           }}
         >
           <div
             aria-hidden
-            className="absolute inset-0 opacity-[0.12]"
+            className="absolute inset-0 opacity-[0.10]"
             style={{
               backgroundImage: "linear-gradient(rgba(17,24,39,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(17,24,39,.10) 1px, transparent 1px)",
               backgroundSize: "44px 44px",
@@ -255,22 +318,21 @@ export default function NahrepLandingPage() {
             }}
           />
           <Container className="relative max-w-[1180px] py-10 md:py-16">
-            <div className="grid gap-9 lg:grid-cols-[1fr_430px] lg:items-center">
+            <div className="grid gap-10 lg:grid-cols-[1fr_430px] lg:items-center">
               <div>
                 <div className="flex flex-wrap gap-2">
                   <Pill className="bg-white">
                     <span className="hw-breath-dot" aria-hidden />
                     NAHREP beta access
                   </Pill>
-                  <Pill className="bg-white">Homeworke 3.0</Pill>
+                  <Pill className="bg-white">Real Estate Pro</Pill>
                 </div>
 
                 <h1 className="mt-7 max-w-4xl text-balance text-5xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-7xl">
-                  Instant repair clarity for every client relationship.
+                  Four tools to stay essential after the transaction.
                 </h1>
                 <p className="mt-5 max-w-2xl text-pretty text-xl leading-9 text-[var(--hw-muted)]">
-                  Homeworke helps agents stay essential after the transaction with Instant Estimates, 203k rehab-ready
-                  repair coordination, and branded tools that keep you top of mind.
+                  Instant Estimates, Homeworke AI, 203K rehab workflows, and top-of-mind tools built for Real Estate Pros.
                 </p>
 
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row">
@@ -280,21 +342,25 @@ export default function NahrepLandingPage() {
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
-                  <Link href="#platform-preview">
+                  <Link href="#four-tools">
                     <Button variant="secondary" className="w-full sm:w-auto">
-                      See the 3.0 platform
+                      See the platform
                     </Button>
                   </Link>
                 </div>
 
-                <div className="mt-10 grid gap-3 sm:grid-cols-3">
-                  {proofItems.map((item) => (
-                    <div key={item.label} className="rounded-[22px] border border-[rgba(229,57,53,.16)] bg-white/90 p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur">
-                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{item.label}</div>
-                      <div className="mt-2 text-3xl font-extrabold text-[var(--hw-ink)]">{item.value}</div>
-                      <div className="mt-1 text-sm leading-5 text-[var(--hw-muted)]">{item.text}</div>
-                    </div>
-                  ))}
+                <div id="four-tools" className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {pillars.map((pillar) => {
+                    const Icon = pillar.icon;
+                    return (
+                      <div key={pillar.eyebrow} className="rounded-[22px] border border-[rgba(229,57,53,.16)] bg-white/90 p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div className="mt-4 text-sm font-extrabold leading-5 text-[var(--hw-ink)]">{pillar.eyebrow}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -305,62 +371,10 @@ export default function NahrepLandingPage() {
           </Container>
         </section>
 
-        <section id="platform-preview" className="bg-[var(--hw-soft)] py-16 md:py-24">
-          <Container className="max-w-[1180px]">
-            <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-end">
-              <div className="max-w-3xl">
-              <div className="text-sm font-extrabold uppercase tracking-widest text-[var(--hw-red)]">New 3.0 Platform</div>
-              <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
-                Built for the moments where agents can be most useful.
-              </h2>
-              <p className="mt-4 text-base leading-7 text-[var(--hw-muted)]">
-                The beta focuses on the high-value workflows real estate pros already care about: inspection repairs,
-                rehab scenarios, post-closing home needs, and simple ways to stay connected.
-              </p>
-              </div>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                {featureCards.map((feature) => {
-                  const Icon = feature.icon;
-                  return (
-                    <div key={feature.title} className="rounded-[22px] border border-[rgba(229,57,53,.18)] bg-white p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="mt-4 text-sm font-extrabold leading-5 text-[var(--hw-ink)]">{feature.title}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </Container>
-        </section>
-
-        <section className="overflow-hidden py-16 md:py-24">
-          <Container className="max-w-[1180px]">
-            <ProductShowcase />
-          </Container>
-        </section>
-
-        <section
-          className="border-y border-[var(--hw-line)] py-16 md:py-24"
-          style={{ background: "linear-gradient(180deg, #F8FAFC, #fff)" }}
-        >
-          <Container className="max-w-[1180px]">
-            <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-              <div>
-                <div className="text-sm font-extrabold uppercase tracking-widest text-[var(--hw-red)]">203k Rehab Process</div>
-                <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
-                  Make complicated repair conversations easier to explain.
-                </h2>
-                <p className="mt-4 text-base leading-7 text-[var(--hw-muted)]">
-                  Whether it is a buyer exploring rehab financing, a seller facing inspection items, or a client trying to
-                  understand repair priorities, Homeworke creates a calmer path from scope to action.
-                </p>
-              </div>
-              <RehabTimeline />
-            </div>
-          </Container>
-        </section>
+        <PillarSection pillar={pillars[0]} visual={<InstantEstimateVisual />} />
+        <PillarSection pillar={pillars[1]} visual={<HomeworkeAiVisual />} flip />
+        <PillarSection pillar={pillars[2]} visual={<RehabLoanVisual />} />
+        <PillarSection pillar={pillars[3]} visual={<TopOfMindVisual />} flip />
 
         <section className="py-16 md:py-24">
           <Container className="max-w-[1180px]">
@@ -377,8 +391,7 @@ export default function NahrepLandingPage() {
                     Give the room one simple next step.
                   </h2>
                   <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">
-                    Scan the QR code, request access, and we will follow up with the best way to use Instant Estimates,
-                    203k rehab workflows, and relationship tools with your clients.
+                    Scan the QR code, request access, and we will follow up with beta access for the four Real Estate Pro tools.
                   </p>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -388,7 +401,7 @@ export default function NahrepLandingPage() {
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
-                  <div className="text-center text-xs leading-5 text-white/50">Built for presentation rooms, client follow-up, and agent teams.</div>
+                  <div className="text-center text-xs leading-5 text-white/60">Built for presentation rooms, client follow-up, and agent teams.</div>
                 </div>
               </div>
             </div>
