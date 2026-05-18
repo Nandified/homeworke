@@ -1,4 +1,6 @@
 "use client";
+import { HG_NAV } from "@/components/hg/nav";
+
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -23,18 +25,6 @@ type Message = {
   readAt?: string | null;
 };
 
-const nav = [
-  { href: "/hg/dashboard", label: "Dashboard" },
-  { href: "/hg/projects", label: "My Projects" },
-  { href: "/hg/estimates", label: "Estimates" },
-  { href: "/hg/messages", label: "Messages" },
-  { href: "/hg/service-providers", label: "Service Providers" },
-  { href: "/hg/customers", label: "Customers" },
-  { href: "/hg/real-estate-pros", label: "Real Estate Pros" },
-  { href: "/hg/help-desk", label: "Help Desk" },
-  { href: "/hg/support", label: "Support" },
-  { href: "/hg/account", label: "My Account" },
-];
 
 export default function HomeGuideDashboardPage() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[] | null>(null);
@@ -89,7 +79,7 @@ export default function HomeGuideDashboardPage() {
   const unreadCount = useMemo(() => (messages || []).filter((m) => !m.readAt).length, [messages]);
 
   return (
-    <PortalShell role="HG" title="Home Guide" nav={nav} description="Monitor the triage queue, keep threads moving, and route work to the right team." >
+    <PortalShell role="HG" title="Home Guide" nav={HG_NAV} description="Monitor the triage queue, keep threads moving, and route work to the right team." >
       <div className="grid gap-6">
         <KpiGrid>
           <StatTile label="Work orders pending" value={String(pendingCount)} note="Triage queue (Phase 2: simplified)." />
