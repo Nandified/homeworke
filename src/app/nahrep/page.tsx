@@ -96,16 +96,16 @@ function InstantEstimateVisual() {
   return (
     <BrowserFrame className="max-w-[720px]">
       <div className="rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.14)]">
-        <div className="flex items-start justify-between gap-4">
-          <div>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
             <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
               <Upload className="h-3.5 w-3.5 text-[var(--hw-red)]" />
               Instant Estimate
             </div>
-            <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Inspection report parsed</div>
+            <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Inspection Report Estimate</div>
             <div className="mt-1 text-sm font-semibold text-[var(--hw-muted)]">Prepared for 1234 W Carmen Ave.</div>
           </div>
-          <Pill className="border-[rgba(229,57,53,.24)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">Report ready</Pill>
+          <Pill className="shrink-0 whitespace-nowrap border-[rgba(229,57,53,.24)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">Report ready</Pill>
         </div>
 
         <div className="mt-5 grid gap-3">
@@ -186,15 +186,15 @@ function RehabLoanVisual() {
   return (
     <BrowserFrame className="max-w-[720px]">
       <div className="rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
-        <div className="flex items-center justify-between gap-4">
-          <div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
               <Wrench className="h-3.5 w-3.5 text-[var(--hw-red)]" />
               203K / Rehab Loans
             </div>
             <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Rehab deal workspace</div>
           </div>
-          <Pill className="bg-white">Repair-ready</Pill>
+          <Pill className="shrink-0 whitespace-nowrap bg-white">Repair-ready</Pill>
         </div>
 
         <div className="mt-6 grid gap-3 md:grid-cols-3">
@@ -468,11 +468,11 @@ export default function NahrepLandingPage() {
                   {pillars.map((pillar) => {
                     const Icon = pillar.icon;
                     return (
-                      <div key={pillar.eyebrow} className="rounded-[22px] border border-[rgba(229,57,53,.16)] bg-white/90 p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
+                      <div key={pillar.eyebrow} className="flex items-center gap-3 rounded-[22px] border border-[rgba(229,57,53,.16)] bg-white/90 p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
                           <Icon className="h-5 w-5" />
                         </div>
-                        <div className="mt-4 text-sm font-extrabold leading-5 text-[var(--hw-ink)]">{pillar.eyebrow}</div>
+                        <div className="min-w-0 text-sm font-extrabold leading-5 text-[var(--hw-ink)]">{pillar.eyebrow}</div>
                       </div>
                     );
                   })}
