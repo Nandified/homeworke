@@ -49,5 +49,25 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     return json({ ok: true, estimate: est });
   }
 
+  if (action === "create") {
+    const providerName = String(body.providerName || "").trim();
+    const totalCents = Number(body.totalCents || 0);
+    if (!providerName || !Number.isFinite(totalCents) || totalCents <= 0) {
+      return json({ ok: false, error: "missing_fields" }, { status: 400 });
+    }
+
+    const est = {
+      id: `est_${Math.random().toString(36).slice(2, 9)}`,
+      createdAt: new Date().toISOString(),
+      workOrderId: id,
+      providerName,
+      totalCents: Math.round(totalCents),
+      status: "sent" as const,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
+    };
+    store().estimates.unshift(est);
+    return json({ ok: true, estimate: est });
+  }
+
   return json({ ok: false, error: "unsupported_action" }, { status: 400 });
 }

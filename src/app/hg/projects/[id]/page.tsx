@@ -73,6 +73,12 @@ export default function HomeGuideProjectDetailPage({ params }: { params: { id: s
   const [scopeDraft, setScopeDraft] = useState("");
   const [savingScope, setSavingScope] = useState(false);
 
+  const [showBids, setShowBids] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newProvider, setNewProvider] = useState("");
+  const [newTotal, setNewTotal] = useState("");
+  const [creatingEstimate, setCreatingEstimate] = useState(false);
+
   const [docTitle, setDocTitle] = useState("");
   const [docUrl, setDocUrl] = useState("");
   const [addingDoc, setAddingDoc] = useState(false);
@@ -291,7 +297,15 @@ export default function HomeGuideProjectDetailPage({ params }: { params: { id: s
             <Card className="p-5">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Estimates</div>
-                {wo?.selectedEstimateId ? <Pill>Selected</Pill> : null}
+                <div className="flex items-center gap-2">
+                  <Button size="xs" variant="secondary" onClick={() => setShowBids(true)}>
+                    View bids
+                  </Button>
+                  <Button size="xs" variant="secondary" onClick={() => setCreateOpen(true)}>
+                    Create estimate (on behalf of SP)
+                  </Button>
+                  {wo?.selectedEstimateId ? <Pill>Selected</Pill> : null}
+                </div>
               </div>
               <div className="mt-3 grid gap-2">
                 {estimates === null ? (
@@ -408,6 +422,114 @@ export default function HomeGuideProjectDetailPage({ params }: { params: { id: s
             </Card>
           </div>
         </div>
+
+        {/* View bids modal */}
+        {showBids ? (
+          <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/30 p-4" role="dialog" aria-modal="true">
+            <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-[rgba(229,57,53,.18)] bg-white shadow-[0_18px_60px_rgba(17,24,39,.18)]">
+              <div className="flex items-center justify-between border-b border-[var(--hw-line)] px-6 py-4">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Bids</div>
+                  <div className="mt-0.5 text-xs text-[var(--hw-muted)]">Work order: {id}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowBids(false)}
+                  className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)]"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="p-6">
+                {estimates === null ? (
+                  <div className="text-sm text-[var(--hw-muted)]">Loading…</div>
+                ) : estimates.length === 0 ? (
+                  <EmptyState title="No bids" text="No estimates have been created yet." />
+                ) : (
+                  <div className="grid gap-2">
+                    {estimates.map((e) => (
+                      <div key={e.id} className="rounded-2xl border border-[var(--hw-line)] bg-white p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-semibold text-[var(--hw-ink)]">{e.providerName}</div>
+                            <div className="mt-0.5 text-xs text-[var(--hw-muted)]">{money(e.totalCents)} • {e.status}</div>
+                          </div>
+                          {wo?.selectedEstimateId === e.id ? (
+                            <StatusChip className="border-[rgba(229,57,53,.25)] bg-[rgba(229,57,53,.06)] text-[var(--hw-red)]">Selected</StatusChip>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Create estimate modal */}
+        {createOpen ? (
+          <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/30 p-4" role="dialog" aria-modal="true">
+            <div className="w-full max-w-xl overflow-hidden rounded-3xl border border-[rgba(229,57,53,.18)] bg-white shadow-[0_18px_60px_rgba(17,24,39,.18)]">
+              <div className="flex items-center justify-between border-b border-[var(--hw-line)] px-6 py-4">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Create estimate</div>
+                  <div className="mt-0.5 text-xs text-[var(--hw-muted)]">On behalf of a Service Provider</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCreateOpen(false)}
+                  className="rounded-full border border-[var(--hw-line)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--hw-ink)]"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="p-6 grid gap-3">
+                <div className="grid gap-1.5">
+                  <Label>Provider name</Label>
+                  <Input value={newProvider} onChange={(e) => setNewProvider(e.currentTarget.value)} placeholder="Company / contractor name" />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label>Total ($)</Label>
+                  <Input value={newTotal} onChange={(e) => setNewTotal(e.currentTarget.value)} placeholder="4800" />
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button variant="secondary" onClick={() => setCreateOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    disabled={creatingEstimate || !newProvider.trim() || !newTotal.trim()}
+                    onClick={async () => {
+                      const providerName = newProvider.trim();
+                      const dollars = Number(String(newTotal).replace(/[^0-9.]/g, ""));
+                      const totalCents = Math.round((Number.isFinite(dollars) ? dollars : 0) * 100);
+                      if (!providerName || !totalCents) return;
+                      setCreatingEstimate(true);
+                      try {
+                        await fetch(`/api/hg/work-orders/${encodeURIComponent(id)}/estimates`, {
+                          method: "POST",
+                          headers: { "content-type": "application/json" },
+                          body: JSON.stringify({ demo: true, action: "create", providerName, totalCents }),
+                        });
+                        setNewProvider("");
+                        setNewTotal("");
+                        setCreateOpen(false);
+                        await reload();
+                      } finally {
+                        setCreatingEstimate(false);
+                      }
+                    }}
+                  >
+                    {creatingEstimate ? "Creating…" : "Create"}
+                  </Button>
+                </div>
+                <div className="text-xs text-[var(--hw-muted)]">Demo mode: this creates a bid row so HG can select/replace like legacy.</div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </Container>
     </PortalShell>
   );
