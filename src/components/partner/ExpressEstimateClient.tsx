@@ -1138,40 +1138,15 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         <span>{r.type}</span>
                         <span>•</span>
                         <span>{new Date(r.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
-                        {!isReady ? (
+                        {!isReady && r.status === "Failed" ? (
                           <>
                             <span>•</span>
-                            <span className={r.status === "Failed" ? "text-[var(--hw-red)]" : "text-amber-700"}>
-                              {r.status === "Failed" ? "Failed" : "Processing…"}
-                            </span>
-                            {job && typeof job.step === "string" && job.step.trim() ? (
-                              <>
-                                <span>•</span>
-                                <span className="text-[var(--hw-muted)]">{job.step}</span>
-                              </>
-                            ) : null}
+                            <span className="text-[var(--hw-red)]">Failed</span>
                           </>
                         ) : null}
                       </div>
-                      {(!isReady || isProcessing) ? (
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="h-2.5 w-full overflow-hidden rounded-full bg-[var(--hw-soft)]">
-                            <div
-                              className={
-                                "h-full rounded-full bg-[rgba(229,57,53,.45)] " +
-                                (job && typeof job.progressPct === "number" ? "transition-[width] duration-300" : "w-1/3") +
-                                " animate-pulse"
-                              }
-                              style={
-                                job && typeof job.progressPct === "number"
-                                  ? { width: `${Math.max(5, Math.min(97, Math.round(job.progressPct || 0)))}%` }
-                                  : undefined
-                              }
-                            />
-                          </div>
-                          <div className="shrink-0 text-[11px] font-semibold text-[var(--hw-muted)]">Processing…</div>
-                        </div>
-                      ) : null}
+                      {/* Keep processing UI on the report page as a centered modal overlay (original behavior).
+                          Do not show inline progress inside the report list rows. */}
                     </div>
                     <div className="shrink-0 flex items-center gap-2">
                       <Button
@@ -1202,7 +1177,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           The job row + bar will reflect progress while the report generates. */}
                       <Link href={href}>
                         <Button size="sm" variant="primary" disabled={false}>
-                          {isReady ? "Open report" : "Open (processing…)"}
+                          Open report
                         </Button>
                       </Link>
                     </div>
