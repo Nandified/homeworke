@@ -464,15 +464,15 @@ export default function NahrepLandingPage() {
                   </Link>
                 </div>
 
-                <div id="four-tools" className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div id="four-tools" className="mt-10 grid gap-3 sm:grid-cols-2">
                   {pillars.map((pillar) => {
                     const Icon = pillar.icon;
                     return (
-                      <div key={pillar.eyebrow} className="flex items-center gap-3 rounded-[22px] border border-[rgba(229,57,53,.16)] bg-white/90 p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur">
+                      <div key={pillar.eyebrow} className="flex items-center gap-3 rounded-[22px] border border-[rgba(229,57,53,.16)] bg-white/90 p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur lg:block">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
                           <Icon className="h-5 w-5" />
                         </div>
-                        <div className="min-w-0 text-sm font-extrabold leading-5 text-[var(--hw-ink)]">{pillar.eyebrow}</div>
+                        <div className="min-w-0 text-sm font-extrabold leading-5 text-[var(--hw-ink)] lg:mt-4">{pillar.eyebrow}</div>
                       </div>
                     );
                   })}
