@@ -15,7 +15,7 @@ export function NahrepQr() {
       const url = new URL("/request-access", window.location.origin);
       url.searchParams.set("role", "real-estate-pro");
       url.searchParams.set("source", "nahrep");
-      url.searchParams.set("campaign", "instant-estimates-beta");
+      url.searchParams.set("campaign", "early-access");
       const nextJoinUrl = url.toString();
 
       if (!cancelled) setJoinUrl(nextJoinUrl);
@@ -58,7 +58,7 @@ export function NahrepQr() {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={qrDataUrl}
-            alt="QR code to request Homeworke beta access"
+            alt="QR code to request Homeworke early access"
             className="aspect-square w-full rounded-[14px] bg-white"
           />
         ) : (
@@ -66,7 +66,7 @@ export function NahrepQr() {
         )}
       </div>
       <div className="mt-4 text-center">
-        <div className="text-sm font-extrabold text-[var(--hw-ink)]">Scan to join the beta</div>
+        <div className="text-sm font-extrabold text-[var(--hw-ink)]">Scan for early access</div>
         <div className="mx-auto mt-1 max-w-[18rem] break-all text-xs leading-5 text-[var(--hw-muted)]">{joinUrl}</div>
       </div>
     </div>

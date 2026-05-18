@@ -62,7 +62,7 @@ function RequestAccessClient() {
                 {status === "sent" ? "Request submitted" : "Submission failed"}
               </div>
               <div className="mt-1 text-sm leading-5 text-[var(--hw-muted)]">
-                {status === "sent" ? "We’ll follow up shortly with invite-only beta access." : "Please try again in a moment."}
+                {status === "sent" ? "We’ll follow up shortly with early access details." : "Please try again in a moment."}
               </div>
             </div>
           </div>
@@ -137,7 +137,7 @@ function RequestAccessClient() {
           </div>
 
           <div className="rounded-[16px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 py-3 text-xs leading-5 text-[var(--hw-muted)]">
-            We’ll review requests and send invite-only access when approved.
+            We’ll review requests and send early access details when approved.
           </div>
         </div>
       </div>

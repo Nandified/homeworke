@@ -21,7 +21,7 @@ import { Button, Container, Pill } from "@/components/ui";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 import { NahrepQr } from "@/app/nahrep/NahrepQr";
 
-const betaUrl = "/request-access?role=real-estate-pro&source=nahrep&campaign=instant-estimates-beta";
+const earlyAccessUrl = "/request-access?role=real-estate-pro&source=nahrep&campaign=early-access";
 
 const pillars = [
   {
@@ -405,14 +405,14 @@ function PillarSection({
 }
 
 export const metadata = {
-  title: "Homeworke Beta for NAHREP | Instant Estimates",
+  title: "Homeworke Early Access for NAHREP | Instant Estimates",
   description: "Instant Estimates, Homeworke AI, 203K rehab workflows, and top-of-mind tools for Real Estate Pros.",
 };
 
 export default function NahrepLandingPage() {
   return (
     <div className="min-h-screen bg-white text-[var(--hw-ink)]">
-      <SiteHeader ctaHref={betaUrl} />
+      <SiteHeader ctaHref={earlyAccessUrl} />
 
       <main>
         <section
@@ -438,7 +438,7 @@ export default function NahrepLandingPage() {
                 <div className="flex flex-wrap gap-2">
                   <Pill className="bg-white">
                     <span className="hw-breath-dot" aria-hidden />
-                    NAHREP beta access
+                    NAHREP early access
                   </Pill>
                   <Pill className="bg-white">Real Estate Pro</Pill>
                 </div>
@@ -451,9 +451,9 @@ export default function NahrepLandingPage() {
                 </p>
 
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                  <Link href={betaUrl}>
+                  <Link href={earlyAccessUrl}>
                     <Button className="w-full sm:w-auto">
-                      Join the beta
+                      Request early access
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
@@ -501,18 +501,18 @@ export default function NahrepLandingPage() {
             >
               <div className="grid gap-6 lg:grid-cols-[1fr_260px] lg:items-center">
                 <div>
-                  <div className="text-sm font-extrabold uppercase tracking-widest text-white/60">Ready for beta users</div>
+                  <div className="text-sm font-extrabold uppercase tracking-widest text-white/60">Early access for Real Estate Pros</div>
                   <h2 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">
                     Give the room one simple next step.
                   </h2>
                   <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">
-                    Scan the QR code, request access, and we will follow up with beta access for the four Real Estate Pro tools.
+                    Scan the QR code, request access, and we will follow up with early access to the new Homeworke platform.
                   </p>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <Link href={betaUrl}>
+                  <Link href={earlyAccessUrl}>
                     <Button className="w-full bg-white text-[var(--hw-ink)] shadow-none hover:bg-[var(--hw-soft)]">
-                      Request beta access
+                      Request early access
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
