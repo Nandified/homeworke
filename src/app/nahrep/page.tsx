@@ -17,7 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 
-import { Button, Card, Container, Pill } from "@/components/ui";
+import { Button, Container, Pill } from "@/components/ui";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 import { NahrepQr } from "@/app/nahrep/NahrepQr";
 
@@ -54,7 +54,7 @@ const featureCards = [
 
 function MiniAiCard() {
   return (
-    <div className="rounded-[22px] border border-[rgba(229,57,53,.24)] bg-white p-4 shadow-[0_16px_36px_rgba(17,24,39,.10)]">
+    <div className="rounded-[22px] border border-[rgba(229,57,53,.24)] bg-white p-4 shadow-[0_28px_70px_rgba(17,24,39,.16)]">
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
@@ -98,7 +98,7 @@ function InstantEstimatePreview() {
   ];
 
   return (
-    <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_16px_36px_rgba(17,24,39,.08)]">
+    <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_28px_70px_rgba(17,24,39,.14)]">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
@@ -135,7 +135,7 @@ function InstantEstimatePreview() {
 
 function TopOfMindPreview() {
   return (
-    <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_16px_36px_rgba(17,24,39,.08)]">
+    <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_28px_70px_rgba(17,24,39,.14)]">
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
@@ -158,6 +158,37 @@ function TopOfMindPreview() {
             <div className="mt-1 text-xs leading-5 text-[var(--hw-muted)]">{text}</div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function BrowserFrame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`overflow-hidden rounded-[28px] border border-[rgba(17,24,39,.12)] bg-white shadow-[0_34px_90px_rgba(17,24,39,.18)] ${className}`}>
+      <div className="flex h-11 items-center gap-2 border-b border-[var(--hw-line)] bg-[linear-gradient(180deg,#fff,#F8FAFC)] px-4">
+        <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
+        <span className="h-3 w-3 rounded-full bg-[#FFBD2E]" />
+        <span className="h-3 w-3 rounded-full bg-[#28C840]" />
+        <span className="ml-3 h-5 flex-1 rounded-full border border-[var(--hw-line)] bg-white" />
+      </div>
+      <div className="bg-[radial-gradient(600px_260px_at_15%_0%,rgba(229,57,53,.12),transparent_55%),#fff] p-4 md:p-6">{children}</div>
+    </div>
+  );
+}
+
+function ProductShowcase() {
+  return (
+    <div className="relative min-h-[560px] md:min-h-[660px]">
+      <div aria-hidden className="absolute left-8 top-12 h-[420px] w-[420px] rounded-full bg-[var(--hw-red)]/10 blur-[90px]" />
+      <BrowserFrame className="relative z-10 max-w-[760px]">
+        <MiniAiCard />
+      </BrowserFrame>
+      <BrowserFrame className="relative z-20 -mt-10 ml-auto max-w-[700px] rotate-0 md:-mt-28 md:rotate-[1deg]">
+        <InstantEstimatePreview />
+      </BrowserFrame>
+      <div className="relative z-30 -mt-8 max-w-[420px] md:-mt-24 md:ml-12">
+        <TopOfMindPreview />
       </div>
     </div>
   );
@@ -195,13 +226,23 @@ export const metadata = {
 
 export default function NahrepLandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-[var(--hw-ink)]">
       <SiteHeader ctaHref={betaUrl} />
 
       <main>
-        <section className="relative overflow-hidden border-b border-[var(--hw-line)] bg-[linear-gradient(180deg,#fff_0%,#fff_58%,#F8FAFC_100%)]">
-          <Container className="relative py-10 md:py-16">
-            <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-center">
+        <section className="relative min-h-[calc(100vh-64px)] overflow-hidden border-b border-[var(--hw-line)] bg-[radial-gradient(900px_460px_at_80%_4%,rgba(229,57,53,.14),transparent_58%),linear-gradient(180deg,#fff_0%,#fff_60%,#F8FAFC_100%)]">
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-[0.12]"
+            style={{
+              backgroundImage: "linear-gradient(rgba(17,24,39,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(17,24,39,.10) 1px, transparent 1px)",
+              backgroundSize: "44px 44px",
+              maskImage: "linear-gradient(to bottom, black, transparent 82%)",
+              WebkitMaskImage: "linear-gradient(to bottom, black, transparent 82%)",
+            }}
+          />
+          <Container className="relative max-w-[1180px] py-10 md:py-16">
+            <div className="grid gap-9 lg:grid-cols-[1fr_430px] lg:items-center">
               <div>
                 <div className="flex flex-wrap gap-2">
                   <Pill className="bg-white">
@@ -211,10 +252,10 @@ export default function NahrepLandingPage() {
                   <Pill className="bg-white">Homeworke 3.0</Pill>
                 </div>
 
-                <h1 className="mt-7 max-w-4xl text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-6xl">
+                <h1 className="mt-7 max-w-4xl text-balance text-5xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-7xl">
                   Instant repair clarity for every client relationship.
                 </h1>
-                <p className="mt-5 max-w-2xl text-pretty text-lg leading-8 text-[var(--hw-muted)]">
+                <p className="mt-5 max-w-2xl text-pretty text-xl leading-9 text-[var(--hw-muted)]">
                   Homeworke helps agents stay essential after the transaction with Instant Estimates, 203k rehab-ready
                   repair coordination, and branded tools that keep you top of mind.
                 </p>
@@ -233,74 +274,66 @@ export default function NahrepLandingPage() {
                   </Link>
                 </div>
 
-                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                <div className="mt-10 grid gap-3 sm:grid-cols-3">
                   {proofItems.map((item) => (
-                    <div key={item.label} className="rounded-[18px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_8px_22px_rgba(17,24,39,.05)]">
+                    <div key={item.label} className="rounded-[22px] border border-[rgba(229,57,53,.16)] bg-white/90 p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur">
                       <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{item.label}</div>
-                      <div className="mt-1 text-2xl font-extrabold text-[var(--hw-ink)]">{item.value}</div>
+                      <div className="mt-2 text-3xl font-extrabold text-[var(--hw-ink)]">{item.value}</div>
                       <div className="mt-1 text-sm leading-5 text-[var(--hw-muted)]">{item.text}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="mx-auto w-full max-w-[360px] lg:mx-0">
+              <div className="mx-auto w-full max-w-[430px] lg:mx-0">
                 <NahrepQr />
               </div>
             </div>
           </Container>
         </section>
 
-        <section id="platform-preview" className="bg-[var(--hw-soft)] py-14 md:py-18">
-          <Container>
-            <div className="max-w-3xl">
+        <section id="platform-preview" className="bg-[var(--hw-soft)] py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-end">
+              <div className="max-w-3xl">
               <div className="text-sm font-extrabold uppercase tracking-widest text-[var(--hw-red)]">New 3.0 Platform</div>
-              <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-4xl">
+              <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
                 Built for the moments where agents can be most useful.
               </h2>
               <p className="mt-4 text-base leading-7 text-[var(--hw-muted)]">
                 The beta focuses on the high-value workflows real estate pros already care about: inspection repairs,
                 rehab scenarios, post-closing home needs, and simple ways to stay connected.
               </p>
-            </div>
-
-            <div className="mt-8 grid gap-4 md:grid-cols-2">
-              {featureCards.map((feature) => {
-                const Icon = feature.icon;
-                return (
-                  <Card key={feature.title} className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {featureCards.map((feature) => {
+                  const Icon = feature.icon;
+                  return (
+                    <div key={feature.title} className="rounded-[22px] border border-[rgba(229,57,53,.18)] bg-white p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
                         <Icon className="h-5 w-5" />
                       </div>
-                      <div>
-                        <h3 className="text-lg font-extrabold text-[var(--hw-ink)]">{feature.title}</h3>
-                        <p className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{feature.text}</p>
-                      </div>
+                      <div className="mt-4 text-sm font-extrabold leading-5 text-[var(--hw-ink)]">{feature.title}</div>
                     </div>
-                  </Card>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </Container>
         </section>
 
-        <section className="py-14 md:py-18">
-          <Container>
-            <div className="grid gap-6 lg:grid-cols-3">
-              <MiniAiCard />
-              <InstantEstimatePreview />
-              <TopOfMindPreview />
-            </div>
+        <section className="overflow-hidden py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <ProductShowcase />
           </Container>
         </section>
 
-        <section className="border-y border-[var(--hw-line)] bg-[var(--hw-soft)] py-14 md:py-18">
-          <Container>
+        <section className="border-y border-[var(--hw-line)] bg-[linear-gradient(180deg,#F8FAFC,#fff)] py-16 md:py-24">
+          <Container className="max-w-[1180px]">
             <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
               <div>
                 <div className="text-sm font-extrabold uppercase tracking-widest text-[var(--hw-red)]">203k Rehab Process</div>
-                <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-4xl">
+                <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
                   Make complicated repair conversations easier to explain.
                 </h2>
                 <p className="mt-4 text-base leading-7 text-[var(--hw-muted)]">
@@ -313,13 +346,13 @@ export default function NahrepLandingPage() {
           </Container>
         </section>
 
-        <section className="py-14 md:py-18">
-          <Container>
-            <div className="rounded-[28px] border border-[rgba(229,57,53,.25)] bg-[var(--hw-ink)] p-6 text-white shadow-[0_22px_60px_rgba(17,24,39,.20)] md:p-8">
+        <section className="py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div className="rounded-[34px] border border-[rgba(229,57,53,.28)] bg-[radial-gradient(520px_260px_at_85%_0%,rgba(229,57,53,.34),transparent_62%),var(--hw-ink)] p-6 text-white shadow-[0_34px_90px_rgba(17,24,39,.28)] md:p-10">
               <div className="grid gap-6 lg:grid-cols-[1fr_260px] lg:items-center">
                 <div>
                   <div className="text-sm font-extrabold uppercase tracking-widest text-white/60">Ready for beta users</div>
-                  <h2 className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">
+                  <h2 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">
                     Give the room one simple next step.
                   </h2>
                   <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">
