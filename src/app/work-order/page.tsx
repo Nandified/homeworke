@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { loadPartner } from "@/lib/partner-context";
@@ -147,7 +147,7 @@ export default function Page() {
   const [tradeQuery, setTradeQuery] = useState("");
   const deferredTradeQuery = useDeferredValue(tradeQuery);
   const [tradeServicesOpen, setTradeServicesOpen] = useState(false);
-  const tradeSearchRef = useMemo(() => ({ current: null as HTMLInputElement | null }), []);
+  const tradeSearchRef = useRef<HTMLInputElement | null>(null);
 
   // Keep textarea typing isolated from the large draft object to avoid any focus jank.
   const [issueFieldKey, setIssueFieldKey] = useState(0);
@@ -776,9 +776,7 @@ export default function Page() {
                       <div className="mt-3">
                         <div className="relative">
                           <Input
-                            ref={(el) => {
-                              (tradeSearchRef as any).current = el;
-                            }}
+                            ref={tradeSearchRef}
                             value={tradeQuery}
                             onChange={(e) => setTradeQuery(String(e.currentTarget.value || ""))}
                             placeholder="Search a service (e.g., leaking sink, outlet, deep clean…)"
@@ -795,10 +793,11 @@ export default function Page() {
                                     update({ service_category: r.trade });
                                     // keep the query as feedback, but collapse suggestions
                                     const v = r.kind === "trade" ? r.trade : r.label;
-                                    try {
-                                      if ((tradeSearchRef as any).current) (tradeSearchRef as any).current.value = v;
-                                    } catch {}
                                     setTradeQuery(v);
+                                    // keep typing flow smooth
+                                    try {
+                                      tradeSearchRef.current?.focus();
+                                    } catch {}
                                   }}
                                   className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-[var(--hw-soft)]"
                                 >
@@ -835,6 +834,11 @@ export default function Page() {
                                 onClick={() => {
                                   setShowAllTradeServices(false);
                                   setTradeServicesOpen(false);
+                                  if (draft.service_category === t) {
+                                    // allow unselect
+                                    update({ service_category: "", service_subcategory: "" });
+                                    return;
+                                  }
                                   update({ service_category: t, service_subcategory: "" });
                                 }}
                                 className="group flex w-full items-start gap-3 text-left"
