@@ -551,20 +551,45 @@ export default function HomeClient(props: { homepage?: unknown }) {
           </Container>
         </section>
 
-        <section id="instant-estimate-flow" className="border-t border-[var(--hw-line)] py-16 md:py-24">
+        <section
+          id="instant-estimate-flow"
+          className="relative overflow-hidden border-t border-[rgba(229,57,53,.16)] py-16 md:py-24"
+          style={{
+            background:
+              "radial-gradient(760px 320px at 78% 18%, rgba(229,57,53,.12), transparent 62%), linear-gradient(180deg,#fff 0%,#fff 56%,#FFF8F8 100%)",
+          }}
+        >
           <Container className="max-w-[1180px]">
             <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-center">
-              <div>
-                <Pill className="bg-white text-[var(--hw-red)]">
-                  <FileText className="h-4 w-4" />
-                  Instant Estimate
-                </Pill>
+              <div className="relative">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Pill className="bg-white text-[var(--hw-red)]">
+                    <FileText className="h-4 w-4" />
+                    Instant Estimate
+                  </Pill>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-[#F59E0B]/30 bg-[#FFFBEB] px-3 py-1.5 text-xs font-extrabold uppercase tracking-widest text-[#B45309] shadow-sm">
+                    Try it now
+                  </span>
+                </div>
                 <h2 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
                   Upload your report for an Instant Estimate.
                 </h2>
                 <p className="mt-4 text-lg leading-8 text-[var(--hw-muted)]">
                   Send a home inspection, village inspection, or appraisal report and Homeworke will organize the likely repair scope into a clear planning estimate.
                 </p>
+                <div className="mt-6 hidden items-center gap-3 text-sm font-extrabold text-[#B45309] lg:flex">
+                  <span>Drop your report here</span>
+                  <svg className="h-14 w-28" viewBox="0 0 112 56" fill="none" aria-hidden>
+                    <path
+                      d="M3 17C23 3 50 5 64 20C76 33 62 45 48 37C36 30 46 16 67 18C84 20 96 30 106 43"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path d="M95 42L107 44L102 32" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
               </div>
               <PublicInstantEstimateCard />
             </div>
@@ -576,8 +601,8 @@ export default function HomeClient(props: { homepage?: unknown }) {
             <div className="grid gap-10 lg:grid-cols-[.78fr_1.22fr] lg:items-center">
               <div className="hw-reveal hw-delay-1">
                 <Pill className="bg-white text-[var(--hw-red)]">
-                  <Zap className="h-4 w-4" />
-                  Instant Estimates
+                  <CheckCircle2 className="h-4 w-4" />
+                  Estimate Results
                 </Pill>
                 <h2 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
                   Start with useful numbers, not vague callbacks.
