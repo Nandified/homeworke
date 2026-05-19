@@ -2,15 +2,17 @@
 
 import { Suspense, useState } from "react";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Sparkles, XCircle } from "lucide-react";
 
 import { Button, Input, Textarea } from "@/components/ui";
 
 function RequestAccessClient() {
+  const router = useRouter();
   const sp = useSearchParams();
   const rawRole = sp.get("role") ?? (sp.get("source") === "nahrep" ? "real-estate-pro" : "partner");
   const type = sp.get("type") ?? "access";
+  const isNahrepEarlyAccess = sp.get("source") === "nahrep" && sp.get("campaign") === "early-access";
   const role = rawRole === "partner" || rawRole === "real-estate-pro" || rawRole === "real_estate_pro" ? "real_estate_pro" : rawRole;
   const roleLabel = role === "real_estate_pro" ? "Real Estate Pro" : role;
 
@@ -31,7 +33,11 @@ function RequestAccessClient() {
       });
       if (!res.ok) throw new Error("request_failed");
       setStatus("sent");
-      window.setTimeout(() => setStatus((current) => (current === "sent" ? "idle" : current)), 4200);
+      if (isNahrepEarlyAccess) {
+        window.setTimeout(() => router.push("/nahrep"), 1800);
+      } else {
+        window.setTimeout(() => setStatus((current) => (current === "sent" ? "idle" : current)), 4200);
+      }
     } catch {
       setStatus("error");
       window.setTimeout(() => setStatus((current) => (current === "error" ? "idle" : current)), 4200);
