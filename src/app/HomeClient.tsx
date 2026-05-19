@@ -513,7 +513,6 @@ export default function HomeClient(props: { homepage?: unknown }) {
                     <span className="hw-breath-dot" aria-hidden />
                     Home services platform
                   </Pill>
-                  <Pill className="bg-white">Chicago first</Pill>
                 </div>
 
                 <h1 className="mt-7 max-w-4xl text-balance text-5xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-7xl">
@@ -535,23 +534,6 @@ export default function HomeClient(props: { homepage?: unknown }) {
                   </Link>
                 </div>
 
-                <div className="mt-10 grid gap-3 sm:grid-cols-2">
-                  {servicePillars.map((pillar, index) => {
-                    const Icon = pillar.icon;
-                    return (
-                      <div
-                        key={pillar.title}
-                        className="hw-motion-card hw-reveal flex items-center gap-3 rounded-[18px] border border-[rgba(229,57,53,.16)] bg-white/90 px-3 py-3 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur"
-                        style={{ animationDelay: `${0.22 + index * 0.07}s` }}
-                      >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[13px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0 text-sm font-extrabold leading-5 text-[var(--hw-ink)]">{pillar.title}</div>
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
 
               <div className="hw-reveal hw-delay-2">
@@ -684,16 +666,18 @@ export default function HomeClient(props: { homepage?: unknown }) {
               </p>
             </div>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
               {servicePillars.map((pillar) => {
                 const Icon = pillar.icon;
                 return (
-                  <div key={pillar.title} className="hw-motion-card rounded-[24px] border border-[rgba(229,57,53,.16)] bg-white p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)]">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
+                  <div key={pillar.title} className="hw-motion-card flex gap-4 rounded-[22px] border border-[rgba(229,57,53,.16)] bg-white/95 p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)]">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
                       <Icon className="h-5 w-5" />
                     </div>
-                    <div className="mt-5 text-lg font-extrabold text-[var(--hw-ink)]">{pillar.title}</div>
-                    <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{pillar.text}</div>
+                    <div className="min-w-0">
+                      <div className="text-lg font-extrabold text-[var(--hw-ink)]">{pillar.title}</div>
+                      <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{pillar.text}</div>
+                    </div>
                   </div>
                 );
               })}

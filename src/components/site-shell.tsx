@@ -29,9 +29,6 @@ export function SiteHeader({ ctaHref = "/estimate", ctaOnClick }: { ctaHref?: st
           <Link href="/how-it-works">
             <Button variant="ghost">How it works</Button>
           </Link>
-          <Link href="/chicago">
-            <Button variant="ghost">Chicago</Button>
-          </Link>
           <Link href="/contact">
             <Button variant="ghost">Contact</Button>
           </Link>
@@ -82,7 +79,6 @@ export function SiteFooter({
           <div className="grid grid-cols-2 gap-2 md:grid-cols-1 md:gap-1">
             <Link href="/services" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Services</Link>
             <Link href="/how-it-works" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">How it works</Link>
-            <Link href="/chicago" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Chicago</Link>
             <Link href="/contact" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Contact</Link>
             <Link href="/privacy" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Privacy</Link>
             <Link href="/terms" className="text-sm text-[var(--hw-muted)] hover:text-[var(--hw-ink)]">Terms</Link>
