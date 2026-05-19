@@ -45,7 +45,7 @@ const pillars = [
   {
     icon: BellRing,
     eyebrow: "Staying Top of Mind",
-    title: "Stay useful after closing without becoming the contractor.",
+    title: "Stay useful at every home moment without becoming the contractor.",
     text: "Give clients a home dashboard where the broker, lender, insurance agent, and inspector stay visible around repair moments.",
   },
 ];
@@ -446,7 +446,7 @@ export default function NahrepLandingPage() {
                 </div>
 
                 <h1 className="mt-7 max-w-4xl text-balance text-5xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-7xl">
-                  Four tools to stay essential after the transaction.
+                  Four tools to stay essential during and after the transaction.
                 </h1>
                 <p className="mt-5 max-w-2xl text-pretty text-xl leading-9 text-[var(--hw-muted)]">
                   Instant Estimates, Homeworke AI, 203K rehab workflows, and top-of-mind tools built for Real Estate Pros.
