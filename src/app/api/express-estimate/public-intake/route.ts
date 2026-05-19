@@ -83,7 +83,7 @@ export async function POST(req: Request) {
           pdfSha256,
           ownerName: name,
           address,
-          inspector: "Public Instant Estimate",
+          inspector: "Instant Estimate",
         },
       });
 
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
       ok: true,
       reportId,
       portalPath,
-      message: "Report received. We will email the private portal link when the Instant Estimate is ready.",
+      message: "Report received. We will email the Instant Estimate link when it is ready.",
     });
   } catch (e: unknown) {
     const detail = e && typeof e === "object" && "message" in e ? String(e.message) : "Unknown error";

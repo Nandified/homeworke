@@ -54,7 +54,7 @@ export function SiteFooter() {
             <div className="text-sm font-semibold text-[var(--hw-ink)]">Homeworke</div>
             <div className="mt-2 text-sm text-[var(--hw-muted)]">Home services, handled end-to-end</div>
             <div className="mt-4">
-              <Link href="/estimate">
+              <Link href="/#instant-estimate-flow">
                 <Button>Get an Instant Estimate</Button>
               </Link>
             </div>

@@ -276,7 +276,7 @@ function PublicInstantEstimateCard() {
       setResult({
         reportId: data.reportId,
         portalPath: data.portalPath,
-        message: data.message || "Report received. We will email the private portal link when it is ready.",
+        message: data.message || "Report received. We will email the report link when it is ready.",
       });
     } catch (e: unknown) {
       const message = e && typeof e === "object" && "message" in e ? String(e.message) : "Unable to submit report.";
@@ -305,13 +305,13 @@ function PublicInstantEstimateCard() {
               </div>
               <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Instant Estimate</div>
             </div>
-            <Pill className="w-fit border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">Public upload</Pill>
+            <Pill className="w-fit border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">Report upload</Pill>
           </div>
 
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--hw-muted)]">
             Upload a <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span>,{" "}
             <span className="font-semibold text-[var(--hw-ink)]">Village Inspection</span>, or{" "}
-            <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report. We will create a private Homeworke portal account and email the Instant Estimate link when the report is ready.
+            <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report. We will review the file and email your Instant Estimate link when the report is ready.
           </p>
 
           <label
@@ -367,7 +367,7 @@ function PublicInstantEstimateCard() {
             <div>
               <h3 className="text-3xl font-extrabold tracking-tight text-[var(--hw-ink)]">Instant Estimate</h3>
               <p className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
-                Upload an inspection/appraisal PDF, then we will prepare a private portal report.
+                Upload an inspection/appraisal PDF, then we will prepare your estimate report.
               </p>
             </div>
             {result ? (
@@ -400,7 +400,7 @@ function PublicInstantEstimateCard() {
           <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4">
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">2</div>
-              <div className="text-sm font-semibold text-[var(--hw-ink)]">Property and private portal contact</div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Property and contact</div>
             </div>
             <div className="mt-3 grid gap-3">
               <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Property address" />
@@ -460,7 +460,7 @@ export default function HomeClient(props: { homepage?: unknown }) {
 
   return (
     <div className="min-h-screen bg-white text-[var(--hw-ink)]">
-      <SiteHeader />
+      <SiteHeader ctaHref="#instant-estimate-flow" />
 
       <main>
         <section
@@ -487,7 +487,7 @@ export default function HomeClient(props: { homepage?: unknown }) {
                 <div className="flex flex-wrap gap-2">
                   <Pill className="bg-white">
                     <span className="hw-breath-dot" aria-hidden />
-                    Public home services platform
+                    Home services platform
                   </Pill>
                   <Pill className="bg-white">Chicago first</Pill>
                 </div>
@@ -545,6 +545,26 @@ export default function HomeClient(props: { homepage?: unknown }) {
           </Container>
         </section>
 
+        <section id="instant-estimate-flow" className="border-t border-[var(--hw-line)] py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-center">
+              <div>
+                <Pill className="bg-white text-[var(--hw-red)]">
+                  <FileText className="h-4 w-4" />
+                  Instant Estimate
+                </Pill>
+                <h2 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
+                  Upload your report for an Instant Estimate.
+                </h2>
+                <p className="mt-4 text-lg leading-8 text-[var(--hw-muted)]">
+                  Send a home inspection, village inspection, or appraisal report and Homeworke will organize the likely repair scope into a clear planning estimate.
+                </p>
+              </div>
+              <PublicInstantEstimateCard />
+            </div>
+          </Container>
+        </section>
+
         <section id="platform" className="py-16 md:py-24">
           <Container className="max-w-[1180px]">
             <div className="grid gap-10 lg:grid-cols-[.78fr_1.22fr] lg:items-center">
@@ -569,7 +589,7 @@ export default function HomeClient(props: { homepage?: unknown }) {
           </Container>
         </section>
 
-        <section id="instant-estimate-flow" className="border-t border-[var(--hw-line)] py-16 md:py-24">
+        <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
           <Container className="max-w-[1180px]">
             <div className="grid gap-10 lg:grid-cols-[1.16fr_.84fr] lg:items-center">
               <div className="hw-reveal hw-delay-2 lg:order-2">
@@ -589,26 +609,6 @@ export default function HomeClient(props: { homepage?: unknown }) {
                   <CoordinationPreview />
                 </div>
               </div>
-            </div>
-          </Container>
-        </section>
-
-        <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
-          <Container className="max-w-[1180px]">
-            <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-center">
-              <div>
-                <Pill className="bg-white text-[var(--hw-red)]">
-                  <FileText className="h-4 w-4" />
-                  Public Instant Estimate
-                </Pill>
-                <h2 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
-                  Upload the report, get the result in your private portal.
-                </h2>
-                <p className="mt-4 text-lg leading-8 text-[var(--hw-muted)]">
-                  This is the Real Estate Pro Instant Estimate workflow adapted for public visitors. We collect the property and contact details needed to create the private account behind the scenes, then send the completed report link to the right person.
-                </p>
-              </div>
-              <PublicInstantEstimateCard />
             </div>
           </Container>
         </section>
