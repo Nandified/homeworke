@@ -7,7 +7,15 @@ import { MyHomeworkeMenu } from "@/components/MyHomeworkeMenu";
 
 type EstimateClickHandler = MouseEventHandler<HTMLAnchorElement | HTMLButtonElement>;
 
-export function SiteHeader({ ctaHref = "/estimate", ctaOnClick }: { ctaHref?: string; ctaOnClick?: EstimateClickHandler }) {
+export function SiteHeader({
+  ctaHref = "/estimate",
+  ctaLabel = "Request an estimate",
+  ctaOnClick,
+}: {
+  ctaHref?: string;
+  ctaLabel?: string;
+  ctaOnClick?: EstimateClickHandler;
+}) {
   return (
     <header className="sticky top-0 z-[160] border-b border-[var(--hw-line)] bg-white/80 backdrop-blur">
       <Container className="flex h-16 items-center justify-between">
@@ -38,11 +46,11 @@ export function SiteHeader({ ctaHref = "/estimate", ctaOnClick }: { ctaHref?: st
           <MyHomeworkeMenu />
           {ctaOnClick ? (
             <Button className="hidden sm:inline-flex" onClick={(event) => ctaOnClick(event)}>
-              Request an estimate
+              {ctaLabel}
             </Button>
           ) : (
             <Link href={ctaHref} className="hidden sm:block">
-              <Button>Request an estimate</Button>
+              <Button>{ctaLabel}</Button>
             </Link>
           )}
         </div>
@@ -53,9 +61,11 @@ export function SiteHeader({ ctaHref = "/estimate", ctaOnClick }: { ctaHref?: st
 
 export function SiteFooter({
   estimateHref = "/#instant-estimate-upload",
+  estimateLabel = "Get an Instant Estimate",
   estimateOnClick,
 }: {
   estimateHref?: string;
+  estimateLabel?: string;
   estimateOnClick?: EstimateClickHandler;
 }) {
   return (
@@ -67,10 +77,10 @@ export function SiteFooter({
             <div className="mt-2 text-sm text-[var(--hw-muted)]">Home services, handled end-to-end</div>
             <div className="mt-4">
               {estimateOnClick ? (
-                <Button onClick={(event) => estimateOnClick(event)}>Get an Instant Estimate</Button>
+                <Button onClick={(event) => estimateOnClick(event)}>{estimateLabel}</Button>
               ) : (
                 <Link href={estimateHref}>
-                  <Button>Get an Instant Estimate</Button>
+                  <Button>{estimateLabel}</Button>
                 </Link>
               )}
             </div>
