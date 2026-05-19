@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, type MouseEvent } from "react";
 
 import {
   ArrowRight,
@@ -463,9 +463,28 @@ function PublicInstantEstimateCard() {
 export default function HomeClient(props: { homepage?: unknown }) {
   void props;
 
+  function scrollToInstantEstimate(event?: MouseEvent<HTMLAnchorElement | HTMLButtonElement>) {
+    event?.preventDefault();
+
+    const target = document.getElementById("instant-estimate-upload");
+    if (!target) return;
+
+    const targetRect = target.getBoundingClientRect();
+    const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const visibleHeight = Math.max(360, viewportHeight - headerHeight);
+    const targetTop = targetRect.top + window.scrollY;
+    const targetCenter = targetTop + targetRect.height / 2;
+    const scrollTop = Math.max(0, targetCenter - headerHeight - visibleHeight / 2);
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    window.history.replaceState(null, "", "#instant-estimate-upload");
+    window.scrollTo({ top: scrollTop, behavior: prefersReducedMotion ? "auto" : "smooth" });
+  }
+
   return (
     <div className="min-h-screen bg-white text-[var(--hw-ink)]">
-      <SiteHeader ctaHref="#instant-estimate-flow" />
+      <SiteHeader ctaHref="#instant-estimate-upload" ctaOnClick={scrollToInstantEstimate} />
 
       <main>
         <section
@@ -505,12 +524,10 @@ export default function HomeClient(props: { homepage?: unknown }) {
                 </p>
 
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                  <Link href="#instant-estimate-flow">
-                    <Button className="w-full sm:w-auto">
-                      Get an instant estimate
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <Button className="w-full sm:w-auto" onClick={scrollToInstantEstimate}>
+                    Get an instant estimate
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                   <Link href="#platform">
                     <Button variant="secondary" className="w-full sm:w-auto">
                       See the platform
@@ -599,7 +616,9 @@ export default function HomeClient(props: { homepage?: unknown }) {
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,.16),0_0_20px_rgba(16,185,129,.55)]" aria-hidden />
                   <span>Drop your report here</span>
                 </div>
-                <PublicInstantEstimateCard />
+                <div id="instant-estimate-upload" className="scroll-mt-28 md:scroll-mt-32">
+                  <PublicInstantEstimateCard />
+                </div>
               </div>
             </div>
           </Container>
@@ -816,12 +835,10 @@ export default function HomeClient(props: { homepage?: unknown }) {
                   </p>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <Link href="#instant-estimate-flow">
-                    <Button className="w-full bg-white text-[var(--hw-ink)] shadow-none hover:bg-[var(--hw-soft)]">
-                      Get an instant estimate
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <Button className="w-full bg-white text-[var(--hw-ink)] shadow-none hover:bg-[var(--hw-soft)]" onClick={scrollToInstantEstimate}>
+                    Get an instant estimate
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                   <Link href="/work-order">
                     <Button variant="secondary" className="w-full border-white/15 bg-white/10 text-white shadow-none hover:bg-white/15">
                       Explore services
@@ -834,7 +851,7 @@ export default function HomeClient(props: { homepage?: unknown }) {
         </section>
       </main>
 
-      <SiteFooter />
+      <SiteFooter estimateHref="#instant-estimate-upload" estimateOnClick={scrollToInstantEstimate} />
     </div>
   );
 }

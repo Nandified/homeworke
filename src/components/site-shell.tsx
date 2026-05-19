@@ -1,10 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { MouseEventHandler } from "react";
 
 import { Button, Container } from "@/components/ui";
 import { MyHomeworkeMenu } from "@/components/MyHomeworkeMenu";
 
-export function SiteHeader({ ctaHref = "/estimate" }: { ctaHref?: string }) {
+type EstimateClickHandler = MouseEventHandler<HTMLAnchorElement | HTMLButtonElement>;
+
+export function SiteHeader({ ctaHref = "/estimate", ctaOnClick }: { ctaHref?: string; ctaOnClick?: EstimateClickHandler }) {
   return (
     <header className="sticky top-0 z-[160] border-b border-[var(--hw-line)] bg-white/80 backdrop-blur">
       <Container className="flex h-16 items-center justify-between">
@@ -36,16 +39,28 @@ export function SiteHeader({ ctaHref = "/estimate" }: { ctaHref?: string }) {
 
         <div className="flex items-center gap-2">
           <MyHomeworkeMenu />
-          <Link href={ctaHref} className="hidden sm:block">
-            <Button>Request an estimate</Button>
-          </Link>
+          {ctaOnClick ? (
+            <Button className="hidden sm:inline-flex" onClick={(event) => ctaOnClick(event)}>
+              Request an estimate
+            </Button>
+          ) : (
+            <Link href={ctaHref} className="hidden sm:block">
+              <Button>Request an estimate</Button>
+            </Link>
+          )}
         </div>
       </Container>
     </header>
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({
+  estimateHref = "/#instant-estimate-upload",
+  estimateOnClick,
+}: {
+  estimateHref?: string;
+  estimateOnClick?: EstimateClickHandler;
+}) {
   return (
     <footer className="border-t border-[var(--hw-line)] bg-white">
       <Container className="py-10">
@@ -54,9 +69,13 @@ export function SiteFooter() {
             <div className="text-sm font-semibold text-[var(--hw-ink)]">Homeworke</div>
             <div className="mt-2 text-sm text-[var(--hw-muted)]">Home services, handled end-to-end</div>
             <div className="mt-4">
-              <Link href="/#instant-estimate-flow">
-                <Button>Get an Instant Estimate</Button>
-              </Link>
+              {estimateOnClick ? (
+                <Button onClick={(event) => estimateOnClick(event)}>Get an Instant Estimate</Button>
+              ) : (
+                <Link href={estimateHref}>
+                  <Button>Get an Instant Estimate</Button>
+                </Link>
+              )}
             </div>
           </div>
 
