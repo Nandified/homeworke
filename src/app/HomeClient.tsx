@@ -552,10 +552,10 @@ export default function HomeClient(props: { homepage?: unknown }) {
 
         <section
           id="instant-estimate-flow"
-          className="relative overflow-hidden border-t border-[rgba(229,57,53,.16)] py-16 md:py-24"
+          className="relative overflow-hidden py-16 md:py-24"
           style={{
             background:
-              "radial-gradient(760px 320px at 78% 18%, rgba(229,57,53,.12), transparent 62%), linear-gradient(180deg,#fff 0%,#fff 56%,#FFF8F8 100%)",
+              "radial-gradient(760px 320px at 78% 28%, rgba(229,57,53,.13), transparent 64%), linear-gradient(180deg,#fff 0%,#fff 10%,#FFF9F9 30%,#FFF6F6 58%,#FFF9F9 78%,#fff 100%)",
           }}
         >
           <Container className="max-w-[1180px]">
@@ -578,20 +578,26 @@ export default function HomeClient(props: { homepage?: unknown }) {
                   Send a home inspection, village inspection, or appraisal report and Homeworke will organize the likely repair scope into a clear planning estimate.
                 </p>
               </div>
-              <div className="relative lg:pt-16">
-                <div className="mb-4 flex w-fit items-center gap-3 rounded-full border border-emerald-400/60 bg-gradient-to-r from-emerald-100 to-white px-4 py-2 text-sm font-extrabold text-emerald-800 shadow-[0_18px_42px_rgba(16,185,129,.22)] ring-4 ring-emerald-500/10 sm:ml-auto lg:absolute lg:left-8 lg:top-0 lg:mb-0">
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,.16),0_0_20px_rgba(16,185,129,.55)]" aria-hidden />
-                  <span>Drop your report here</span>
-                  <svg className="hidden h-16 w-32 translate-y-7 text-emerald-700 drop-shadow-[0_8px_14px_rgba(16,185,129,.22)] lg:block" viewBox="0 0 132 64" fill="none" aria-hidden>
+              <div>
+                <div className="mb-5 hidden lg:block">
+                  <div className="inline-flex items-center gap-3 rounded-full border border-emerald-400/60 bg-gradient-to-r from-emerald-100 to-white px-4 py-2 text-sm font-extrabold text-emerald-800 shadow-[0_18px_42px_rgba(16,185,129,.22)] ring-4 ring-emerald-500/10">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,.16),0_0_20px_rgba(16,185,129,.55)]" aria-hidden />
+                    <span>Drop your report here</span>
+                  </div>
+                  <svg className="ml-32 mt-1 h-12 w-40 text-emerald-700 drop-shadow-[0_8px_14px_rgba(16,185,129,.22)]" viewBox="0 0 160 48" fill="none" aria-hidden>
                     <path
-                      d="M5 10C28 2 58 8 71 24C82 38 65 48 52 38C39 28 50 14 75 19C96 23 114 38 124 55"
+                      d="M4 9C31 2 61 5 78 18C92 29 78 42 62 34C48 27 56 12 86 16C112 19 134 29 151 42"
                       stroke="currentColor"
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    <path d="M112 53L126 57L122 43" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M139 42L153 44L147 31" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
+                </div>
+                <div className="mb-4 inline-flex items-center gap-3 rounded-full border border-emerald-400/60 bg-gradient-to-r from-emerald-100 to-white px-4 py-2 text-sm font-extrabold text-emerald-800 shadow-[0_16px_34px_rgba(16,185,129,.18)] ring-4 ring-emerald-500/10 lg:hidden">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,.16),0_0_20px_rgba(16,185,129,.55)]" aria-hidden />
+                  <span>Drop your report here</span>
                 </div>
                 <PublicInstantEstimateCard />
               </div>
