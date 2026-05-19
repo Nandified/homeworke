@@ -511,15 +511,15 @@ export default function HomeClient(props: { homepage?: unknown }) {
                 <div className="flex flex-wrap gap-2">
                   <Pill className="bg-white">
                     <span className="hw-breath-dot" aria-hidden />
-                    Home services platform
+                    All-in-one home services platform
                   </Pill>
                 </div>
 
                 <h1 className="mt-7 max-w-4xl text-balance text-5xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-7xl">
-                  Home repairs with a plan before the visit.
+                  Get the repair plan, estimate, and right pro without the runaround.
                 </h1>
                 <p className="mt-5 max-w-2xl text-pretty text-xl leading-9 text-[var(--hw-muted)]">
-                  Homeworke helps homeowners and real estate teams turn repair chaos into clear scope, practical estimates, scheduling preferences, and coordinated follow-through.
+                  Upload an inspection report or tell Homeworke what is going on. We organize the scope, turn messy repair details into practical estimate guidance, and help coordinate trusted service providers from first request to finished work.
                 </p>
 
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row">
