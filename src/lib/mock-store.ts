@@ -122,6 +122,26 @@ export type PersonDirectoryEntry = {
   activeWorkOrders?: number;
 };
 
+export type SpEstimateSubmission = {
+  id: string;
+  createdAt: string;
+  workOrderId: string;
+  startDate?: string;
+  expiryDate?: string;
+  items: Array<{ id: string; name: string; description?: string; qty: number; priceCents: number }>;
+  totalCents: number;
+};
+
+export type SpJobStatus = "active" | "completed";
+export type SpJob = {
+  id: string;
+  createdAt: string;
+  workOrderId: string;
+  status: SpJobStatus;
+  title: string;
+  address?: string;
+};
+
 type Store = {
   workOrders: WorkOrder[];
   properties: Property[];
@@ -131,6 +151,8 @@ type Store = {
   helpDesk: HelpDeskTicket[];
   providers: ServiceProvider[];
   people: PersonDirectoryEntry[];
+  spEstimates: SpEstimateSubmission[];
+  spJobs: SpJob[];
 };
 
 // Demo seeding
@@ -470,7 +492,18 @@ function getGlobal(): { __HW3_STORE__?: Store } {
 export function store(): Store {
   const g = getGlobal();
   if (!g.__HW3_STORE__) {
-    g.__HW3_STORE__ = { workOrders: [], properties: [], messages: [], estimates: [], documents: [], helpDesk: [], providers: [], people: [] };
+    g.__HW3_STORE__ = {
+      workOrders: [],
+      properties: [],
+      messages: [],
+      estimates: [],
+      documents: [],
+      helpDesk: [],
+      providers: [],
+      people: [],
+      spEstimates: [],
+      spJobs: [],
+    };
   }
   return g.__HW3_STORE__;
 }

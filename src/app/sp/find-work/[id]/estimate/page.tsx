@@ -214,17 +214,31 @@ export default function ServiceProviderCreateEstimatePage({ params }: { params: 
 
               <Button
                 disabled={!items.length}
-                onClick={() => {
-                  // Demo submit: for now just clear draft and route back.
+                onClick={async () => {
+                  // Demo submit: persist to the server-side demo store so it appears in My Jobs.
+                  await fetch("/api/sp/estimates", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                      demo: true,
+                      workOrderId: jobId,
+                      startDate,
+                      expiryDate,
+                      items,
+                      totalCents,
+                    }),
+                  });
+
                   try {
                     window.localStorage.removeItem(storageKey(jobId));
                   } catch {}
-                  window.location.href = `/sp/find-work/${encodeURIComponent(jobId)}`;
+
+                  window.location.href = "/sp/my-jobs";
                 }}
               >
                 Submit estimate (demo)
               </Button>
-              <div className="mt-2 text-xs text-[var(--hw-muted)]">Next: wire submission to platform + show under My Jobs.</div>
+              <div className="mt-2 text-xs text-[var(--hw-muted)]">Submitting will add this job to My Jobs (demo mode).</div>
             </div>
           </Card>
         </div>
