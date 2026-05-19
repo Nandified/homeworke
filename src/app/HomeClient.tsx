@@ -567,7 +567,8 @@ export default function HomeClient(props: { homepage?: unknown }) {
                     <FileText className="h-4 w-4" />
                     Instant Estimate
                   </Pill>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-[#F59E0B]/30 bg-[#FFFBEB] px-3 py-1.5 text-xs font-extrabold uppercase tracking-widest text-[#B45309] shadow-sm">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold uppercase tracking-widest text-emerald-700 shadow-sm">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,.14)]" aria-hidden />
                     Try it now
                   </span>
                 </div>
@@ -577,17 +578,17 @@ export default function HomeClient(props: { homepage?: unknown }) {
                 <p className="mt-4 text-lg leading-8 text-[var(--hw-muted)]">
                   Send a home inspection, village inspection, or appraisal report and Homeworke will organize the likely repair scope into a clear planning estimate.
                 </p>
-                <div className="mt-6 hidden items-center gap-3 text-sm font-extrabold text-[#B45309] lg:flex">
+                <div className="absolute -right-[270px] bottom-[-74px] z-10 hidden items-center gap-3 text-sm font-extrabold text-emerald-700 lg:flex xl:-right-[300px]">
                   <span>Drop your report here</span>
-                  <svg className="h-14 w-28" viewBox="0 0 112 56" fill="none" aria-hidden>
+                  <svg className="h-16 w-36" viewBox="0 0 144 64" fill="none" aria-hidden>
                     <path
-                      d="M3 17C23 3 50 5 64 20C76 33 62 45 48 37C36 30 46 16 67 18C84 20 96 30 106 43"
+                      d="M3 16C28 1 62 5 78 22C91 36 75 49 59 39C45 30 56 15 83 18C105 21 124 34 136 51"
                       stroke="currentColor"
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    <path d="M95 42L107 44L102 32" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M124 51L138 53L132 40" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
               </div>
