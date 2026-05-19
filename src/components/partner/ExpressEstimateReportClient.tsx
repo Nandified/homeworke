@@ -1,17 +1,44 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 
 import Link from "next/link";
 
 import { getDocument, GlobalWorkerOptions, Util } from "pdfjs-dist";
 
 import { Button, Card, Chip, EmptyState, Input, Picker } from "@/components/ui";
-import { Camera, ChevronDown, Copy, Download, Hammer, Share2 } from "lucide-react";
+import {
+  Bolt,
+  BrushCleaning,
+  Bug,
+  Camera,
+  ChevronDown,
+  Copy,
+  DoorClosed,
+  DoorOpen,
+  Download,
+  Droplets,
+  Flame,
+  Hammer,
+  Home,
+  HousePlug,
+  Leaf,
+  Layers,
+  PaintBucket,
+  PaintRoller,
+  PlugZap,
+  Refrigerator,
+  Share2,
+  SprayCan,
+  TreePine,
+  Trees,
+  Wrench,
+} from "lucide-react";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
 import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
 import { extractSummaryEvidenceThumbsFromPdf, type ClientEvidenceThumb } from "@/lib/pdf-summary-evidence-client";
+import taxonomy from "@/content/homeworke_services_taxonomy.json";
 
 type EvidenceThumb = { src: string; caption?: string };
 
@@ -40,6 +67,22 @@ type ExtractedLane = {
   }>;
 };
 
+type ExtractedItem = ExtractedLane["items"][number];
+
+type ServiceOption = { id: string; category: string; label: string };
+type RepairGroup = {
+  id: string;
+  trade: string;
+  serviceSubcategory: string;
+  description: string;
+  Icon: ComponentType<{ className?: string }>;
+  items: ExtractedItem[];
+  subtotal: number;
+  needsVerification: boolean;
+};
+
+const TRADE_OPTIONS = ((taxonomy as { trades?: string[] }).trades || []).filter(Boolean);
+
 type AnalyzeResponse =
   | {
       ok: true;
@@ -57,6 +100,167 @@ type Report = {
   createdAt: string;
   status: "Draft" | "Ready";
 };
+
+function tradeUi(trade: string): { Icon: ComponentType<{ className?: string }>; description: string } {
+  const s = (trade || "").toLowerCase();
+  const description =
+    s.includes("electrical")
+      ? "Panels, outlets, lighting, troubleshooting"
+      : s.includes("plumb")
+        ? "Leaks, fixtures, drains, water heaters"
+        : s.includes("hvac")
+          ? "Heating/cooling, thermostats, ducts"
+          : s.includes("clean")
+            ? "Turnovers, deep cleans, carpet & more"
+            : s.includes("appliance")
+              ? "Install & repair for household appliances"
+              : s.includes("floor")
+                ? "Install, repair, refinish"
+                : s.includes("paint")
+                  ? "Interior/exterior painting & prep"
+                  : s.includes("drywall")
+                    ? "Patch, hang, texture, finish"
+                    : s.includes("pest")
+                      ? "Treatments, prevention, inspections"
+                      : s.includes("landscap")
+                        ? "Lawn care, cleanup, hardscapes"
+                        : s.includes("tree")
+                          ? "Trim, removal, storm cleanup"
+                          : s.includes("roof")
+                            ? "Repair, replace, inspections"
+                            : s.includes("gutter")
+                              ? "Clean, repair, guards"
+                              : s.includes("windows") || s.includes("doors")
+                                ? "Install, repair, weatherproof"
+                                : s.includes("garage")
+                                  ? "Openers, springs, repairs"
+                                  : s.includes("masonry") || s.includes("concrete") || s.includes("asphalt")
+                                    ? "Concrete, brick, asphalt work"
+                                    : s.includes("mold") || s.includes("water") || s.includes("environment")
+                                      ? "Remediation, testing, restoration"
+                                      : s.includes("inspect")
+                                        ? "Home, sewer, and specialty inspections"
+                                        : s.includes("pool")
+                                          ? "Service, repair, installs"
+                                          : s.includes("remodel")
+                                            ? "Kitchens, baths, additions"
+                                            : s.includes("handyman") || s.includes("general")
+                                              ? "Small repairs, installs, punch lists"
+                                              : "Matched service group";
+
+  const Icon = (() => {
+    if (s.includes("electrical")) return PlugZap;
+    if (s.includes("plumb")) return Droplets;
+    if (s.includes("hvac") || s.includes("heating") || s.includes("cool")) return Flame;
+    if (s.includes("appliance")) return Refrigerator;
+    if (s.includes("clean")) return BrushCleaning;
+    if (s.includes("floor")) return Layers;
+    if (s.includes("gutter")) return Home;
+    if (s.includes("landscap") || s.includes("lawn")) return Leaf;
+    if (s.includes("tree")) return TreePine;
+    if (s.includes("masonry") || s.includes("concrete") || s.includes("asphalt")) return Hammer;
+    if (s.includes("mold") || s.includes("water damage") || s.includes("environment")) return SprayCan;
+    if (s.includes("paint")) return PaintRoller;
+    if (s.includes("drywall")) return PaintBucket;
+    if (s.includes("pest")) return Bug;
+    if (s.includes("pool") || s.includes("spa")) return HousePlug;
+    if (s.includes("garage")) return DoorClosed;
+    if (s.includes("windows") || s.includes("doors")) return DoorOpen;
+    if (s.includes("inspect")) return Bolt;
+    if (s.includes("remodel")) return Wrench;
+    if (s.includes("handyman") || s.includes("general")) return Wrench;
+    return Trees;
+  })();
+
+  return { Icon, description };
+}
+
+function tradeFromEstimateItem(item: ExtractedItem): string {
+  const raw = String(item.pricingDebug?.tradeId || "").toLowerCase();
+  const text = `${raw} ${item.label || ""} ${item.note || ""}`.toLowerCase();
+
+  const direct: Array<[RegExp, string]> = [
+    [/electrical|outlet|gfci|breaker|panel|fixture|ceiling fan/, "Electrical"],
+    [/plumb|leak|water heater|sump|drain|sewer|faucet|toilet/, "Plumbing"],
+    [/hvac|furnace|air conditioner|ac\b|thermostat|duct/, "HVAC"],
+    [/roof|shingle|flashing|flat roof|chimney/, "Roofing"],
+    [/gutter|downspout|eave/, "Gutters"],
+    [/window|door|screen|sash|sealant|caulk|weatherstrip/, "Windows & Doors"],
+    [/masonry|brick|tuckpoint|parging|concrete|slab|driveway|walkway|foundation/, "Masonry / Concrete / Asphalt"],
+    [/paint|painting/, "Painting"],
+    [/drywall|texture|wall patch|ceiling patch/, "Drywall"],
+    [/floor|hardwood|laminate|lvp|carpet|tile/, "Flooring"],
+    [/pest|termite|rodent/, "Pest Control"],
+    [/landscap|yard|grading|drainage|sod|mulch/, "Landscaping / Lawn"],
+    [/tree|branch|stump/, "Tree Service"],
+    [/mold|remediation|moisture|water damage/, "Mold / Water Damage / Environmental"],
+    [/garage door|garage\b/, "Garage Doors"],
+    [/appliance|dishwasher|refrigerator|oven|washer|dryer/, "Appliance Repair/Install"],
+    [/siding|deck|porch|carpentry|handyman|general/, "Handyman / General"],
+  ];
+
+  return direct.find(([re]) => re.test(text))?.[1] || "Handyman / General";
+}
+
+function findServiceLabel(services: ServiceOption[], terms: string[]): string {
+  const lowerTerms = terms.map((t) => t.toLowerCase());
+  return services.find((s) => lowerTerms.some((t) => s.label.toLowerCase().includes(t)))?.label || "";
+}
+
+function parseMoneyToNumber(raw: string): number | null {
+  const s = (raw || "").toLowerCase().replace(/\s+/g, " ").trim();
+  if (!s) return null;
+
+  // Extract first numeric token and optional suffix.
+  const m = s.match(/\$?([0-9]+(?:\.[0-9]+)?)(k|m)?/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  if (!Number.isFinite(n)) return null;
+  const suf = (m[2] || "").toLowerCase();
+  const mult = suf === "k" ? 1000 : suf === "m" ? 1_000_000 : 1;
+  return n * mult;
+}
+
+function estimateItemValue(item: { range?: string; price?: number }): number | null {
+  if (typeof item.price === "number" && Number.isFinite(item.price)) return item.price;
+  const r = (item.range || "").replace(/–/g, "-");
+  const parts = r.split("-").map((p) => p.trim());
+  if (parts.length >= 2) {
+    const a = parseMoneyToNumber(parts[0]);
+    const b = parseMoneyToNumber(parts[1]);
+    if (a !== null && b !== null) return (a + b) / 2;
+    return a ?? b;
+  }
+  return parseMoneyToNumber(r);
+}
+
+function serviceForEstimateItem(item: ExtractedItem, trade: string, services: ServiceOption[]): string {
+  const text = `${item.label || ""} ${item.note || ""}`.toLowerCase();
+  const pick =
+    text.includes("siding")
+      ? findServiceLabel(services, ["siding repair", "siding"])
+      : text.includes("shingle") || text.includes("roof") || text.includes("flashing")
+        ? findServiceLabel(services, ["roof repair", "roof inspection", "roof"])
+        : text.includes("gutter") || text.includes("downspout")
+          ? findServiceLabel(services, ["gutter repair", "gutter"])
+          : text.includes("window") || text.includes("caulk") || text.includes("sealant")
+            ? findServiceLabel(services, ["window repair", "window"])
+            : text.includes("door")
+              ? findServiceLabel(services, ["door repair", "door"])
+              : text.includes("brick") || text.includes("masonry") || text.includes("tuckpoint")
+                ? findServiceLabel(services, ["brick or stone repair", "masonry"])
+                : text.includes("outlet") || text.includes("gfci") || text.includes("electrical")
+                  ? findServiceLabel(services, ["electrical", "outlet", "lighting"])
+                  : text.includes("drywall")
+                    ? findServiceLabel(services, ["drywall repair", "drywall"])
+                    : text.includes("paint")
+                      ? findServiceLabel(services, ["painting", "paint"])
+                      : text.includes("plumb") || text.includes("leak") || text.includes("faucet")
+                        ? findServiceLabel(services, ["plumbing repair", "plumbing", "faucet"])
+                        : "";
+
+  return pick || services.find((s) => /repair|maintenance|inspection/i.test(s.label))?.label || `${trade} repair verification`;
+}
 
 export function ExpressEstimateReportClient(props: {
   basePath: "/partner" | "/pro";
@@ -515,11 +719,13 @@ export function ExpressEstimateReportClient(props: {
   }, [analysisError, extracted.length]);
 
   const [repairIds, setRepairIds] = useState<Set<string>>(new Set());
+  const [repairItemOverrides, setRepairItemOverrides] = useState<Record<string, { trade?: string; serviceSubcategory?: string }>>({});
   const [openItemId, setOpenItemId] = useState<string>("");
   const [totalsCollapsed, setTotalsCollapsed] = useState(false);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [repairsOpen, setRepairsOpen] = useState(false);
+  const [bookingBusy, setBookingBusy] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState<string>("");
@@ -554,6 +760,53 @@ export function ExpressEstimateReportClient(props: {
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
   const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
   const repairs = useMemo(() => allItems.filter((item) => repairIds.has(item.id)), [allItems, repairIds]);
+  const servicesByTrade = useMemo(() => {
+    const out = new Map<string, ServiceOption[]>();
+    const rawServices = ((taxonomy as { services?: Array<{ id?: string; trade?: string; category?: string; label?: string }> }).services || []);
+    for (const s of rawServices) {
+      const trade = String(s.trade || "").trim();
+      const label = String(s.label || "").trim();
+      if (!trade || !label) continue;
+      const arr = out.get(trade) || [];
+      arr.push({ id: String(s.id || label), category: String(s.category || ""), label });
+      out.set(trade, arr);
+    }
+    for (const [trade, arr] of out.entries()) {
+      arr.sort((a, b) => (a.category + a.label).localeCompare(b.category + b.label));
+      out.set(trade, arr);
+    }
+    return out;
+  }, []);
+
+  const repairGroups = useMemo<RepairGroup[]>(() => {
+    const grouped = new Map<string, RepairGroup>();
+    for (const item of repairs) {
+      const override = repairItemOverrides[item.id] || {};
+      const trade = override.trade || tradeFromEstimateItem(item);
+      const serviceSubcategory = override.serviceSubcategory || serviceForEstimateItem(item, trade, servicesByTrade.get(trade) || []);
+      const ui = tradeUi(trade);
+      const key = `${trade}::${serviceSubcategory}`;
+      const value = estimateItemValue(item);
+      const group =
+        grouped.get(key) ||
+        ({
+          id: key,
+          trade,
+          serviceSubcategory,
+          description: ui.description,
+          Icon: ui.Icon,
+          items: [],
+          subtotal: 0,
+          needsVerification: false,
+        } satisfies RepairGroup);
+      group.items.push(item);
+      if (typeof value === "number" && Number.isFinite(value)) group.subtotal += value;
+      else group.needsVerification = true;
+      if (item.pricingMode === "Quote-only") group.needsVerification = true;
+      grouped.set(key, group);
+    }
+    return Array.from(grouped.values()).sort((a, b) => b.subtotal - a.subtotal || a.trade.localeCompare(b.trade));
+  }, [repairItemOverrides, repairs, servicesByTrade]);
 
   const savedContacts = useMemo(() => {
     if (typeof window === "undefined") return [] as Array<{ id: string; name: string; email?: string; phone?: string }>;
@@ -578,35 +831,25 @@ export function ExpressEstimateReportClient(props: {
     }
   }, []);
 
-  function parseMoneyToNumber(raw: string): number | null {
-    const s = (raw || "").toLowerCase().replace(/\s+/g, " ").trim();
-    if (!s) return null;
-
-    // Extract first numeric token and optional suffix.
-    const m = s.match(/\$?([0-9]+(?:\.[0-9]+)?)(k|m)?/i);
-    if (!m) return null;
-    const n = Number(m[1]);
-    if (!Number.isFinite(n)) return null;
-    const suf = (m[2] || "").toLowerCase();
-    const mult = suf === "k" ? 1000 : suf === "m" ? 1_000_000 : 1;
-    return n * mult;
-  }
-
-  function estimateItemValue(item: { range?: string; price?: number }): number | null {
-    if (typeof item.price === "number" && Number.isFinite(item.price)) return item.price;
-    const r = (item.range || "").replace(/–/g, "-");
-    const parts = r.split("-").map((p) => p.trim());
-    if (parts.length >= 2) {
-      const a = parseMoneyToNumber(parts[0]);
-      const b = parseMoneyToNumber(parts[1]);
-      if (a !== null && b !== null) return (a + b) / 2;
-      return a ?? b;
-    }
-    return parseMoneyToNumber(r);
-  }
-
   function formatUSD(n: number): string {
     return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  }
+
+  function repairEstimateText(item: ExtractedItem): string {
+    if (item.pricingMode === "Quote-only") return "Needs verification";
+    const value = estimateItemValue(item);
+    if (typeof value !== "number" || !Number.isFinite(value)) return "Needs verification";
+    return item.range ? `${formatUSD(value)} est. (${item.range})` : `${formatUSD(value)} est.`;
+  }
+
+  function repairRequestLine(item: ExtractedItem): string {
+    const value = estimateItemValue(item);
+    const priceLine =
+      item.pricingMode === "Quote-only" || typeof value !== "number" || !Number.isFinite(value)
+        ? "Instant Estimate: needs verification before pricing"
+        : `Instant Estimate: ${formatUSD(value)}${item.range ? ` (${item.range})` : ""} - not final pricing`;
+    const trade = item.pricingDebug?.tradeId ? `Trade: ${item.pricingDebug.tradeId}` : "Trade: to confirm";
+    return [`- ${item.label}`, `  ${priceLine}`, `  ${trade}`, item.note ? `  Notes: ${item.note}` : ""].filter(Boolean).join("\n");
   }
 
   function inferItemNumFromText(t: string): number | null {
@@ -1310,6 +1553,145 @@ export function ExpressEstimateReportClient(props: {
     }
   }
 
+  function persistLocalWorkOrder(workOrder: Record<string, unknown>) {
+    try {
+      const key = "hw_local_work_orders_v1";
+      const raw = window.localStorage.getItem(key) || "[]";
+      const arr = JSON.parse(raw);
+      const list = Array.isArray(arr) ? arr : [];
+      const next = [workOrder, ...list].filter(Boolean);
+      const seen = new Set<string>();
+      const deduped: Array<Record<string, unknown>> = [];
+      for (const item of next) {
+        const rec = item && typeof item === "object" ? (item as Record<string, unknown>) : null;
+        if (!rec) continue;
+        const wid = String(rec.id || "");
+        if (!wid || seen.has(wid)) continue;
+        seen.add(wid);
+        deduped.push(rec);
+      }
+      window.localStorage.setItem(key, JSON.stringify(deduped.slice(0, 50)));
+    } catch {
+      // ignore local persistence failures
+    }
+  }
+
+  async function submitRepairRequest() {
+    if (bookingBusy || repairs.length === 0) return;
+
+    setBookingBusy(true);
+    try {
+      let token = "demo";
+      let hasSessionToken = false;
+      try {
+        const raw = window.localStorage.getItem("hw_session_v1");
+        const j = raw ? JSON.parse(raw) : null;
+        if (j?.token) {
+          token = String(j.token);
+          hasSessionToken = true;
+        }
+      } catch {}
+
+      const serviceCategory = repairGroups.length <= 1 ? (repairGroups[0]?.trade || "Handyman / General") : "Multiple trades";
+      const serviceSubcategory =
+        repairGroups.length <= 1
+          ? repairGroups[0]?.serviceSubcategory || "Instant Estimate repair verification"
+          : `${repairGroups.length} service groups from Instant Estimate`;
+      const estimateSubtotal =
+        totals.repairs > 0 ? `Instant Estimate subtotal: ${formatUSD(totals.repairs)} - planning number only, not final pricing.` : "";
+      const groupedSummary = repairGroups
+        .map((group, idx) => {
+          const total = group.subtotal > 0 ? `${formatUSD(group.subtotal)} est.` : "Needs verification";
+          return [
+            `${idx + 1}. ${group.trade} — ${group.serviceSubcategory}`,
+            `   ${group.items.length} item${group.items.length === 1 ? "" : "s"} • ${total}`,
+            group.items.map(repairRequestLine).join("\n"),
+          ].join("\n");
+        })
+        .join("\n\n");
+
+      const issueDescription = [
+        "Instant Estimate repair verification request.",
+        "The Instant Estimate is not a final bid. Please confirm actual scope, access, materials, and schedule before final pricing.",
+        estimateSubtotal,
+        "",
+        "Suggested service groups:",
+        groupedSummary,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      const intake = {
+        service_category: serviceCategory,
+        service_subcategory: serviceSubcategory,
+        issue_description: issueDescription,
+        urgency_level: "this_week",
+        property_address: effectiveAddress || "",
+        property_type: "",
+        preferred_date: "",
+        preferred_time_window: "",
+      };
+
+      const appointments = repairGroups.map((group) => ({ trade: group.trade || "Handyman / General" }));
+      let workOrder: Record<string, unknown> | null = null;
+
+      if (hasSessionToken) {
+        try {
+          const res = await fetch("/api/work-orders", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              token,
+              originPartnerId: null,
+              shareWithPartner: true,
+              fromInstantEstimate: true,
+              intake,
+              appointments,
+            }),
+          });
+          const j = await res.json().catch(() => null);
+          if (res.ok && j?.ok && j?.workOrder?.id) workOrder = j.workOrder as Record<string, unknown>;
+        } catch {
+          // Fall back to local request creation below.
+        }
+      }
+
+      if (!workOrder) {
+        workOrder = {
+          id: `wo_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          token,
+          originPartnerId: null,
+          shareWithPartner: true,
+          clientName: effectiveOwnerName || undefined,
+          serviceCategory,
+          serviceSubcategory,
+          issueDescription,
+          urgencyLevel: "this_week",
+          propertyAddress: effectiveAddress || "",
+          propertyType: "",
+          preferredDate: "",
+          preferredWindow: "",
+          appointments: appointments.map((a, idx) => ({
+            id: `apt_${Date.now().toString(36)}_${idx}`,
+            trade: a.trade,
+            status: "PROPOSED",
+          })),
+          status: "pending",
+        };
+      }
+
+      persistLocalWorkOrder(workOrder);
+      setRepairsOpen(false);
+      window.location.href = `${props.basePath}/jobs/${encodeURIComponent(String(workOrder.id))}`;
+    } catch {
+      alert("Could not start the repair request. Please try again.");
+    } finally {
+      setBookingBusy(false);
+    }
+  }
+
   return (
     <PortalShell
       role={props.role}
@@ -1319,8 +1701,8 @@ export function ExpressEstimateReportClient(props: {
       description={
         <>
           Download the <span className="font-semibold text-[var(--hw-ink)]">full report</span> or{" "}
-          <span className="font-semibold text-[var(--hw-ink)]">select</span> the items you want included. You can also book{" "}
-          <span className="font-semibold text-[var(--hw-ink)]">repairs</span> from here.
+          <span className="font-semibold text-[var(--hw-ink)]">select</span> the items you want included. Request{" "}
+          <span className="font-semibold text-[var(--hw-ink)]">repair verification</span> when the client is ready for actual pricing.
         </>
       }
       primaryAction={
@@ -1408,6 +1790,9 @@ export function ExpressEstimateReportClient(props: {
             {analysisSummary && !/fallback grouping\/pricing/i.test(analysisSummary) ? (
               <div className="mt-2 text-xs text-[var(--hw-muted)]">{analysisSummary}</div>
             ) : null}
+            <div className="mt-3 rounded-[14px] border border-[rgba(17,24,39,.10)] bg-[var(--hw-soft)] px-3 py-2 text-xs leading-relaxed text-[var(--hw-muted)]">
+              Instant Estimates are planning numbers for negotiation and prioritizing repairs. When you request repairs, Homeworke verifies scope, access, materials, and scheduling before final pricing.
+            </div>
           </div>
 
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -1429,7 +1814,7 @@ export function ExpressEstimateReportClient(props: {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
-              {/* Mobile: show Repairs CTA even if Repair Cart count is 0 */}
+              {/* Mobile: show repair request CTA even if count is 0 */}
               <Button
                 size="sm"
                 disabled={extracted.length === 0 || downloading !== ""}
@@ -1495,7 +1880,7 @@ export function ExpressEstimateReportClient(props: {
                 className="hidden gap-2 whitespace-nowrap px-3 sm:inline-flex"
               >
                 <Hammer className="h-4 w-4" />
-                Repair Cart
+                Repair Request
                 <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-1 text-[11px] font-semibold text-[var(--hw-ink)]">
                   {repairs.length}
                 </span>
@@ -1509,7 +1894,7 @@ export function ExpressEstimateReportClient(props: {
                 className="gap-2 whitespace-nowrap px-3 sm:hidden"
               >
                 <Hammer className="h-4 w-4" />
-                Repair Cart
+                Repair Request
                 <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-1 text-[11px] font-semibold text-[var(--hw-ink)]">
                   {repairs.length}
                 </span>
@@ -1580,7 +1965,7 @@ export function ExpressEstimateReportClient(props: {
                           variant="secondary"
                           className="rounded-full px-3 min-w-[120px]"
                           onClick={() => {
-                            const ids = lane.items.filter((it) => it.pricingMode !== "Quote-only").map((it) => it.id);
+                            const ids = lane.items.map((it) => it.id);
                             if (!ids.length) return;
                             const allOn = ids.every((id) => repairIds.has(id));
                             setRepairIds((prev) => {
@@ -1593,7 +1978,7 @@ export function ExpressEstimateReportClient(props: {
                             });
                           }}
                         >
-                          Book all repairs
+                          Request all
                         </Button>
                       </div>
                     </div>
@@ -1690,17 +2075,15 @@ export function ExpressEstimateReportClient(props: {
                                         {on ? "Selected" : "Select"}
                                       </Button>
 
-                                      {/* Book (secondary) */}
+                                      {/* Repair request (secondary) */}
                                       <Button
                                         size="sm"
                                         variant={repairIds.has(item.id) ? "secondary" : "ghost"}
                                         className="shrink-0 rounded-full px-3"
-                                        disabled={item.pricingMode === "Quote-only"}
-                                        title={item.pricingMode === "Quote-only" ? "Needs scope confirmation (quote-only)." : ""}
+                                        title="Add to repair request for Homeworke verification and final pricing."
                                         onClick={(e) => {
                                           e.preventDefault();
                                           e.stopPropagation();
-                                          if (item.pricingMode === "Quote-only") return;
                                           setRepairIds((prev) => {
                                             const next = new Set(prev);
                                             if (next.has(item.id)) next.delete(item.id);
@@ -1709,7 +2092,7 @@ export function ExpressEstimateReportClient(props: {
                                           });
                                         }}
                                       >
-                                        {item.pricingMode === "Quote-only" ? "Quote" : repairIds.has(item.id) ? "Repair ✓" : "Book"}
+                                        {repairIds.has(item.id) ? "Added" : "Request"}
                                       </Button>
                                     </div>
                                   </div>
@@ -1752,12 +2135,10 @@ export function ExpressEstimateReportClient(props: {
                                         size="sm"
                                         variant={repairIds.has(item.id) ? "secondary" : "ghost"}
                                         className="rounded-full px-3 min-w-[120px]"
-                                        disabled={item.pricingMode === "Quote-only"}
-                                        title={item.pricingMode === "Quote-only" ? "Needs scope confirmation (quote-only)." : ""}
+                                        title="Add to repair request for Homeworke verification and final pricing."
                                         onClick={(e) => {
                                           e.preventDefault();
                                           e.stopPropagation();
-                                          if (item.pricingMode === "Quote-only") return;
                                           setRepairIds((prev) => {
                                             const next = new Set(prev);
                                             if (next.has(item.id)) next.delete(item.id);
@@ -1766,7 +2147,7 @@ export function ExpressEstimateReportClient(props: {
                                           });
                                         }}
                                       >
-                                        {item.pricingMode === "Quote-only" ? "Request quote" : repairIds.has(item.id) ? "Repair ✓" : "Book repair"}
+                                        {repairIds.has(item.id) ? "Requested" : "Request repair"}
                                       </Button>
                                     </div>
                                   </div>
@@ -1850,7 +2231,7 @@ export function ExpressEstimateReportClient(props: {
                 ))}
               </div>
 
-              {/* Mobile mid-page Repair Cart CTA (between list and totals) */}
+              {/* Mobile mid-page repair request CTA (between list and totals) */}
               <div className="lg:hidden">
                 <div className="flex justify-center">
                   <Button
@@ -1861,7 +2242,7 @@ export function ExpressEstimateReportClient(props: {
                     className="gap-2"
                   >
                     <Hammer className="h-4 w-4" />
-                    Repair Cart
+                    Repair Request
                     <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-1 text-[11px] font-semibold text-[var(--hw-ink)]">
                       {repairs.length}
                     </span>
@@ -1887,7 +2268,7 @@ export function ExpressEstimateReportClient(props: {
                         <div className="mt-1 text-xs text-[var(--hw-muted)]">
                           {selected.length
                             ? `Selected ${selected.length} item${selected.length === 1 ? "" : "s"}`
-                            : `All items (${allItems.length})`}
+                            : `All estimated items (${allItems.length})`}
                         </div>
                       )}
                     </div>
@@ -1922,9 +2303,11 @@ export function ExpressEstimateReportClient(props: {
                         </Button>
                       </div>
 
-                      {selected.length === 0 ? (
-                        <div className="mt-3 text-xs text-[var(--hw-muted)]">Tip: Select items to download a shorter report for clients.</div>
-                      ) : null}
+                      <div className="mt-3 text-xs text-[var(--hw-muted)]">
+                        {selected.length === 0
+                          ? "Tip: Select items to download a shorter report for clients. Request repairs separately when the client wants verified pricing."
+                          : "Selected items shape the client report. Repair requests go to Homeworke for verification and final pricing."}
+                      </div>
                     </>
                   )}
                 </div>
@@ -2180,7 +2563,7 @@ export function ExpressEstimateReportClient(props: {
                     <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Generic share link</div>
                     <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">Full report</div>
                     <div className="mt-1 text-xs text-[var(--hw-muted)]">
-                      Anyone with this link can view the estimate. Booking repairs and additional details are gated until they sign in.
+                      Anyone with this link can view the estimate. Repair requests and additional details are gated until they sign in.
                     </div>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -2295,6 +2678,7 @@ export function ExpressEstimateReportClient(props: {
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="text-sm font-medium text-[var(--hw-ink)] whitespace-normal break-words line-clamp-2">{item.label}</div>
+                            <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">{repairEstimateText(item)}</div>
                             {item.note ? (
                               <div className="mt-1 text-xs text-[var(--hw-muted)] whitespace-normal break-words line-clamp-2">
                                 {item.note}
@@ -2331,12 +2715,12 @@ export function ExpressEstimateReportClient(props: {
         {repairsOpen ? (
           <div className="fixed inset-0 z-50">
             <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setRepairsOpen(false)} aria-label="Close" />
-            <div className="absolute inset-0 flex h-full flex-col bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)] lg:inset-auto lg:right-0 lg:top-0 lg:h-full lg:w-full lg:max-w-[420px]">
+            <div className="absolute inset-0 flex h-full flex-col bg-white shadow-[0_20px_60px_rgba(0,0,0,.25)] lg:inset-auto lg:right-0 lg:top-0 lg:h-full lg:w-full lg:max-w-[560px]">
               <div className="grid grid-cols-3 items-center gap-3 border-b border-[var(--hw-line)] p-5">
                 <div />
                 <div className="text-center">
                   <div className="text-sm font-extrabold tracking-tight text-[var(--hw-red)]">Homeworke</div>
-                  <div className="mt-0.5 text-xs font-semibold text-[var(--hw-muted)]">Repairs to book</div>
+                  <div className="mt-0.5 text-xs font-semibold text-[var(--hw-muted)]">Repair request</div>
                 </div>
                 <div className="flex justify-end">
                   <Button size="sm" variant="secondary" onClick={() => setRepairsOpen(false)}>
@@ -2347,86 +2731,24 @@ export function ExpressEstimateReportClient(props: {
 
               <div className="flex-1 overflow-y-auto p-5">
                 <div className="mb-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Repairs total (est.)</div>
-                  <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">{formatUSD(totals.repairs)}</div>
-                  <div className="mt-1 text-xs text-[var(--hw-muted)]">Confirm scope, then we’ll route and schedule (Home Guide confirms).</div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-[var(--hw-muted)]">Instant estimate subtotal</div>
+                  <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">
+                    {totals.repairs > 0 ? formatUSD(totals.repairs) : "Needs verification"}
+                  </div>
+                  <div className="mt-1 text-xs leading-relaxed text-[var(--hw-muted)]">
+                    This is not checkout or a final bid. Homeworke confirms scope, access, materials, and schedule before the actual repair price.
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Chip className="border-[var(--hw-line)] bg-white text-[var(--hw-ink)]">{repairs.length} selected</Chip>
+                    <Chip className="border-[var(--hw-line)] bg-white text-[var(--hw-ink)]">
+                      {repairGroups.length} service group{repairGroups.length === 1 ? "" : "s"}
+                    </Chip>
+                  </div>
                 </div>
 
-                <div className="flex w-full justify-end gap-2">
-                  <Button
-                    size="sm"
-                    disabled={repairs.length === 0}
-                    onClick={async () => {
-                      try {
-                        // Create a Work Order from the selected repairs and jump into the standard Jobs detail flow.
-                        let token: string | null = null;
-                        try {
-                          const raw = window.localStorage.getItem("hw_session_v1");
-                          const j = raw ? JSON.parse(raw) : null;
-                          if (j?.token) token = String(j.token);
-                        } catch {}
-
-                        if (!token) {
-                          alert("Missing session. Please refresh and try again.");
-                          return;
-                        }
-
-                        const trades = Array.from(new Set((repairs || []).map((it) => String((it as any)?.pricingDebug?.tradeId || "handyman"))));
-                        const payload = {
-                          token,
-                          originPartnerId: null,
-                          shareWithPartner: true,
-                          fromInstantEstimate: true,
-                          intake: {
-                            service_category: trades.length <= 1 ? (trades[0] || "Handyman") : "Multiple trades",
-                            service_subcategory: "Instant Estimate booking",
-                            issue_description: repairs.map((r) => `- ${r.label}${r.note ? `: ${r.note}` : ""}`).join("\n"),
-                            urgency_level: "this_week",
-                            property_address: effectiveAddress || "",
-                            property_type: "",
-                            preferred_date: "",
-                            preferred_time_window: "",
-                          },
-                          appointments: trades.map((t: string) => ({ trade: t || "handyman" })),
-                        };
-
-                        const res = await fetch("/api/work-orders", {
-                          method: "POST",
-                          headers: { "content-type": "application/json" },
-                          body: JSON.stringify(payload),
-                        });
-                        const j = await res.json().catch(() => null);
-                        if (!res.ok || !j?.ok || !j?.workOrder?.id) {
-                          alert("Could not start booking. Please try again.");
-                          return;
-                        }
-
-                        // Persist locally so non-DB mode can navigate directly.
-                        try {
-                          const key = "hw_local_work_orders_v1";
-                          const raw = window.localStorage.getItem(key) || "[]";
-                          const arr = JSON.parse(raw);
-                          const list = Array.isArray(arr) ? arr : [];
-                          const next = [j.workOrder, ...list].filter(Boolean);
-                          const seen = new Set<string>();
-                          const deduped: any[] = [];
-                          for (const item of next) {
-                            const wid = String((item as any)?.id || "");
-                            if (!wid || seen.has(wid)) continue;
-                            seen.add(wid);
-                            deduped.push(item);
-                          }
-                          window.localStorage.setItem(key, JSON.stringify(deduped.slice(0, 50)));
-                        } catch {}
-
-                        setRepairsOpen(false);
-                        window.location.href = `${props.basePath}/jobs/${encodeURIComponent(String(j.workOrder.id))}`;
-                      } catch {
-                        alert("Could not start booking. Please try again.");
-                      }
-                    }}
-                  >
-                    Continue to book
+                <div className="flex w-full flex-wrap justify-end gap-2">
+                  <Button size="sm" disabled={repairs.length === 0 || bookingBusy} onClick={() => void submitRepairRequest()}>
+                    {bookingBusy ? "Starting request…" : "Submit repair request"}
                   </Button>
                   <Button
                     size="sm"
@@ -2434,44 +2756,133 @@ export function ExpressEstimateReportClient(props: {
                     disabled={repairs.length === 0}
                     onClick={() => {
                       setRepairIds(new Set());
+                      setRepairItemOverrides({});
                     }}
                   >
                     Clear
                   </Button>
                 </div>
 
-                {repairs.length ? (
-                  <div className="mt-4 grid gap-2">
-                    {repairs.map((item) => (
-                      <div key={item.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="text-sm font-medium text-[var(--hw-ink)] whitespace-normal break-words line-clamp-2">{item.label}</div>
-                            {item.note ? (
-                              <div className="mt-1 text-xs text-[var(--hw-muted)] whitespace-normal break-words line-clamp-2">
-                                {item.note}
+                {repairGroups.length ? (
+                  <div className="mt-4 grid gap-3">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Review service groups</div>
+                    {repairGroups.map((group) => {
+                      const groupServices = servicesByTrade.get(group.trade) || [];
+                      const Icon = group.Icon;
+                      return (
+                        <div key={group.id} className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)]">
+                              <Icon className="h-5 w-5 text-[var(--hw-red)]" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{group.trade}</div>
+                                  <div className="mt-0.5 text-xs leading-relaxed text-[var(--hw-muted)]">{group.description}</div>
+                                </div>
+                                <div className="shrink-0 text-right">
+                                  <div className="text-sm font-extrabold tabular-nums text-[var(--hw-ink)]">
+                                    {group.subtotal > 0 ? formatUSD(group.subtotal) : "Verify"}
+                                  </div>
+                                  <div className="text-[11px] font-semibold text-[var(--hw-muted)]">
+                                    {group.items.length} item{group.items.length === 1 ? "" : "s"}
+                                  </div>
+                                </div>
                               </div>
-                            ) : null}
+
+                              <div className="mt-3 grid gap-2">
+                                <Picker
+                                  value={group.trade}
+                                  placeholder="Trade"
+                                  options={TRADE_OPTIONS.map((trade) => ({ id: trade, label: trade }))}
+                                  onChange={(trade) => {
+                                    const services = servicesByTrade.get(trade) || [];
+                                    setRepairItemOverrides((prev) => {
+                                      const next = { ...prev };
+                                      for (const item of group.items) {
+                                        next[item.id] = {
+                                          trade,
+                                          serviceSubcategory: serviceForEstimateItem(item, trade, services),
+                                        };
+                                      }
+                                      return next;
+                                    });
+                                  }}
+                                />
+
+                                <Picker
+                                  searchable
+                                  value={group.serviceSubcategory}
+                                  placeholder="Service type"
+                                  options={
+                                    groupServices.length
+                                      ? groupServices.map((s) => ({
+                                          id: s.label,
+                                          label: s.label,
+                                          sublabel: s.category || undefined,
+                                        }))
+                                      : [{ id: group.serviceSubcategory, label: group.serviceSubcategory }]
+                                  }
+                                  onChange={(serviceSubcategory) => {
+                                    setRepairItemOverrides((prev) => {
+                                      const next = { ...prev };
+                                      for (const item of group.items) {
+                                        next[item.id] = {
+                                          ...(next[item.id] || {}),
+                                          trade: group.trade,
+                                          serviceSubcategory,
+                                        };
+                                      }
+                                      return next;
+                                    });
+                                  }}
+                                />
+                              </div>
+
+                              <div className="mt-3 grid gap-2">
+                                {group.items.map((item) => (
+                                  <div key={item.id} className="rounded-2xl border border-[var(--hw-line)] bg-[var(--hw-soft)]/30 p-3">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="min-w-0">
+                                        <div className="text-sm font-semibold text-[var(--hw-ink)] whitespace-normal break-words line-clamp-2">{item.label}</div>
+                                        <div className="mt-1 text-xs font-semibold text-[var(--hw-muted)]">{repairEstimateText(item)}</div>
+                                        {item.note ? (
+                                          <div className="mt-1 text-xs text-[var(--hw-muted)] whitespace-normal break-words line-clamp-2">
+                                            {item.note}
+                                          </div>
+                                        ) : null}
+                                      </div>
+                                      <button
+                                        className="inline-flex h-7 shrink-0 items-center text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
+                                        onClick={() => {
+                                          setRepairIds((prev) => {
+                                            const next = new Set(prev);
+                                            next.delete(item.id);
+                                            return next;
+                                          });
+                                          setRepairItemOverrides((prev) => {
+                                            const next = { ...prev };
+                                            delete next[item.id];
+                                            return next;
+                                          });
+                                        }}
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           </div>
-                          <button
-                            className="inline-flex h-7 items-center text-xs font-semibold text-[var(--hw-muted)] hover:text-[var(--hw-ink)]"
-                            onClick={() => {
-                              setRepairIds((prev) => {
-                                const next = new Set(prev);
-                                next.delete(item.id);
-                                return next;
-                              });
-                            }}
-                          >
-                            Remove
-                          </button>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-dashed border-[var(--hw-line)] bg-[var(--hw-soft)] p-6 text-sm text-[var(--hw-muted)]">
-                    No repairs selected.
+                    No repair requests selected.
                   </div>
                 )}
               </div>
