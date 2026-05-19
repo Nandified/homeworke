@@ -13,7 +13,6 @@ import {
   FileSearch,
   Home,
   MessageSquareText,
-  ShieldCheck,
   Sparkles,
   Upload,
   Users,
@@ -91,9 +90,9 @@ const audiences = [
     text: "Give clients a repair path after inspection without becoming the contractor, estimator, and scheduler yourself.",
   },
   {
-    icon: ShieldCheck,
-    title: "Home Teams",
-    text: "Lenders, insurers, inspectors, and partners stay visible around the moments when homeowners need guidance most.",
+    icon: Wrench,
+    title: "Service Providers",
+    text: "Connect with local, high-quality service providers who can verify the scope, schedule the right visit, and help get the work done well.",
   },
 ];
 
@@ -561,14 +560,14 @@ export default function HomeClient(props: { homepage?: unknown }) {
         >
           <Container className="max-w-[1180px]">
             <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-center">
-              <div className="relative">
+              <div>
                 <div className="flex flex-wrap items-center gap-3">
                   <Pill className="bg-white text-[var(--hw-red)]">
                     <FileText className="h-4 w-4" />
                     Instant Estimate
                   </Pill>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold uppercase tracking-widest text-emerald-700 shadow-sm">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,.14)]" aria-hidden />
+                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/60 bg-emerald-100 px-3 py-1.5 text-xs font-extrabold uppercase tracking-widest text-emerald-800 shadow-[0_10px_26px_rgba(16,185,129,.18)]">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,.18),0_0_18px_rgba(16,185,129,.55)]" aria-hidden />
                     Try it now
                   </span>
                 </div>
@@ -578,21 +577,24 @@ export default function HomeClient(props: { homepage?: unknown }) {
                 <p className="mt-4 text-lg leading-8 text-[var(--hw-muted)]">
                   Send a home inspection, village inspection, or appraisal report and Homeworke will organize the likely repair scope into a clear planning estimate.
                 </p>
-                <div className="absolute -right-[270px] bottom-[-74px] z-10 hidden items-center gap-3 text-sm font-extrabold text-emerald-700 lg:flex xl:-right-[300px]">
+              </div>
+              <div className="relative lg:pt-16">
+                <div className="mb-4 flex w-fit items-center gap-3 rounded-full border border-emerald-400/60 bg-gradient-to-r from-emerald-100 to-white px-4 py-2 text-sm font-extrabold text-emerald-800 shadow-[0_18px_42px_rgba(16,185,129,.22)] ring-4 ring-emerald-500/10 sm:ml-auto lg:absolute lg:left-8 lg:top-0 lg:mb-0">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,.16),0_0_20px_rgba(16,185,129,.55)]" aria-hidden />
                   <span>Drop your report here</span>
-                  <svg className="h-16 w-36" viewBox="0 0 144 64" fill="none" aria-hidden>
+                  <svg className="hidden h-16 w-32 translate-y-7 text-emerald-700 drop-shadow-[0_8px_14px_rgba(16,185,129,.22)] lg:block" viewBox="0 0 132 64" fill="none" aria-hidden>
                     <path
-                      d="M3 16C28 1 62 5 78 22C91 36 75 49 59 39C45 30 56 15 83 18C105 21 124 34 136 51"
+                      d="M5 10C28 2 58 8 71 24C82 38 65 48 52 38C39 28 50 14 75 19C96 23 114 38 124 55"
                       stroke="currentColor"
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
-                    <path d="M124 51L138 53L132 40" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M112 53L126 57L122 43" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
+                <PublicInstantEstimateCard />
               </div>
-              <PublicInstantEstimateCard />
             </div>
           </Container>
         </section>
