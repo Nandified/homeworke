@@ -1,234 +1,296 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
 
-import { ArrowRight, MapPin } from "lucide-react";
+import {
+  ArrowRight,
+  BellRing,
+  CalendarCheck2,
+  CheckCircle2,
+  ClipboardList,
+  FileSearch,
+  Home,
+  MessageSquareText,
+  ShieldCheck,
+  Sparkles,
+  Upload,
+  Users,
+  Wrench,
+  Zap,
+} from "lucide-react";
 
-import { Button, Card, Container, Input, Pill } from "@/components/ui";
-import { iconFor } from "@/components/icons";
+import { Button, Container, Pill } from "@/components/ui";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
 
-import homepageDefault from "@/../spec/homepage_marketing_v1.json";
-import servicesData from "@/../spec/services.json";
+const servicePillars = [
+  {
+    icon: Zap,
+    title: "Instant Estimates",
+    text: "Turn inspections, appraisal notes, and repair lists into organized planning numbers with clear assumptions.",
+  },
+  {
+    icon: Sparkles,
+    title: "Homeworke AI",
+    text: "Capture photos, symptoms, urgency, property details, and scheduling preferences before anything gets lost.",
+  },
+  {
+    icon: Wrench,
+    title: "Verified Repair Visits",
+    text: "Move from rough scope to confirmed next steps with a Home Guide and Project Manager coordinating the handoff.",
+  },
+  {
+    icon: BellRing,
+    title: "Home Team Follow-up",
+    text: "Keep homeowners, agents, lenders, inspectors, and service pros aligned around the next repair moment.",
+  },
+];
 
-type Service = (typeof servicesData.services)[number];
+const projectTypes = [
+  "Inspection repairs",
+  "Handyman punch lists",
+  "Electrical fixes",
+  "Plumbing issues",
+  "HVAC concerns",
+  "Drywall and paint",
+];
 
-function classifyToServiceSlug(text: string, services: Service[]): string | null {
-  const t = text.toLowerCase();
-  const hit = (slug: string) => services.some((s) => s.slug === slug) ? slug : null;
+const workflow = [
+  {
+    icon: Upload,
+    label: "1",
+    title: "Tell us what is happening",
+    text: "Describe the issue, upload photos, or start from an inspection report. Homeworke turns messy details into a usable scope.",
+  },
+  {
+    icon: FileSearch,
+    label: "2",
+    title: "Get clarity before work starts",
+    text: "We separate planning estimates from confirmed pricing so you know what is assumed, what needs verification, and what comes next.",
+  },
+  {
+    icon: CalendarCheck2,
+    label: "3",
+    title: "Schedule the right next step",
+    text: "A Home Guide helps route the request, coordinate timing, and keep the repair thread moving through completion.",
+  },
+];
 
-  if (/(leak|clog|toilet|faucet|pipe|drain|garbage disposal)/i.test(t)) return hit("plumbing");
-  if (/(outlet|breaker|electrical|wiring|switch|light fixture|ceiling fan)/i.test(t)) return hit("electrical");
-  if (/(ac|a\/c|air conditioner|no heat|no cool|furnace|hvac|thermostat)/i.test(t)) return hit("hvac");
-  if (/(washer|dryer|dishwasher|refrigerator|fridge|oven|range)/i.test(t)) return hit("appliance-repair");
-  if (/(deep clean|cleaning|move out|move-in|turnover)/i.test(t)) return hit("cleaning");
-  if (/(mount|hang|patch|drywall|door|shelf|assembly|handyman)/i.test(t)) return hit("handyman");
+const audiences = [
+  {
+    icon: Home,
+    title: "Homeowners",
+    text: "One place to ask for help, understand the likely scope, and keep repair updates from scattering across texts and email.",
+  },
+  {
+    icon: Users,
+    title: "Real Estate Pros",
+    text: "Give clients a repair path after inspection without becoming the contractor, estimator, and scheduler yourself.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Home Teams",
+    text: "Lenders, insurers, inspectors, and partners stay visible around the moments when homeowners need guidance most.",
+  },
+];
 
-  return null;
+function BrowserFrame({
+  children,
+  className = "",
+  dark = false,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  dark?: boolean;
+}) {
+  return (
+    <div
+      className={`hw-motion-card overflow-hidden rounded-[30px] border shadow-[0_34px_90px_rgba(17,24,39,.16)] ${
+        dark ? "border-white/10 bg-[#111827]" : "border-[rgba(17,24,39,.12)] bg-white"
+      } ${className}`}
+    >
+      <div className={`flex h-11 items-center gap-2 border-b px-4 ${dark ? "border-white/10 bg-white/[.04]" : "border-[var(--hw-line)] bg-white"}`}>
+        <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
+        <span className="h-3 w-3 rounded-full bg-[#FFBD2E]" />
+        <span className="h-3 w-3 rounded-full bg-[#28C840]" />
+        <span className={`ml-3 h-5 flex-1 rounded-full border ${dark ? "border-white/10 bg-white/[.06]" : "border-[var(--hw-line)] bg-[var(--hw-soft)]"}`} />
+      </div>
+      <div
+        className="p-4 md:p-6"
+        style={{
+          background: dark
+            ? "radial-gradient(620px 280px at 12% 0%, rgba(229,57,53,.28), transparent 56%), #111827"
+            : "radial-gradient(620px 280px at 12% 0%, rgba(229,57,53,.12), transparent 56%), #fff",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
 }
 
-export default function HomeClient(props: { homepage?: any }) {
-  const homepage = props.homepage ?? homepageDefault;
-
-  const services = servicesData.services.slice(0, 6);
-  const [issue, setIssue] = useState("");
-  const [focused, setFocused] = useState(false);
-
-  const [zip, setZip] = useState<string>("");
-  const [city, setCity] = useState<string>("");
-  const [state, setState] = useState<string>("");
-  const [locLoading, setLocLoading] = useState(false);
-  // Typewriter-style rotating hint
-  const hints = useMemo(
-    () => ["water under kitchen sink", "outlet stopped working", "AC not cooling", "need drywall patch"],
-    []
-  );
-  const [demoIdx, setDemoIdx] = useState(0);
-  const [demoText, setDemoText] = useState("");
-  const demoPhase = useRef<"typing" | "pause" | "deleting">("typing");
-  const pauseUntil = useRef<number>(0);
-
-  const issueRef = useRef<HTMLTextAreaElement | null>(null);
-
-  useEffect(() => {
-    if (issue.trim()) return; // user typed something
-
-    const tick = () => {
-      const now = Date.now();
-      const full = hints[demoIdx] ?? "";
-
-      if (demoPhase.current === "pause") {
-        if (now >= pauseUntil.current) demoPhase.current = "deleting";
-        return;
-      }
-
-      if (demoPhase.current === "typing") {
-        const next = full.slice(0, demoText.length + 1);
-        setDemoText(next);
-        if (next.length >= full.length) {
-          demoPhase.current = "pause";
-          pauseUntil.current = now + 1100;
-        }
-        return;
-      }
-
-      // deleting
-      const next = full.slice(0, Math.max(0, demoText.length - 1));
-      setDemoText(next);
-      if (next.length === 0) {
-        demoPhase.current = "typing";
-        setDemoIdx((i) => (i + 1) % hints.length);
-      }
-    };
-
-    const speed = demoPhase.current === "deleting" ? 26 : 34;
-    const t = window.setInterval(tick, speed);
-    return () => window.clearInterval(t);
-  }, [issue, demoIdx, demoText.length, hints]);
-
-  useEffect(() => {
-    const el = issueRef.current;
-    if (!el) return;
-    // auto-grow
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [issue]);
-
-  // Load stored location; if missing, request browser location once.
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem("hw_location_v1");
-      if (saved) {
-        const j = JSON.parse(saved);
-        if (j?.zip) setZip(j.zip);
-        if (j?.city) setCity(j.city);
-        if (j?.state) setState(j.state);
-        return;
-      }
-    } catch {}
-
-    if (!navigator.geolocation) return;
-
-    setLocLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const res = await fetch(`/api/geo/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
-          const j = await res.json();
-          if (j?.ok) {
-            if (j.zip) setZip(String(j.zip).slice(0, 5));
-            if (j.city) setCity(j.city);
-            if (j.state) setState(j.state);
-            window.localStorage.setItem(
-              "hw_location_v1",
-              JSON.stringify({ zip: j.zip ? String(j.zip).slice(0, 5) : "", city: j.city || "", state: j.state || "" })
-            );
-          }
-        } catch {
-          // ignore
-        } finally {
-          setLocLoading(false);
-        }
-      },
-      () => setLocLoading(false),
-      { enableHighAccuracy: false, maximumAge: 1000 * 60 * 60, timeout: 8000 }
-    );
-  }, []);
-
-  // When ZIP changes (user edits), resolve city/state.
-  useEffect(() => {
-    const z = (zip || "").trim();
-    if (!/^\d{5}$/.test(z)) return;
-
-    const run = async () => {
-      try {
-        const res = await fetch(`/api/geo/zip?zip=${encodeURIComponent(z)}`);
-        const j = await res.json();
-        if (j?.ok) {
-          if (j.city) setCity(j.city);
-          if (j.state) setState(j.state);
-          window.localStorage.setItem(
-            "hw_location_v1",
-            JSON.stringify({ zip: z, city: j.city || "", state: j.state || "" })
-          );
-        }
-      } catch {}
-    };
-
-    run();
-  }, [zip]);
-
-  const suggestedSlug = useMemo(() => {
-    if (!issue.trim()) return null;
-    return classifyToServiceSlug(issue, servicesData.services);
-  }, [issue]);
-
-  const suggestedService = useMemo(() => {
-    if (!suggestedSlug) return null;
-    return servicesData.services.find((s) => s.slug === suggestedSlug) ?? null;
-  }, [suggestedSlug]);
+function EstimatePreview() {
+  const rows = [
+    ["Electrical", "GFCI protection at kitchen", "$285"],
+    ["Safety", "Secure loose stair handrail", "$190"],
+    ["Plumbing", "Water heater vent correction", "$425"],
+  ];
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(1200px_600px_at_20%_-10%,rgba(229,57,53,0.10),transparent_60%),radial-gradient(900px_500px_at_110%_0%,rgba(17,24,39,0.06),transparent_55%),linear-gradient(to_bottom,#ffffff,#fbfbfb)]">
+    <BrowserFrame className="w-full">
+      <div className="rounded-[24px] border border-[rgba(229,57,53,.18)] bg-white p-5 shadow-[0_24px_70px_rgba(17,24,39,.12)]">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+              <ClipboardList className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+              Inspection estimate
+            </div>
+            <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Repair cost view</div>
+          </div>
+          <Pill className="border-[rgba(229,57,53,.24)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">Ready</Pill>
+        </div>
+
+        <div className="mt-5 grid gap-3">
+          {rows.map(([trade, task, price]) => (
+            <div key={task} className="grid grid-cols-[1fr_auto] items-center gap-4 rounded-[16px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+              <div className="min-w-0">
+                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{trade}</div>
+                <div className="mt-1 truncate text-sm font-extrabold text-[var(--hw-ink)]">{task}</div>
+              </div>
+              <div className="rounded-full bg-white px-4 py-2 text-sm font-extrabold text-[var(--hw-ink)] shadow-sm">{price}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 rounded-[20px] bg-[#111827] p-5 text-white">
+          <div className="text-xs font-semibold uppercase tracking-widest text-white/60">Planning estimate</div>
+          <div className="mt-1 flex items-end justify-between gap-4">
+            <div className="text-4xl font-extrabold">$900</div>
+            <div className="text-right text-xs leading-5 text-white/60">Final pricing confirmed after scope review.</div>
+          </div>
+        </div>
+      </div>
+    </BrowserFrame>
+  );
+}
+
+function CoordinationPreview() {
+  return (
+    <BrowserFrame className="w-full" dark>
+      <div className="rounded-[24px] border border-white/10 bg-white/[.96] p-5 shadow-[0_24px_70px_rgba(0,0,0,.24)]">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Project thread</div>
+            <div className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Scope, schedule, updates</div>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--hw-red)] px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.08em] text-white shadow-sm">
+            <Sparkles className="h-3 w-3" />
+            AI-assisted
+          </span>
+        </div>
+
+        <div className="mt-5 grid gap-3 rounded-[22px] border border-[var(--hw-line)] bg-white/80 p-4">
+          <div className="max-w-[88%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+            I found three inspection repairs that need verification before scheduling.
+          </div>
+          <div className="ml-auto max-w-[86%] rounded-2xl bg-[#111827] px-4 py-3 text-sm leading-6 text-white shadow-sm">
+            Can we target next Tuesday afternoon?
+          </div>
+          <div className="max-w-[92%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+            Yes. I will attach the preferred window and send it for Home Guide review.
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+          {["Scope grouped", "Visit requested", "Team updated"].map((item) => (
+            <div key={item} className="rounded-full bg-[var(--hw-soft)] px-3 py-2 text-center text-[11px] font-extrabold text-[var(--hw-ink)]">
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    </BrowserFrame>
+  );
+}
+
+export default function HomeClient(props: { homepage?: unknown }) {
+  void props;
+
+  return (
+    <div className="min-h-screen bg-white text-[var(--hw-ink)]">
       <SiteHeader />
 
       <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden">
+        <section
+          className="relative overflow-hidden border-b border-[var(--hw-line)]"
+          style={{
+            background:
+              "radial-gradient(900px 460px at 82% 3%, rgba(229,57,53,.16), transparent 58%), linear-gradient(180deg, #fff 0%, #fff 62%, #F8FAFC 100%)",
+          }}
+        >
           <div
             aria-hidden
-            className="pointer-events-none absolute -right-40 -top-40 h-[620px] w-[620px] rounded-full bg-[var(--hw-red)] opacity-[0.10] blur-[130px]"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -left-56 top-24 h-[640px] w-[640px] rounded-full bg-black opacity-[0.05] blur-[160px]"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.18]"
+            className="absolute inset-0 opacity-[0.10]"
             style={{
-              backgroundImage:
-                "radial-gradient(circle at 1px 1px, rgba(17,24,39,.10) 1px, transparent 0)",
-              backgroundSize: "26px 26px",
-              maskImage: "radial-gradient(500px 240px at 50% 15%, black, transparent 70%)",
-              WebkitMaskImage: "radial-gradient(500px 240px at 50% 15%, black, transparent 70%)",
+              backgroundImage: "linear-gradient(rgba(17,24,39,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(17,24,39,.10) 1px, transparent 1px)",
+              backgroundSize: "44px 44px",
+              maskImage: "linear-gradient(to bottom, black, transparent 82%)",
+              WebkitMaskImage: "linear-gradient(to bottom, black, transparent 82%)",
             }}
           />
 
-          <Container className="relative py-12 md:py-16">
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Pill className="bg-white">
-                <span className="hw-breath-dot" aria-hidden />
-                {city ? `Now Servicing ${city}` : locLoading ? "Finding your location…" : "Set your location"}
-              </Pill>
-            </div>
-
-            <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
-              <div className="lg:col-span-5">
-                <h1 className="text-balance text-4xl font-extrabold tracking-[-0.04em] text-[var(--hw-ink)] md:text-6xl">
-                  {homepage.hero.headline}
-                </h1>
-
-                <p className="mt-4 max-w-xl text-pretty text-base leading-7 text-[var(--hw-muted)] md:text-lg">
-                  {homepage.hero.subheadline}
-                </p>
-
-                <div className="mt-5 text-sm font-semibold text-[var(--hw-ink)]">
-                  {city && state ? (
-                    <span>
-                      Pros for every project in <span className="text-[var(--hw-red)]">{city}, {state}</span>.
-                    </span>
-                  ) : (
-                    <span>Pros for every project in your area.</span>
-                  )}
+          <Container className="relative max-w-[1180px] py-8 md:py-10 lg:py-12">
+            <div className="grid gap-10 lg:grid-cols-[.92fr_1.08fr] lg:items-center">
+              <div className="hw-reveal hw-delay-1">
+                <div className="flex flex-wrap gap-2">
+                  <Pill className="bg-white">
+                    <span className="hw-breath-dot" aria-hidden />
+                    Public home services platform
+                  </Pill>
+                  <Pill className="bg-white">Chicago first</Pill>
                 </div>
 
+                <h1 className="mt-7 max-w-4xl text-balance text-5xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-7xl">
+                  Home repairs with a plan before the visit.
+                </h1>
+                <p className="mt-5 max-w-2xl text-pretty text-xl leading-9 text-[var(--hw-muted)]">
+                  Homeworke helps homeowners and real estate teams turn repair chaos into clear scope, practical estimates, scheduling preferences, and coordinated follow-through.
+                </p>
+
+                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                  <Link href="/estimate">
+                    <Button className="w-full sm:w-auto">
+                      Get an instant estimate
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="#platform">
+                    <Button variant="secondary" className="w-full sm:w-auto">
+                      See the platform
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="mt-10 grid gap-3 sm:grid-cols-2">
+                  {servicePillars.map((pillar, index) => {
+                    const Icon = pillar.icon;
+                    return (
+                      <div
+                        key={pillar.title}
+                        className="hw-motion-card hw-reveal flex items-center gap-3 rounded-[18px] border border-[rgba(229,57,53,.16)] bg-white/90 px-3 py-3 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur"
+                        style={{ animationDelay: `${0.22 + index * 0.07}s` }}
+                      >
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[13px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0 text-sm font-extrabold leading-5 text-[var(--hw-ink)]">{pillar.title}</div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Homepage AI Work Submittal (confirmation required) */}
-              <div className="lg:col-span-7">
+              <div className="hw-reveal hw-delay-2">
                 <AIWorkOrderIntakeCard
                   eyebrow="Job work order"
                   title="What do you need help with?"
@@ -238,289 +300,236 @@ export default function HomeClient(props: { homepage?: any }) {
                 />
               </div>
             </div>
-
-                      </Container>
+          </Container>
         </section>
 
-        {/* Trust */}
-        <Container className="pb-4">
-          <div className="hidden grid-cols-1 gap-4 lg:grid-cols-3">
-            {homepage.trust.bullets.map((b: any) => {
-              const Icon = iconFor(b.icon);
-              return (
-                <Card key={b.title} className="p-6">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-[var(--hw-radius)] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
-                      <Icon className="h-5 w-5 text-[var(--hw-red)]" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-[var(--hw-ink)]">{b.title}</div>
-                      <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{b.text}</div>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        </Container>
-
-        {/* Why Homeworke */}
-        <Container className="py-10 md:py-12">
-          <div className="relative overflow-hidden rounded-[28px] border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_28px_100px_rgba(17,24,39,.12)] backdrop-blur supports-[backdrop-filter]:bg-white/65 md:p-10">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -left-32 -top-40 h-[520px] w-[520px] rounded-full bg-[var(--hw-red)] opacity-[0.14] blur-[140px]"
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -right-40 -bottom-48 h-[560px] w-[560px] rounded-full bg-black opacity-[0.10] blur-[160px]"
-            />
-
-            <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
-              <div className="lg:col-span-5">
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
-                  Why Homeworke
-                </div>
-                <div className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[var(--hw-ink)] md:text-4xl">
-                  Not a lead form. <span className="text-[var(--hw-red)]">A coordinated outcome.</span>
-                </div>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--hw-muted)]">
-                  Get a clear plan, fast next steps, and a single thread from request → estimate → scheduling. We prioritize vetted pros and scope clarity so projects don’t drift.
+        <section id="platform" className="py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div className="grid gap-10 lg:grid-cols-[.78fr_1.22fr] lg:items-center">
+              <div className="hw-reveal hw-delay-1">
+                <Pill className="bg-white text-[var(--hw-red)]">
+                  <Zap className="h-4 w-4" />
+                  Instant Estimates
+                </Pill>
+                <h2 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
+                  Start with useful numbers, not vague callbacks.
+                </h2>
+                <p className="mt-4 max-w-xl text-lg leading-8 text-[var(--hw-muted)]">
+                  Upload an inspection report or repair list and Homeworke organizes likely repairs into a planning estimate. It is built to support decisions, negotiations, and next steps before final pricing is verified.
                 </p>
-
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                  <Link href="/estimate" className="w-full sm:w-auto">
-                    <Button className="w-full sm:w-auto">
-                      Get an Instant Estimate
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href="/how-it-works" className="w-full sm:w-auto">
-                    <Button className="w-full sm:w-auto" variant="secondary">See how it works</Button>
-                  </Link>
-                </div>
               </div>
-
-              <div className="lg:col-span-7">
-                <div className="grid grid-cols-1 gap-3">
-                  {[
-                    {
-                      icon: "shield",
-                      title: "Quality over quantity",
-                      text: "We focus on vetted pros — not blasting your info to dozens of contractors.",
-                    },
-                    {
-                      icon: "list",
-                      title: "Scope-first estimates",
-                      text: "Clear inclusions, assumptions, and next steps so you can approve confidently.",
-                    },
-                    {
-                      icon: "message-circle",
-                      title: "One place to manage it",
-                      text: "Messages, scheduling, and updates stay organized from start to finish.",
-                    },
-                  ].map((b) => {
-                    const Icon = iconFor(b.icon);
-                    return (
-                      <Card
-                        key={b.title}
-                        className="border border-[rgba(17,24,39,.08)] bg-white/80 p-5 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur supports-[backdrop-filter]:bg-white/70"
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className="mt-0.5 rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
-                            <Icon className="h-5 w-5 text-[var(--hw-red)]" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-base font-semibold leading-6 text-[var(--hw-ink)]">{b.title}</div>
-                            <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{b.text}</div>
-                          </div>
-                        </div>
-                      </Card>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
-                  {["Clear scope before you approve work.", "One thread from request to completion.", "Vetted pros — no lead spam.", "Fast next steps, fewer missed details."].map(
-                    (t) => (
-                      <div
-                        key={t}
-                        className="rounded-2xl border border-[rgba(17,24,39,.08)] bg-white/70 px-4 py-3 shadow-[0_18px_60px_rgba(17,24,39,.08)]"
-                      >
-                        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--hw-ink)]">
-                          <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--hw-red)]" />
-                          {t}
-                        </div>
-                      </div>
-                    )
-                  )}
+              <div className="hw-reveal hw-delay-2">
+                <div className="hw-float-soft">
+                  <EstimatePreview />
                 </div>
               </div>
             </div>
-          </div>
-        </Container>
+          </Container>
+        </section>
 
-        {/* How it works */}
-        <Container className="relative py-10">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -inset-6 rounded-[28px] bg-[radial-gradient(600px_240px_at_30%_0%,rgba(229,57,53,0.14),transparent_60%),radial-gradient(520px_240px_at_110%_30%,rgba(17,24,39,0.10),transparent_55%)]"
-          />
-          <div className="flex items-end justify-between gap-6">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{homepage.howItWorks.title}</div>
-              <div className="mt-2 text-2xl font-bold text-[var(--hw-ink)]">From request to done — fast.</div>
-            </div>
-            <Link href="/how-it-works" className="hidden md:block">
-              <Button variant="ghost">
-                Learn more
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="relative mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-            {homepage.howItWorks.steps.map((s: any) => {
-              const Icon = iconFor(s.icon);
-              return (
-                <Card
-                  key={s.title}
-                  className="relative overflow-hidden border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-[0_28px_90px_rgba(17,24,39,.14)]"
-                >
-                  <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100"
-                  />
-                  <div className="rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2 w-fit">
-                    <Icon className="h-5 w-5 text-[var(--hw-red)]" />
-                  </div>
-                  <div className="mt-4 text-base font-semibold text-[var(--hw-ink)]">{s.title}</div>
-                  <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{s.text}</div>
-                </Card>
-              );
-            })}
-          </div>
-        </Container>
-
-        {/* Services grid */}
-        <Container className="py-8">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between md:gap-6">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{homepage.services.title}</div>
-              <div className="mt-2 text-2xl font-bold tracking-tight text-[var(--hw-ink)] md:text-3xl">Pick a category to get started</div>
-              <div className="mt-2 max-w-2xl text-sm leading-6 text-[var(--hw-muted)]">
-                Tell us what you need — we’ll route you to vetted pros and keep the project organized end-to-end.
+        <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div className="grid gap-10 lg:grid-cols-[1.16fr_.84fr] lg:items-center">
+              <div className="hw-reveal hw-delay-2 lg:order-2">
+                <Pill className="bg-white text-[var(--hw-red)]">
+                  <MessageSquareText className="h-4 w-4" />
+                  Coordinated repair flow
+                </Pill>
+                <h2 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
+                  The handoff stays organized after the first request.
+                </h2>
+                <p className="mt-4 max-w-xl text-lg leading-8 text-[var(--hw-muted)]">
+                  Homeworke captures the details, routes the service category, attaches timing preferences, and keeps the repair conversation in one place for the people who need context.
+                </p>
+              </div>
+              <div className="hw-reveal hw-delay-1 lg:order-1">
+                <div className="hw-float-soft">
+                  <CoordinationPreview />
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Link href="/services" className="hidden md:block">
-                <Button variant="ghost">
-                  {homepage.services.cta}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/services" className="md:hidden">
-                <Button variant="secondary">See all services</Button>
-              </Link>
+          </Container>
+        </section>
+
+        <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div className="max-w-3xl">
+              <div className="text-sm font-extrabold uppercase tracking-widest text-[var(--hw-muted)]">What Homeworke does</div>
+              <h2 className="mt-3 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
+                One repair operating layer for the home.
+              </h2>
+              <p className="mt-4 text-lg leading-8 text-[var(--hw-muted)]">
+                The platform is designed for real repair moments: inspections, move-in lists, urgent issues, maintenance tasks, and the handoffs that usually get messy.
+              </p>
             </div>
-          </div>
 
-          <div className="relative mt-6">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -inset-6 rounded-[28px] bg-[radial-gradient(600px_240px_at_30%_0%,rgba(229,57,53,0.14),transparent_60%),radial-gradient(520px_240px_at_110%_30%,rgba(17,24,39,0.10),transparent_55%)]"
-            />
-
-            <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {services.map((s) => {
-                const Icon = iconFor(s.icon);
+            <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {servicePillars.map((pillar) => {
+                const Icon = pillar.icon;
                 return (
-                  <Link key={s.slug} href={`/services/${s.slug}`} className="group">
-                    <Card className="relative h-full overflow-hidden border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur transition will-change-transform hover:-translate-y-0.5 hover:shadow-[0_28px_90px_rgba(17,24,39,.14)]">
-                      <div
-                        aria-hidden
-                        className="pointer-events-none absolute inset-0 opacity-0 transition group-hover:opacity-100"
-                        style={{
-                          background:
-                            "radial-gradient(380px 180px at 20% 0%, rgba(229,57,53,0.18), transparent 60%), radial-gradient(380px 200px at 110% 30%, rgba(17,24,39,0.10), transparent 60%)",
-                        }}
-                      />
-
-                      <div className="relative flex items-start gap-3">
-                        <div className="rounded-[14px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.08)] p-2">
-                          <Icon className="h-5 w-5 text-[var(--hw-red)]" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-[var(--hw-ink)]">{s.name}</div>
-                          <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">{s.summary}</div>
-                          <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[var(--hw-red)]">
-                            Get an instant estimate
-                            <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
+                  <div key={pillar.title} className="hw-motion-card rounded-[24px] border border-[rgba(229,57,53,.16)] bg-white p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="mt-5 text-lg font-extrabold text-[var(--hw-ink)]">{pillar.title}</div>
+                    <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{pillar.text}</div>
+                  </div>
                 );
               })}
             </div>
-          </div>
-        </Container>
+          </Container>
+        </section>
 
-        {/* FAQ */}
-        <Container className="relative py-12">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -inset-6 rounded-[28px] bg-[radial-gradient(600px_240px_at_30%_0%,rgba(229,57,53,0.12),transparent_60%),radial-gradient(520px_240px_at_110%_30%,rgba(17,24,39,0.10),transparent_55%)]"
-          />
-
-          <div className="relative">
-            <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{homepage.faq.title}</div>
-            <div className="mt-2 text-2xl font-bold text-[var(--hw-ink)]">Quick answers</div>
-
-            <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-              {homepage.faq.items.map((item: any) => (
-                <Card
-                  key={item.q}
-                  className="border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_22px_70px_rgba(17,24,39,.10)] backdrop-blur"
-                >
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{item.q}</div>
-                  <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{item.a}</div>
-                </Card>
-              ))}
-            </div>
-
-            {/* Final CTA panel */}
-            <div className="mt-10 overflow-hidden rounded-[28px] border border-[rgba(17,24,39,.08)] bg-white/75 p-6 shadow-[0_28px_100px_rgba(17,24,39,.12)] backdrop-blur md:p-8">
+        <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div
+              className="relative overflow-hidden rounded-[34px] border border-[rgba(229,57,53,.20)] bg-white p-6 shadow-[0_34px_90px_rgba(17,24,39,.12)] md:p-10"
+              style={{
+                background:
+                  "radial-gradient(760px 320px at 84% 0%, rgba(229,57,53,.13), transparent 62%), linear-gradient(180deg,#fff,#F8FAFC)",
+              }}
+            >
               <div
                 aria-hidden
-                className="pointer-events-none absolute"
+                className="absolute inset-0 opacity-[0.10]"
+                style={{
+                  backgroundImage: "linear-gradient(rgba(17,24,39,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(17,24,39,.10) 1px, transparent 1px)",
+                  backgroundSize: "42px 42px",
+                  maskImage: "linear-gradient(to bottom, black, transparent 80%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, black, transparent 80%)",
+                }}
               />
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-12 md:items-center">
-                <div className="md:col-span-7">
-                  <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Ready when you are</div>
-                  <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Get a clear plan and next steps today.</div>
-                  <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
-                    Start with an instant estimate for inspections/appraisals, or request a visit for confirmed scope.
-                  </div>
+
+              <div className="relative grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
+                <div>
+                  <div className="text-sm font-extrabold uppercase tracking-widest text-[var(--hw-muted)]">How it works</div>
+                  <h2 className="mt-3 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
+                    From something is wrong to a scheduled next step.
+                  </h2>
                 </div>
-                <div className="md:col-span-5">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                    <Link href="/estimate" className="w-full sm:w-auto">
-                      <Button className="w-full sm:w-auto">
-                        Get an Instant Estimate
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Link href="/marketplace/intake" className="w-full sm:w-auto">
-                      <Button className="w-full sm:w-auto" variant="secondary">Request a visit</Button>
-                    </Link>
-                  </div>
+                <div className="grid gap-3">
+                  {workflow.map((step) => {
+                    const Icon = step.icon;
+                    return (
+                      <div key={step.title} className="hw-motion-card rounded-[22px] border border-[rgba(17,24,39,.08)] bg-white/90 p-5 shadow-[0_18px_44px_rgba(17,24,39,.08)] backdrop-blur">
+                        <div className="flex gap-4">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-[var(--hw-red)] text-sm font-extrabold text-white">
+                            {step.label}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 text-lg font-extrabold text-[var(--hw-ink)]">
+                              <Icon className="h-5 w-5 shrink-0 text-[var(--hw-red)]" />
+                              {step.title}
+                            </div>
+                            <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{step.text}</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
-          </div>
-        </Container>
+          </Container>
+        </section>
+
+        <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div className="grid gap-10 lg:grid-cols-[.9fr_1.1fr] lg:items-start">
+              <div>
+                <Pill className="bg-white text-[var(--hw-red)]">
+                  <Wrench className="h-4 w-4" />
+                  Services
+                </Pill>
+                <h2 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
+                  Built for the repairs that slow down real life.
+                </h2>
+                <p className="mt-4 text-lg leading-8 text-[var(--hw-muted)]">
+                  Start with the problem. Homeworke helps route the category, clarify scope, and prepare the request for a real-world visit.
+                </p>
+                <div className="mt-7">
+                  <Link href="/services">
+                    <Button variant="secondary">
+                      Browse services
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {projectTypes.map((item) => (
+                  <div key={item} className="hw-motion-card flex items-center gap-3 rounded-[20px] border border-[rgba(229,57,53,.16)] bg-white p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
+                    <CheckCircle2 className="h-5 w-5 shrink-0 text-[var(--hw-red)]" />
+                    <div className="text-sm font-extrabold text-[var(--hw-ink)]">{item}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Container>
+        </section>
+
+        <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div className="max-w-3xl">
+              <div className="text-sm font-extrabold uppercase tracking-widest text-[var(--hw-muted)]">Who it helps</div>
+              <h2 className="mt-3 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
+                A better repair experience for everyone around the home.
+              </h2>
+            </div>
+
+            <div className="mt-8 grid gap-4 lg:grid-cols-3">
+              {audiences.map((audience) => {
+                const Icon = audience.icon;
+                return (
+                  <div key={audience.title} className="hw-motion-card rounded-[24px] border border-[rgba(17,24,39,.08)] bg-white p-6 shadow-[0_20px_50px_rgba(17,24,39,.08)]">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div className="mt-5 text-xl font-extrabold text-[var(--hw-ink)]">{audience.title}</div>
+                    <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{audience.text}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </Container>
+        </section>
+
+        <section className="py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div
+              className="hw-motion-card rounded-[34px] border border-[rgba(229,57,53,.28)] p-6 text-white shadow-[0_34px_90px_rgba(17,24,39,.28)] md:p-10"
+              style={{
+                background: "radial-gradient(520px 260px at 85% 0%, rgba(229,57,53,.34), transparent 62%), #111827",
+              }}
+            >
+              <div className="grid gap-6 lg:grid-cols-[1fr_280px] lg:items-center">
+                <div>
+                  <div className="text-sm font-extrabold uppercase tracking-widest text-white/60">Ready when the home needs help</div>
+                  <h2 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">
+                    Start with the repair, leave with a plan.
+                  </h2>
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">
+                    Use Homeworke for instant repair planning, AI-assisted intake, and a cleaner path to scheduling verified work.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Link href="/estimate">
+                    <Button className="w-full bg-white text-[var(--hw-ink)] shadow-none hover:bg-[var(--hw-soft)]">
+                      Get an instant estimate
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/services">
+                    <Button variant="secondary" className="w-full border-white/15 bg-white/10 text-white shadow-none hover:bg-white/15">
+                      Explore services
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </Container>
+        </section>
       </main>
 
       <SiteFooter />
