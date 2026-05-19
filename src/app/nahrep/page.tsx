@@ -464,7 +464,7 @@ export default function NahrepLandingPage() {
                   </Link>
                 </div>
 
-                <div id="four-tools" className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div id="four-tools" className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
                   {pillars.map((pillar) => {
                     const Icon = pillar.icon;
                     return (
