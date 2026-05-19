@@ -124,12 +124,17 @@ function isInstantEstimateWorkOrder(item: ApiWorkOrder | null) {
 
 function formatAppointmentDate(date?: string) {
   if (!date) return "";
-  return new Date(date + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  const iso = date.slice(0, 10);
+  return new Date(iso + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+function dateInputValue(date?: string) {
+  return date ? date.slice(0, 10) : "";
 }
 
 function appointmentStatusLabel(status: string, instantEstimateJob: boolean) {
   if (instantEstimateJob) {
-    if (status === "PROPOSED" || status === "PENDING_HG_CONFIRM") return "Home Guide review";
+    if (status === "PROPOSED" || status === "PENDING_HG_CONFIRM") return "Pending confirmation";
   }
   if (status === "PENDING_HG_CONFIRM") return "Awaiting HG confirm";
   return status;
@@ -231,7 +236,6 @@ export function ProJobDetailClient(props: { id: string }) {
   const [rescheduleOpen, setRescheduleOpen] = React.useState(false);
   const [visitDate, setVisitDate] = React.useState<string>("");
   const [visitWindow, setVisitWindow] = React.useState<VisitWindow>("");
-  const [timingPreference, setTimingPreference] = React.useState<string>("Flexible");
   const [savingSchedule, setSavingSchedule] = React.useState(false);
   const [scheduleError, setScheduleError] = React.useState<string>("");
 
@@ -398,16 +402,9 @@ export function ProJobDetailClient(props: { id: string }) {
   const status = item ? normalizeStatus(item.status) : "Pending";
   const ts = item?.updatedAt || item?.createdAt;
   const instantEstimateJob = isInstantEstimateWorkOrder(item);
-  const itemId = item?.id;
-  const itemPreferredWindow = item?.preferredWindow;
   const appointments = Array.isArray(item?.appointments) ? item.appointments : [];
-  const timingOptions = ["ASAP", "This week", "Next week", "Flexible"] as const;
-
-  React.useEffect(() => {
-    if (!itemId || !instantEstimateJob) return;
-    const stored = typeof itemPreferredWindow === "string" && itemPreferredWindow.trim() ? itemPreferredWindow.trim() : "Flexible";
-    setTimingPreference(stored);
-  }, [instantEstimateJob, itemId, itemPreferredWindow]);
+  const preferredVisitText = item ? [formatAppointmentDate(item.preferredDate), item.preferredWindow].filter(Boolean).join(" • ") : "";
+  const hasPreferredVisit = Boolean(item?.preferredDate && item?.preferredWindow);
 
   return (
     <PortalShell
@@ -518,21 +515,17 @@ export function ProJobDetailClient(props: { id: string }) {
                     </div>
                     <div className="mt-1 text-sm text-[var(--hw-muted)]">
                       {instantEstimateJob
-                        ? "Preliminary request received. Home Guide will propose the simplest visit plan."
+                        ? "Work order submitted. Home Guide and the Project Manager will confirm the final appointment."
                         : "Scheduling requests and Home Guide confirmation."}
                     </div>
                   </div>
                   <Button size="sm" variant="secondary" onClick={() => {
                     setScheduleError("");
                     setRescheduleOpen((v) => !v);
-                    if (instantEstimateJob) {
-                      setTimingPreference(item.preferredWindow || "Flexible");
-                    } else {
-                      setVisitDate(item.preferredDate || "");
-                      setVisitWindow(asVisitWindow(item.preferredWindow));
-                    }
+                    setVisitDate(dateInputValue(item.preferredDate));
+                    setVisitWindow(asVisitWindow(item.preferredWindow));
                   }}>
-                    {rescheduleOpen ? "Close" : instantEstimateJob ? "Timing preference" : "Request reschedule"}
+                    {rescheduleOpen ? "Close" : instantEstimateJob ? "Change preferred time" : "Request reschedule"}
                   </Button>
                 </div>
                 <Divider className="my-4" />
@@ -546,17 +539,23 @@ export function ProJobDetailClient(props: { id: string }) {
                             <CalendarClock className="h-4 w-4" />
                           </div>
                           <div className="min-w-0">
-                            <div className="text-sm font-semibold text-[var(--hw-ink)]">No appointment is confirmed yet</div>
+                            <div className="text-sm font-semibold text-[var(--hw-ink)]">
+                              {hasPreferredVisit ? "Preferred visit requested" : "Preferred visit needed"}
+                            </div>
                             <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                              Home Guide reviews the selected scopes first, bundles related work where possible, then confirms the actual date and time.
+                              {hasPreferredVisit
+                                ? "This date and window are pending Home Guide and Project Manager confirmation."
+                                : "Pick a preferred date and time so Home Guide can confirm the final appointment."}
                             </div>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              <Chip className="border-[var(--hw-line)] bg-white text-[var(--hw-ink)]">Preference: {item.preferredWindow || timingPreference}</Chip>
-                              <Chip className="border-[rgba(245,158,11,.22)] bg-[rgba(245,158,11,.10)] text-[rgb(146,64,14)]">Preliminary</Chip>
+                              <Chip className="border-[var(--hw-line)] bg-white text-[var(--hw-ink)]">
+                                {preferredVisitText || "No preferred time yet"}
+                              </Chip>
+                              <Chip className="border-[rgba(245,158,11,.22)] bg-[rgba(245,158,11,.10)] text-[rgb(146,64,14)]">Pending confirmation</Chip>
                             </div>
                           </div>
                         </div>
-                        <Chip className="border-[rgba(245,158,11,.22)] bg-[rgba(245,158,11,.10)] text-[rgb(146,64,14)]">Home Guide review</Chip>
+                        <Chip className="border-[rgba(245,158,11,.22)] bg-[rgba(245,158,11,.10)] text-[rgb(146,64,14)]">Submitted</Chip>
                       </div>
                     </div>
 
@@ -568,7 +567,9 @@ export function ProJobDetailClient(props: { id: string }) {
                               <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Scope group</div>
                               <div className="mt-1 text-sm font-semibold text-[var(--hw-ink)]">{a.trade || "Home repairs"}</div>
                               <div className="mt-1 text-sm text-[var(--hw-muted)]">
-                                Selected from the Instant Estimate. Home Guide will confirm who should handle it and whether it should be bundled with another visit.
+                                {preferredVisitText
+                                  ? `Requested for ${preferredVisitText}. Home Guide will confirm who should handle it and whether it should be bundled with another visit.`
+                                  : "Selected from the Instant Estimate. Home Guide will confirm who should handle it and whether it should be bundled with another visit."}
                               </div>
                             </div>
                             <Chip className={appointmentStatusClass(a.status, true)}>{appointmentStatusLabel(a.status, true)}</Chip>
@@ -604,18 +605,33 @@ export function ProJobDetailClient(props: { id: string }) {
 
                 {rescheduleOpen ? (
                   <div className="mt-4 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
-                    {instantEstimateJob ? (
-                      <>
-                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Timing preference</div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {timingOptions.map((w) => (
+                    <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                      {instantEstimateJob ? "Preferred visit" : "Preferred time"}
+                    </div>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <label className="grid gap-1">
+                        <span className="text-xs font-semibold text-[var(--hw-ink)]">Date</span>
+                        <input
+                          type="date"
+                          className="h-10 rounded-[999px] border border-[var(--hw-line)] bg-white px-4 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                          value={visitDate}
+                          onChange={(e) => {
+                            setVisitDate(e.target.value);
+                            setVisitWindow("");
+                          }}
+                        />
+                      </label>
+                      <div className="grid gap-1">
+                        <div className="text-xs font-semibold text-[var(--hw-ink)]">Time window</div>
+                        <div className="flex flex-wrap gap-2">
+                          {VISIT_WINDOWS.map((w) => (
                             <button
                               key={w}
                               type="button"
-                              onClick={() => setTimingPreference(w)}
+                              onClick={() => setVisitWindow(w)}
                               className={
                                 "h-10 rounded-full border px-4 text-sm font-semibold transition " +
-                                (timingPreference === w
+                                (visitWindow === w
                                   ? "border-[rgba(229,57,53,.35)] bg-white text-[var(--hw-ink)] ring-4 ring-[rgba(229,57,53,.10)]"
                                   : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[rgba(17,24,39,.03)]")
                               }
@@ -624,58 +640,31 @@ export function ProJobDetailClient(props: { id: string }) {
                             </button>
                           ))}
                         </div>
-                        <div className="mt-2 text-xs text-[var(--hw-muted)]">
-                          This does not confirm an appointment. It gives Home Guide a starting point for coordination.
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Preferred time</div>
-                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                          <label className="grid gap-1">
-                            <span className="text-xs font-semibold text-[var(--hw-ink)]">Date</span>
-                            <input
-                              type="date"
-                              className="h-10 rounded-[999px] border border-[var(--hw-line)] bg-white px-4 text-sm outline-none focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
-                              value={visitDate}
-                              onChange={(e) => setVisitDate(e.target.value)}
-                            />
-                          </label>
-                          <div className="grid gap-1">
-                            <div className="text-xs font-semibold text-[var(--hw-ink)]">Time window</div>
-                            <div className="flex flex-wrap gap-2">
-                              {VISIT_WINDOWS.map((w) => (
-                                <button
-                                  key={w}
-                                  type="button"
-                                  onClick={() => setVisitWindow(w)}
-                                  className={
-                                    "h-10 rounded-full border px-4 text-sm font-semibold transition " +
-                                    (visitWindow === w
-                                      ? "border-[rgba(229,57,53,.35)] bg-white text-[var(--hw-ink)] ring-4 ring-[rgba(229,57,53,.10)]"
-                                      : "border-[var(--hw-line)] bg-white text-[var(--hw-muted)] hover:bg-[rgba(17,24,39,.03)]")
-                                  }
-                                >
-                                  {w}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
+                      </div>
+                    </div>
                     {scheduleError ? <div className="mt-3 text-xs font-semibold text-[var(--hw-red)]">{scheduleError}</div> : null}
                     <div className="mt-4 flex gap-2">
                       <Button
                         size="sm"
-                        disabled={instantEstimateJob ? !timingPreference || savingSchedule : !visitDate || !visitWindow || savingSchedule}
+                        disabled={!visitDate || !visitWindow || savingSchedule}
                         onClick={async () => {
                           setScheduleError("");
                           setSavingSchedule(true);
                           try {
                             if (instantEstimateJob) {
                               const now = new Date().toISOString();
-                              const patch = { preferredDate: "", preferredWindow: timingPreference, updatedAt: now };
+                              const nextAppointments = appointments.map((a) => ({
+                                ...a,
+                                preferredDate: visitDate,
+                                preferredWindow: visitWindow,
+                                status: a.status === "CONFIRMED" ? a.status : "PENDING_HG_CONFIRM",
+                              }));
+                              const patch = {
+                                preferredDate: visitDate,
+                                preferredWindow: visitWindow,
+                                appointments: nextAppointments.length ? nextAppointments : appointments,
+                                updatedAt: now,
+                              };
                               updateLocalWorkOrder(item.id, patch);
                               setItem((prev) => (prev ? { ...prev, ...patch } : prev));
                               setRescheduleOpen(false);
@@ -703,7 +692,7 @@ export function ProJobDetailClient(props: { id: string }) {
                           }
                         }}
                       >
-                        {savingSchedule ? "Saving…" : instantEstimateJob ? "Save preference" : "Submit request"}
+                        {savingSchedule ? "Saving…" : instantEstimateJob ? "Save preferred time" : "Submit request"}
                       </Button>
                       <Button size="sm" variant="secondary" onClick={() => setRescheduleOpen(false)}>
                         Cancel
@@ -711,7 +700,7 @@ export function ProJobDetailClient(props: { id: string }) {
                     </div>
                     <div className="mt-2 text-[11px] text-[var(--hw-muted)]">
                       {instantEstimateJob
-                        ? "Home Guide will use this as a preference, not a confirmed appointment."
+                        ? "This keeps the work order pending confirmation until Home Guide and the Project Manager approve the appointment."
                         : "A Home Guide will confirm and coordinate with the Project Manager schedule."}
                     </div>
                   </div>

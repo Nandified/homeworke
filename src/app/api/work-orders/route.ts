@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { dbEnabled, db } from "@/lib/db";
-import { createWorkOrder as createMock, listWorkOrders as listMock, type WorkOrder } from "@/lib/mock-store";
+import { createWorkOrder as createMock, listWorkOrders as listMock, type WorkOrder, type WorkOrderStatus } from "@/lib/mock-store";
 
 export const runtime = "nodejs";
 
@@ -56,7 +56,15 @@ export async function POST(req: Request) {
     if (!body.token) return json({ ok: false, error: "missing_token" }, { status: 400 });
     if (!body.intake?.service_category) return json({ ok: false, error: "missing_service" }, { status: 400 });
 
+    const hasPreferredVisit = Boolean(body.intake.preferred_date && body.intake.preferred_time_window);
+
     if (!dbEnabled()) {
+      const status: WorkOrderStatus | undefined = body.fromInstantEstimate
+        ? "pending"
+        : body.intake.preferred_date
+          ? "confirming"
+          : undefined;
+
       const wo: WorkOrder = createMock({
         token: body.token,
         originPartnerId: body.originPartnerId ?? null,
@@ -75,11 +83,11 @@ export async function POST(req: Request) {
               trade: String(a?.trade || "handyman"),
               preferredDate: a?.preferredDate,
               preferredWindow: a?.preferredWindow,
-              status: body.fromInstantEstimate ? "PROPOSED" : "PENDING_HG_CONFIRM",
+              status: body.fromInstantEstimate && !hasPreferredVisit ? "PROPOSED" : "PENDING_HG_CONFIRM",
             }))
           : undefined,
         // For manual booking, go straight to scheduling and mark as awaiting HG confirmation.
-        status: body.fromInstantEstimate ? ("pending" as any) : body.intake.preferred_date ? ("confirming" as any) : undefined,
+        status,
       });
       return json({ ok: true, workOrder: wo });
     }
@@ -100,6 +108,7 @@ export async function POST(req: Request) {
         urgencyLevel: body.intake.urgency_level ?? null,
         propertyAddress: body.intake.property_address ?? null,
         propertyType: body.intake.property_type ?? null,
+        preferredDate: body.intake.preferred_date ? new Date(String(body.intake.preferred_date) + "T00:00:00") : null,
         preferredWindow: body.intake.preferred_time_window ?? null,
         status: "SUBMITTED",
       },

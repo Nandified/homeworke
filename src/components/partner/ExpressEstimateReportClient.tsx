@@ -12,7 +12,11 @@ import {
   BrushCleaning,
   Bug,
   Camera,
+  CalendarClock,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
   Copy,
   DoorClosed,
   DoorOpen,
@@ -70,6 +74,7 @@ type ExtractedLane = {
 type ExtractedItem = ExtractedLane["items"][number];
 
 type ServiceOption = { id: string; category: string; label: string };
+type RepairVisitWindow = "" | "Morning" | "Midday" | "Afternoon" | "Evening";
 type RepairGroup = {
   id: string;
   trade: string;
@@ -82,6 +87,12 @@ type RepairGroup = {
 };
 
 const TRADE_OPTIONS = ((taxonomy as { trades?: string[] }).trades || []).filter(Boolean);
+const REPAIR_TIME_WINDOWS = [
+  { id: "Morning", label: "Morning", range: "7:00 AM - 10:00 AM" },
+  { id: "Midday", label: "Midday", range: "10:00 AM - 2:00 PM" },
+  { id: "Afternoon", label: "Afternoon", range: "2:00 PM - 6:00 PM" },
+  { id: "Evening", label: "Evening", range: "6:00 PM - 9:00 PM" },
+] as const satisfies ReadonlyArray<{ id: Exclude<RepairVisitWindow, "">; label: string; range: string }>;
 
 type AnalyzeResponse =
   | {
@@ -232,6 +243,37 @@ function estimateItemValue(item: { range?: string; price?: number }): number | n
     return a ?? b;
   }
   return parseMoneyToNumber(r);
+}
+
+function localIsoDate(date: Date): string {
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
+function monthLabel(date: Date): string {
+  return date.toLocaleString(undefined, { month: "long", year: "numeric" });
+}
+
+function endOfMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+}
+
+function sameCalendarDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function calendarDays(month: Date, minDate: Date): Array<{ date: Date | null; disabled?: boolean }> {
+  const first = new Date(month.getFullYear(), month.getMonth(), 1);
+  const last = endOfMonth(month);
+  const days: Array<{ date: Date | null; disabled?: boolean }> = [];
+
+  for (let i = 0; i < first.getDay(); i++) days.push({ date: null });
+  for (let day = 1; day <= last.getDate(); day++) {
+    const date = new Date(month.getFullYear(), month.getMonth(), day);
+    days.push({ date, disabled: date.getTime() < minDate.getTime() });
+  }
+  while (days.length % 7 !== 0) days.push({ date: null });
+
+  return days;
 }
 
 function serviceForEstimateItem(item: ExtractedItem, trade: string, services: ServiceOption[]): string {
@@ -720,6 +762,9 @@ export function ExpressEstimateReportClient(props: {
 
   const [repairIds, setRepairIds] = useState<Set<string>>(new Set());
   const [repairItemOverrides, setRepairItemOverrides] = useState<Record<string, { trade?: string; serviceSubcategory?: string }>>({});
+  const [repairStep, setRepairStep] = useState<"review" | "schedule">("review");
+  const [repairVisitDate, setRepairVisitDate] = useState("");
+  const [repairVisitWindow, setRepairVisitWindow] = useState<RepairVisitWindow>("");
   const [openItemId, setOpenItemId] = useState<string>("");
   const [totalsCollapsed, setTotalsCollapsed] = useState(false);
 
@@ -760,6 +805,21 @@ export function ExpressEstimateReportClient(props: {
   const allItems = useMemo(() => extracted.flatMap((lane) => lane.items), [extracted]);
   const selected = useMemo(() => allItems.filter((item) => selectedIds.has(item.id)), [allItems, selectedIds]);
   const repairs = useMemo(() => allItems.filter((item) => repairIds.has(item.id)), [allItems, repairIds]);
+  const minRepairVisitIso = useMemo(() => {
+    const min = new Date();
+    min.setDate(min.getDate() + 2);
+    return localIsoDate(min);
+  }, []);
+  const minRepairVisitDate = useMemo(() => {
+    const [yy, mm, dd] = minRepairVisitIso.split("-").map((x) => Number(x));
+    return new Date(yy, (mm || 1) - 1, dd || 1);
+  }, [minRepairVisitIso]);
+  const [repairCalMonth, setRepairCalMonth] = useState<Date>(() => {
+    const now = new Date();
+    const min = new Date(now);
+    min.setDate(min.getDate() + 2);
+    return new Date(min.getFullYear(), min.getMonth(), 1);
+  });
   const servicesByTrade = useMemo(() => {
     const out = new Map<string, ServiceOption[]>();
     const rawServices = ((taxonomy as { services?: Array<{ id?: string; trade?: string; category?: string; label?: string }> }).services || []);
@@ -807,6 +867,18 @@ export function ExpressEstimateReportClient(props: {
     }
     return Array.from(grouped.values()).sort((a, b) => b.subtotal - a.subtotal || a.trade.localeCompare(b.trade));
   }, [repairItemOverrides, repairs, servicesByTrade]);
+
+  useEffect(() => {
+    const base = repairVisitDate ? new Date(repairVisitDate + "T00:00:00") : minRepairVisitDate;
+    setRepairCalMonth(new Date(base.getFullYear(), base.getMonth(), 1));
+  }, [repairVisitDate, minRepairVisitDate]);
+
+  useEffect(() => {
+    if (repairs.length > 0) return;
+    setRepairStep("review");
+    setRepairVisitDate("");
+    setRepairVisitWindow("");
+  }, [repairs.length]);
 
   const savedContacts = useMemo(() => {
     if (typeof window === "undefined") return [] as Array<{ id: string; name: string; email?: string; phone?: string }>;
@@ -1578,6 +1650,10 @@ export function ExpressEstimateReportClient(props: {
 
   async function submitRepairRequest() {
     if (bookingBusy || repairs.length === 0) return;
+    if (!repairVisitDate || !repairVisitWindow) {
+      setRepairStep("schedule");
+      return;
+    }
 
     setBookingBusy(true);
     try {
@@ -1628,11 +1704,15 @@ export function ExpressEstimateReportClient(props: {
         urgency_level: "this_week",
         property_address: effectiveAddress || "",
         property_type: "",
-        preferred_date: "",
-        preferred_time_window: "",
+        preferred_date: repairVisitDate,
+        preferred_time_window: repairVisitWindow,
       };
 
-      const appointments = repairGroups.map((group) => ({ trade: group.trade || "Handyman / General" }));
+      const appointments = repairGroups.map((group) => ({
+        trade: group.trade || "Handyman / General",
+        preferredDate: repairVisitDate,
+        preferredWindow: repairVisitWindow,
+      }));
       let workOrder: Record<string, unknown> | null = null;
 
       if (hasSessionToken) {
@@ -1671,18 +1751,46 @@ export function ExpressEstimateReportClient(props: {
           urgencyLevel: "this_week",
           propertyAddress: effectiveAddress || "",
           propertyType: "",
-          preferredDate: "",
-          preferredWindow: "",
+          preferredDate: repairVisitDate,
+          preferredWindow: repairVisitWindow,
           appointments: appointments.map((a, idx) => ({
             id: `apt_${Date.now().toString(36)}_${idx}`,
             trade: a.trade,
-            status: "PROPOSED",
+            preferredDate: a.preferredDate,
+            preferredWindow: a.preferredWindow,
+            status: "PENDING_HG_CONFIRM",
           })),
           status: "pending",
         };
       }
 
+      const scheduledAppointments = appointments.map((a, idx) => ({
+        id: `apt_${Date.now().toString(36)}_${idx}`,
+        trade: a.trade,
+        preferredDate: a.preferredDate,
+        preferredWindow: a.preferredWindow,
+        status: "PENDING_HG_CONFIRM",
+      }));
+
+      workOrder = {
+        ...workOrder,
+        token: "token" in workOrder ? workOrder.token : token,
+        originPartnerId: "originPartnerId" in workOrder ? workOrder.originPartnerId : null,
+        shareWithPartner: "shareWithPartner" in workOrder ? workOrder.shareWithPartner : true,
+        clientName: "clientName" in workOrder ? workOrder.clientName : effectiveOwnerName || undefined,
+        serviceCategory: "serviceCategory" in workOrder ? workOrder.serviceCategory : serviceCategory,
+        serviceSubcategory: "serviceSubcategory" in workOrder ? workOrder.serviceSubcategory : serviceSubcategory,
+        issueDescription: "issueDescription" in workOrder ? workOrder.issueDescription : issueDescription,
+        urgencyLevel: "urgencyLevel" in workOrder ? workOrder.urgencyLevel : "this_week",
+        propertyAddress: "propertyAddress" in workOrder ? workOrder.propertyAddress : effectiveAddress || "",
+        propertyType: "propertyType" in workOrder ? workOrder.propertyType : "",
+        preferredDate: repairVisitDate,
+        preferredWindow: repairVisitWindow,
+        appointments: Array.isArray(workOrder.appointments) && workOrder.appointments.length ? workOrder.appointments : scheduledAppointments,
+      };
+
       persistLocalWorkOrder(workOrder);
+      setRepairStep("review");
       setRepairsOpen(false);
       window.location.href = `${props.basePath}/jobs/${encodeURIComponent(String(workOrder.id))}`;
     } catch {
@@ -2747,23 +2855,180 @@ export function ExpressEstimateReportClient(props: {
                 </div>
 
                 <div className="flex w-full flex-wrap justify-end gap-2">
-                  <Button size="sm" disabled={repairs.length === 0 || bookingBusy} onClick={() => void submitRepairRequest()}>
-                    {bookingBusy ? "Starting request…" : "Submit repair request"}
+                  {repairStep === "schedule" ? (
+                    <Button size="sm" variant="secondary" disabled={bookingBusy} onClick={() => setRepairStep("review")}>
+                      Back to groups
+                    </Button>
+                  ) : null}
+                  <Button
+                    size="sm"
+                    disabled={repairs.length === 0 || bookingBusy || (repairStep === "schedule" && (!repairVisitDate || !repairVisitWindow))}
+                    onClick={() => {
+                      if (repairStep === "review") {
+                        setRepairStep("schedule");
+                        return;
+                      }
+                      void submitRepairRequest();
+                    }}
+                  >
+                    {bookingBusy ? "Submitting request..." : repairStep === "review" ? "Continue to scheduling" : "Submit repair request"}
                   </Button>
                   <Button
                     size="sm"
                     variant="secondary"
-                    disabled={repairs.length === 0}
+                    disabled={repairs.length === 0 || bookingBusy}
                     onClick={() => {
                       setRepairIds(new Set());
                       setRepairItemOverrides({});
+                      setRepairStep("review");
+                      setRepairVisitDate("");
+                      setRepairVisitWindow("");
                     }}
                   >
                     Clear
                   </Button>
                 </div>
 
-                {repairGroups.length ? (
+                {repairStep === "schedule" ? (
+                  <div className="mt-4 grid gap-4">
+                    <div className="rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.04)] p-4">
+                      <div className="flex gap-3">
+                        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white text-[var(--hw-red)] shadow-sm">
+                          <CalendarClock className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">Pick a preferred visit time</div>
+                          <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">
+                            This is the time that works best for the client. Home Guide and the Project Manager still confirm the final appointment.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Preferred date</div>
+                      <div className="mt-3">
+                        {(() => {
+                          const selected = repairVisitDate ? new Date(repairVisitDate + "T00:00:00") : null;
+                          const days = calendarDays(repairCalMonth, minRepairVisitDate);
+                          const prevMonth = new Date(repairCalMonth.getFullYear(), repairCalMonth.getMonth() - 1, 1);
+                          const canGoPrev = endOfMonth(prevMonth).getTime() >= minRepairVisitDate.getTime();
+                          const goMonth = (delta: number) => {
+                            setRepairCalMonth(new Date(repairCalMonth.getFullYear(), repairCalMonth.getMonth() + delta, 1));
+                          };
+
+                          return (
+                            <div className="w-full rounded-[var(--hw-radius-lg)] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.04)] p-2.5">
+                              <div className="flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  disabled={!canGoPrev}
+                                  onClick={() => canGoPrev && goMonth(-1)}
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(229,57,53,.20)] bg-white text-[var(--hw-ink)] shadow-sm disabled:opacity-40"
+                                  aria-label="Previous month"
+                                >
+                                  <ChevronLeft className="h-4 w-4" />
+                                </button>
+
+                                <div className="text-sm font-extrabold tracking-tight text-[var(--hw-ink)]">{monthLabel(repairCalMonth)}</div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => goMonth(1)}
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(229,57,53,.20)] bg-white text-[var(--hw-ink)] shadow-sm"
+                                  aria-label="Next month"
+                                >
+                                  <ChevronRight className="h-4 w-4" />
+                                </button>
+                              </div>
+
+                              <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((w) => (
+                                  <div key={w} className="py-1">{w}</div>
+                                ))}
+                              </div>
+
+                              <div className="mt-1 grid grid-cols-7 gap-[3px]">
+                                {days.map((cell, i) => {
+                                  if (!cell.date) return <div key={i} className="h-8.5" />;
+                                  const day = cell.date;
+                                  const selectedDay = selected ? sameCalendarDay(selected, day) : false;
+                                  return (
+                                    <button
+                                      key={i}
+                                      type="button"
+                                      disabled={!!cell.disabled}
+                                      onClick={() => {
+                                        setRepairVisitDate(localIsoDate(day));
+                                        setRepairVisitWindow("");
+                                      }}
+                                      className={
+                                        "h-8.5 w-full rounded-[11px] text-sm font-semibold transition " +
+                                        (selectedDay
+                                          ? "bg-[var(--hw-red)] text-white shadow-[0_10px_22px_rgba(229,57,53,.28)]"
+                                          : cell.disabled
+                                            ? "bg-white/60 text-[var(--hw-muted)] opacity-60"
+                                            : "bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
+                                      }
+                                    >
+                                      {day.getDate()}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    {repairVisitDate ? (
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Time window</div>
+                        <div className="mt-2 grid gap-2">
+                          {REPAIR_TIME_WINDOWS.map((t) => {
+                            const active = repairVisitWindow === t.id;
+                            return (
+                              <button
+                                key={t.id}
+                                type="button"
+                                onClick={() => setRepairVisitWindow(t.id)}
+                                className={
+                                  "flex w-full items-center justify-between gap-3 rounded-[18px] border px-4 py-3 text-left transition " +
+                                  (active
+                                    ? "border-[rgba(229,57,53,.35)] bg-[rgba(229,57,53,.08)]"
+                                    : "border-[var(--hw-line)] bg-white hover:bg-[var(--hw-soft)]")
+                                }
+                              >
+                                <div className="min-w-0">
+                                  <div className="text-sm font-semibold text-[var(--hw-ink)]">{t.label}</div>
+                                  <div className="mt-0.5 text-xs font-medium text-[var(--hw-muted)]">{t.range}</div>
+                                </div>
+                                <div
+                                  className={
+                                    "grid h-5 w-5 place-items-center rounded-full border transition " +
+                                    (active
+                                      ? "border-[var(--hw-red)] bg-[var(--hw-red)] text-white shadow-[0_4px_14px_rgba(229,57,53,.25)]"
+                                      : "border-[var(--hw-line)] bg-white")
+                                  }
+                                >
+                                  {active ? <CheckCircle2 className="h-3.5 w-3.5" /> : null}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <div className="rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4">
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">What happens next</div>
+                      <div className="mt-2 text-sm leading-relaxed text-[var(--hw-muted)]">
+                        The work order is submitted as pending confirmation. Homeworke verifies scope, actual pricing, and the final appointment before anything is treated as booked.
+                      </div>
+                    </div>
+                  </div>
+                ) : repairGroups.length ? (
                   <div className="mt-4 grid gap-3">
                     <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Review service groups</div>
                     {repairGroups.map((group) => {
