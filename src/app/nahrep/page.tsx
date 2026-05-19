@@ -61,7 +61,7 @@ function BrowserFrame({
 }) {
   return (
     <div
-      className={`overflow-hidden rounded-[30px] border shadow-[0_34px_90px_rgba(17,24,39,.18)] ${
+      className={`hw-motion-card overflow-hidden rounded-[30px] border shadow-[0_34px_90px_rgba(17,24,39,.18)] ${
         dark ? "border-white/10 bg-[#111827]" : "border-[rgba(17,24,39,.12)] bg-white"
       } ${className}`}
     >
@@ -110,7 +110,7 @@ function InstantEstimateVisual() {
 
         <div className="mt-5 grid gap-3">
           {rows.map(([trade, task, price]) => (
-            <div key={task} className="grid grid-cols-[1fr_auto] items-center gap-4 rounded-[16px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+            <div key={task} className="hw-motion-card grid grid-cols-[1fr_auto] items-center gap-4 rounded-[16px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
               <div className="min-w-0">
                 <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">{trade}</div>
                 <div className="mt-1 truncate text-sm font-extrabold text-[var(--hw-ink)]">{task}</div>
@@ -120,7 +120,7 @@ function InstantEstimateVisual() {
           ))}
         </div>
 
-        <div className="mt-5 flex items-center justify-between rounded-[20px] bg-[#111827] p-5 text-white">
+        <div className="hw-motion-card mt-5 flex items-center justify-between rounded-[20px] bg-[#111827] p-5 text-white">
           <div>
             <div className="text-xs font-semibold uppercase tracking-widest text-white/60">Estimated total</div>
             <div className="mt-1 text-4xl font-extrabold">$1,265</div>
@@ -150,13 +150,13 @@ function HomeworkeAiVisual() {
         </div>
 
         <div className="mt-5 grid gap-3 rounded-[22px] border border-[var(--hw-line)] bg-white/80 p-4">
-          <div className="max-w-[88%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+          <div className="hw-reveal hw-delay-1 max-w-[88%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
             Tell me what happened. You can add photos or video if that helps.
           </div>
-          <div className="ml-auto max-w-[86%] rounded-2xl bg-[#111827] px-4 py-3 text-sm leading-6 text-white shadow-sm">
+          <div className="hw-reveal hw-delay-2 ml-auto max-w-[86%] rounded-2xl bg-[#111827] px-4 py-3 text-sm leading-6 text-white shadow-sm">
             Water is showing under the vanity and the drywall is soft.
           </div>
-          <div className="max-w-[92%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
+          <div className="hw-reveal hw-delay-3 max-w-[92%] rounded-2xl border border-[rgba(229,57,53,.12)] bg-white px-4 py-3 text-sm leading-6 text-[var(--hw-ink)] shadow-sm">
             Got it. Is this active leaking, and do you want to schedule a visit?
           </div>
         </div>
@@ -199,7 +199,7 @@ function RehabLoanVisual() {
 
         <div className="mt-6 grid gap-3 md:grid-cols-3">
           {steps.map(([title, text], index) => (
-            <div key={title} className="rounded-[18px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
+            <div key={title} className="hw-motion-card rounded-[18px] border border-[var(--hw-line)] bg-[var(--hw-soft)] p-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--hw-red)] text-sm font-extrabold text-white">{index + 1}</div>
               <div className="mt-4 text-lg font-extrabold text-[var(--hw-ink)]">{title}</div>
               <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{text}</div>
@@ -207,7 +207,7 @@ function RehabLoanVisual() {
           ))}
         </div>
 
-        <div className="mt-5 grid gap-3 rounded-[20px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4 md:grid-cols-[1fr_auto] md:items-center">
+        <div className="hw-motion-card mt-5 grid gap-3 rounded-[20px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <div className="text-sm font-extrabold text-[var(--hw-ink)]">Rehab package status</div>
             <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">Scope organized, estimate in review, contractor next steps ready.</div>
@@ -285,7 +285,7 @@ function TopOfMindVisual() {
           <div className="mt-5 rounded-[24px] border border-[rgba(229,57,53,.16)] bg-white/85 p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
             <div className="grid gap-3 sm:grid-cols-2">
               {pros.map((pro) => (
-                <div key={pro.name} className={`min-w-0 rounded-[18px] border border-[var(--hw-line)] ${pro.accent} p-3 shadow-[0_12px_28px_rgba(17,24,39,.07)]`}>
+                <div key={pro.name} className={`hw-motion-card min-w-0 rounded-[18px] border border-[var(--hw-line)] ${pro.accent} p-3 shadow-[0_12px_28px_rgba(17,24,39,.07)]`}>
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-white text-sm font-extrabold text-[var(--hw-ink)] shadow-[0_10px_22px_rgba(17,24,39,.10)]">
                       {pro.src ? (
@@ -315,7 +315,7 @@ function TopOfMindVisual() {
           </div>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-[.88fr_1.12fr] lg:items-stretch">
-            <div className="rounded-[20px] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.06)] p-4">
+            <div className="hw-motion-card rounded-[20px] border border-[rgba(229,57,53,.16)] bg-[rgba(229,57,53,.06)] p-4">
               <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[var(--hw-red)]">
                 <Clock3 className="h-3.5 w-3.5" />
                 Work order status
@@ -332,7 +332,7 @@ function TopOfMindVisual() {
               </div>
             </div>
 
-            <div className="rounded-[20px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
+            <div className="hw-motion-card rounded-[20px] border border-[var(--hw-line)] bg-white p-4 shadow-[0_18px_44px_rgba(17,24,39,.08)]">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">Work order thread</div>
                 <MessageSquareText className="h-4 w-4 text-[var(--hw-red)]" />
@@ -389,7 +389,7 @@ function PillarSection({
             wide ? "lg:grid-cols-[1.28fr_.72fr]" : "lg:grid-cols-[0.84fr_1.16fr]"
           } ${flip ? "lg:[&>*:first-child]:order-2" : ""}`}
         >
-          <div>
+          <div className="hw-reveal hw-delay-1">
             <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(229,57,53,.20)] bg-white px-3 py-2 text-xs font-extrabold uppercase tracking-widest text-[var(--hw-red)] shadow-sm">
               <Icon className="h-4 w-4" />
               {pillar.eyebrow}
@@ -397,7 +397,9 @@ function PillarSection({
             <h2 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">{pillar.title}</h2>
             <p className="mt-4 max-w-xl text-lg leading-8 text-[var(--hw-muted)]">{pillar.text}</p>
           </div>
-          <div>{visual}</div>
+          <div className="hw-reveal hw-delay-2">
+            <div className="hw-float-soft">{visual}</div>
+          </div>
         </div>
       </Container>
     </section>
@@ -434,7 +436,7 @@ export default function NahrepLandingPage() {
           />
           <Container className="relative max-w-[1180px] py-8 md:py-10 lg:py-12">
             <div className="grid gap-10 lg:grid-cols-[1fr_430px] lg:items-center">
-              <div>
+              <div className="hw-reveal hw-delay-1">
                 <div className="flex flex-wrap gap-2">
                   <Pill className="bg-white">
                     <span className="hw-breath-dot" aria-hidden />
@@ -465,10 +467,14 @@ export default function NahrepLandingPage() {
                 </div>
 
                 <div id="four-tools" className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
-                  {pillars.map((pillar) => {
+                  {pillars.map((pillar, index) => {
                     const Icon = pillar.icon;
                     return (
-                      <div key={pillar.eyebrow} className="flex items-center gap-3 rounded-[22px] border border-[rgba(229,57,53,.16)] bg-white/90 p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur lg:gap-2 lg:rounded-[18px] lg:px-3 lg:py-3">
+                      <div
+                        key={pillar.eyebrow}
+                        className="hw-motion-card hw-reveal flex items-center gap-3 rounded-[22px] border border-[rgba(229,57,53,.16)] bg-white/90 p-5 shadow-[0_20px_50px_rgba(17,24,39,.08)] backdrop-blur lg:gap-2 lg:rounded-[18px] lg:px-3 lg:py-3"
+                        style={{ animationDelay: `${0.22 + index * 0.07}s` }}
+                      >
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)] lg:h-9 lg:w-9 lg:rounded-[13px]">
                           <Icon className="h-5 w-5 lg:h-4 lg:w-4" />
                         </div>
@@ -479,7 +485,7 @@ export default function NahrepLandingPage() {
                 </div>
               </div>
 
-              <div className="mx-auto w-full max-w-[430px] lg:mx-0">
+              <div className="hw-reveal hw-delay-2 mx-auto w-full max-w-[430px] lg:mx-0">
                 <NahrepQr />
               </div>
             </div>
@@ -494,7 +500,7 @@ export default function NahrepLandingPage() {
         <section className="py-16 md:py-24">
           <Container className="max-w-[1180px]">
             <div
-              className="rounded-[34px] border border-[rgba(229,57,53,.28)] p-6 text-white shadow-[0_34px_90px_rgba(17,24,39,.28)] md:p-10"
+              className="hw-motion-card hw-reveal rounded-[34px] border border-[rgba(229,57,53,.28)] p-6 text-white shadow-[0_34px_90px_rgba(17,24,39,.28)] md:p-10"
               style={{
                 background: "radial-gradient(520px 260px at 85% 0%, rgba(229,57,53,.34), transparent 62%), #111827",
               }}
