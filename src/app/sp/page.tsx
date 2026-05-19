@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function MyBidsRedirect() {
+export default function ServiceProviderRoot() {
   redirect("/sp/find-work");
 }
