@@ -448,7 +448,7 @@ export default function HomeClient(props: { homepage?: unknown }) {
                   Start with the problem. Homeworke helps route the category, clarify scope, and prepare the request for a real-world visit.
                 </p>
                 <div className="mt-7">
-                  <Link href="/services">
+                  <Link href="/work-order">
                     <Button variant="secondary">
                       Browse services
                       <ArrowRight className="h-4 w-4" />
@@ -520,7 +520,7 @@ export default function HomeClient(props: { homepage?: unknown }) {
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
-                  <Link href="/services">
+                  <Link href="/work-order">
                     <Button variant="secondary" className="w-full border-white/15 bg-white/10 text-white shadow-none hover:bg-white/15">
                       Explore services
                     </Button>
