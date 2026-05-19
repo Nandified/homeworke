@@ -231,6 +231,10 @@ function PublicInstantEstimateCard() {
   const [result, setResult] = useState<{ reportId: string; portalPath: string; message: string } | null>(null);
 
   const canSubmit = !!file && !!name.trim() && email.includes("@") && !!phone.trim() && !!address.trim() && !submitting;
+  const contactComplete = !!name.trim() && email.includes("@") && !!phone.trim() && !!address.trim();
+  const notesComplete = !!notes.trim();
+  const completeStepClass = "border-[rgba(229,57,53,.28)] bg-[rgba(229,57,53,.045)] shadow-[0_0_0_1px_rgba(229,57,53,.10),0_14px_32px_rgba(229,57,53,.12)]";
+  const idleStepClass = "border-[var(--hw-line)] bg-white";
 
   function selectFile(next: File | null) {
     if (!next) return;
@@ -377,7 +381,7 @@ function PublicInstantEstimateCard() {
             ) : null}
           </div>
 
-          <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4">
+          <div className={`rounded-[22px] border p-4 transition-all ${file ? completeStepClass : idleStepClass}`}>
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">1</div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload file(s)</div>
@@ -387,7 +391,9 @@ function PublicInstantEstimateCard() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="mt-4 flex w-full items-center justify-between rounded-[18px] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] px-4 py-4 text-left"
+              className={`mt-4 flex w-full items-center justify-between rounded-[18px] border border-dashed px-4 py-4 text-left transition-all ${
+                file ? "border-[rgba(229,57,53,.26)] bg-white shadow-sm" : "border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)]"
+              }`}
             >
               <span>
                 <span className="block text-sm font-semibold text-[var(--hw-ink)]">Choose a PDF to upload</span>
@@ -397,7 +403,7 @@ function PublicInstantEstimateCard() {
             </button>
           </div>
 
-          <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4">
+          <div className={`rounded-[22px] border p-4 transition-all ${contactComplete ? completeStepClass : idleStepClass}`}>
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">2</div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Property and contact</div>
@@ -424,7 +430,7 @@ function PublicInstantEstimateCard() {
             </div>
           </div>
 
-          <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4">
+          <div className={`rounded-[22px] border p-4 transition-all ${notesComplete ? completeStepClass : idleStepClass}`}>
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">3</div>
               <div className="text-sm font-semibold text-[var(--hw-ink)]">Notes (optional)</div>
@@ -433,7 +439,7 @@ function PublicInstantEstimateCard() {
           </div>
 
           <div className="rounded-[18px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4 text-xs leading-5 text-[var(--hw-muted)]">
-            Uses the Homeworke Instant Estimate report model (`reportmodel.v0.1`) and scope schema. Estimates are planning numbers for repair prioritization and negotiation; final pricing is verified after scope, access, materials, and timing are confirmed.
+            Estimates are planning numbers for repair prioritization and negotiation; final pricing is verified after scope, access, materials, and timing are confirmed.
           </div>
 
           {error ? <div className="text-sm font-semibold text-[var(--hw-red)]">{error}</div> : null}
