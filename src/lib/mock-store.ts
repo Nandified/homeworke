@@ -1,5 +1,14 @@
 export type WorkOrderStatus = "pending" | "confirming" | "scheduled" | "in_progress" | "completed";
 
+export type WorkOrderScopeItem = {
+  id: string;
+  name: string;
+  description?: string;
+  qty: number;
+  minCents: number;
+  maxCents: number;
+};
+
 export type WorkOrderAppointment = {
   id: string;
   trade: string; // handyman | plumbing | flooring | ...
@@ -28,6 +37,9 @@ export type WorkOrder = {
   preferredWindow?: string;
   appointments?: WorkOrderAppointment[];
   status: WorkOrderStatus;
+
+  // Legacy-style line-item scope (for SP job details)
+  scopeItems?: WorkOrderScopeItem[];
 
   // Operator-managed fields (Home Guide)
   scopeText?: string;
@@ -532,6 +544,27 @@ export function createWorkOrder(input: Omit<WorkOrder, "id" | "createdAt" | "sta
     createdAt: new Date().toISOString(),
     status: input.status || (preferredDate ? "confirming" : "pending"),
     appointments: appointments || defaultAppointments,
+    scopeItems:
+      Array.isArray((input as any)?.scopeItems) && (input as any).scopeItems.length
+        ? ((input as any).scopeItems as any)
+        : [
+            {
+              id: `si_${Math.random().toString(36).slice(2, 9)}`,
+              name: "Door adjustment",
+              description: "Align door and ensure proper close.",
+              qty: 1,
+              minCents: 10000,
+              maxCents: 20000,
+            },
+            {
+              id: `si_${Math.random().toString(36).slice(2, 9)}`,
+              name: "Removal / haul-away",
+              description: "Remove and dispose of debris/furniture.",
+              qty: 1,
+              minCents: 10000,
+              maxCents: 20000,
+            },
+          ],
     ...input,
   };
 

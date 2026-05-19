@@ -15,6 +15,7 @@ type WorkOrder = {
   propertyAddress?: string;
   preferredDate?: string;
   preferredWindow?: string;
+  scopeItems?: Array<{ id: string; name: string; description?: string; qty: number; minCents: number; maxCents: number }>;
 };
 
 function fmtDate(iso?: string) {
@@ -82,8 +83,35 @@ export default function ServiceProviderJobDetailsPage({ params }: { params: { id
               <EmptyState title="Not found" text="This job may have been removed." />
             ) : (
               <>
-                <div className="text-sm font-semibold text-[var(--hw-ink)]">Scope</div>
-                <div className="mt-3 whitespace-pre-wrap text-sm text-[var(--hw-ink)]">{wo.issueDescription || "—"}</div>
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Job details</div>
+
+                <div className="mt-4 overflow-hidden rounded-2xl border border-[var(--hw-line)]">
+                  <div className="grid grid-cols-[1.2fr_2fr_80px_120px_120px] gap-0 bg-[var(--hw-soft)] px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                    <div>Item</div>
+                    <div>Description</div>
+                    <div className="text-right">Qty</div>
+                    <div className="text-right">Min</div>
+                    <div className="text-right">Max</div>
+                  </div>
+                  {(wo.scopeItems || []).map((it) => (
+                    <div key={it.id} className="grid grid-cols-[1.2fr_2fr_80px_120px_120px] gap-0 border-t border-[var(--hw-line)] bg-white px-4 py-3 text-sm">
+                      <div className="font-semibold text-[var(--hw-ink)]">{it.name}</div>
+                      <div className="text-[var(--hw-muted)]">{it.description || "—"}</div>
+                      <div className="text-right text-[var(--hw-muted)]">{it.qty}</div>
+                      <div className="text-right font-semibold text-[var(--hw-ink)]">{(it.minCents / 100).toLocaleString(undefined,{style:"currency",currency:"USD"})}</div>
+                      <div className="text-right font-semibold text-[var(--hw-ink)]">{(it.maxCents / 100).toLocaleString(undefined,{style:"currency",currency:"USD"})}</div>
+                    </div>
+                  ))}
+                  {(!wo.scopeItems || wo.scopeItems.length === 0) ? (
+                    <div className="border-t border-[var(--hw-line)] bg-white px-4 py-3 text-sm text-[var(--hw-muted)]">No scope items.</div>
+                  ) : null}
+                </div>
+
+                <Divider className="my-5" />
+
+                <div className="text-sm font-semibold text-[var(--hw-ink)]">Notes</div>
+                <div className="mt-2 whitespace-pre-wrap text-sm text-[var(--hw-ink)]">{wo.issueDescription || "—"}</div>
+
                 <Divider className="my-5" />
                 <div className="text-sm font-semibold text-[var(--hw-ink)]">Property</div>
                 <div className="mt-2 text-sm text-[var(--hw-muted)]">{wo.propertyAddress || "—"}</div>
