@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRef, useState } from "react";
 
 import {
   ArrowRight,
@@ -8,6 +9,7 @@ import {
   CalendarCheck2,
   CheckCircle2,
   ClipboardList,
+  FileText,
   FileSearch,
   Home,
   MessageSquareText,
@@ -19,9 +21,10 @@ import {
   Zap,
 } from "lucide-react";
 
-import { Button, Container, Pill } from "@/components/ui";
+import { Button, Container, Input, Modal, Pill, Textarea } from "@/components/ui";
 import { SiteFooter, SiteHeader } from "@/components/site-shell";
 import { AIWorkOrderIntakeCard } from "@/components/ai/AIWorkOrderIntakeCard";
+import { formatPhoneUS } from "@/lib/phone";
 
 const servicePillars = [
   {
@@ -213,6 +216,245 @@ function CoordinationPreview() {
   );
 }
 
+function PublicInstantEstimateCard() {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [propertyType, setPropertyType] = useState("");
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<{ reportId: string; portalPath: string; message: string } | null>(null);
+
+  const canSubmit = !!file && !!name.trim() && email.includes("@") && !!phone.trim() && !!address.trim() && !submitting;
+
+  function selectFile(next: File | null) {
+    if (!next) return;
+    setFile(next);
+    setModalOpen(true);
+    setResult(null);
+    setError("");
+  }
+
+  async function submit() {
+    if (!file || !canSubmit) return;
+    setSubmitting(true);
+    setError("");
+    setResult(null);
+
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("name", name.trim());
+      form.set("email", email.trim().toLowerCase());
+      form.set("phone", phone.trim());
+      form.set("address", address.trim());
+      form.set("propertyType", propertyType);
+      form.set("notes", notes.trim());
+
+      const res = await fetch("/api/express-estimate/public-intake", {
+        method: "POST",
+        body: form,
+      });
+      const data = (await res.json().catch(() => null)) as null | {
+        ok?: boolean;
+        error?: string;
+        detail?: string;
+        reportId?: string;
+        portalPath?: string;
+        message?: string;
+      };
+
+      if (!res.ok || !data?.ok || !data.reportId || !data.portalPath) {
+        throw new Error(data?.detail || data?.error || "Unable to submit report.");
+      }
+
+      setResult({
+        reportId: data.reportId,
+        portalPath: data.portalPath,
+        message: data.message || "Report received. We will email the private portal link when it is ready.",
+      });
+    } catch (e: unknown) {
+      const message = e && typeof e === "object" && "message" in e ? String(e.message) : "Unable to submit report.";
+      setError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <>
+      <div
+        className="hw-motion-card relative overflow-hidden rounded-[28px] border border-[rgba(229,57,53,.28)] bg-white p-6 shadow-[0_24px_70px_rgba(17,24,39,.10)] md:p-7"
+        style={{ boxShadow: "0 24px 70px rgba(229,57,53,.08)" }}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute right-0 top-0 h-56 w-56 -translate-y-1/3 translate-x-1/3 rounded-full bg-[var(--hw-red)]/20 blur-[62px]"
+        />
+        <div className="relative">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--hw-muted)]">
+                <Zap className="h-3.5 w-3.5 text-[var(--hw-red)]" />
+                Instant estimate
+              </div>
+              <div className="mt-2 text-2xl font-extrabold tracking-tight text-[var(--hw-ink)]">Instant Estimate</div>
+            </div>
+            <Pill className="w-fit border-[rgba(229,57,53,.22)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]">Public upload</Pill>
+          </div>
+
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--hw-muted)]">
+            Upload a <span className="font-semibold text-[var(--hw-ink)]">Home Inspection</span>,{" "}
+            <span className="font-semibold text-[var(--hw-ink)]">Village Inspection</span>, or{" "}
+            <span className="font-semibold text-[var(--hw-ink)]">Appraisal</span> report. We will create a private Homeworke portal account and email the Instant Estimate link when the report is ready.
+          </p>
+
+          <label
+            className="mt-5 block cursor-pointer rounded-[22px] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] p-4 transition hover:bg-white"
+            onDragEnter={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              selectFile(e.dataTransfer.files?.[0] ?? null);
+            }}
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-white text-[var(--hw-red)] shadow-sm">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-extrabold text-[var(--hw-ink)]">{file?.name || "Choose a PDF to upload"}</div>
+                  <div className="mt-1 text-sm text-[var(--hw-muted)]">Drag and drop or click to browse.</div>
+                </div>
+              </div>
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }}
+              >
+                Upload report
+              </Button>
+            </div>
+            <input
+              ref={fileInputRef}
+              className="hidden"
+              type="file"
+              accept="application/pdf,image/png,image/jpeg"
+              onChange={(e) => selectFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        </div>
+      </div>
+
+      <Modal open={modalOpen} title="Instant Estimate" onClose={() => setModalOpen(false)} mobilePlacement="center" scrollKey={file?.name || result?.reportId || "empty"}>
+        <div className="grid gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="text-3xl font-extrabold tracking-tight text-[var(--hw-ink)]">Instant Estimate</h3>
+              <p className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
+                Upload an inspection/appraisal PDF, then we will prepare a private portal report.
+              </p>
+            </div>
+            {result ? (
+              <Link href={result.portalPath}>
+                <Button variant="secondary">Preview portal</Button>
+              </Link>
+            ) : null}
+          </div>
+
+          <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">1</div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Upload file(s)</div>
+              {file ? <div className="text-xs font-semibold text-emerald-700">✓</div> : null}
+            </div>
+            <div className="mt-2 text-sm text-[var(--hw-muted)]">{file?.name || "Choose an inspection/appraisal file."}</div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-4 flex w-full items-center justify-between rounded-[18px] border border-dashed border-[rgba(17,24,39,.22)] bg-[var(--hw-soft)] px-4 py-4 text-left"
+            >
+              <span>
+                <span className="block text-sm font-semibold text-[var(--hw-ink)]">Choose a PDF to upload</span>
+                <span className="mt-1 block text-sm text-[var(--hw-muted)]">Drag and drop or click to browse.</span>
+              </span>
+              <span className="rounded-[14px] bg-white px-4 py-2 text-sm font-semibold text-[var(--hw-ink)] shadow-sm">Browse</span>
+            </button>
+          </div>
+
+          <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">2</div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Property and private portal contact</div>
+            </div>
+            <div className="mt-3 grid gap-3">
+              <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Property address" />
+              <select
+                className="h-11 w-full rounded-[var(--hw-radius-sm)] border border-[var(--hw-line)] bg-gradient-to-b from-white to-[var(--hw-soft)] px-3 text-sm text-[var(--hw-ink)] shadow-[0_10px_22px_rgba(17,24,39,.06)] outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
+                value={propertyType}
+                onChange={(e) => setPropertyType(e.target.value)}
+              >
+                <option value="">Type of property</option>
+                <option value="Condo">Condo</option>
+                <option value="House">House</option>
+                <option value="Multi-Units">Multi-Units</option>
+                <option value="Town house">Town house</option>
+                <option value="Commercial">Commercial</option>
+              </select>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
+                <Input value={phone} onChange={(e) => setPhone(formatPhoneUS(e.target.value))} placeholder="Phone" inputMode="tel" />
+              </div>
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email for the report link" inputMode="email" />
+            </div>
+          </div>
+
+          <div className="rounded-[22px] border border-[var(--hw-line)] bg-white p-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--hw-line)] text-xs font-semibold text-[var(--hw-ink)]">3</div>
+              <div className="text-sm font-semibold text-[var(--hw-ink)]">Notes (optional)</div>
+            </div>
+            <Textarea className="mt-3" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything you want the estimate to focus on?" />
+          </div>
+
+          <div className="rounded-[18px] border border-[rgba(229,57,53,.18)] bg-[rgba(229,57,53,.06)] p-4 text-xs leading-5 text-[var(--hw-muted)]">
+            Uses the Homeworke Instant Estimate report model (`reportmodel.v0.1`) and scope schema. Estimates are planning numbers for repair prioritization and negotiation; final pricing is verified after scope, access, materials, and timing are confirmed.
+          </div>
+
+          {error ? <div className="text-sm font-semibold text-[var(--hw-red)]">{error}</div> : null}
+          {result ? (
+            <div className="rounded-[18px] border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-900">
+              <div className="font-extrabold">Report received</div>
+              <div className="mt-1">{result.message}</div>
+            </div>
+          ) : null}
+
+          <div className="flex justify-end">
+            <Button disabled={!canSubmit} onClick={submit}>
+              {submitting ? "Submitting..." : "Submit"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
+}
+
 export default function HomeClient(props: { homepage?: unknown }) {
   void props;
 
@@ -258,7 +500,7 @@ export default function HomeClient(props: { homepage?: unknown }) {
                 </p>
 
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                  <Link href="/estimate">
+                  <Link href="#instant-estimate-flow">
                     <Button className="w-full sm:w-auto">
                       Get an instant estimate
                       <ArrowRight className="h-4 w-4" />
@@ -327,7 +569,7 @@ export default function HomeClient(props: { homepage?: unknown }) {
           </Container>
         </section>
 
-        <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
+        <section id="instant-estimate-flow" className="border-t border-[var(--hw-line)] py-16 md:py-24">
           <Container className="max-w-[1180px]">
             <div className="grid gap-10 lg:grid-cols-[1.16fr_.84fr] lg:items-center">
               <div className="hw-reveal hw-delay-2 lg:order-2">
@@ -347,6 +589,26 @@ export default function HomeClient(props: { homepage?: unknown }) {
                   <CoordinationPreview />
                 </div>
               </div>
+            </div>
+          </Container>
+        </section>
+
+        <section className="border-t border-[var(--hw-line)] py-16 md:py-24">
+          <Container className="max-w-[1180px]">
+            <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-center">
+              <div>
+                <Pill className="bg-white text-[var(--hw-red)]">
+                  <FileText className="h-4 w-4" />
+                  Public Instant Estimate
+                </Pill>
+                <h2 className="mt-5 text-balance text-4xl font-extrabold tracking-tight text-[var(--hw-ink)] md:text-5xl">
+                  Upload the report, get the result in your private portal.
+                </h2>
+                <p className="mt-4 text-lg leading-8 text-[var(--hw-muted)]">
+                  This is the Real Estate Pro Instant Estimate workflow adapted for public visitors. We collect the property and contact details needed to create the private account behind the scenes, then send the completed report link to the right person.
+                </p>
+              </div>
+              <PublicInstantEstimateCard />
             </div>
           </Container>
         </section>
@@ -514,7 +776,7 @@ export default function HomeClient(props: { homepage?: unknown }) {
                   </p>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <Link href="/estimate">
+                  <Link href="#instant-estimate-flow">
                     <Button className="w-full bg-white text-[var(--hw-ink)] shadow-none hover:bg-[var(--hw-soft)]">
                       Get an instant estimate
                       <ArrowRight className="h-4 w-4" />

@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { PortalShell } from "@/components/portal-shell";
 import { buildProNav } from "@/components/partner/portal-nav";
+import { HO_NAV } from "@/components/ho/nav";
 import { deleteStagedFile, getStagedFile } from "@/lib/staged-files";
 import { extractSummaryEvidenceThumbsFromPdf, type ClientEvidenceThumb } from "@/lib/pdf-summary-evidence-client";
 import taxonomy from "@/content/homeworke_services_taxonomy.json";
@@ -305,8 +306,8 @@ function serviceForEstimateItem(item: ExtractedItem, trade: string, services: Se
 }
 
 export function ExpressEstimateReportClient(props: {
-  basePath: "/partner" | "/pro";
-  role: "PARTNER" | "PRO";
+  basePath: "/partner" | "/pro" | "/ho";
+  role: "PARTNER" | "PRO" | "HO";
   reportId: string;
   stagedId?: string;
   cacheKey?: string;
@@ -355,7 +356,7 @@ export function ExpressEstimateReportClient(props: {
     const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">\n  <rect x="0" y="0" width="96" height="96" rx="18" fill="${bg}"/>\n  <text x="48" y="52" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Inter,Arial" font-size="12" font-weight="700" fill="${fg}">${label}</text>\n</svg>`;
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
-  const nav = useMemo(() => buildProNav(props.basePath), [props.basePath]);
+  const nav = useMemo(() => (props.basePath === "/ho" ? [...HO_NAV] : buildProNav(props.basePath)), [props.basePath]);
 
   const demoReports = useMemo<Report[]>(() => {
     const now = Date.now();
@@ -1804,7 +1805,7 @@ export function ExpressEstimateReportClient(props: {
     <PortalShell
       role={props.role}
       title="Instant Estimate"
-      portalTitle={props.role === "PRO" ? "Real Estate Pro" : undefined}
+      portalTitle={props.role === "PRO" ? "Real Estate Pro" : props.role === "HO" ? "Homeowner" : undefined}
       nav={nav}
       description={
         <>
