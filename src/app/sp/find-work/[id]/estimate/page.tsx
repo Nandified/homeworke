@@ -34,6 +34,8 @@ export default function ServiceProviderCreateEstimatePage({ params }: { params: 
   const [expiryDate, setExpiryDate] = useState("");
   const [items, setItems] = useState<EstimateItem[]>([]);
 
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [qty, setQty] = useState("1");
@@ -121,17 +123,23 @@ export default function ServiceProviderCreateEstimatePage({ params }: { params: 
                 </div>
               </div>
               <div className="flex items-center justify-end gap-2">
+                {editingItemId ? (
+                  <div className="mr-auto text-xs font-medium text-[var(--hw-muted)]">Editing item…</div>
+                ) : null}
+
                 <Button
                   variant="secondary"
                   onClick={() => {
+                    setEditingItemId(null);
                     setName("");
                     setDescription("");
                     setQty("1");
                     setPrice("");
                   }}
                 >
-                  Reset
+                  {editingItemId ? "Cancel" : "Reset"}
                 </Button>
+
                 <Button
                   onClick={() => {
                     const n = name.trim();
@@ -140,16 +148,35 @@ export default function ServiceProviderCreateEstimatePage({ params }: { params: 
                     const dollars = Number(String(price).replace(/[^0-9.]/g, ""));
                     const cents = Math.round((Number.isFinite(dollars) ? dollars : 0) * 100);
                     if (!n || !cents) return;
-                    setItems((prev) => [
-                      {
-                        id: `it_${Math.random().toString(36).slice(2, 9)}`,
-                        name: n,
-                        description: d,
-                        qty: q,
-                        priceCents: cents,
-                      },
-                      ...prev,
-                    ]);
+
+                    if (editingItemId) {
+                      setItems((prev) =>
+                        prev.map((x) =>
+                          x.id === editingItemId
+                            ? {
+                                ...x,
+                                name: n,
+                                description: d,
+                                qty: q,
+                                priceCents: cents,
+                              }
+                            : x,
+                        ),
+                      );
+                    } else {
+                      setItems((prev) => [
+                        {
+                          id: `it_${Math.random().toString(36).slice(2, 9)}`,
+                          name: n,
+                          description: d,
+                          qty: q,
+                          priceCents: cents,
+                        },
+                        ...prev,
+                      ]);
+                    }
+
+                    setEditingItemId(null);
                     setName("");
                     setDescription("");
                     setQty("1");
@@ -157,7 +184,7 @@ export default function ServiceProviderCreateEstimatePage({ params }: { params: 
                   }}
                   disabled={!name.trim() || !price.trim()}
                 >
-                  Save item
+                  {editingItemId ? "Update item" : "Save item"}
                 </Button>
               </div>
             </div>
@@ -180,8 +207,30 @@ export default function ServiceProviderCreateEstimatePage({ params }: { params: 
                       <div className="flex shrink-0 items-center gap-2">
                         <Button
                           size="xs"
+                          variant="secondary"
+                          onClick={() => {
+                            setEditingItemId(it.id);
+                            setName(it.name);
+                            setDescription(it.description || "");
+                            setQty(String(it.qty || 1));
+                            setPrice(String((it.priceCents || 0) / 100));
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="xs"
                           variant="destructive"
-                          onClick={() => setItems((prev) => prev.filter((x) => x.id !== it.id))}
+                          onClick={() => {
+                            setItems((prev) => prev.filter((x) => x.id !== it.id));
+                            if (editingItemId === it.id) {
+                              setEditingItemId(null);
+                              setName("");
+                              setDescription("");
+                              setQty("1");
+                              setPrice("");
+                            }
+                          }}
                         >
                           Delete
                         </Button>
