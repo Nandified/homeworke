@@ -10,10 +10,10 @@ import {
   Clock3,
   FileQuestion,
   LifeBuoy,
-  MessageCircle,
   Paperclip,
   Phone,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 
 import { HO_NAV } from "@/components/ho/nav";
@@ -41,13 +41,13 @@ type WorkOrder = {
 };
 
 type SupportTopic =
-  | "Active job"
-  | "Schedule or visit"
-  | "Estimate or bid"
-  | "Messages"
-  | "Payment or billing"
+  | "Active job issue"
+  | "Scheduling or access"
+  | "Estimate or bid question"
+  | "Platform issue"
+  | "Account or billing"
   | "Property details"
-  | "Account"
+  | "Suggestion"
   | "Other";
 
 type Urgency = "normal" | "today" | "urgent";
@@ -65,50 +65,69 @@ type SupportTicket = {
 const TICKET_STORAGE_KEY = "hw_ho_support_tickets_v1";
 
 const TOPICS: SupportTopic[] = [
-  "Active job",
-  "Schedule or visit",
-  "Estimate or bid",
-  "Messages",
-  "Payment or billing",
+  "Active job issue",
+  "Scheduling or access",
+  "Estimate or bid question",
+  "Platform issue",
+  "Account or billing",
   "Property details",
-  "Account",
+  "Suggestion",
   "Other",
 ];
 
 const URGENCY_OPTIONS: Array<{ id: Urgency; title: string; text: string }> = [
-  { id: "normal", title: "Normal", text: "General question or account help" },
-  { id: "today", title: "Today", text: "Appointment, estimate, or timing issue" },
-  { id: "urgent", title: "Urgent", text: "Active job, access, safety, or closing risk" },
+  { id: "normal", title: "Normal", text: "Suggestions, account questions, or non-blocking issues" },
+  { id: "today", title: "Today", text: "Schedule, access, estimate, or platform issue blocking progress" },
+  { id: "urgent", title: "Urgent", text: "Active work, safety, property access, or closing deadline risk" },
 ];
 
 const HELP_LANES = [
   {
-    title: "Active job",
-    text: "Reach the Home Guide team when work is in motion or something changed on site.",
+    title: "Active job issues",
+    text: "Report access problems, scope changes, day-of timing, safety concerns, or anything blocking work in progress.",
     icon: ClipboardList,
-    href: "/ho/jobs",
-    cta: "View jobs",
+    topic: "Active job issue",
+    urgency: "today",
+    cta: "Report job issue",
   },
   {
-    title: "Appointment timing",
-    text: "Check visit windows, preferred dates, and the next scheduled step.",
+    title: "Platform issues",
+    text: "Flag broken pages, upload problems, missing job details, payment trouble, or account access issues.",
     icon: CalendarClock,
-    href: "/ho/jobs",
-    cta: "Check schedule",
+    topic: "Platform issue",
+    urgency: "today",
+    cta: "Report platform issue",
   },
   {
-    title: "Team messages",
-    text: "Continue the conversation with your Home Guide or partner team.",
-    icon: MessageCircle,
-    href: "/ho/messages",
-    cta: "Open messages",
+    title: "Suggestions",
+    text: "Share product ideas, workflow improvements, missing tools, or anything that would make Homeworke easier to use.",
+    icon: Sparkles,
+    topic: "Suggestion",
+    urgency: "normal",
+    cta: "Share suggestion",
   },
-] as const;
+] satisfies Array<{
+  title: string;
+  text: string;
+  icon: React.ComponentType<{ size?: number; "aria-hidden"?: boolean }>;
+  topic: SupportTopic;
+  urgency: Urgency;
+  cta: string;
+}>;
 
 const EXPECTATIONS = [
-  "Home Guide reviews the request",
-  "Project Manager is looped in if the job is active",
-  "Partner team stays informed only when sharing is allowed",
+  {
+    title: "1. Triage",
+    text: "Homeworke classifies the issue by topic, urgency, and related job so it lands in the right queue.",
+  },
+  {
+    title: "2. Owner assigned",
+    text: "Active-job issues go to operations review; platform issues go to product support; suggestions go to the product backlog.",
+  },
+  {
+    title: "3. Resolution tracked",
+    text: "The request stays visible here with its status so the homeowner can see what is open and what needs more detail.",
+  },
 ] as const;
 
 function loadSession(): Session | null {
@@ -163,7 +182,7 @@ export default function HomeownerSupportPage() {
   const [requestOpen, setRequestOpen] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
 
-  const [topic, setTopic] = React.useState<SupportTopic>("Active job");
+  const [topic, setTopic] = React.useState<SupportTopic>("Active job issue");
   const [urgency, setUrgency] = React.useState<Urgency>("today");
   const [relatedWorkOrderId, setRelatedWorkOrderId] = React.useState("");
   const [subject, setSubject] = React.useState("");
@@ -207,10 +226,8 @@ export default function HomeownerSupportPage() {
   }, [relatedWorkOrderId, workOrders]);
 
   const canSend = subject.trim().length >= 4 && message.trim().length >= 12;
-  const partnerName = session?.partner?.partnerName || "Your partner team";
-
   function resetRequestForm() {
-    setTopic("Active job");
+    setTopic("Active job issue");
     setUrgency("today");
     setRelatedWorkOrderId(activeWorkOrders[0]?.id || "");
     setSubject("");
@@ -240,7 +257,7 @@ export default function HomeownerSupportPage() {
     setTickets(nextTickets);
     saveTickets(nextTickets);
     setRequestOpen(false);
-    setToast(`${nextTicket.id} sent to Home Guide`);
+    setToast(`${nextTicket.id} support request created`);
   }
 
   return (
@@ -254,10 +271,10 @@ export default function HomeownerSupportPage() {
                 Homeowner support
               </div>
               <h1 className="mt-4 max-w-3xl text-3xl font-extrabold tracking-tight text-[var(--hw-ink)] sm:text-4xl">
-                Get the right Homeworke team on it.
+                Get help with a job, account issue, or platform problem.
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--hw-muted)]">
-                Send a project-linked request, continue a message thread, or flag an active-job issue for Home Guide review.
+                Create a support request for active work, scheduling, estimates, billing, property details, technical issues, or ideas that would make Homeworke better.
               </p>
             </div>
 
@@ -269,11 +286,11 @@ export default function HomeownerSupportPage() {
                 <div>
                   <div className="text-sm font-semibold text-[var(--hw-ink)]">Your support path</div>
                   <div className="mt-1 text-sm leading-6 text-[var(--hw-muted)]">
-                    Home Guide first, PM when active, partner updates when sharing is on.
+                    Active work gets priority review. Product issues and suggestions are routed by topic.
                   </div>
                 </div>
               </div>
-              <Button className="mt-4 w-full" onClick={() => openRequestForm("Active job", "today")}>
+              <Button className="mt-4 w-full" onClick={() => openRequestForm("Active job issue", "today")}>
                 Start support request
               </Button>
             </div>
@@ -283,8 +300,8 @@ export default function HomeownerSupportPage() {
         <section className="grid gap-4 lg:grid-cols-3">
           <Card className="p-5 lg:col-span-2">
             <CardHeader
-              title="Today’s help center"
-              subtitle="Fast actions for the support moments homeowners hit most often."
+              title="Support categories"
+              subtitle="Choose the kind of issue so Homeworke can route it with the right context."
               action={
                 <Button variant="secondary" size="sm" onClick={() => openRequestForm("Other", "normal")}>
                   New request
@@ -296,10 +313,11 @@ export default function HomeownerSupportPage() {
               {HELP_LANES.map((lane) => {
                 const Icon = lane.icon;
                 return (
-                  <Link
+                  <button
                     key={lane.title}
-                    href={lane.href}
-                    className="group rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[rgba(229,57,53,.28)] hover:shadow-[0_14px_34px_rgba(17,24,39,.10)]"
+                    type="button"
+                    onClick={() => openRequestForm(lane.topic, lane.urgency)}
+                    className="group rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[rgba(229,57,53,.28)] hover:shadow-[0_14px_34px_rgba(17,24,39,.10)]"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hw-soft)] text-[var(--hw-red)] transition group-hover:bg-[rgba(229,57,53,.10)]">
                       <Icon size={20} aria-hidden />
@@ -307,7 +325,7 @@ export default function HomeownerSupportPage() {
                     <div className="mt-4 text-sm font-semibold text-[var(--hw-ink)]">{lane.title}</div>
                     <div className="mt-2 min-h-[64px] text-sm leading-6 text-[var(--hw-muted)]">{lane.text}</div>
                     <div className="mt-4 text-xs font-semibold text-[var(--hw-red)]">{lane.cta}</div>
-                  </Link>
+                  </button>
                 );
               })}
             </div>
@@ -348,7 +366,7 @@ export default function HomeownerSupportPage() {
 
         <section className="grid gap-4 lg:grid-cols-[1fr_360px]">
           <Card className="p-5">
-            <CardHeader title="Active project support" subtitle="Attach support to the job so the team has context immediately." />
+            <CardHeader title="Active project support" subtitle="Attach support to the job so the request includes the right context immediately." />
             <div className="mt-5 grid gap-3">
               {activeWorkOrders.length ? (
                 activeWorkOrders.slice(0, 4).map((order) => (
@@ -378,7 +396,7 @@ export default function HomeownerSupportPage() {
                       <Button
                         size="sm"
                         onClick={() => {
-                          openRequestForm("Active job", "today");
+                          openRequestForm("Active job issue", "today");
                           setRelatedWorkOrderId(order.id);
                           setSubject(`${getWorkOrderTitle(order)} support`);
                         }}
@@ -419,23 +437,6 @@ export default function HomeownerSupportPage() {
                 </div>
               </div>
             </Card>
-
-            <Card className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--hw-soft)] text-[var(--hw-red)]">
-                  <MessageCircle size={19} aria-hidden />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-[var(--hw-ink)]">Message your team</div>
-                  <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{partnerName} and Homeworke support stay connected through your message center.</div>
-                  <Link href="/ho/messages" className="mt-4 inline-block">
-                    <Button variant="secondary" size="sm">
-                      Open messages
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </Card>
           </div>
         </section>
 
@@ -443,13 +444,19 @@ export default function HomeownerSupportPage() {
           <div className="grid gap-4 lg:grid-cols-[280px_1fr] lg:items-center">
             <div>
               <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hw-muted)]">What happens next</div>
-              <div className="mt-2 text-lg font-extrabold text-[var(--hw-ink)]">Clear ownership after you send.</div>
+              <div className="mt-2 text-lg font-extrabold text-[var(--hw-ink)]">A request becomes a tracked support case.</div>
+              <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">
+                Homeowners should know exactly why they are submitting a request and how it will be handled.
+              </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               {EXPECTATIONS.map((item) => (
-                <div key={item} className="flex items-start gap-3 rounded-[var(--hw-radius-sm)] bg-[var(--hw-soft)] p-3">
-                  <CheckCircle2 className="mt-0.5 shrink-0 text-[var(--hw-red)]" size={18} aria-hidden />
-                  <div className="text-sm leading-6 text-[var(--hw-ink)]">{item}</div>
+                <div key={item.title} className="rounded-[var(--hw-radius-sm)] bg-[var(--hw-soft)] p-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="mt-0.5 shrink-0 text-[var(--hw-red)]" size={18} aria-hidden />
+                    <div className="text-sm font-semibold text-[var(--hw-ink)]">{item.title}</div>
+                  </div>
+                  <div className="mt-2 text-sm leading-6 text-[var(--hw-muted)]">{item.text}</div>
                 </div>
               ))}
             </div>
@@ -468,7 +475,7 @@ export default function HomeownerSupportPage() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 shrink-0 text-[var(--hw-red)]" size={18} aria-hidden />
               <div className="text-sm leading-6 text-[var(--hw-ink)]">
-                Active-job and day-of appointment issues go to Home Guide with project context attached.
+                Active-job, access, schedule, and safety issues should be tied to the related job whenever possible.
               </div>
             </div>
           </div>
@@ -581,7 +588,7 @@ export default function HomeownerSupportPage() {
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2 text-xs leading-5 text-[var(--hw-muted)]">
               <FileQuestion size={15} aria-hidden />
-              <span>Saved as a support request in demo mode.</span>
+              <span>Include screenshots, PDFs, photos, or short videos when they help explain the issue.</span>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setRequestOpen(false)}>
