@@ -133,7 +133,7 @@ export function HOPropertiesClient(props: {
 }) {
   const router = useRouter();
   const [items, setItems] = React.useState<ApiProperty[] | null>(null);
-  const [tab, setTab] = React.useState<"all" | "my" | "clients" | "shared">("all");
+  const [tab, setTab] = React.useState<"all" | "my" | "shared">("all");
   const [q, setQ] = React.useState("");
 
   const [addOpenInternal, setAddOpenInternal] = React.useState(false);
@@ -209,13 +209,12 @@ export function HOPropertiesClient(props: {
       .catch(() => setItems([]));
   }, []);
 
-  // Counts/tabs (HO currently only has "my" properties; other tabs are 0 but kept for design parity.)
+  // Counts/tabs (HO currently only has "my" properties; shared is kept for future team-shared homes.)
   const counts = React.useMemo(() => {
     const list = items || [];
     return {
       all: list.length,
       my: list.length,
-      clients: 0,
       shared: 0,
     };
   }, [items]);
@@ -225,7 +224,6 @@ export function HOPropertiesClient(props: {
 
     // Keep tab behavior consistent (even if HO has only "my" right now)
     const byTab = list.filter(() => {
-      if (tab === "clients") return false;
       if (tab === "shared") return false;
       return true;
     });
@@ -273,9 +271,6 @@ export function HOPropertiesClient(props: {
             <TabButton active={tab === "my"} onClick={() => setTab("my")}>
               My properties <CountBadge n={counts.my} />
             </TabButton>
-            <TabButton active={tab === "clients"} onClick={() => setTab("clients")}>
-              Client properties <CountBadge n={counts.clients} />
-            </TabButton>
             <TabButton active={tab === "shared"} onClick={() => setTab("shared")}>
               Shared with me <CountBadge n={counts.shared} />
             </TabButton>
@@ -311,11 +306,14 @@ export function HOPropertiesClient(props: {
             <Card
               key={p.id}
               className="cursor-pointer overflow-hidden transition hover:shadow-[0_12px_40px_rgba(17,24,39,.10)]"
-              onClick={(e) => {
-                // Keep same feel as PRO (click card = details). HO details page isn't wired yet,
-                // so we keep them on the list and open the Add modal when missing.
-                e.preventDefault();
-                router.push(`/ho/properties?property=${encodeURIComponent(p.id)}`);
+              onClick={() => router.push(`/ho/properties/${encodeURIComponent(p.id)}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  router.push(`/ho/properties/${encodeURIComponent(p.id)}`);
+                }
               }}
             >
               <div className="relative h-36 overflow-hidden bg-[linear-gradient(135deg,rgba(229,57,53,.14),rgba(17,24,39,.04))]">
@@ -343,7 +341,7 @@ export function HOPropertiesClient(props: {
 
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 text-xs text-[var(--hw-muted)] truncate">
-                    Owner: <span className="font-semibold text-[var(--hw-ink)]">{p.ownerName || "—"}</span>
+                    Saved as: <span className="font-semibold text-[var(--hw-ink)]">{propertyBadge(p)}</span>
                   </div>
                   <div className="shrink-0 whitespace-nowrap text-xs font-semibold text-[var(--hw-red)]">Details →</div>
                 </div>
@@ -357,19 +355,15 @@ export function HOPropertiesClient(props: {
         <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-6">
           {(() => {
             const isEmptyTab =
-              (tab === "clients" && counts.clients === 0) ||
               (tab === "shared" && counts.shared === 0) ||
               (tab === "my" && counts.my === 0) ||
               (tab === "all" && counts.all === 0);
 
             if (isEmptyTab && (q || "").trim() === "") {
-              const title =
-                tab === "clients" ? "No client properties yet" : tab === "shared" ? "No shared properties yet" : "No properties yet";
+              const title = tab === "shared" ? "No shared properties yet" : "No properties yet";
 
               const text =
-                tab === "clients"
-                  ? "Client properties will appear here once shared or added on your behalf."
-                  : tab === "shared"
+                tab === "shared"
                     ? "When a team shares a property with you, it will show up here."
                     : "Add a property to speed up service requests and scheduling.";
 
