@@ -100,32 +100,6 @@ async function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
-function CountBadge({ n }: { n: number }) {
-  return (
-    <span className="ml-2 inline-flex min-w-6 items-center justify-center rounded-full border border-[var(--hw-line)] bg-white px-2 py-0.5 text-[11px] font-extrabold text-[var(--hw-ink)]">
-      {n}
-    </span>
-  );
-}
-
-function TabButton(props: { active: boolean; children: React.ReactNode; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={props.onClick}
-      className={
-        "rounded-full border px-4 py-2 text-xs font-semibold transition " +
-        (props.active
-          ? "border-[rgba(229,57,53,.45)] bg-[rgba(229,57,53,.08)] text-[var(--hw-red)]"
-          : "border-[var(--hw-line)] bg-white text-[var(--hw-ink)] hover:bg-[var(--hw-soft)]")
-      }
-      aria-pressed={props.active}
-    >
-      {props.children}
-    </button>
-  );
-}
-
 export function HOPropertiesClient(props: {
   empty: React.ReactNode;
   addOpen?: boolean;
@@ -133,7 +107,6 @@ export function HOPropertiesClient(props: {
 }) {
   const router = useRouter();
   const [items, setItems] = React.useState<ApiProperty[] | null>(null);
-  const [tab, setTab] = React.useState<"all" | "my" | "shared">("all");
   const [q, setQ] = React.useState("");
 
   const [addOpenInternal, setAddOpenInternal] = React.useState(false);
@@ -209,33 +182,16 @@ export function HOPropertiesClient(props: {
       .catch(() => setItems([]));
   }, []);
 
-  // Counts/tabs (HO currently only has "my" properties; shared is kept for future team-shared homes.)
-  const counts = React.useMemo(() => {
-    const list = items || [];
-    return {
-      all: list.length,
-      my: list.length,
-      shared: 0,
-    };
-  }, [items]);
-
   const filtered = React.useMemo(() => {
     const list = items || [];
-
-    // Keep tab behavior consistent (even if HO has only "my" right now)
-    const byTab = list.filter(() => {
-      if (tab === "shared") return false;
-      return true;
-    });
-
     const needle = (q || "").trim().toLowerCase();
-    if (!needle) return byTab;
+    if (!needle) return list;
 
-    return byTab.filter((p) => {
+    return list.filter((p) => {
       const hay = `${p.nickname || ""} ${p.address || ""} ${p.city || ""} ${p.state || ""} ${p.zip || ""} ${p.ownerName || ""} ${p.ownerEmail || ""}`.toLowerCase();
       return hay.includes(needle);
     });
-  }, [items, tab, q]);
+  }, [items, q]);
 
   const req = {
     address: newAddress.trim(),
@@ -263,20 +219,6 @@ export function HOPropertiesClient(props: {
     <div>
       {/* Toolbar */}
       <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <TabButton active={tab === "all"} onClick={() => setTab("all")}>
-              All <CountBadge n={counts.all} />
-            </TabButton>
-            <TabButton active={tab === "my"} onClick={() => setTab("my")}>
-              My properties <CountBadge n={counts.my} />
-            </TabButton>
-            <TabButton active={tab === "shared"} onClick={() => setTab("shared")}>
-              Shared with me <CountBadge n={counts.shared} />
-            </TabButton>
-          </div>
-        </div>
-
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <input
             className="h-10 w-full rounded-[999px] border border-[var(--hw-line)] bg-[var(--hw-soft)] px-4 text-sm outline-none transition focus:border-[rgba(229,57,53,.35)] focus:ring-4 focus:ring-[rgba(229,57,53,.10)]"
@@ -354,23 +296,11 @@ export function HOPropertiesClient(props: {
       {items !== null && filtered.length === 0 ? (
         <div className="mt-5 rounded-[var(--hw-radius-lg)] border border-[var(--hw-line)] bg-white p-6">
           {(() => {
-            const isEmptyTab =
-              (tab === "shared" && counts.shared === 0) ||
-              (tab === "my" && counts.my === 0) ||
-              (tab === "all" && counts.all === 0);
-
-            if (isEmptyTab && (q || "").trim() === "") {
-              const title = tab === "shared" ? "No shared properties yet" : "No properties yet";
-
-              const text =
-                tab === "shared"
-                    ? "When a team shares a property with you, it will show up here."
-                    : "Add a property to speed up service requests and scheduling.";
-
+            if ((items || []).length === 0 && (q || "").trim() === "") {
               return (
                 <>
-                  <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">{title}</div>
-                  <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">{text}</div>
+                  <div className="text-base font-extrabold tracking-tight text-[var(--hw-ink)]">No properties yet</div>
+                  <div className="mt-1 text-sm leading-relaxed text-[var(--hw-muted)]">Add a property to speed up service requests and scheduling.</div>
                 </>
               );
             }

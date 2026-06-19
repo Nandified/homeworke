@@ -282,7 +282,7 @@ export default function Page() {
         <Card className="p-6">
           <CardHeader
             title="My Team"
-            subtitle="Link up to 4 professionals so you can share updates and message them when needed."
+            subtitle="Keep your broker, lender, insurance agent, and inspector handy for updates and questions."
             action={
               <Button
                 variant="secondary"

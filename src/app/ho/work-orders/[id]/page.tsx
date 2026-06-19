@@ -6,15 +6,7 @@ import { useParams } from "next/navigation";
 
 import { Button, Card, Chip, EmptyState, Pill, StatTile } from "@/components/ui";
 import { PortalShell } from "@/components/portal-shell";
-
-const nav = [
-  { href: "/ho/dashboard", label: "Dashboard" },
-  { href: "/ho/messages", label: "Messages" },
-  { href: "/ho/properties", label: "My Properties" },
-  { href: "/ho/pro-team", label: "Pro Team" },
-  { href: "/ho/support", label: "Support" },
-  { href: "/ho/account", label: "My Account" },
-];
+import { HO_NAV } from "@/components/ho/nav";
 
 type Session = {
   token: string;
@@ -33,7 +25,6 @@ type WorkOrder = {
   preferredWindow?: string;
   status: string;
   originPartnerId?: string | null;
-  shareWithPartner?: boolean | null;
 };
 
 function loadSession(): Session | null {
@@ -84,7 +75,7 @@ export default function Page() {
   }, [workOrder]);
 
   return (
-    <PortalShell role="HO" title="Homeowner" nav={nav}>
+    <PortalShell role="HO" title="Homeowner" nav={HO_NAV as any}>
       {!token ? (
         <EmptyState
           title="No session"
@@ -131,7 +122,7 @@ export default function Page() {
               value={workOrder.preferredDate || "—"}
               note={workOrder.preferredWindow ? `Window: ${workOrder.preferredWindow}` : ""}
             />
-            <StatTile label="Sharing" value={workOrder.shareWithPartner ? "On" : "Off"} note="Per-request control" />
+            <StatTile label="Status" value={workOrder.status} note="Current job stage" />
           </div>
 
           <Card className="p-6 md:p-7">

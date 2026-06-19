@@ -198,7 +198,7 @@ export default function HomeownerDashboardPage() {
 
           {/* Active projects */}
           <DashboardSection
-            title="Active projects shared with you"
+            title="Active projects"
             count={sortedWorkOrders.length}
             action={
               <Link href="/ho/jobs">

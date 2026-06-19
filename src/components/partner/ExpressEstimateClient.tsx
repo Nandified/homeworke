@@ -145,6 +145,7 @@ type Report = {
 
 export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const storageScope = props.role as StorageScope;
+  const isHomeowner = props.role === "HO";
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const preselectPropertyId = searchParams?.get("property") || "";
   const preStaged = searchParams?.get("staged") || "";
@@ -171,7 +172,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
   const prevSelectedPropertyIdRef = useRef<string>("");
 
   const [propertyMode, setPropertyMode] = useState<"existing" | "new">("existing");
-  const [propertyOwner, setPropertyOwner] = useState<"my" | "client">("client");
+  const [propertyOwner, setPropertyOwner] = useState<"my" | "client">(isHomeowner ? "my" : "client");
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
   const [properties, setProperties] = useState<
     Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string; propertyType?: string }>
@@ -322,14 +323,16 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
       propertyType: typeof p.propertyType === "string" ? p.propertyType : undefined,
       kind: "my" as const,
     }));
-    const localClient = readClientProperties(storageScope).map((p) => ({
-      id: p.id,
-      label: normalizeAddress(p.nickname || p.address),
-      address: normalizeAddress(p.address),
-      ownerName: typeof p.ownerName === "string" ? normalizeAddress(p.ownerName) : (typeof p.clientName === "string" ? normalizeAddress(p.clientName) : undefined),
-      propertyType: typeof p.propertyType === "string" ? p.propertyType : undefined,
-      kind: "client" as const,
-    }));
+    const localClient = isHomeowner
+      ? []
+      : readClientProperties(storageScope).map((p) => ({
+          id: p.id,
+          label: normalizeAddress(p.nickname || p.address),
+          address: normalizeAddress(p.address),
+          ownerName: typeof p.ownerName === "string" ? normalizeAddress(p.ownerName) : (typeof p.clientName === "string" ? normalizeAddress(p.clientName) : undefined),
+          propertyType: typeof p.propertyType === "string" ? p.propertyType : undefined,
+          kind: "client" as const,
+        }));
 
     setProperties((prev) => {
       const merged: Array<{ id: string; label: string; address: string; kind: "my" | "client"; ownerName?: string; propertyType?: string }> = [
@@ -359,8 +362,8 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             id: String(p.id),
             label: normalizeAddress(p.nickname || p.address || ""),
             address: normalizeAddress(p.address || ""),
-            ownerName: normalizeAddress(p.ownerName || p.clientName || "") || undefined,
-            kind: p.clientProperty ? ("client" as const) : ("my" as const),
+            ownerName: isHomeowner ? undefined : normalizeAddress(p.ownerName || p.clientName || "") || undefined,
+            kind: !isHomeowner && p.clientProperty ? ("client" as const) : ("my" as const),
           }))
           .filter((p) => p.address);
 
@@ -695,7 +698,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         placeholder="Select a property…"
                         options={properties.map((p) => ({
                           id: p.id,
-                          label: (p.kind === "client" ? "Client" : "My") + ": " + p.label,
+                          label: isHomeowner ? p.label : (p.kind === "client" ? "Client" : "My") + ": " + p.label,
                           sublabel: p.address,
                         }))}
                         onChange={(id) => {
@@ -712,6 +715,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                     </div>
                   ) : (
                     <div className="mt-3 grid gap-3">
+                      {!isHomeowner ? (
                       <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
@@ -738,6 +742,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                           My property
                         </button>
                       </div>
+                      ) : null}
 
                       <div className="grid gap-2">
                         <div className="text-xs font-semibold text-[var(--hw-muted)]">Address</div>
@@ -749,7 +754,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                         />
                       </div>
 
-                      {propertyOwner === "client" ? (
+                      {!isHomeowner && propertyOwner === "client" ? (
                         <div className="grid gap-3 sm:grid-cols-2">
                           <div className="grid gap-2">
                             <div className="text-xs font-semibold text-[var(--hw-muted)]">Client first name</div>
@@ -773,13 +778,12 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                             />
                           </div>
                         </div>
-                      ) : (
+                      ) : !isHomeowner ? (
                         <div className="grid gap-2">
                           <div className="text-xs font-semibold text-[var(--hw-muted)]">Owner name (optional)</div>
                           <Input value={newOwnerName} onChange={(e) => setNewOwnerName(e.target.value)} placeholder="Owner name" />
                         </div>
-                      )}
-
+                      ) : null}
                       <div className="grid gap-2">
                         <div className="text-xs font-semibold text-[var(--hw-muted)]">Nickname (optional)</div>
                         <Input value={newPropertyNickname} onChange={(e) => setNewPropertyNickname(e.target.value)} placeholder="Home, Lake Condo…" />
@@ -808,10 +812,11 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                             const addr = normalizeAddress(newPropertyAddress);
                             if (!addr) return;
 
-                            const id = (propertyOwner === "client" ? "prop_client" : "prop_local") + "_" + Math.random().toString(36).slice(2, 10);
+                            const effectiveOwner = isHomeowner ? "my" : propertyOwner;
+                            const id = (effectiveOwner === "client" ? "prop_client" : "prop_local") + "_" + Math.random().toString(36).slice(2, 10);
                             const createdAt = new Date().toISOString();
 
-                            if (propertyOwner === "client") {
+                            if (effectiveOwner === "client") {
                               const next = {
                                 id,
                                 createdAt,
@@ -841,7 +846,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                               label: normalizeAddress(newPropertyNickname || addr),
                               address: addr,
                               ownerName: normalizeAddress(newOwnerName || newClientName || "") || undefined,
-                              kind: propertyOwner,
+                              kind: effectiveOwner,
                               propertyType: newPropertyType || undefined,
                             } as const;
                             setProperties((prev) => [p, ...prev]);
@@ -964,10 +969,11 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
                       const reportId = `rpt_${cacheKey.slice(0, 12)}`;
 
                       // Derive owner name from the selected property (or best-effort fallback).
-                      const ownerName =
-                        selectedProp?.ownerName ||
-                        properties.find((p) => addressKey(p.address) === addressKey(address))?.ownerName ||
-                        "";
+                      const ownerName = isHomeowner
+                        ? ""
+                        : selectedProp?.ownerName ||
+                          properties.find((p) => addressKey(p.address) === addressKey(address))?.ownerName ||
+                          "";
 
                       // Persist owner name by report id so the list can display it even if the report row is missing it.
                       try {
@@ -1074,6 +1080,7 @@ export function ExpressEstimateClient(props: ExpressEstimateClientProps) {
             {filteredReports.slice(0, 10).map((r) => {
               const address = r.address;
               const derivedOwnerName = (() => {
+                if (isHomeowner) return "";
                 if (r.ownerName) return r.ownerName;
                 try {
                   const persisted = window.localStorage.getItem(`hw.expressEstimate.owner.${r.id}`) || "";
